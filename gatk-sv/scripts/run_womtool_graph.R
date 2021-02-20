@@ -5,7 +5,10 @@ require(glue)
 # grab initial WDL files to plot WOMTool graphs
 wdl_files <-
   tibble::tibble(
-    basename = c("Module00a.wdl", "Module00b.wdl", "Module00c.wdl", "Module01.wdl")) %>%
+    basename = c(
+      "Module00a.wdl", "Module00b.wdl", "Module00c.wdl", "Module01.wdl",
+      "CramToBam.wdl", "PESRCollection.wdl",
+      "Whamg.wdl", "Delly.wdl", "Manta.wdl", "MELT.wdl")) %>%
   dplyr::mutate(
     fullname = file.path(here("gatk-sv/scripts/wdl"), basename),
     figure = file.path(here("gatk-sv/figures"), paste0(basename, ".graph.png")))
