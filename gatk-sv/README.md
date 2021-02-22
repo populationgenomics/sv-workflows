@@ -22,24 +22,24 @@ First collect required data & metadata, then perform the next steps.
   - exclude bins with no coverage in >5% samples
   - normalise sample coverage by:
     `tot cov per bin / median across all autosomal bins`
-- per-chrom ploidy
+- per-chromosome ploidy
   - 2x median normalised coverage per bin
 - sex inference:
 
-  - round sex chrom ploidy to nearest integer copy state
+  - round sex chromosome ploidy to nearest integer copy state
 
 ### Sequencing dosage bias scoring
 
-- confounded CNV calling due to highly non-uniform coverage
+- confounded copy number variation (CNV) calling due to highly non-uniform coverage
 - antipodal between PCR- and PCR+ protocols
-- WGD package controls for dosage bias:
+- Whole-Genome Dosage (WGD) package controls for dosage bias:
   - theta metric summarises directionality and magnitude of bias per sample
 
 ### Sample QC
 
 - Median 100bp bin coverage
 - Dosage bias score theta: measurement of coverage uniformity with WGD.
-- Autosomal ploidy spread: diff between highest/lowest ploidies for any two
+- Autosomal ploidy spread: difference between highest/lowest ploidies for any two
   autosomes.
 - Z-score of outlier 1Mb bins: median absolute Z-score of number of 1Mb bins per
   chromosome with normalised CN estimates < 1.5 or >2.5 Z-scores were calculated
@@ -47,10 +47,10 @@ First collect required data & metadata, then perform the next steps.
 - Chimera rate: percentage of chimeric read pairs in total read pairs.
 - Pairwise alignment rate: percentage of read pairs where both reads aligned
   successfully.
-- Library contamination: max value of adapter or est. sample contamination
+- Library contamination: max value of adapter contamination or estimated sample contamination
   fraction.
 - Read length: mean read length
-- Ambiguous sex genotypes: normalised CN est. for chrX & chrY; ambiguous if
+- Ambiguous sex genotypes: normalised copy number estimated for chrX & chrY; ambiguous if
   `X ~ (1.1, 1.9)` and `Y ~ (0.1, 0.9)`
 - Discordant inferred & reported sex
 
@@ -85,7 +85,7 @@ First collect required data & metadata, then perform the next steps.
 
   - flexible RD-based algo for cohorts with high sensitivity for rare CNVs.
   - custom implementation of v1.20.1 in ~100 sample batches
-  - compose coverage matrixes across all samples at 300bp and 1000bp resolution,
+  - compose coverage matrices across all samples at 300bp and 1000bp resolution,
     exclude samples with median bin coverage of zero per contig, then run
     cn.MOPS, split raw calls per sample, segragate calls into dels (CN < 2) and
     dups (CN > 2), merge 300bp + 1000bp calls per sample per CNV type using
