@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/gatk-sv/delly:0.8.7', '.' ]
+images:
+- 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/gatk-sv/delly:0.8.7'
