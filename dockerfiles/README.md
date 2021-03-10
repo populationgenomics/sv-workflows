@@ -1,24 +1,25 @@
 # Dockerfiles
 
-We use Google
-[Cloud Build](https://cloud.google.com/build/docs/quickstart-build) to build all
-Docker images and upload to Google
-[Artifact Registry](https://cloud.google.com/artifact-registry/docs/docker/quickstart).
+We use [Cloud Build](https://cloud.google.com/build/docs/quickstart-build) to
+build all Docker images for the main structural variant tools; these then get
+automatically uploaded to
+[Artifact Registry](https://cloud.google.com/artifact-registry/docs/docker/quickstart)
+(AR).
 
-We build using the following (assuming the Dockerfile is in the current working directory):
-
-- create AR repo (done once)
+- create AR repo named `sv` under a given Google Cloud project (done once):
 
 ```shell
-gcloud artifacts repositories create "sv" \
-    --repository-format "docker" \
-    --location "australia-southeast1" \
-    --description "SV Dockers" \
-    --project "<PROJECT_ID>"
+gcloud artifacts repositories create "sv"
+  --repository-format "docker" \
+  --location "australia-southeast1" \
+  --description "SV Dockers" \
+  --project "<PROJECT_ID>"
 ```
 
-- build Docker image and upload to specified AR repo under given tag
+- build Docker image and upload to specified AR repo under specified tag
+  (assuming the Dockerfile is in the current working directory):
 
 ```shell
-gcloud builds submit --tag australia-southeast1-docker.pkg.dev/PROJECT_ID/sv/IMG:TAG
+gcloud builds submit \
+  --tag australia-southeast1-docker.pkg.dev/PROJECT_ID/sv/IMG:TAG
 ```

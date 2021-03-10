@@ -1,7 +1,7 @@
 # use the ubuntu base image
-FROM ubuntu:18.04
+FROM ubuntu:18.04 AS builder
 
-MAINTAINER Tobias Rausch rausch@embl.de
+LABEL maintainer="Tobias Rausch rausch@embl.de"
 
 # install required packages
 RUN apt-get update && apt-get install -y \
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
 # set environment
 ENV BOOST_ROOT /usr
 
-# install delly (specify version)
+# install specific delly branch
 ARG DELLY_VERSION="v0.8.7"
 RUN cd /opt \
     && git clone \
@@ -45,7 +45,7 @@ RUN cd /opt \
 FROM alpine:latest
 RUN mkdir -p /opt/delly/bin
 WORKDIR /opt/delly/bin
-COPY --from=0 /opt/delly/bin/delly .
+COPY --from=builder /opt/delly/bin/delly .
 
 # Workdir
 WORKDIR /root/
