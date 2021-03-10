@@ -1,0 +1,5 @@
+# Pre-download MELT tarball (license restricted).
+# Keeping .gitignore at this level to avoid
+# cloud build ignoring this file when uploading.
+melt/MELTv2.2.2.tar.gz
+wham/whamg

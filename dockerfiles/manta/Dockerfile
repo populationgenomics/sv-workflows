@@ -1,5 +1,5 @@
 ############### stage 0: build samtools from source
-FROM ubuntu:18.04
+FROM ubuntu:18.04 AS samtools_builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG SAMTOOLS_VERSION=1.9
@@ -33,10 +33,9 @@ RUN apt-get -qqy update --fix-missing && \
     samtools --help
 
 ############### stage 1: install Manta
-FROM ubuntu:18.04
+FROM ubuntu:18.04 AS manta_installer
 
-# copy from previous stage the binaries from samtools build
-COPY --from=0 /usr/local/bin/* /usr/local/bin/
+COPY --from=samtools_builder /usr/local/bin/* /usr/local/bin/
 
 # install necessary packages while building, and tools necessary for running, then clean up; all in one layer
 # note that we explicitly run the demo/test-run distributed with the binary, then delete all demo results and data
