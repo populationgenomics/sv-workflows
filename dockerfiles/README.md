@@ -5,25 +5,20 @@ We use Google
 Docker images and upload to Google
 [Artifact Registry](https://cloud.google.com/artifact-registry/docs/docker/quickstart).
 
-We build using the following:
+We build using the following (assuming the Dockerfile is in the current working directory):
+
+- create AR repo (done once)
 
 ```shell
-gcloud builds submit --config cloudbuild.yaml
+gcloud artifacts repositories create "sv" \
+    --repository-format "docker" \
+    --location "australia-southeast1" \
+    --description "SV Dockers" \
+    --project "<PROJECT_ID>"
 ```
 
-A typical `cloudbuild.yaml` is (assuming a `gatk-sv` Artifact Registry
-repository has been created under the default Google project beforehand):
+- build Docker image and upload to specified AR repo under given tag
 
-```yaml
-steps:
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      [
-        "build",
-        "-t",
-        "australia-southeast1-docker.pkg.dev/$PROJECT_ID/gatk-sv/IMG:TAG",
-        ".",
-      ]
-images:
-  - "australia-southeast1-docker.pkg.dev/$PROJECT_ID/gatk-sv/IMG:TAG"
+```shell
+gcloud builds submit --tag australia-southeast1-docker.pkg.dev/PROJECT_ID/sv/IMG:TAG
 ```

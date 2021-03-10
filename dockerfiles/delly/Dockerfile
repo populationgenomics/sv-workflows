@@ -29,9 +29,13 @@ RUN apt-get update && apt-get install -y \
 # set environment
 ENV BOOST_ROOT /usr
 
-# install delly
+# install delly (specify version)
+ARG DELLY_VERSION="v0.8.7"
 RUN cd /opt \
-    && git clone --recursive https://github.com/dellytools/delly.git \
+    && git clone \
+      --recurse-submodules \
+      --branch $DELLY_VERSION \
+      https://github.com/dellytools/delly \
     && cd /opt/delly/ \
     && make STATIC=1 all \
     && make install
