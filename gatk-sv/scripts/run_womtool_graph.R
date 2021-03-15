@@ -11,10 +11,10 @@ wdl_files <-
       "Whamg.wdl", "Delly.wdl", "Manta.wdl", "MELT.wdl")) %>%
   dplyr::mutate(
     fullname = file.path(here("gatk-sv/scripts/wdl"), basename),
-    figure = file.path(here("gatk-sv/figures"), paste0(basename, ".graph.png")))
+    figure = file.path(here("gatk-sv/figures"), paste0(basename, ".graph.svg")))
 
 conda_env <- "/Users/peterd/conda/envs/wdl/bin"
 for (i in seq_len(nrow(wdl_files))) {
   system(glue::glue("{conda_env}/womtool graph {wdl_files$fullname[i]} | ",
-                    "dot -Tpng -o {wdl_files$figure[i]}"))
+                    "dot -Tsvg -o {wdl_files$figure[i]}"))
 }
