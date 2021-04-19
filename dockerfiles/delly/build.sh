@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
+# Build and upload to Google Cloud Container Registry
+
 TOOL="delly"
 VERSION="0.8.7"
-REPO="sv"
 PROJECT_ID=$(gcloud config get-value project)
-LOCATION="australia-southeast1"
-TAG="${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${TOOL}:${VERSION}"
+LOCATION="us"
+TAG="${LOCATION}.gcr.io/${PROJECT_ID}/${TOOL}:${VERSION}"
 
-# takes ~4min
+# Build time: 4min
 gcloud builds submit --tag "${TAG}"

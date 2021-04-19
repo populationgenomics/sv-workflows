@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
+# Build and upload to Google Cloud Container Registry
+
 TOOL="wham"
 VERSION="1.8.0"
-REPO="sv"
 PROJECT_ID=$(gcloud config get-value project)
-LOCATION="australia-southeast1"
-TAG="${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${TOOL}:${VERSION}"
+LOCATION="us"
+TAG="${LOCATION}.gcr.io/${PROJECT_ID}/${TOOL}:${VERSION}"
 
-# takes ~1min - needs local whamg binary to be uploaded (grabbed from GATK-SV)
+# Build time: 1min
+# Needs local whamg binary to be uploaded (grabbed from GATK-SV repo).
 gcloud builds submit --tag "${TAG}" .
-

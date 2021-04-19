@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
+# Build and upload to Google Cloud Container Registry
+
 TOOL="manta"
 VERSION="1.6.0"
-REPO="sv"
 PROJECT_ID=$(gcloud config get-value project)
-LOCATION="australia-southeast1"
-TAG="${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${TOOL}:${VERSION}"
+LOCATION="us"
+TAG="${LOCATION}.gcr.io/${PROJECT_ID}/${TOOL}:${VERSION}"
 
-# takes ~3min
+# Build time: 3min
 gcloud builds submit --tag "${TAG}"

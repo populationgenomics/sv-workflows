@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
+# Build and upload to Google Cloud Container Registry
+
 TOOL="melt"
 VERSION="2.2.2"
-REPO="sv"
 PROJECT_ID=$(gcloud config get-value project)
-LOCATION="australia-southeast1"
-TAG="${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${TOOL}:${VERSION}"
+LOCATION="us"
+TAG="${LOCATION}.gcr.io/${PROJECT_ID}/${TOOL}:${VERSION}"
 
-# takes ~2min - needs local MELT tarball to be uploaded
+# Build time: 2min
+# Needs local MELT tarball to be uploaded.
 gcloud builds submit --tag "${TAG}" .
