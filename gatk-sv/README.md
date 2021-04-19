@@ -7,10 +7,17 @@
     - [Sample QC](#sample-qc)
     - [Sample batching](#sample-batching)
     - [Execution of SV discovery algorithms](#execution-of-sv-discovery-algorithms)
+  - [Graphs](#graphs)
+    - [GATKSVPipelineSingleSample](#gatksvpipelinesinglesample)
     - [Module00a](#module00a)
+      - [CramToBam](#cramtobam)
+      - [Delly](#delly)
+      - [Manta](#manta)
+      - [Whamg](#whamg)
+      - [MELT](#melt)
     - [Module00b](#module00b)
     - [Module00c](#module00c)
-  - [Module01](#module01)
+    - [Module01](#module01)
 
 ## Module00 - Preprocessing
 
@@ -30,7 +37,8 @@ First collect required data & metadata, then perform the next steps.
 
 ### Sequencing dosage bias scoring
 
-- confounded copy number variation (CNV) calling due to highly non-uniform coverage
+- confounded copy number variation (CNV) calling due to highly non-uniform
+  coverage
 - antipodal between PCR- and PCR+ protocols
 - Whole-Genome Dosage (WGD) package controls for dosage bias:
   - theta metric summarises directionality and magnitude of bias per sample
@@ -39,19 +47,19 @@ First collect required data & metadata, then perform the next steps.
 
 - Median 100bp bin coverage
 - Dosage bias score theta: measurement of coverage uniformity with WGD.
-- Autosomal ploidy spread: difference between highest/lowest ploidies for any two
-  autosomes.
+- Autosomal ploidy spread: difference between highest/lowest ploidies for any
+  two autosomes.
 - Z-score of outlier 1Mb bins: median absolute Z-score of number of 1Mb bins per
   chromosome with normalised CN estimates < 1.5 or >2.5 Z-scores were calculated
   separately for PCR+ and PCR- samples.
 - Chimera rate: percentage of chimeric read pairs in total read pairs.
 - Pairwise alignment rate: percentage of read pairs where both reads aligned
   successfully.
-- Library contamination: max value of adapter contamination or estimated sample contamination
-  fraction.
+- Library contamination: max value of adapter contamination or estimated sample
+  contamination fraction.
 - Read length: mean read length
-- Ambiguous sex genotypes: normalised copy number estimated for chrX & chrY; ambiguous if
-  `X ~ (1.1, 1.9)` and `Y ~ (0.1, 0.9)`
+- Ambiguous sex genotypes: normalised copy number estimated for chrX & chrY;
+  ambiguous if `X ~ (1.1, 1.9)` and `Y ~ (0.1, 0.9)`
 - Discordant inferred & reported sex
 
 ### Sample batching
@@ -102,18 +110,52 @@ First collect required data & metadata, then perform the next steps.
 - Construct PE, SR, RD, and BAF matrices merged across all samples in each
   400-sample batch.
 
+## Graphs
+
+### GATKSVPipelineSingleSample
+
+![GATKSVPipelineSingleSample](figures/GATKSVPipelineSingleSample.wdl.graph.svg)
+
 ### Module00a
 
-![Module00a](figures/Module00a.wdl.graph.png)
+![Module00a](figures/Module00a.wdl.graph.svg)
+
+#### CramToBam
+
+![CramToBam](figures/CramToBam.wdl.graph.svg)
+
+#### Delly
+
+![Delly](figures/Delly.wdl.graph.svg)
+
+#### Manta
+
+![Manta](figures/Manta.wdl.graph.svg)
+
+#### Whamg
+
+![Whamg](figures/Whamg.wdl.graph.svg)
+
+#### MELT
+
+![MELT](figures/MELT.wdl.graph.svg)
+
+---
 
 ### Module00b
 
-![Module00b](figures/Module00b.wdl.graph.png)
+![Module00b](figures/Module00b.wdl.graph.svg)
+
+---
 
 ### Module00c
 
-![Module00c](figures/Module00c.wdl.graph.png)
+![Module00c](figures/Module00c.wdl.graph.svg)
 
-## Module01
+---
 
-![Module01](figures/Module01.wdl.graph.png)
+### Module01
+
+![Module01](figures/Module01.wdl.graph.svg)
+
+---
