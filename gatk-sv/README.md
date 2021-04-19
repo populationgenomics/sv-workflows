@@ -8,6 +8,7 @@
     - [Sample batching](#sample-batching)
     - [Execution of SV discovery algorithms](#execution-of-sv-discovery-algorithms)
   - [Graphs](#graphs)
+    - [GATKSVPipelineSingleSample](#gatksvpipelinesinglesample)
     - [Module00a](#module00a)
       - [CramToBam](#cramtobam)
       - [Delly](#delly)
@@ -110,6 +111,10 @@ First collect required data & metadata, then perform the next steps.
   400-sample batch.
 
 ## Graphs
+
+### GATKSVPipelineSingleSample
+
+![GATKSVPipelineSingleSample](figures/GATKSVPipelineSingleSample.wdl.graph.svg)
 
 ### Module00a
 
