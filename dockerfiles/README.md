@@ -50,7 +50,7 @@ gcloud artifacts docker images list \
 ## Copy Docker images across GCP
 
 - For other Docker images where Dockerfiles are out of sync with tagged
-  versions, we simply pull the tagged version and push to our own AR repo:
+  versions, we simply pull the tagged version and push to our own AR/GCR repo:
 
 ```shell
 docker pull $TAG
