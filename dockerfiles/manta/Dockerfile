@@ -39,7 +39,7 @@ COPY --from=samtools_builder /usr/local/bin/* /usr/local/bin/
 
 # install necessary packages while building, and tools necessary for running, then clean up; all in one layer
 # note that we explicitly run the demo/test-run distributed with the binary, then delete all demo results and data
-ARG MANTA_RELEASE=1.5.0
+ARG MANTA_RELEASE=1.6.0
 ARG MANTA_INSTALL_DIR=/usr/local/bin/manta/
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qqy update --fix-missing && \

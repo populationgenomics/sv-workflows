@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TOOL="manta"
-VERSION="1.5.0"
+VERSION="1.6.0"
 REPO="sv"
 PROJECT_ID=$(gcloud config get-value project)
 LOCATION="australia-southeast1"
