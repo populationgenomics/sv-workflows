@@ -1,6 +1,6 @@
 version 1.0
 
-import "../delly.wdl" as delly
+import "tasks/delly.wdl" as delly
 
 workflow RunGatherBCFs {
 

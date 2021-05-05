@@ -3,7 +3,6 @@ version 1.0
 import "structs.wdl"
 
 workflow Delly {
-
   input {
     File crbam
     File? crbami
@@ -12,22 +11,10 @@ workflow Delly {
     File? fastafai
     File blocklist
     Array[String]? sv_types
-    Int? read_pairs
     String docker_sv_mini_base
     String docker_delly
     RuntimeAttr? runtime_attr_delly
     RuntimeAttr? runtime_attr_gather
-  }
-
-  parameter_meta {
-    crbam: "Path to BAM/CRAM file (e.g. gs://path/to/sample.cram)."
-    crbami: "[optional] Index for crbam (default: '<crbam>.bai/.crai') (e.g. gs://path/to/sample.cram.crai)."
-    sample_id: "Sample name, used for output (e.g. FOO will give a VCF output FOO.delly.vcf.gz)"
-    fasta: "Path to FASTA file used to align BAM or CRAM file (e.g. gs://ref/hg38.fasta)."
-    fastafai: "[optional] The index for the FASTA file (default: '<reference_fasta>.fai') (e.g. gs://ref/hg38.fasta.fai)."
-    blocklist: "Path to TSV file containing regions where SVs should not be called (see Delly GitHub repo). Format: 'contig | start | end | interval-type' OR only 'contig'."
-    sv_types: "[optional] Array of SV event types for Delly to search for (default: ['DEL', 'DUP', 'INV'])."
-    read_pairs: "[optional] Value of READ_PAIRS obtained from Picard CollectInsertSizeMetrics, used for optimal estimate of VM memory needs."
   }
 
   Array[String] sv_types_array = select_first([sv_types, ["DEL", "DUP", "INV"]])
@@ -42,7 +29,6 @@ workflow Delly {
         fastafai = fastafai,
         blocklist = blocklist,
         sv_type = sv_type,
-        read_pairs = read_pairs,
         docker = docker_delly,
         runtime_attr_override = runtime_attr_delly
     }
@@ -71,9 +57,18 @@ task RunDelly {
     File? fastafai
     File blocklist
     String sv_type
-    Int? read_pairs
     String docker
     RuntimeAttr? runtime_attr_override
+  }
+
+  parameter_meta {
+    crbam: "Path to BAM/CRAM file (e.g. gs://path/to/sample.cram)."
+    crbami: "[optional] Index for crbam (default: '<crbam>.bai/.crai') (e.g. gs://path/to/sample.cram.crai)."
+    sample_id: "Sample name, used for output (e.g. FOO will give a VCF output FOO.delly.vcf.gz)"
+    fasta: "Path to FASTA file used to align BAM or CRAM file (e.g. gs://ref/hg38.fasta)."
+    fastafai: "[optional] The index for the FASTA file (default: '<reference_fasta>.fai') (e.g. gs://ref/hg38.fasta.fai)."
+    blocklist: "Path to TSV file containing regions where SVs should not be called (see Delly GitHub repo). Format: 'contig | start | end | interval-type' OR only 'contig'."
+    sv_type: "SV event type for Delly to search for (e.g. 'DEL', 'DUP', 'INV')."
   }
 
   Boolean is_bam = basename(crbam, ".bam") + ".bam" == basename(crbam)
@@ -90,23 +85,10 @@ task RunDelly {
   Float blocklist_size = size(blocklist, "GiB")
   Int vm_disk_size = ceil(crbam_size + crbam_index_size + ref_size + ref_index_size + blocklist_size + disk_overhead)
 
-  # ensure there's sufficient memory. These coefficients are obtained
-  # via linear regression to test data, assuming uncertainty in memory
-  # usage proportional to bam or cram size, and adding 3 standard
-  # deviations to best fit estimate of memory usage.
-  Float mem_per_bam_size = 0.03937
-  Float mem_bam_offset = 4.4239
-  Float mem_per_cram_size = 0.08579
-  Float mem_cram_offset = 4.8633
-  Float mem_per_read_pairs = "9.745e-9"
-  Float mem_read_pairs_offset = 1.947
-  Float mem_size_gb =
-      if defined(read_pairs) then
-          mem_read_pairs_offset + mem_per_read_pairs * select_first([read_pairs])
-      else if is_bam then
-          mem_per_bam_size * crbam_size + mem_bam_offset
-      else
-          mem_per_cram_size * crbam_size + mem_cram_offset
+  # ensure there's sufficient memory
+  Float mem_per_crbam_size = 0.09
+  Float mem_crbam_offset = 4.9
+  Float mem_size_gb = mem_per_crbam_size * crbam_size + mem_crbam_offset
 
   RuntimeAttr default_attr = object {
     cpu_cores: 1,
@@ -121,8 +103,8 @@ task RunDelly {
   output {
     File bcf = "${sample_id}.delly.${sv_type}.bcf"
   }
-  command <<<
 
+  command <<<
     set -Eeuo pipefail
 
     BCF="~{sample_id}.delly.~{sv_type}.bcf"
@@ -134,8 +116,8 @@ task RunDelly {
       -o "$BCF" \
       -n \
       "~{crbam}"
-
   >>>
+
   runtime {
     cpu: select_first([runtime_attr.cpu_cores, default_attr.cpu_cores])
     memory: select_first([runtime_attr.mem_gb, default_attr.mem_gb]) + " GiB"
@@ -145,7 +127,6 @@ task RunDelly {
     preemptible: select_first([runtime_attr.preemptible_tries, default_attr.preemptible_tries])
     maxRetries: select_first([runtime_attr.max_retries, default_attr.max_retries])
   }
-
 }
 
 task GatherBCFs {
@@ -154,6 +135,11 @@ task GatherBCFs {
     String sample_id
     String docker
     RuntimeAttr? runtime_attr_override
+  }
+
+  parameter_meta {
+    bcfs: "Array of BCF files output by Delly (one per SV event type)."
+    sample_id: "Sample name, used for output (e.g. FOO will give a VCF output FOO.vcf.gz)"
   }
 
   File first_bcf = bcfs[0]
