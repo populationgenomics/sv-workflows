@@ -10,6 +10,7 @@ RUN apt-get -qqy update --fix-missing && \
     apt-get -qqy dist-upgrade && \
     apt-get -qqy install --no-install-recommends \
                  bcftools \
+                 samtools \
                  bzip2 \
                  ca-certificates \
                  libbz2-dev \
