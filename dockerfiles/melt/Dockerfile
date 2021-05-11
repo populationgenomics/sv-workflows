@@ -39,7 +39,7 @@ RUN apt-get -qqy update --fix-missing && \
            /usr/share/man/?? \
            /usr/share/man/??_*
 
-# Add melt jar
+# Add melt jar - default 2.2.2
 ARG MELT_RELEASE=2.2.2
 ARG MELT_DIR="/MELT/"
 RUN mkdir -p ${MELT_DIR}

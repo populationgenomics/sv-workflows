@@ -6,7 +6,7 @@ set -euo pipefail
 
 REGISTRY="gcr.io/peter-dev-302805/sv"
 TOOL="melt"
-VERSION="2.2.2"
+VERSION="2.2.3"
 TAG="${REGISTRY}/${TOOL}:${VERSION}"
 TARBALL="MELTv${VERSION}.tar.gz"
 
@@ -16,5 +16,5 @@ if [[ ! -f  "$TARBALL" ]]; then
     gsutil cp gs://cpg-reference/sv/MELT/${TARBALL} .
 fi
 
-docker image build --tag "${TAG}" .
+docker image build --tag "${TAG}" --build-arg MELT_RELEASE="${VERSION}" .
 docker image push "${TAG}"
