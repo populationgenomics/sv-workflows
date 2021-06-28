@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Build MELT and upload to Google Container Registry
 
-REGISTRY="gcr.io/peter-dev-302805/sv"
+REGISTRY="gcr.io/cpg-common/sv"
 TOOL="melt"
 VERSION="2.2.3"
 TAG="${REGISTRY}/${TOOL}:${VERSION}"

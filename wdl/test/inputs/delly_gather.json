@@ -1,9 +1,0 @@
-{
-  "RunGatherBCFs.sample_id": "HGDP00029",
-  "RunGatherBCFs.docker": "gcr.io/peter-dev-302805/sv/sv-base-mini:rlc_posthoc_filtering_cnv_mcnv_compatability_9a8561",
-  "RunGatherBCFs.bcfs": [
-      "gs://cpg-peter-dev/test-data/delly/HGDP00029.delly.DEL.bcf",
-      "gs://cpg-peter-dev/test-data/delly/HGDP00029.delly.DUP.bcf",
-      "gs://cpg-peter-dev/test-data/delly/HGDP00029.delly.INV.bcf"
-  ]
-}
