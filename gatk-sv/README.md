@@ -12,7 +12,6 @@
     - [GATKSVPipelineSingleSample](#gatksvpipelinesinglesample)
     - [Module00a](#module00a)
       - [CramToBam](#cramtobam)
-      - [Delly](#delly)
       - [Manta](#manta)
       - [Whamg](#whamg)
       - [MELT](#melt)
@@ -145,10 +144,6 @@ python scripts/inputs/build_inputs.py \
 #### CramToBam
 
 ![CramToBam](figures/CramToBam.wdl.graph.svg)
-
-#### Delly
-
-![Delly](figures/Delly.wdl.graph.svg)
 
 #### Manta
 
