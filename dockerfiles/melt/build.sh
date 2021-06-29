@@ -6,7 +6,7 @@ set -euo pipefail
 
 REGISTRY="gcr.io/cpg-common/sv"
 TOOL="melt"
-VERSION="2.2.3"
+VERSION="2.2.2"
 TAG="${REGISTRY}/${TOOL}:${VERSION}"
 TARBALL="MELTv${VERSION}.tar.gz"
 
