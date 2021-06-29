@@ -7,6 +7,7 @@
     - [Sample QC](#sample-qc)
     - [Sample batching](#sample-batching)
     - [Execution of SV discovery algorithms](#execution-of-sv-discovery-algorithms)
+  - [Workflow Inputs](#workflow-inputs)
   - [Graphs](#graphs)
     - [GATKSVPipelineSingleSample](#gatksvpipelinesinglesample)
     - [Module00a](#module00a)
@@ -109,6 +110,27 @@ First collect required data & metadata, then perform the next steps.
   - BAF: `vcf2baf` on GATK HaplotypeCaller VCFs
 - Construct PE, SR, RD, and BAF matrices merged across all samples in each
   400-sample batch.
+
+## Workflow Inputs
+
+Cromwell requires a JSON file that points to workflow inputs. This can be
+generated manually with `womtool inputs GATKSVPipelineSingleSample.wdl`.
+
+Alternatively, GATK-SV provides a handy utility script in
+`gatk-sv/scripts/inputs/build_inputs.py` script, which is invoked with
+`gatk-sv/scripts/inputs/build_default_inputs.sh`. See PRs
+[67](https://github.com/broadinstitute/gatk-sv/pull/84) and
+[84](https://github.com/broadinstitute/gatk-sv/pull/84) for context. For
+example, to generate inputs for a single sample workflow using NA12878:
+
+```bash
+cd /path/to/gatk-sv-repo
+python scripts/inputs/build_inputs.py \
+  $(PWD)/input_values \
+  $(PWD)/input_templates \
+  $(PWD)/inputs \
+  -a '{ "single_sample" : "test_single_sample_NA12878", "ref_panel" : "ref_panel_1kg_v2"}'
+```
 
 ## Graphs
 
