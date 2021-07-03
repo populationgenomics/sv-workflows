@@ -26,18 +26,6 @@ workflow Whamg {
     RuntimeAttr? runtime_attr_cram_to_bam
     RuntimeAttr? runtime_attr_wham
   }
-    
-  parameter_meta {
-    bam_or_cram_file: ".bam or .cram file to search for SVs. bams are preferable, crams will be converted to bams."
-    bam_or_cram_index: "[optional] associated index file. If omitted, the WDL will look for an index file by appending .bai/.crai to the .bam/.cram file"
-    sample_id: "sample name. Outputs will be sample_name + '.vcf.gz' and sample_name + '.vcf.gz.tbi'"
-    reference_fasta: ".fasta file with reference used to align bam or cram file"
-    reference_index: "[optional] reference index file. If omitted, the WDL will look for an index by appending .fai to the .fasta file"
-    chr_file: "text file with newline-separated list of contigs that whamg will use to estimate template size. Typically you will want only primary contigs."
-    include_bed_file: "[optional] bed file with intervals where whamg should make calls. If omitted, whamg will run on whole genome."
-    pf_reads_improper_pairs: "[optional] Value of PF_READS_IMPROPER_PAIRS obtained from CollectAlignmentSummaryMetrics, used for optimal estimate of VM memory needs."
-    pct_exc_total: "[optional] Value of PCT_EXC_TOTAL obtained from CollectWgsMetrics, used for optimal estimate of VM memory needs."
-  }
 
   if (basename(bam_or_cram_file, ".bam") + ".bam" != basename(bam_or_cram_file)) {
     call ctb.RunCramToBam as RunCramToBam {
