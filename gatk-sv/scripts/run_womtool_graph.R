@@ -9,9 +9,11 @@ womtool <- glue("{Sys.getenv('CONDA_PREFIX')}/envs/{conda_env}/bin/womtool")
 wdl_files <-
   tibble(
     basename = c(
-      "Module00a.wdl", "Module00b.wdl", "Module00c.wdl", "Module01.wdl",
-      "CramToBam.wdl", "PESRCollection.wdl",
-      "Whamg.wdl", "Manta.wdl", "CNMOPS.wdl")) %>%
+      "Module00a.wdl",
+      "CollectCoverage.wdl", "PESRCollection.wdl", "CramToBam.wdl",
+      "Whamg.wdl", "Manta.wdl", "Delly.wdl",
+      "Module00b.wdl", "Module00c.wdl", "Module01.wdl",
+      "CNMOPS.wdl")) %>%
   mutate(
     fullname = glue("{here('gatk-sv/gatk-sv-git/wdl')}/{basename}"),
     figure = glue("{here('gatk-sv/figures')}/{basename}.graph.svg"))

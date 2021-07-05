@@ -15,6 +15,7 @@
       - [Manta](#manta)
       - [Whamg](#whamg)
       - [MELT](#melt)
+      - [Delly](#delly)
     - [Module00b](#module00b)
     - [Module00c](#module00c)
     - [Module01](#module01)
@@ -156,6 +157,10 @@ python scripts/inputs/build_inputs.py \
 #### MELT
 
 ![MELT](figures/MELT.wdl.graph.svg)
+
+#### Delly
+
+![Delly](figures/Delly.wdl.graph.svg)
 
 ---
 
