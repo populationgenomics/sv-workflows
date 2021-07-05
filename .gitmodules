@@ -1,3 +1,0 @@
-[submodule "gatk-sv/gatk-sv-git"]
-	path = gatk-sv/gatk-sv-git
-	url = https://github.com/broadinstitute/gatk-sv
