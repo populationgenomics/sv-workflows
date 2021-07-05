@@ -2,6 +2,6 @@
   "PESRCollection.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
   "PESRCollection.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
   "PESRCollection.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
-  "PESRCollection.gatk_docker": "us.gcr.io/broad-gatk/gatk:4.2.0.0"
+  "PESRCollection.gatk_docker": "us.gcr.io/broad-gatk/gatk:4.1.8.1"
 }
 
