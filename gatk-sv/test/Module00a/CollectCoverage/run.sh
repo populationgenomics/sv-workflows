@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Runs CollectCoverage workflow using analysis-runner
+
 curl --location \
     --request POST 'https://server-a2pko7ameq-ts.a.run.app/cromwell' \
     --header "Authorization: Bearer $(gcloud auth print-identity-token)" \
