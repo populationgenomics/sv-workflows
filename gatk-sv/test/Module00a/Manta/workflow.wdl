@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15-beta/wdl/Structs.wdl"
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15-beta/wdl/Manta.wdl" as manta
+import "../../../gatk-sv-git/wdl/Structs.wdl"
+import "../../../gatk-sv-git/wdl/Manta.wdl" as manta
 
 workflow Manta {
   input {

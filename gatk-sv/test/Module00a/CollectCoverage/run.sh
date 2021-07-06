@@ -17,7 +17,7 @@ curl --location \
         },
         "input_json_paths": ["inputs_general.json"],
         "workflow": "workflow.wdl",
-        "dependencies": [],
+        "dependencies": ["../../../gatk-sv-git/wdl"],
         "cwd": "gatk-sv/test/Module00a/CollectCoverage",
         "description": "CollectCoverage on NA12878"
     }'

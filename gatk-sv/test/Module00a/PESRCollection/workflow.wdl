@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15-beta/wdl/Structs.wdl"
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15-beta/wdl/PESRCollection.wdl" as PESRC
+import "../../../gatk-sv-git/wdl/Structs.wdl"
+import "../../../gatk-sv-git/wdl/PESRCollection.wdl" as PESRC
 
 # Workflow to run PE/SR collection on a single sample
 workflow PESRCollection {
