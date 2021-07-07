@@ -1,0 +1,7 @@
+{
+  "CollectCoverage.preprocessed_intervals": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/preprocessed_intervals.interval_list",
+  "CollectCoverage.gatk_docker": "us.gcr.io/broad-gatk/gatk:4.1.8.1",
+  "CollectCoverage.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "CollectCoverage.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "CollectCoverage.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict"
+}

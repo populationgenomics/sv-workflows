@@ -1,0 +1,6 @@
+{
+  "Manta.region_bed": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs_plus_mito.bed.gz",
+  "Manta.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "Manta.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "Manta.manta_docker": "us.gcr.io/broad-dsde-methods/manta:8645aa"
+}

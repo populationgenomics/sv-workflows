@@ -12,10 +12,10 @@
     - [GATKSVPipelineSingleSample](#gatksvpipelinesinglesample)
     - [Module00a](#module00a)
       - [CramToBam](#cramtobam)
-      - [Delly](#delly)
       - [Manta](#manta)
       - [Whamg](#whamg)
       - [MELT](#melt)
+      - [Delly](#delly)
     - [Module00b](#module00b)
     - [Module00c](#module00c)
     - [Module01](#module01)
@@ -146,10 +146,6 @@ python scripts/inputs/build_inputs.py \
 
 ![CramToBam](figures/CramToBam.wdl.graph.svg)
 
-#### Delly
-
-![Delly](figures/Delly.wdl.graph.svg)
-
 #### Manta
 
 ![Manta](figures/Manta.wdl.graph.svg)
@@ -161,6 +157,10 @@ python scripts/inputs/build_inputs.py \
 #### MELT
 
 ![MELT](figures/MELT.wdl.graph.svg)
+
+#### Delly
+
+![Delly](figures/Delly.wdl.graph.svg)
 
 ---
 
