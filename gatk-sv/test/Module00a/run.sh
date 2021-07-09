@@ -7,7 +7,7 @@ curl --location \
     --header "Authorization: Bearer $(gcloud auth print-identity-token)" \
     --header 'Content-Type: application/json' \
     --data-raw '{
-        "output": "pdiakumis/analysis-runner-test/Module00a",
+        "output": "pdiakumis/test1/Module00a",
         "dataset": "fewgenomes",
         "repo": "sv-workflows",
         "accessLevel": "test",
