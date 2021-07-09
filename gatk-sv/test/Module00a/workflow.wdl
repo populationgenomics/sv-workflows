@@ -1,11 +1,11 @@
 version 1.0
 
-import "../../gatk-sv-git/wdl/CollectCoverage.wdl" as cov
-import "../../gatk-sv-git/wdl/CramToBam.wdl" as ctb
-import "../../gatk-sv-git/wdl/Delly.wdl" as delly
-import "../../gatk-sv-git/wdl/Manta.wdl" as manta
-import "../../gatk-sv-git/wdl/PESRCollection.wdl" as pesr
-import "../../gatk-sv-git/wdl/Whamg.wdl" as wham
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/CollectCoverage.wdl" as cov
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/CramToBam.wdl" as ctb
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/Delly.wdl" as delly
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/Manta.wdl" as manta
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/PESRCollection.wdl" as pesr
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/Whamg.wdl" as wham
 
 workflow Module00a {
   input {
