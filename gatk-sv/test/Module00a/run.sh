@@ -11,15 +11,15 @@ curl --location \
         "dataset": "fewgenomes",
         "repo": "sv-workflows",
         "accessLevel": "test",
-        "commit": "2f210a38461ac1cf038f33da881732cc6387d866",
+        "commit": "141ce634a3e55f6f8b6b1f24a72b208c35e9ab7d",
         "inputs_dict": {
             "Module00a.bam_or_cram_file": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam",
             "Module00a.bam_or_cram_index": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam.bai",
-            "Module00a.sample_id": "NA12878_nygc"
+            "Module00a.sample_id": "NA12878_test1"
         },
         "input_json_paths": ["inputs_general.json"],
         "workflow": "workflow.wdl",
-        "dependencies": ["../../gatk-sv-git/wdl"],
+        "dependencies": [],
         "cwd": "gatk-sv/test/Module00a",
         "description": "Module00a on NA12878"
     }'
