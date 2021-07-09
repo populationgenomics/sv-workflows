@@ -1,8 +1,8 @@
 version 1.0
 
-import "../../gatk-sv-git/wdl/Whamg.wdl" as wham
-import "../../gatk-sv-git/wdl/Structs.wdl"
-import "../../gatk-sv-git/wdl/CramToBam.wdl" as ctb
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/Structs.wdl"
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/Whamg.wdl" as wham
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/CramToBam.wdl" as ctb
 
 # Run Whamg SV detection algorithm on whole genome in bam or cram
 #   file, or if include_list is provided, run whamg on explicitly included

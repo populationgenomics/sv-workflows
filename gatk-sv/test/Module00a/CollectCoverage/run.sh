@@ -7,19 +7,19 @@ curl --location \
     --header "Authorization: Bearer $(gcloud auth print-identity-token)" \
     --header 'Content-Type: application/json' \
     --data-raw '{
-        "output": "pdiakumis/analysis-runner-test/collectCoverage",
+        "output": "pdiakumis/test1/collectCoverage",
         "dataset": "fewgenomes",
         "repo": "sv-workflows",
         "accessLevel": "test",
-        "commit": "caffefcf779ce85d4c6d1d20655a59d69510a9d6",
+        "commit": "141ce634a3e55f6f8b6b1f24a72b208c35e9ab7d",
         "inputs_dict": {
-          "CollectCoverage.sample_id": "NA12878_nygc",
+          "CollectCoverage.sample_id": "NA12878_test1",
           "CollectCoverage.bam_or_cram_file": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam",
           "CollectCoverage.bam_or_cram_index": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam.bai"
         },
         "input_json_paths": ["inputs_general.json"],
         "workflow": "workflow.wdl",
-        "dependencies": ["../../../gatk-sv-git/wdl"],
+        "dependencies": [],
         "cwd": "gatk-sv/test/Module00a/CollectCoverage",
         "description": "CollectCoverage on NA12878"
     }'
