@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/Structs.wdl"
-import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.14-beta/wdl/CollectCoverage.wdl" as cov
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/Structs.wdl"
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/CollectCoverage.wdl" as cov
 
 workflow CollectCoverage {
   input {
