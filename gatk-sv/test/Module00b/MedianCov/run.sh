@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Runs MakeBincovMatrix workflow using analysis-runner
+# Runs MedianCov workflow using analysis-runner
 
 curl --location \
     --request POST 'https://server-a2pko7ameq-ts.a.run.app/cromwell' \
@@ -11,7 +11,7 @@ curl --location \
         "dataset": "fewgenomes",
         "repo": "sv-workflows",
         "accessLevel": "test",
-        "commit": "8f9b97a4c8a88b75d655cefb421e4ffb2ee9ff2b",
+        "commit": "fcb3ad57515df466552a28c15acd9b6755406cd0",
         "inputs_dict": {
           "MedianCov.cohort_id": "test_NA12878"
         },
