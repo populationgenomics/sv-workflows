@@ -1,11 +1,11 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/Structs.wdl"
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/MakeBincovMatrix.wdl" as mbm
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/PloidyEstimation.wdl" as pe
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/RawVcfQC.wdl" as vcfqc
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/WGD.wdl" as wgd
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/MedianCov.wdl" as mc
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/Structs.wdl"
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/MakeBincovMatrix.wdl" as mbm
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/PloidyEstimation.wdl" as pe
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/RawVcfQC.wdl" as vcfqc
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/WGD.wdl" as wgd
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/MedianCov.wdl" as mc
 
 # Runs single sample tasks on collected evidence:
 #   - Ploidy determination

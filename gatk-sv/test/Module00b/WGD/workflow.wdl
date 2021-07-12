@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/Structs.wdl"
-import "https://raw.githubusercontent.com/broadinstitute/gatk-sv/v0.15.1-beta/wdl/WGD.wdl" as wgd
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/Structs.wdl"
+import "https://raw.githubusercontent.com/populationgenomics/gatk-sv/v0.15.1-beta/wdl/WGD.wdl" as wgd
 
 workflow WGD {
   input {
