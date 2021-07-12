@@ -1,0 +1,5 @@
+{
+  "WGD.wgd_scoring_mask": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/wgd_scoring_mask.hg38.gnomad_v3.bed",
+  "WGD.sv_pipeline_qc_docker": "us.gcr.io/broad-dsde-methods/markw/sv-pipeline-qc:mw-xz-fixes-7cbffee"
+}
+
