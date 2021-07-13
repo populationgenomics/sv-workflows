@@ -34,7 +34,7 @@ workflow GATKSVPipelineSingleSample {
 
     # Define raw callers to use
     # Overrides presence of case_*_vcf parameters below
-    Boolean use_delly = true
+    Boolean use_delly = false
     Boolean use_manta = true
     Boolean use_melt = false
     Boolean use_wham = true

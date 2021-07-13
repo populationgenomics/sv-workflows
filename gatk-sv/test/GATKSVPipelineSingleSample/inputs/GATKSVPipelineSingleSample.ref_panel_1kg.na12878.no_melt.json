@@ -3,7 +3,6 @@
   "GATKSVPipelineSingleSample.batch" : "test_NA12878",
   "GATKSVPipelineSingleSample.bam_or_cram_file" : "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam",
   "GATKSVPipelineSingleSample.requester_pays_cram": true,
-  "GATKSVPipelineSingleSample.case_delly_vcf": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/gatk-sv/Delly/NA12878.delly.vcf.gz",
   "GATKSVPipelineSingleSample.case_manta_vcf": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/gatk-sv/Manta/NA12878.manta.vcf.gz",
   "GATKSVPipelineSingleSample.case_wham_vcf": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/gatk-sv/Whamg/NA12878.wham.vcf.gz",
   "GATKSVPipelineSingleSample.case_counts_file": "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/gatk-sv/CollectCounts/NA12878.counts.tsv.gz",
