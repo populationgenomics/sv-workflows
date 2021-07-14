@@ -11,7 +11,7 @@ curl --location \
         "dataset": "fewgenomes",
         "repo": "sv-workflows",
         "accessLevel": "test",
-        "commit": "d27963f0a31d9789173793eb41eac780ec49810b",
+        "commit": "9fb01edc3bf6dfb234fc522f61ccf9167d3a2f9a",
         "input_json_paths": ["inputs/GATKSVPipelineSingleSample.ref_panel_1kg.na12878.no_melt.json"],
         "workflow": "GATKSVPipelineSingleSample.wdl",
         "dependencies": ["gatk-sv-git/wdl"],
