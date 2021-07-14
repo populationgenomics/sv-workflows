@@ -12,7 +12,12 @@ curl --location \
         "repo": "sv-workflows",
         "accessLevel": "test",
         "commit": "9fb01edc3bf6dfb234fc522f61ccf9167d3a2f9a",
-        "input_json_paths": ["inputs/GATKSVPipelineSingleSample.ref_panel_1kg.na12878.no_melt.json"],
+        "inputs_dict": {
+          "GATKSVPipelineSingleSample.sample_id" : "NA12878",
+          "GATKSVPipelineSingleSample.batch" : "test_NA12878",
+          "GATKSVPipelineSingleSample.bam_or_cram_file" : "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam"
+        },
+        "input_json_paths": ["inputs/general.json"],
         "workflow": "GATKSVPipelineSingleSample.wdl",
         "dependencies": ["gatk-sv-git/wdl"],
         "cwd": "gatk-sv/test/GATKSVPipelineSingleSample",
