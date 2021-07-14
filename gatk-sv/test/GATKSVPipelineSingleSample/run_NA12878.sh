@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Runs Module00b workflow using analysis-runner
+# Runs GATK-SV SingleSample Pipeline using analysis-runner
 
 curl --location \
     --request POST 'https://server-a2pko7ameq-ts.a.run.app/cromwell' \
