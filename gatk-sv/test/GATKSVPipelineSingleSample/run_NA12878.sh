@@ -16,9 +16,10 @@ curl --location \
           "GATKSVPipelineSingleSample.sample_id" : "NA12878",
           "GATKSVPipelineSingleSample.batch" : "test_NA12878",
           "GATKSVPipelineSingleSample.bam_or_cram_file" : "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam"
+          "GATKSVPipelineSingleSample.use_melt" : "false"
         },
         "input_json_paths": ["inputs/general.json"],
-        "workflow": "GATKSVPipelineSingleSample.wdl",
+        "workflow": "gatk-sv-git/wdl/GATKSVPipelineSingleSample.wdl",
         "dependencies": ["gatk-sv-git/wdl"],
         "cwd": "gatk-sv/test/GATKSVPipelineSingleSample",
         "description": "Single sample pipeline on NA12878"
