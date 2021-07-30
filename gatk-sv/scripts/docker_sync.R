@@ -9,11 +9,13 @@ gatk_sv_json <-
   glue("{gatk_sv$repo}/{gatk_sv$tag}/input_values/dockers.json") |>
   read_json()
 
+# AR repo to hold the images
 au_ar <- list(loc = "australia-southeast1",
               proj = "fewgenomes",
               repo = "sv")
 au_artifact_registry <- glue("{au_ar$loc}-docker.pkg.dev/{au_ar$proj}/{au_ar$repo}")
 
+# dataframe linking US GCR image to AU AR copy
 d <- gatk_sv_json |>
   enframe(name = "image_name", value = "us_gcr") |>
   unnest(us_gcr) |>
@@ -22,8 +24,8 @@ d <- gatk_sv_json |>
          au_ar = glue("{au_artifact_registry}/{bname}")) |>
   select(-bname)
 
-# for (i in seq_len(nrow(d))) {
-for (i in c(9, 10, 11, 12, 13, 14, 15)) {
+# pull from US and push to AU
+for (i in seq_len(d)) {
   cat(glue("pulling {d$us_gcr[i]}"), "\n")
   system(glue("docker pull {d$us_gcr[i]}"))
   system(glue("docker tag {d$us_gcr[i]} {d$au_ar[i]}"))
