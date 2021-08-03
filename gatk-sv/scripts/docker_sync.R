@@ -27,7 +27,7 @@ d <- gatk_sv_json %>%
   select(-bname)
 
 # pull from US and push to AU
-for (i in seq_len(d)) {
+for (i in seq_len(nrow(d))) {
   cat(glue("pulling {d$us_gcr[i]}"), "\n")
   system(glue("docker pull {d$us_gcr[i]}"))
   system(glue("docker tag {d$us_gcr[i]} {d$au_ar[i]}"))
