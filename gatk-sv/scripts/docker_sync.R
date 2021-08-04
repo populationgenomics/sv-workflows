@@ -3,7 +3,9 @@
 # skopeo required for copying images
 system("micromamba install -y --prefix $MAMBA_ROOT_PREFIX -y -c conda-forge skopeo")
 
-require(tidyverse)
+require(dplyr)
+require(tidyr)
+require(tibble)
 require(jsonlite, include.only = "read_json")
 require(glue, include.only = "glue")
 
@@ -29,6 +31,7 @@ d <- gatk_sv_json %>%
   select(us_gcr, bname)
 
 # copy to AU AR
+system("gcloud auth configure-docker australia-southeast1-docker.pkg.dev")
 for (i in seq_len(nrow(d))) {
   system(glue("skopeo copy docker://{d$us_gcr[i]} docker://{au_artifact_registry}/{d$bname[i]}"))
 }
