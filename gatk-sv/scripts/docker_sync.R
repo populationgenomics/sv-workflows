@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# skopeo required for copying images
+system("micromamba install -y --prefix $MAMBA_ROOT_PREFIX -y -c conda-forge skopeo")
+
 require(tidyverse)
 require(jsonlite, include.only = "read_json")
 require(glue, include.only = "glue")
@@ -26,12 +29,6 @@ d <- gatk_sv_json %>%
   select(us_gcr, bname)
 
 # copy to AU AR
-DOCKERFILE <- "Dockerfile"
 for (i in seq_len(nrow(d))) {
-  if (file.exists(DOCKERFILE)) {
-    file.remove(DOCKERFILE)
-  }
-  write_lines(glue("FROM {d$us_gcr[i]}"), file = DOCKERFILE)
-  system(glue("gcloud builds submit --tag {au_artifact_registry}/{d$bname[i]} ."))
-  file.remove(DOCKERFILE)
+  system(glue("skopeo copy docker://{d$us_gcr[i]} docker://{au_artifact_registry}/{d$bname[i]}"))
 }
