@@ -26,7 +26,7 @@
   "GATKSVPipelineSingleSample.gatk_docker_pesr_override" : "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
   "GATKSVPipelineSingleSample.genomes_in_the_cloud_docker" : "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/genomes-in-the-cloud:2.3.2-1510681135",
 
-  "GATKSVPipelineSingleSample.linux_docker" : "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/ubuntu1804",
+  "GATKSVPipelineSingleSample.linux_docker" : "australia-southeast1-docker.pkg.dev/cpg-common/images/ubuntu1804",
   "GATKSVPipelineSingleSample.manta_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/manta:8645aa",
   "GATKSVPipelineSingleSample.sv_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base:lint-24b9cda",
   "GATKSVPipelineSingleSample.sv_pipeline_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-base:lint-24b9cda",
