@@ -21,6 +21,7 @@ workflow ExpansionHunter {
         File? reference_fasta_index
         File variant_catalog
         String sex
+        String output_prefix
         String docker_file
         RuntimeAttr? runtime_attr
     }
@@ -44,6 +45,7 @@ workflow ExpansionHunter {
             reference_fasta_index = reference_fasta_index_,
             variant_catalog = variant_catalog,
             sex = sex,
+            output_prefix = output_prefix,
             docker_file = docker_file,
             runtime_attr_override = runtime_attr,
     }
@@ -64,10 +66,10 @@ task RunExpansionHunter {
         File variant_catalog
         String sex
         String docker_file
+        String output_prefix
         RuntimeAttr? runtime_attr_override
     }
 
-    String output_prefix = "output"
 
     output {
         File json = "${output_prefix}.json"
