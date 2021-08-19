@@ -88,7 +88,7 @@ task RunExpansionHunter {
 
     RuntimeAttr runtime_attr_str_profile_default = object {
         cpu_cores: 1,
-        mem_gb: 16,
+        mem_gb: 32,
         boot_disk_gb: 10,
         preemptible_tries: 3,
         max_retries: 1,
