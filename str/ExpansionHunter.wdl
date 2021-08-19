@@ -20,6 +20,7 @@ workflow ExpansionHunter {
         File reference_fasta
         File? reference_fasta_index
         File variant_catalog
+        String sex
         String docker_file
         RuntimeAttr? runtime_attr
     }
@@ -42,6 +43,7 @@ workflow ExpansionHunter {
             reference_fasta = reference_fasta,
             reference_fasta_index = reference_fasta_index_,
             variant_catalog = variant_catalog,
+            sex = sex,
             docker_file = docker_file,
             runtime_attr_override = runtime_attr,
     }
@@ -60,6 +62,7 @@ task RunExpansionHunter {
         File reference_fasta
         File reference_fasta_index
         File variant_catalog
+        String sex
         String docker_file
         RuntimeAttr? runtime_attr_override
     }
@@ -79,7 +82,8 @@ task RunExpansionHunter {
             --reads ~{bam_or_cram} \
             --reference ~{reference_fasta} \
             --variant-catalog ~{variant_catalog} \
-            --output-prefix ~{output_prefix}
+            --output-prefix ~{output_prefix} \
+            --sex ~{sex}
     >>>
 
     RuntimeAttr runtime_attr_str_profile_default = object {
