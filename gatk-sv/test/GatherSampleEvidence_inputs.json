@@ -7,16 +7,17 @@
   "GatherSampleEvidence.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
   "GatherSampleEvidence.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
   "GatherSampleEvidence.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
-  "GatherSampleEvidence.wham_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/wham:8645aa",
-  "GatherSampleEvidence.sv_base_mini_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base-mini:lint-24b9cda",
-  "GatherSampleEvidence.manta_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/manta:8645aa",
+  "GatherSampleEvidence.gatk_docker_pesr_override": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
+  "GatherSampleEvidence.primary_contigs_fai": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/contig.fai",
+
+  "GatherSampleEvidence.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
   "GatherSampleEvidence.delly_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/delly:8645aa",
   "GatherSampleEvidence.gatk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
-  "GatherSampleEvidence.samtools_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/samtools-cloud:mw-gnomad-02-6a66c96",
-  "GatherSampleEvidence.sv_pipeline_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline:mw-missing-baf-f14df3b",
-  "GatherSampleEvidence.sv_pipeline_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-base:lint-24b9cda",
   "GatherSampleEvidence.genomes_in_the_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/genomes-in-the-cloud:2.3.2-1510681135",
-  "GatherSampleEvidence.gatk_docker_pesr_override": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
-  "GatherSampleEvidence.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
-  "GatherSampleEvidence.primary_contigs_fai": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/contig.fai"
+  "GatherSampleEvidence.manta_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/manta:8645aa",
+  "GatherSampleEvidence.samtools_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/samtools-cloud:mw-gnomad-02-6a66c96",
+  "GatherSampleEvidence.sv_base_mini_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base-mini:lint-24b9cda",
+  "GatherSampleEvidence.sv_pipeline_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-base:lint-24b9cda",
+  "GatherSampleEvidence.sv_pipeline_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline:mw-missing-baf-f14df3b",
+  "GatherSampleEvidence.wham_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/wham:8645aa"
 }
