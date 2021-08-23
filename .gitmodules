@@ -1,3 +1,3 @@
 [submodule "gatk-sv/test/GATKSVPipelineSingleSample/gatk-sv-git"]
-	path = gatk-sv/test/GATKSVPipelineSingleSample/gatk-sv-git
+	path = gatk-sv/test/gatk-sv-git
 	url = https://github.com/populationgenomics/gatk-sv
