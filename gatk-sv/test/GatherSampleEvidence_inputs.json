@@ -17,5 +17,6 @@
   "GatherSampleEvidence.sv_pipeline_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-base:lint-24b9cda",
   "GatherSampleEvidence.genomes_in_the_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/genomes-in-the-cloud:2.3.2-1510681135",
   "GatherSampleEvidence.gatk_docker_pesr_override": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
-  "GatherSampleEvidence.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk"
+  "GatherSampleEvidence.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
+  "GatherSampleEvidence.primary_contigs_fai": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/contig.fai"
 }
