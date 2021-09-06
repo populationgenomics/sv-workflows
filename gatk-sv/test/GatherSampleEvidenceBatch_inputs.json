@@ -4,7 +4,6 @@
   "GatherSampleEvidenceBatch.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
 
   "GatherSampleEvidenceBatch.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
-  "GatherSampleEvidenceBatch.delly_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/delly:8645aa",
   "GatherSampleEvidenceBatch.gatk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
   "GatherSampleEvidenceBatch.gatk_docker_pesr_override": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
   "GatherSampleEvidenceBatch.genomes_in_the_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/genomes-in-the-cloud:2.3.2-1510681135",
