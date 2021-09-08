@@ -4,4 +4,4 @@ set -ex
 
 micromamba install -y --prefix $MAMBA_ROOT_PREFIX -y -c conda-forge skopeo
 
-skopeo copy docker://docker.io/library/alpine:3.12 docker://australia-southeast1-docker.pkg.dev/cpg-common/images/sv/alpine:foo
+skopeo copy docker://australia-southeast1-docker.pkg.dev/peter-dev-302805/test/melt:2.2.2 docker://australia-southeast1-docker.pkg.dev/cpg-common/images/sv/melt:2.2.2
