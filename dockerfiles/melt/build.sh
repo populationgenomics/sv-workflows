@@ -2,13 +2,15 @@
 
 set -euo pipefail
 
-# Build MELT and upload to Google Container Registry
+# Build MELT and upload to Google Artifact Registry
 
-REGISTRY="gcr.io/cpg-common/sv"
+LOCATION="australia-southeast1"
+PROJECT="peter-dev-302805"
 TOOL="melt"
 VERSION="2.2.2"
-TAG="${REGISTRY}/${TOOL}:${VERSION}"
 TARBALL="MELTv${VERSION}.tar.gz"
+REPO="test"
+TAG="${LOCATION}-docker.pkg.dev/${PROJECT}/${REPO}/${TOOL}:${VERSION}"
 
 # Needs local MELT tarball
 if [[ ! -f  "$TARBALL" ]]; then
