@@ -11,7 +11,7 @@ require(glue, include.only = "glue")
 
 # read json with docker images
 gatk_sv <- list(repo = "https://raw.githubusercontent.com/populationgenomics/gatk-sv",
-                tag = "v0.16-beta")
+                tag = "v0.18-beta")
 gatk_sv_json <-
   glue("{gatk_sv$repo}/{gatk_sv$tag}/input_values/dockers.json") %>%
   read_json()
@@ -26,9 +26,10 @@ au_artifact_registry <- glue("{au_ar$loc}-docker.pkg.dev/{au_ar$proj}/{au_ar$rep
 d <- gatk_sv_json %>%
   enframe(name = "image_name", value = "us_gcr") %>%
   unnest(us_gcr) %>%
-  filter(!image_name %in% c("name", "melt_docker")) %>%
+  filter(!image_name %in% c("name", "melt_docker", "cloud_sdk_docker", "linux_docker")) %>%
   mutate(bname = basename(us_gcr)) %>%
-  select(us_gcr, bname)
+  select(us_gcr, bname) |>
+  distinct()
 
 # copy to AU AR
 system("gcloud auth configure-docker australia-southeast1-docker.pkg.dev")
