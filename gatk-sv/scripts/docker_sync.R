@@ -28,7 +28,7 @@ d <- gatk_sv_json %>%
   unnest(us_gcr) %>%
   filter(!image_name %in% c("name", "melt_docker", "cloud_sdk_docker", "linux_docker")) %>%
   mutate(bname = basename(us_gcr)) %>%
-  select(us_gcr, bname) |>
+  select(us_gcr, bname) %>%
   distinct()
 
 # copy to AU AR
