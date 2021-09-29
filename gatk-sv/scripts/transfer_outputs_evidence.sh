@@ -1,98 +1,97 @@
 #!/usr/bin/env bash
 
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10017/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10017/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10025/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10025/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10033/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10033/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10041/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10041/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10058/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10058/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10066/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10066/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10074/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10074/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10082/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10082/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10090/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10090/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10108/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10108/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10116/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10116/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10124/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10124/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10132/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10132/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10140/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10140/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10157/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10157/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10181/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10181/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10199/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10199/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10280/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10280/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10330/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10330/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10348/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10348/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10355/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10355/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10397/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10397/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10405/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10405/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10462/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10462/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10470/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10470/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10488/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10488/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10496/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10496/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10512/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10512/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10520/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10520/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10538/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10538/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10546/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10546/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10553/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10553/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10561/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10561/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10587/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10587/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10603/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10603/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10645/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10645/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10652/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10652/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10686/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10686/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10702/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10702/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10728/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10728/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10736/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10736/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10744/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10744/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10769/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10769/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10785/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10785/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10819/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10819/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10884/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10884/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10900/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10900/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10926/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10926/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10934/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10934/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10959/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10959/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10967/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10967/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10975/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10975/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10983/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10983/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG10991/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10991/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11007/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11007/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11015/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11015/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11023/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11023/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11049/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11049/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11072/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11072/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11080/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11080/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11098/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11098/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11106/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11106/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11114/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11114/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11122/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11122/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11148/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11148/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11171/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11171/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11197/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11197/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11205/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11205/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11213/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11213/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11239/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11239/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11247/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11247/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11262/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11262/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11296/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11296/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG11304/ gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11304/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9746/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9746/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9753/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9753/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9761/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9761/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9787/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9787/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9795/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9795/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9811/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9811/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9829/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9829/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9845/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9845/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9852/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9852/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9860/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9860/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9878/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9878/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9894/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9894/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9902/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9902/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9910/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9910/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9928/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9928/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9936/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9936/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9944/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9944/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9951/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9951/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9969/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9969/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9977/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9977/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9985/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9985/
-gsutil mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/CPG9993/  gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9993/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10017/CPG10017 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10025/CPG10025 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10033/CPG10033 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10041/CPG10041 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10058/CPG10058 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10066/CPG10066 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10074/CPG10074 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10082/CPG10082 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10090/CPG10090 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10108/CPG10108 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10116/CPG10116 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10124/CPG10124 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10132/CPG10132 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10140/CPG10140 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10157/CPG10157 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10181/CPG10181 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10199/CPG10199 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10280/CPG10280 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10330/CPG10330 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10348/CPG10348 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10355/CPG10355 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10397/CPG10397 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10405/CPG10405 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10462/CPG10462 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10470/CPG10470 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10488/CPG10488 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10496/CPG10496 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10512/CPG10512 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10520/CPG10520 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10538/CPG10538 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10546/CPG10546 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10553/CPG10553 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10561/CPG10561 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10587/CPG10587 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10603/CPG10603 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10645/CPG10645 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10652/CPG10652 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10686/CPG10686 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10702/CPG10702 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10728/CPG10728 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10736/CPG10736 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10744/CPG10744 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10769/CPG10769 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10785/CPG10785 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10819/CPG10819 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10884/CPG10884 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10900/CPG10900 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10926/CPG10926 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10934/CPG10934 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10959/CPG10959 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10967/CPG10967 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10975/CPG10975 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10983/CPG10983 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG10991/CPG10991 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11007/CPG11007 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11015/CPG11015 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11023/CPG11023 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11049/CPG11049 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11072/CPG11072 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11080/CPG11080 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11098/CPG11098 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11106/CPG11106 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11114/CPG11114 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11122/CPG11122 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11148/CPG11148 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11171/CPG11171 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11197/CPG11197 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11205/CPG11205 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11213/CPG11213 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11247/CPG11247 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11262/CPG11262 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11296/CPG11296 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG11304/CPG11304 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9746/CPG9746 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9753/CPG9753 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9761/CPG9761 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9787/CPG9787 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9795/CPG9795 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9811/CPG9811 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9829/CPG9829 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9845/CPG9845 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9852/CPG9852 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9860/CPG9860 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9878/CPG9878 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9894/CPG9894 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9902/CPG9902 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9910/CPG9910 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9928/CPG9928 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9936/CPG9936 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9944/CPG9944 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9951/CPG9951 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9969/CPG9969 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9977/CPG9977 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9985/CPG9985 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
+gsutil -m mv gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/CPG9993/CPG9993 gs://cpg-tob-wgs-test/pdiakumis/gatksv/evidence/
