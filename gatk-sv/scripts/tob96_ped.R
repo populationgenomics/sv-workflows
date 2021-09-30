@@ -36,7 +36,7 @@ d |>
          IndID = cpgid,
          PatID = 0,
          MatID = 0,
-         Sex = if_else(sex == "MALE", 1, ifelse(sex == "FEMALE", 2, 0)),
+         Sex = if_else(sex == "MALE", 1, if_else(sex == "FEMALE", 2, 0)),
          Pheno = 0) |>
   select(FamID:Pheno) |>
   write_tsv(file = here("nogit/tob96.ped"), col_names = FALSE)
