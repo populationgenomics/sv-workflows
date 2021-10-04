@@ -7,7 +7,7 @@ curl --location \
     --header "Authorization: Bearer $(gcloud auth print-identity-token)" \
     --header 'Content-Type: application/json' \
     --data-raw '{
-        "output": "pdiakumis/test1/gatksv_single/NA12878",
+        "output": "vsavelyev/test1/gatksv_single/NA12878",
         "dataset": "fewgenomes",
         "repo": "sv-workflows",
         "accessLevel": "test",
@@ -15,7 +15,7 @@ curl --location \
         "inputs_dict": {
           "GATKSVPipelineSingleSample.sample_id" : "NA12878",
           "GATKSVPipelineSingleSample.batch" : "test_NA12878",
-          "GATKSVPipelineSingleSample.bam_or_cram_file" : "gs://cpg-fewgenomes-test/pdiakumis/data/NA12878/NA12878.final.bam"
+          "GATKSVPipelineSingleSample.bam_or_cram_file" : "gs://cpg-fewgenomes-test/cram/NA12878.cram"
         },
         "input_json_paths": ["inputs/general.json"],
         "workflow": "GATKSVPipelineSingleSample.wdl",
@@ -23,4 +23,3 @@ curl --location \
         "cwd": "gatk-sv/test/GATKSVPipelineSingleSample",
         "description": "Single sample pipeline on NA12878"
     }'
-
