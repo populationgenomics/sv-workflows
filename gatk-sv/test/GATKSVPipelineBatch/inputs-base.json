@@ -113,6 +113,9 @@
   "GATKSVPipelineBatch.MakeCohortVcf.random_seed": 0,
   "GATKSVPipelineBatch.MakeCohortVcf.max_shard_size_resolve": 500,
   "GATKSVPipelineBatch.BatchQC.qc_definitions": "gs://gatk-sv-resources-public/test/batch/batch_sv.test_large.qc_definitions.tsv",
+  "GATKSVPipelineBatch.TrainGCNV.contig_ploidy_priors": "gs://gatk-sv-resources-public/hg38/v0/sv-resources/resources/v1/hg38.contig_ploidy_priors_homo_sapiens.tsv",
+  "GATKSVPipelineBatch.TrainGCNV.num_intervals_per_scatter": "5000",
+  "GATKSVPipelineBatch.TrainGCNV.ref_copy_number_autosomal_contigs": 2,
   "GATKSVPipelineBatch.GATKSVPipelinePhase1.runtime_attr_bundle": {
     "cpu_cores": 1,
     "mem_gb": 1.0,
