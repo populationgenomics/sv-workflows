@@ -11,7 +11,7 @@ curl --location \
         "dataset": "tob-wgs",
         "repo": "sv-workflows",
         "accessLevel": "test",
-        "commit": "4e554f59eafc7f7b220decdce177649d9bf400d4",
+        "commit": "52bb628a7739b21aed7c3ec8c0d9a2b586d5f3b6",
         "input_json_paths": ["inputs/ClusterBatch.json"],
         "workflow": "gatk-sv-git/wdl/ClusterBatch.wdl",
         "dependencies": ["gatk-sv-git/wdl"],
