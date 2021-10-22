@@ -1,0 +1,32 @@
+{
+  "GenerateBatchMetrics.sv_pipeline_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline:mw-missing-baf-f14df3b",
+  "GenerateBatchMetrics.sv_pipeline_rdtest_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-rdtest:lint-24b9cda",
+  "GenerateBatchMetrics.sv_base_mini_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base-mini:lint-24b9cda",
+  "GenerateBatchMetrics.sv_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base:lint-24b9cda",
+  "GenerateBatchMetrics.sv_pipeline_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-base:lint-24b9cda",
+  "GenerateBatchMetrics.linux_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/ubuntu1804",
+
+  "GenerateBatchMetrics.BAF_split_size": "10000",
+  "GenerateBatchMetrics.RD_split_size": "10000",
+  "GenerateBatchMetrics.PE_split_size": "10000",
+  "GenerateBatchMetrics.SR_split_size": "1000",
+  "GenerateBatchMetrics.common_cnv_size_cutoff": "5000",
+  "GenerateBatchMetrics.allosome_contigs": "gs://gcp-public-data--broad-references/hg38/v0/sv-resources/resources/v1/allosome.fai",
+  "GenerateBatchMetrics.autosome_contigs": "gs://gcp-public-data--broad-references/hg38/v0/sv-resources/resources/v1/autosome.fai",
+  "GenerateBatchMetrics.rmsk": "gs://gcp-public-data--broad-references/hg38/v0/sv-resources/resources/v1/hg38.randomForest_blacklist.withRepMask.bed.gz",
+  "GenerateBatchMetrics.segdups": "gs://gcp-public-data--broad-references/hg38/v0/sv-resources/resources/v1/hg38.SD_gaps_Cen_Tel_Heter_Satellite_lumpy.blacklist.sorted.merged.bed.gz",
+  "GenerateBatchMetrics.ref_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
+
+  "GenerateBatchMetrics.primary_contigs_list": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
+
+  "GenerateBatchMetrics.batch": "tob96",
+  "GenerateBatchMetrics.ped_file": "gs://cpg-tob-wgs-main-analysis/joint-calling/v6-1/relatedness/samples.ped",
+  "GenerateBatchMetrics.discfile": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-EvidenceMerging/EvidenceMerging/efdcc8c9-a867-4da1-9cd1-6d2b73e4eb52/call-MergePEShards/tob96.PE.txt.gz",
+  "GenerateBatchMetrics.baf_metrics": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-BAFFromGVCFs/BAFFromGVCFs/919f07a9-2cb9-40a6-a9c3-741cfee50ee4/call-MergeEvidenceFiles/tob96.BAF.txt.gz",
+  "GenerateBatchMetrics.coveragefile": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-MakeBincovMatrix/MakeBincovMatrix/01ff310d-e789-4133-88a5-928c25e87b81/call-ZPaste/tob96.RD.txt.gz",
+  "GenerateBatchMetrics.splitfile": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-EvidenceMerging/EvidenceMerging/efdcc8c9-a867-4da1-9cd1-6d2b73e4eb52/call-MergeSRShards/tob96.SR.txt.gz",
+  "GenerateBatchMetrics.medianfile": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-MedianCov/MedianCov/f8062191-482b-448a-80c6-839e981302a5/call-CalcMedCov/tob96_medianCov.transposed.bed",
+  "GenerateBatchMetrics.depth_vcf": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_clusterbatch/ClusterBatch/1edc94dd-3701-43ca-a0d5-4a7b2cea53d5/call-ClusterDepth/ClusterDepth/4f8d590f-7810-40e4-ab4f-e463555898a7/call-MakeDepthVCF/cacheCopy/tob96.depth.vcf.gz",
+  "GenerateBatchMetrics.melt_vcf": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_clusterbatch/ClusterBatch/1edc94dd-3701-43ca-a0d5-4a7b2cea53d5/call-ClusterPESR_melt/ClusterPESR/722ff58b-a3aa-4cd2-b3f3-bf80dfb44415/call-ConcatVCFs/cacheCopy/tob96.melt.vcf.gz",
+  "GenerateBatchMetrics.wham_vcf": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_clusterbatch/ClusterBatch/1edc94dd-3701-43ca-a0d5-4a7b2cea53d5/call-ClusterPESR_wham/ClusterPESR/e8672aac-6514-461a-9cf7-14554a7de306/call-ConcatVCFs/cacheCopy/tob96.wham.vcf.gz"
+}
