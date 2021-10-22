@@ -20,7 +20,7 @@
   "GenerateBatchMetrics.primary_contigs_list": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
 
   "GenerateBatchMetrics.batch": "tob96",
-  "GenerateBatchMetrics.ped_file": "gs://cpg-tob-wgs-main-analysis/joint-calling/v6-1/relatedness/samples.ped",
+  "GenerateBatchMetrics.ped_file": "gs://cpg-tob-wgs-test/vladsavelyev/tob96.ped",
   "GenerateBatchMetrics.discfile": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-EvidenceMerging/EvidenceMerging/efdcc8c9-a867-4da1-9cd1-6d2b73e4eb52/call-MergePEShards/tob96.PE.txt.gz",
   "GenerateBatchMetrics.baf_metrics": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-BAFFromGVCFs/BAFFromGVCFs/919f07a9-2cb9-40a6-a9c3-741cfee50ee4/call-MergeEvidenceFiles/tob96.BAF.txt.gz",
   "GenerateBatchMetrics.coveragefile": "gs://cpg-tob-wgs-test/vladsavelyev/gatksvbatch_gatherbatchevidence/GatherBatchEvidence/1b71d699-19bc-48c0-b78a-62470a35bf37/call-MakeBincovMatrix/MakeBincovMatrix/01ff310d-e789-4133-88a5-928c25e87b81/call-ZPaste/tob96.RD.txt.gz",
