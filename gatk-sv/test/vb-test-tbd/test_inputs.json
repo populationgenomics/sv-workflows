@@ -1,0 +1,20 @@
+{
+  "GatherSampleEvidence.bam_or_cram_file": "gs://cpg-tob-wgs-archive/cram/kccg/CPG10017.cram",
+  "GatherSampleEvidence.sv_pipeline_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline:eph_mediancov_mem_and_names-3f0c76d",
+  "GatherSampleEvidence.samtools_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/samtools-cloud:mw-gnomad-02-6a66c96",
+  "GatherSampleEvidence.manta_region_bed": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs_plus_mito.bed.gz",
+  "GatherSampleEvidence.preprocessed_intervals": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/preprocessed_intervals.interval_list",
+  "GatherSampleEvidence.reference_index":"gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "GatherSampleEvidence.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
+  "GatherSampleEvidence.sv_base_mini_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base-mini:lint-24b9cda",
+  "GatherSampleEvidence.genomes_in_the_cloud_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/genomes-in-the-cloud:2.3.2-1510681135",
+  "GatherSampleEvidence.primary_contigs_list": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
+  "GatherSampleEvidence.primary_contigs_fai": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/contig.fai",
+  "GatherSampleEvidence.sample_id": "CPG10017",
+  "GatherSampleEvidence.gatk_docker":  "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
+  "GatherSampleEvidence.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "GatherSampleEvidence.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
+  "GatherSampleEvidence.wham_include_list_bed_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/wham_whitelist.bed",
+  "GatherSampleEvidence.run_module_metrics": "False"
+}
+
