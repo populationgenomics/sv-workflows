@@ -1,15 +1,15 @@
 version 1.0
 
-import "Structs.wdl"
-import "CollectCoverage.wdl" as cov
-import "CramToBam.wdl" as ctb
-import "CramToBam.ReviseBase.wdl" as ctb_revise
-import "Delly.wdl" as delly
-import "Manta.wdl" as manta
-import "MELT.wdl" as melt
-import "GatherSampleEvidenceMetrics.wdl" as metrics
-import "PESRCollection.wdl" as pesr
-import "Whamg.wdl" as wham
+import "tools/Structs.wdl"
+import "tools/CollectCoverage.wdl" as cov
+import "tools/CramToBam.wdl" as ctb
+import "tools/CramToBam.ReviseBase.wdl" as ctb_revise
+import "tools/Delly.wdl" as delly
+import "tools/Manta.wdl" as manta
+import "tools/MELT.wdl" as melt
+import "tools/GatherSampleEvidenceMetrics.wdl" as metrics
+import "tools/PESRCollection.wdl" as pesr
+import "tools/Whamg.wdl" as wham
 
 # Runs selected tools on BAM/CRAM files
 
