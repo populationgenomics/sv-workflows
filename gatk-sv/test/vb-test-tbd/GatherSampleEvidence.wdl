@@ -30,7 +30,7 @@ workflow GatherSampleEvidence {
     String sample_id
 
     # Evidence collection flags
-    Boolean collect_coverage = true
+    Boolean collect_coverage = false
     Boolean collect_pesr = false
 
     # If true, any intermediate BAM files will be deleted after the algorithms have completed.
@@ -122,9 +122,9 @@ workflow GatherSampleEvidence {
   #   Boolean run_melt = defined(melt_docker)
   #   Boolean run_wham = defined(wham_docker)
 
-  Boolean run_delly = false
-  Boolean run_manta = false
-  Boolean run_melt = false
+  Boolean run_delly = false #Don't switch this
+  Boolean run_manta = true
+  Boolean run_melt = false # Don't switch this
   Boolean run_wham = false
 
 
