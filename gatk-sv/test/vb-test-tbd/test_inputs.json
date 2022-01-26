@@ -13,6 +13,7 @@
   "GatherSampleEvidence.primary_contigs_fai": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/contig.fai",
   "GatherSampleEvidence.sample_id": "TOB1520",
   "GatherSampleEvidence.gatk_docker":  "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
+  "GatherSampleEvidence.wham_docker":  "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/wham:8645aa",
   "GatherSampleEvidence.manta_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/manta:8645aa",
   "GatherSampleEvidence.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
   "GatherSampleEvidence.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
