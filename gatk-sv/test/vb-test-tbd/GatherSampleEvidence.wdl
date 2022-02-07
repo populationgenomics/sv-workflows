@@ -123,9 +123,9 @@ workflow GatherSampleEvidence {
   #Boolean run_wham = defined(wham_docker)
 
   Boolean run_delly = false #Don't switch this
-  Boolean run_manta = false
+  Boolean run_manta = true
   Boolean run_melt = false # Don't switch this
-  Boolean run_wham = false
+  Boolean run_wham = true
 
 
   Boolean is_bam_ = basename(bam_or_cram_file, ".bam") + ".bam" == basename(bam_or_cram_file)
