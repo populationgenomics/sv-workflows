@@ -30,8 +30,8 @@ workflow GatherSampleEvidence {
     String sample_id
 
     # Evidence collection flags
-    Boolean collect_coverage = true
-    Boolean collect_pesr = true
+    Boolean collect_coverage = false
+    Boolean collect_pesr = false
 
     # If true, any intermediate BAM files will be deleted after the algorithms have completed.
     # NOTE: If the workflow (ie any algorithm) fails, the bam will NOT be deleted.
