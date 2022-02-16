@@ -62,7 +62,13 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
 
     samtools view -T {ref.base} {cram['cram']} {region} -Obam -o {j.output_bam}    
     samtools index {j.output_bam}
-    gangstr --bam {j.output_bam} --ref ref.base --regions {regions} --out {j.gangstr_trial}
+    """
+    )
+    gangstr_job = b.new_job("gangstr")
+    gangstr.image(GANGSTR_IMAGE)
+    # Hail batch recognises the dependency on `j.output_bam`
+    gangstr.command(f"""
+    gangstr --bam {j.output_bam} --ref {ref.base} --regions {regions} --out {gangstr_job.gangstr_trial}
     """
     )
 
