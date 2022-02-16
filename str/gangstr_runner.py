@@ -61,8 +61,8 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
         f"""
 
     samtools view  {cram['cram']} {region} -0bam -o {j.output_bam}
-    samtools index j.output_bam
-    gangstr --bam j.output_bam --ref ref.base --regions regions --out {j.gangstr_trial}
+    samtools index {j.output_bam}
+    gangstr --bam {j.output_bam} --ref ref.base --regions {regions} --out {j.gangstr_trial}
     """
     )
 
