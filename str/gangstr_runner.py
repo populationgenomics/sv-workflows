@@ -16,6 +16,7 @@ ACCESS_LEVEL = os.getenv('ACCESS_LEVEL')
 REF_FASTA = 'gs://cpg-reference/hg38/v1/Homo_sapiens_assembly38.fasta'
 SAMTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/samtools:v0'
 GANGSTR_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/gangstr:v2.5"
+regions = 'gs://cpg-fewgenomes-test/hoptan-str/gangstr_catalog_with_offtarget.bed'
 
 
 @click.command()
@@ -61,13 +62,14 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
 
     samtools view  {cram['cram']} {region} -0bam -o {j.output_bam}
     samtools index j.output_bam
+    gangstr --bam j.output_bam --ref ref.base --regions regions --out {j.gangstr_trial}
     """
     )
 
     # Speciying where to write the result
     out_fname = os.path.splitext(os.path.basename(cram_path))[0] + '-split.cram'
     output_path = f'gs://cpg-fewgenomes-test-tmp/hoptan-batch'
-    b.write_output(j.output_bam, output_path)
+    b.write_output(j.gangstr_trial, output_path)
 
     # don't wait for the hail batch workflow to complete, otherwise
     # the workflow might get resubmitted if this VM gets preempted.
