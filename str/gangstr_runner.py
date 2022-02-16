@@ -60,14 +60,14 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
     j.command(
         f"""
 
-    samtools view -T {ref.base} {cram['cram']} {region} -Ocram -o {j.output_bam}    
+    samtools view -T {ref.base} {cram['cram']} {region} -Obam -o {j.output_bam}    
     samtools index {j.output_bam}
     gangstr --bam {j.output_bam} --ref ref.base --regions {regions} --out {j.gangstr_trial}
     """
     )
 
     # Speciying where to write the result
-    out_fname = os.path.splitext(os.path.basename(cram_path))[0] + '-split.cram'
+    out_fname = os.path.splitext(os.path.basename(cram_path))[0] + '-split.bram'
     output_path = f'gs://{HAIL_BUCKET}/{OUTPUT_SUFFIX}/{out_fname}'
     b.write_output(j.output_bam, output_path)
 
