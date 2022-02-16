@@ -48,7 +48,6 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
 
     # This image contains basic bioinformatics tools like samtools, bcftools, Picard, etc.
     j.image(SAMTOOLS_IMAGE)
-    j.image(GANGSTR_IMAGE)
 
     # For larger CRAMs, request more storage.
     j.storage('10G')
