@@ -67,8 +67,8 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
     )
 
     # Speciying where to write the result
-    out_fname = os.path.splitext(os.path.basename(cram_path))[0] + '-split.cram'
-    output_path = f'gs://{HAIL_BUCKET}/{OUTPUT_SUFFIX}/potato'
+     out_fname = os.path.splitext(os.path.basename(cram_path))[0] + '-split.cram'
+    output_path = f'gs://{HAIL_BUCKET}/{OUTPUT_SUFFIX}/{out_fname}'
     b.write_output(j.output_bam, output_path)
 
     # don't wait for the hail batch workflow to complete, otherwise
