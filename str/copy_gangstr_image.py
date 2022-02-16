@@ -16,9 +16,8 @@ SAMTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/samtools
 
 
 @click.command()
-@click.argument('cram_path')
-@click.argument('region')
-def main(cram_path: str, region: str):  # pylint: disable=missing-function-docstring
+
+def main():  # pylint: disable=missing-function-docstring
     """
     Subset CRAM or BAM file CRAM_PATH to REGION. Example: batch.py sample.cram chr21:1-10000
     """
@@ -51,9 +50,8 @@ def main(cram_path: str, region: str):  # pylint: disable=missing-function-docst
     )
 
     # Speciying where to write the result
-    out_fname = os.path.splitext(os.path.basename(cram_path))[0] + '-split.cram'
     output_path = f'gs://cpg-fewgenomes-test-tmp/hoptan-batch'
-    b.write_output(j.output_bam, output_path)
+    b.write_output(" ", output_path)
 
     # don't wait for the hail batch workflow to complete, otherwise
     # the workflow might get resubmitted if this VM gets preempted.
