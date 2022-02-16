@@ -49,9 +49,7 @@ def main():  # pylint: disable=missing-function-docstring
     """
     )
 
-    # Speciying where to write the result
-    output_path = f'gs://cpg-fewgenomes-test-tmp/hoptan-batch'
-    b.write_output(" ", output_path)
+
 
     # don't wait for the hail batch workflow to complete, otherwise
     # the workflow might get resubmitted if this VM gets preempted.
