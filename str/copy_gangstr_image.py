@@ -45,10 +45,14 @@ def main():  # pylint: disable=missing-function-docstring
         set -ex
 
         gcloud auth configure-docker australia-southeast1-docker.pkg.dev
-        skopeo copy docker://weisburd/gangstr:v2.5 docker://australia-southeast1-docker.pkg.dev/cpg-common/images/gangstr:v2.5
+        docker pull weisburd/gangstr:v2.5
+        docker tag weisburd/gangstr:v2.5 australia-southeast1-docker.pkg.dev/cpg-common/images/gangstr:v2.5
+        docker push australia-southeast1-docker.pkg.dev/cpg-common/images/gangstr:v2.5   
     """
     )
 
+
+#skopeo copy docker://weisburd/gangstr:v2.5 docker://australia-southeast1-docker.pkg.dev/cpg-common/images/gangstr:v2.5
 
 
     # don't wait for the hail batch workflow to complete, otherwise
