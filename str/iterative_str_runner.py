@@ -22,7 +22,7 @@ EH_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/expansionhunte
 gangstr_regions_path = 'gs://cpg-fewgenomes-test/hoptan-str/gangstr_catalog_with_offtarget.bed'
 EH_regions_path = 'gs://cpg-fewgenomes-test/hoptan-str/Illuminavariant_catalog.json'
 
-input_cram_dict{
+input_cram_dict={
     "TOB01784": "gs://cpg-tob-wgs-main/cram/nagim/CPG3160.cram",
     "TOB01791": "gs://cpg-tob-wgs-archive/cram/batch4/CPG3210.cram",
     "TOB0901": "gs://cpg-tob-wgs-archive/cram/batch10/CPG8458.cram",
@@ -38,7 +38,7 @@ input_cram_dict{
 @click.command()
 
 def main():  # pylint: disable=missing-function-docstring 
-   
+
     # Initializing Batch
     backend = hb.ServiceBackend(billing_project=BILLING_PROJECT, bucket=HAIL_BUCKET)
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
@@ -47,7 +47,7 @@ def main():  # pylint: disable=missing-function-docstring
 
     #Iterate over each sample and perform 3 jobs 1) Index CRAM 2) GangSTR 3) Expansion Hunter
     for cram in list(input_cram_dict.keys()):
-        
+
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(**{'cram': input_cram_dict[cram], 'cram.crai': input_cram_dict[cram]+ '.crai'})
 
@@ -110,9 +110,8 @@ def main():  # pylint: disable=missing-function-docstring
         eh_out_fname = f'{cram}_EH'
         eh_output_path = f'gs://cpg-tob-wgs-main/hoptan-str/tob10/{eh_out_fname}'
         b.write_output(eh_job.ofile, eh_output_path)
- 
+
     b.run(wait=False)
 
 if __name__ == '__main__':
     main() 
-    
