@@ -22,9 +22,6 @@ EH_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/expansionhunte
 gangstr_regions_path = 'gs://cpg-fewgenomes-test/hoptan-str/gangstr_catalog_with_offtarget.bed'
 EH_regions_path = 'gs://cpg-fewgenomes-test/hoptan-str/Illuminavariant_catalog.json'
 
-#Cram files 
-input_cram = ['NA12878.cram', 'NA12340.cram']
-
 input_cram_dict{
     "TOB01784": "gs://cpg-tob-wgs-main/cram/nagim/CPG3160.cram"
     "TOB01791": "gs://cpg-tob-wgs-archive/cram/batch4/CPG3210.cram"
@@ -62,8 +59,6 @@ def main():  # pylint: disable=missing-function-docstring
         samtools_job.cpu(16)
         samtools_job.command(f"""samtools index -@ 20 {crams['cram']}""")
 
-
-
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
             **dict(
@@ -81,12 +76,9 @@ def main():  # pylint: disable=missing-function-docstring
         gangstr_job.depends_on(samtools_job)
         gangstr_job.cpu(8)
 
-
         gangstr_job.declare_resource_group(ofile = {'vcf': '{root}.vcf',
                                                'insdata': '{root}.insdata.tab',
                                                'samplestats': '{root}.samplestats.tab'
-
-
         })
 
         gangstr_job.command(f"""
