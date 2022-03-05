@@ -23,17 +23,16 @@ gangstr_regions_path = 'gs://cpg-fewgenomes-test/hoptan-str/gangstr_catalog_with
 EH_regions_path = 'gs://cpg-fewgenomes-test/hoptan-str/Illuminavariant_catalog.json'
 
 input_cram_dict{
-    "TOB01784": "gs://cpg-tob-wgs-main/cram/nagim/CPG3160.cram"
-    "TOB01791": "gs://cpg-tob-wgs-archive/cram/batch4/CPG3210.cram"
-    "TOB0901": "gs://cpg-tob-wgs-archive/cram/batch10/CPG8458.cram"
-    "TOB1086": "gs://cpg-tob-wgs-main/cram/nagim/CPG9688.cram"
-    "TOB1170": "gs://cpg-tob-wgs-archive/cram/batch5/CPG3954.cram"
-    "TOB1213": "gs://cpg-tob-wgs-main/cram/nagim/CPG4358.cram"
-    "TOB1458": "gs://cpg-tob-wgs-archive/cram/batch7/CPG6551.cram"
-    "TOB1567": "gs://cpg-tob-wgs-main/cram/nagim/CPG1503.cram"
-    "TOB1578": "gs://cpg-tob-wgs-archive/cram/batch2/CPG1610.cram"
+    "TOB01784": "gs://cpg-tob-wgs-main/cram/nagim/CPG3160.cram",
+    "TOB01791": "gs://cpg-tob-wgs-archive/cram/batch4/CPG3210.cram",
+    "TOB0901": "gs://cpg-tob-wgs-archive/cram/batch10/CPG8458.cram",
+    "TOB1086": "gs://cpg-tob-wgs-main/cram/nagim/CPG9688.cram",
+    "TOB1170": "gs://cpg-tob-wgs-archive/cram/batch5/CPG3954.cram",
+    "TOB1213": "gs://cpg-tob-wgs-main/cram/nagim/CPG4358.cram",
+    "TOB1458": "gs://cpg-tob-wgs-archive/cram/batch7/CPG6551.cram",
+    "TOB1567": "gs://cpg-tob-wgs-main/cram/nagim/CPG1503.cram",
+    "TOB1578": "gs://cpg-tob-wgs-archive/cram/batch2/CPG1610.cram",
     "TOB1751": "gs://cpg-tob-wgs-main/cram/nagim/CPG3053.cram"
-
 }
 
 @click.command()
