@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # skopeo required for copying images
-system("micromamba install -y --prefix $MAMBA_ROOT_PREFIX -y -c conda-forge skopeo")
+#system("micromamba install -y --prefix $MAMBA_ROOT_PREFIX -y -c conda-forge skopeo")
 
 require(dplyr)
 require(tidyr)
@@ -11,9 +11,9 @@ require(glue, include.only = "glue")
 
 # read json with docker images
 gatk_sv <- list(repo = "https://raw.githubusercontent.com/populationgenomics/gatk-sv",
-                tag = "v0.18-beta")
+                tag = "main")
 gatk_sv_json <-
-  glue("{gatk_sv$repo}/{gatk_sv$tag}/input_values/dockers.json") %>%
+  glue("{gatk_sv$repo}/{gatk_sv$tag}/inputs/values/dockers.json") %>%
   read_json()
 
 # AR repo to hold the images
@@ -34,5 +34,7 @@ d <- gatk_sv_json %>%
 # copy to AU AR
 system("gcloud auth configure-docker australia-southeast1-docker.pkg.dev")
 for (i in seq_len(nrow(d))) {
-  system(glue("skopeo copy docker://{d$us_gcr[i]} docker://{au_artifact_registry}/{d$bname[i]}"))
+  cmd <- glue("skopeo copy docker://{d$us_gcr[i]} docker://{au_artifact_registry}/{d$bname[i]}")
+  print(cmd)
+  system(cmd)
 }
