@@ -22,7 +22,6 @@ BILLING_PROJECT = os.getenv('HAIL_BILLING_PROJECT')
 ACCESS_LEVEL = os.getenv('ACCESS_LEVEL')
 REF_FASTA = 'gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta'
 SAMTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/samtools:v0'
-GANGSTR_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/gangstr:v2.5"
 EH_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/expansionhunter:5.0.0"
 
 #Variant catalogs (required input)
