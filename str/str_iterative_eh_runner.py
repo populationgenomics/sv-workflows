@@ -7,56 +7,67 @@ import os
 import hailtop.batch as hb
 import click
 
+from sample_metadata.models.analysis_type import AnalysisType
+from sample_metadata.models.analysis_query_model import AnalysisQueryModel
+from sample_metadata.apis import AnalysisApi
+
 from cpg_utils.config import get_config
 
 from cpg_utils.hail_batch import (
     authenticate_cloud_credentials_in_job,
     copy_common_env,
     remote_tmpdir,
+    output_path
 )
 
 config = get_config()
 
 DATASET = config['workflow']['dataset']
-HAIL_BUCKET = config['
 OUTPUT_SUFFIX = config['workflow']['output_prefix']
 BILLING_PROJECT = config['hail']['billing_project']
 REF_FASTA = os.path.join(config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta')
 SAMTOOLS_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'samtools:v0')
 EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0')
 
-#Variant catalogs (required input)
-EH_regions_path = 'gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json'
+#required input
 
-input_cram_dict={
-    "TOB01784": "gs://cpg-tob-wgs-main/cram/nagim/CPG3160.cram",
-    "TOB01791": "gs://cpg-tob-wgs-main/cram/nagim/CPG3210.cram",
-    "TOB0901": "gs://cpg-tob-wgs-main/cram/nagim/CPG8458.cram",
-    "TOB1086": "gs://cpg-tob-wgs-main/cram/nagim/CPG9688.cram",
-    "TOB1170": "gs://cpg-tob-wgs-main/cram/nagim/CPG3954.cram",
-    "TOB1213": "gs://cpg-tob-wgs-main/cram/nagim/CPG4358.cram",
-    "TOB1458": "gs://cpg-tob-wgs-main/cram/nagim/CPG6551.cram",
-    "TOB1567": "gs://cpg-tob-wgs-main/cram/nagim/CPG1503.cram",
-    "TOB1578": "gs://cpg-tob-wgs-main/cram/nagim/CPG1610.cram",
-    "TOB1751": "gs://cpg-tob-wgs-main/cram/nagim/CPG3053.cram"
-}
-
+#variant catalog
+@click.option('--ehregions', help='Full path to Illumina Variants catalog')\
+#input TOB ID 
+@click.argument('tob-wgs-ids', help = 'TOB-WGS IDs eg TOB20000', nargs=-1)
 @click.command()
 
-def main():  # pylint: disable=missing-function-docstring 
+def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring 
    # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
-    EH_regions = b.read_input(EH_regions_path)
+
+    tob_wgs_to_cpg_sample_id_map: dict[str, str] = SampleApi().get_sample_id_map_by_external(tob_wgs_ids, project=DATASET)
+    cpg_sample_id_to_tob_wgs_id = {cpg_id: tob_wgs_id for tob_wgs_id, cpg_id in tob_wgs_to_cpg_sample_id_map.items()}
+
+    analysis_query_model = AnalysisQueryModel(
+        sample_ids=tob_wgs_to_cpg_sample_id_map.values(),
+        projects=[DATASET],
+        type=AnalysisType("cram"),
+        status=AnalysisStatus("completed"),
+        meta={"sequence_type": "genome", "source": "nagim"}
+    )
+    crams_path = AnalysisApi().query_analyses(analysis_query_model)
+
+    for cram_object in crams:
+        cram = cram_object["output"]
+        cpg_sample_id = cram_object["sample_ids"][0]
+        tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
+    EH_regions = b.read_input(ehregions)
 
     #Iterate over each sample and perform 3 jobs 1) Index CRAM 2) Expansion Hunter
-    for cram in list(input_cram_dict.keys()):
+    for cram in crams_path:
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
-        crams = b.read_input_group(**{'cram': input_cram_dict[cram], 'cram.crai': input_cram_dict[cram]+ '.crai'})
+        crams = b.read_input_group(**{'cram': cram, 'cram.crai': cram+ '.crai'})
 
         #Samtools job initialisation
         samtools_job = b.new_job(name = f'Index {cram}')
@@ -93,7 +104,7 @@ def main():  # pylint: disable=missing-function-docstring
         )
         # ExpansionHunter output writing
         eh_out_fname = f'{cram}_EH'
-        eh_output_path = f'gs://cpg-tob-wgs-test/hoptan-str/tob10/{eh_out_fname}'
+        eh_output_path = output_path(f'{cram}_EH')
         b.write_output(eh_job.ofile, eh_output_path)
 
     b.run(wait=False)
