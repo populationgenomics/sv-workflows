@@ -15,11 +15,12 @@ from cpg_utils.hail_batch import (
     remote_tmpdir,
 )
 
-DATASET = os.getenv('DATASET')
-HAIL_BUCKET = os.getenv('HAIL_BUCKET')
-OUTPUT_SUFFIX = os.getenv('OUTPUT')
-BILLING_PROJECT = os.getenv('HAIL_BILLING_PROJECT')
-ACCESS_LEVEL = os.getenv('ACCESS_LEVEL')
+config = get_config()
+
+DATASET = config['workflow']['dataset']
+HAIL_BUCKET = config['
+OUTPUT_SUFFIX = config['workflow']['output_prefix']
+BILLING_PROJECT = config['hail']['billing_project']
 REF_FASTA = 'gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta'
 SAMTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/samtools:v0'
 EH_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/expansionhunter:5.0.0"
