@@ -40,7 +40,7 @@ EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionh
 
 def main(ehregions, id):  # pylint: disable=missing-function-docstring 
    # Initializing Batch
-   backend = hb.ServiceBackend(
+    backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
