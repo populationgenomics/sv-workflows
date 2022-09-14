@@ -56,19 +56,15 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         meta={"sequence_type": "genome", "source": "nagim"}
     )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
-
-    for cram_object in crams:
-        cram = cram_object["output"]
-        cpg_sample_id = cram_object["sample_ids"][0]
-        tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
     EH_regions = b.read_input(ehregions)
 
     #Iterate over each sample and perform 3 jobs 1) Index CRAM 2) Expansion Hunter
     for cram in crams_path:
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
-        crams = b.read_input_group(**{'cram': cram, 'cram.crai': cram+ '.crai'})
-
+        crams = b.read_input_group(**{'cram': cram_object["output"], 'cram.crai': cram_object["output"]+ '.crai'})
+        cpg_sample_id = cram_object["sample_ids"][0]
+        tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
         #Samtools job initialisation
         samtools_job = b.new_job(name = f'Index {cram}')
         samtools_job.image(SAMTOOLS_IMAGE)
