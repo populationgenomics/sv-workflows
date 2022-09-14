@@ -50,7 +50,7 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
 
     analysis_query_model = AnalysisQueryModel(
         sample_ids=list(tob_wgs_to_cpg_sample_id_map.values()),
-        projects=[DATASET],
+        projects=['tob-wgs'],
         type=AnalysisType("cram"),
         status=AnalysisStatus("completed"),
         meta={"sequence_type": "genome", "source": "nagim"}
