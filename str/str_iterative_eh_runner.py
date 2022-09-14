@@ -21,7 +21,7 @@ DATASET = config['workflow']['dataset']
 HAIL_BUCKET = config['
 OUTPUT_SUFFIX = config['workflow']['output_prefix']
 BILLING_PROJECT = config['hail']['billing_project']
-REF_FASTA = 'gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta'
+REF_FASTA = os.path.join(config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta')
 SAMTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/samtools:v0'
 EH_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/expansionhunter:5.0.0"
 
