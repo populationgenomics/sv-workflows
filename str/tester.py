@@ -52,3 +52,8 @@ def main(ehregions, id):  # pylint: disable=missing-function-docstring
         type=AnalysisType("cram"),
         status=AnalysisStatus("completed"),
     )
+    api_response = b.AnalysisApi().query_analyses(analysis_query_model)
+    b.SampleApi().get_sample_id_map_by_interna(['CPG01'])
+
+if __name__ == '__main__':
+    main() 
