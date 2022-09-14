@@ -29,7 +29,7 @@ EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionh
 #required input
 
 #variant catalog
-@click.option('--eh-regions', help='Full path to Illumina Variants catalog')
+@click.option('--ehregions', help='Full path to Illumina Variants catalog')
 
 #input TOB ID 
 @click.option('--id', help = 'TOB-WGS ID eg TOB20000')
@@ -38,7 +38,7 @@ EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionh
 
 @click.command()
 
-def main(eh-regions, id):  # pylint: disable=missing-function-docstring 
+def main(ehregions, id):  # pylint: disable=missing-function-docstring 
    # Initializing Batch
    backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
