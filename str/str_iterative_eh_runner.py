@@ -45,7 +45,7 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
-    tob_wgs_to_cpg_sample_id_map: dict[str, str] = SampleApi().get_sample_id_map_by_external(tob_wgs_ids, project='tob-wgs')
+    tob_wgs_to_cpg_sample_id_map: dict[str, str] = SampleApi().get_sample_id_map_by_external('tob-wgs',tob_wgs_ids)
     cpg_sample_id_to_tob_wgs_id = {cpg_id: tob_wgs_id for tob_wgs_id, cpg_id in tob_wgs_to_cpg_sample_id_map.items()}
 
     analysis_query_model = AnalysisQueryModel(
