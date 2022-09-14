@@ -6,8 +6,8 @@ import click
 import sample_metadata
 
 
-from sample_metadata.models.analysis_type import AnalysisType
-from sample_metadata.models.analysis_query_model import AnalysisQueryModel
+from sample_metadata.model.analysis_type import AnalysisType
+from sample_metadata.model.analysis_query_model import AnalysisQueryModel
 from sample_metadata.apis import AnalysisApi
 
 from cpg_utils.config import get_config
@@ -47,15 +47,15 @@ def main(ehregions, id):  # pylint: disable=missing-function-docstring
         remote_tmpdir=remote_tmpdir(),
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+    tob_id = b.SampleApi().get_sample_id_map_by_interna(['CPG01'])
 
-    analysis_query_model = b.AnalysisQueryModel(
-        sample_ids=["CPG01"],
+    analysis_query_model = AnalysisQueryModel(
+        sample_ids=[tob_id],
         projects=[DATASET],
         type=AnalysisType("cram"),
         status=AnalysisStatus("completed"),
     )
     api_response = b.AnalysisApi().query_analyses(analysis_query_model)
-    b.SampleApi().get_sample_id_map_by_interna(['CPG01'])
 
 if __name__ == '__main__':
     main() 
