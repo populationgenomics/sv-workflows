@@ -62,8 +62,8 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
     for cram in crams_path:
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
-        crams = b.read_input_group(**{'cram': cram_object["output"], 'cram.crai': cram_object["output"]+ '.crai'})
-        cpg_sample_id = cram_object["sample_ids"][0]
+        crams = b.read_input_group(**{'cram': cram["output"], 'cram.crai': cram["output"]+ '.crai'})
+        cpg_sample_id = cram["sample_ids"][0]
         tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
         #Samtools job initialisation
         samtools_job = b.new_job(name = f'Index {cram}')
