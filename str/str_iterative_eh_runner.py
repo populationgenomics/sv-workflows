@@ -11,7 +11,6 @@ from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.model.analysis_query_model import AnalysisQueryModel
 from sample_metadata.apis import AnalysisApi, SampleApi
 from sample_metadata.models import AnalysisStatus
-xs
 from cpg_utils.config import get_config
 
 from cpg_utils.hail_batch import (
