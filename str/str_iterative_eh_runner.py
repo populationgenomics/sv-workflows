@@ -49,7 +49,7 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
     cpg_sample_id_to_tob_wgs_id = {cpg_id: tob_wgs_id for tob_wgs_id, cpg_id in tob_wgs_to_cpg_sample_id_map.items()}
 
     analysis_query_model = AnalysisQueryModel(
-        sample_ids=tob_wgs_to_cpg_sample_id_map.values(),
+        sample_ids=list(tob_wgs_to_cpg_sample_id_map.values()),
         projects=[DATASET],
         type=AnalysisType("cram"),
         status=AnalysisStatus("completed"),
