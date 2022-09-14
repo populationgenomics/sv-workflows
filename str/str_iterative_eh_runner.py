@@ -34,7 +34,7 @@ EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionh
 #variant catalog
 @click.option('--ehregions', help='Full path to Illumina Variants catalog')\
 #input TOB ID 
-@click.argument('tob-wgs-ids', help = 'TOB-WGS IDs eg TOB20000', nargs=-1)
+@click.argument('tob-wgs-ids', nargs=-1)
 @click.command()
 
 def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring 
