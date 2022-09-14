@@ -3,6 +3,8 @@
 import os
 import hailtop.batch as hb
 import click
+import sample_metadata
+
 
 from sample_metadata.models.analysis_type import AnalysisType
 from sample_metadata.models.analysis_query_model import AnalysisQueryModel
