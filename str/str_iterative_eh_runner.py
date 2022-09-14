@@ -7,8 +7,8 @@ import os
 import hailtop.batch as hb
 import click
 
-from sample_metadata.models.analysis_type import AnalysisType
-from sample_metadata.models.analysis_query_model import AnalysisQueryModel
+from sample_metadata.model.analysis_type import AnalysisType
+from sample_metadata.model.analysis_query_model import AnalysisQueryModel
 from sample_metadata.apis import AnalysisApi
 
 from cpg_utils.config import get_config
