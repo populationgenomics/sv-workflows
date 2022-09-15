@@ -62,6 +62,18 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
         meta={"sequence_type": "genome", "source": "nagim"}
     )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
+    
+    cpg_sids_with_crams = set(sid for sids in crams_path["sample_id"] for sid in sids)
+    cpg_sids_without_crams = (
+        set(cpg_sample_id_to_tob_wgs_id.keys()) - cpg_sids_with_crams
+    )
+    if cpg_sids_without_crams:
+        tob_wgs_sids_without_crams = ", ".join(
+            cpg_sample_id_to_tob_wgs_id[sid] for sid in cpg_sids_without_crams
+        )
+        logger.warning(
+            f"There were some samples without CRAMs: {tob_wgs_sids_without_crams}"
+        )
     EH_regions = b.read_input(variant_catalog)
 
     # Iterate over each sample to call Expansion Hunter
