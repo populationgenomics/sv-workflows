@@ -7,6 +7,8 @@ For example:
 analysis-runner --access-level test --dataset tob-wgs --description "tester" --output-dir "tester" str_iterative_eh_runner.py --ehregions=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json TOB1XXXX TOB1XXXX
 
 Required packages: sample-metadata, hail, click, os 
+pip install sample-metadata hail click
+
 """
 import os
 import hailtop.batch as hb
