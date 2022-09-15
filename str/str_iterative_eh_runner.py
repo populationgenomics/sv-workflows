@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
 """
-Running Batch script to use ExpansionHunter to call STRs on 10 TOB-WGS genomes. 
+This script uses ExpansionHunterv5 to call STRs on WGS cram files.
+Required input: --ehregions (file path to variant catalog) and external sample IDs 
+For example: 
+analysis-runner --access-level test --dataset tob-wgs --description "tester" --output-dir "tester" str_iterative_eh_runner.py --ehregions=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json TOB1XXXX TOB1XXXX
+
+Required packages: sample-metadata, hail, click, os 
 """
 import os
 import hailtop.batch as hb
@@ -29,8 +34,7 @@ REF_FASTA = os.path.join(config['workflow']['reference_prefix'], 'hg38/v0/Homo_s
 SAMTOOLS_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'samtools:v0')
 EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0')
 
-#required input
-
+#inputs: 
 #variant catalog
 @click.option('--ehregions', help='Full path to Illumina Variants catalog')\
 #input TOB ID 
@@ -59,14 +63,14 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
     EH_regions = b.read_input(ehregions)
 
     #Iterate over each sample and perform 3 jobs 1) Index CRAM 2) Expansion Hunter
-    for cram in crams_path:
+    for cram_obj in crams_path:
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
-        crams = b.read_input_group(**{'cram': cram["output"], 'cram.crai': cram["output"]+ '.crai'})
-        cpg_sample_id = cram["sample_ids"][0]
+        crams = b.read_input_group(**{'cram': cram_obj["output"], 'cram.crai': cram_obj["output"]+ '.crai'})
+        cpg_sample_id = cram_obj["sample_ids"][0]
         tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
         #Samtools job initialisation
-        samtools_job = b.new_job(name = f'Index {cram}')
+        samtools_job = b.new_job(name = f'Index {cpg_sample_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
         samtools_job.storage('200G')
         samtools_job.cpu(16)
@@ -83,10 +87,10 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         )
         
         # ExpansionHunter job initialisation
-        eh_job = b.new_job(name = f'{cram}_EH')
+        eh_job = b.new_job(name = f'ExpansionHunter:{cpg_sample_id} running')
         eh_job.image(EH_IMAGE)
         eh_job.depends_on(samtools_job)
-        eh_job.storage('200G')
+        eh_job.storage('30G')
         eh_job.cpu(8)
 
         eh_job.declare_resource_group(ofile = {'vcf': '{root}.vcf',
@@ -95,13 +99,16 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         })
 
         eh_job.command(f"""
-        ExpansionHunter --reads {crams['cram']} --reference {ref.base} --variant-catalog {EH_regions} --threads 16 --analysis-mode streaming --output-prefix {eh_job.ofile}
+        ExpansionHunter  \\
+        --reads {crams['cram']} \\
+        --reference {ref.base} --variant-catalog {EH_regions}\\
+         --threads 16 --analysis-mode streaming \\
+         --output-prefix {eh_job.eh_output}
         """
         )
         # ExpansionHunter output writing
-        eh_out_fname = f'{cram}_EH'
-        eh_output_path = output_path(f'{cram}_EH')
-        b.write_output(eh_job.ofile, eh_output_path)
+        eh_output_path = output_path(f'{tob_wgs_id}_EH')
+        b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
 
