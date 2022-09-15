@@ -100,7 +100,7 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
         eh_job.storage('50G')
         eh_job.cpu(8)
 
-        eh_job.declare_resource_group(ofile = {'vcf': '{root}.vcf',
+        eh_job.declare_resource_group(eh_output = {'vcf': '{root}.vcf',
                                                'json': '{root}.json',
                                                'realigned_bam': '{root}_realigned.bam'
         })
