@@ -69,13 +69,7 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         crams = b.read_input_group(**{'cram': cram_obj["output"], 'cram.crai': cram_obj["output"]+ '.crai'})
         cpg_sample_id = cram_obj["sample_ids"][0]
         tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
-        #Samtools job initialisation
-        samtools_job = b.new_job(name = f'Index {cpg_sample_id}')
-        samtools_job.image(SAMTOOLS_IMAGE)
-        samtools_job.storage('200G')
-        samtools_job.cpu(16)
-        samtools_job.command(f"""samtools index -@ 20 {crams['cram']}""")
-
+        
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
             **dict(
@@ -89,7 +83,6 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         # ExpansionHunter job initialisation
         eh_job = b.new_job(name = f'ExpansionHunter:{cpg_sample_id} running')
         eh_job.image(EH_IMAGE)
-        eh_job.depends_on(samtools_job)
         eh_job.storage('30G')
         eh_job.cpu(8)
 
@@ -107,7 +100,7 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         """
         )
         # ExpansionHunter output writing
-        eh_output_path = output_path(f'{tob_wgs_id}_EH')
+        eh_output_path = output_path(f'{cpg_sample_id}_EH')
         b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
