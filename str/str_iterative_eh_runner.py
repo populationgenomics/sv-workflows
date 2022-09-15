@@ -38,12 +38,12 @@ EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionh
 
 #inputs: 
 #variant catalog
-@click.option('--ehregions', help='Full path to Illumina Variants catalog')\
+@click.option('--variant-catalog', help='Full path to Illumina Variants catalog')\
 #input TOB ID 
 @click.argument('tob-wgs-ids', nargs=-1)
 @click.command()
 
-def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring 
+def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring 
    # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
@@ -62,7 +62,7 @@ def main(ehregions, tob_wgs_ids: list[str]):  # pylint: disable=missing-function
         meta={"sequence_type": "genome", "source": "nagim"}
     )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
-    EH_regions = b.read_input(ehregions)
+    EH_regions = b.read_input(variant_catalog)
 
     #Iterate over each sample and perform 3 jobs 1) Index CRAM 2) Expansion Hunter
     for cram_obj in crams_path:
