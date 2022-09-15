@@ -36,10 +36,10 @@ REF_FASTA = os.path.join(config['workflow']['reference_prefix'], 'hg38/v0/Homo_s
 SAMTOOLS_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'samtools:v0')
 EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0')
 
-#inputs: 
-#variant catalog
+# inputs: 
+# variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')\
-#input TOB ID 
+# input TOB ID 
 @click.argument('tob-wgs-ids', nargs=-1)
 @click.command()
 
@@ -64,7 +64,7 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     EH_regions = b.read_input(variant_catalog)
 
-    #Iterate over each sample and perform 3 jobs 1) Index CRAM 2) Expansion Hunter
+    # Iterate over each sample to call Expansion Hunter
     for cram_obj in crams_path:
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
@@ -85,7 +85,7 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
         # ExpansionHunter job initialisation
         eh_job = b.new_job(name = f'ExpansionHunter:{cpg_sample_id} running')
         eh_job.image(EH_IMAGE)
-        eh_job.storage('30G')
+        eh_job.storage('50G')
         eh_job.cpu(8)
 
         eh_job.declare_resource_group(ofile = {'vcf': '{root}.vcf',
