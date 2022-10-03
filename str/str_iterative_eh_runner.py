@@ -13,6 +13,7 @@ pip install sample-metadata hail click
 import os
 import hailtop.batch as hb
 import click
+import logging
 
 from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.model.analysis_query_model import AnalysisQueryModel
@@ -70,7 +71,7 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
         tob_wgs_sids_without_crams = ", ".join(
             cpg_sample_id_to_tob_wgs_id[sid] for sid in cpg_sids_without_crams
         )
-        logger.warning(
+        logging.warning(
             f"There were some samples without CRAMs: {tob_wgs_sids_without_crams}"
         )
     EH_regions = b.read_input(variant_catalog)
