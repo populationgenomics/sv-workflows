@@ -2,9 +2,9 @@
 
 """
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
-Required input: --ehregions (file path to variant catalog) and external sample IDs 
+Required input: --variant-catalog (file path to variant catalog), --project-id, and external sample IDs 
 For example: 
-analysis-runner --access-level test --dataset tob-wgs --description "tester" --output-dir "tester" str_iterative_eh_runner.py --ehregions=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json TOB1XXXX TOB1XXXX
+analysis-runner --access-level test --dataset tob-wgs --description "tester" --output-dir "tester" str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --project-id=tob-wgs TOB1XXXX TOB1XXXX
 
 Required packages: sample-metadata, hail, click, os 
 pip install sample-metadata hail click
@@ -40,11 +40,13 @@ EH_IMAGE = os.path.join(config['workflow']['image_registry_prefix'], 'expansionh
 # inputs: 
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')\
-# input TOB ID 
-@click.argument('tob-wgs-ids', nargs=-1)
+# input project ID 
+@click.option('--project-id', help= 'project-id eg tob-wgs')
+# input sample ID 
+@click.argument('external-wgs-ids', nargs=-1)
 @click.command()
 
-def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring 
+def main(variant_catalog, project_id, external_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring 
    # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
@@ -52,12 +54,13 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
-    tob_wgs_to_cpg_sample_id_map: dict[str, str] = SampleApi().get_sample_id_map_by_external('tob-wgs',list(tob_wgs_ids))
-    cpg_sample_id_to_tob_wgs_id = {cpg_id: tob_wgs_id for tob_wgs_id, cpg_id in tob_wgs_to_cpg_sample_id_map.items()}
+
+    external_wgs_to_cpg_sample_id_map: dict[str, str] = SampleApi().get_sample_id_map_by_external(project_id,list(external_wgs_ids))
+    cpg_sample_id_to_external_wgs_id = {cpg_id: external_wgs_id for external_wgs_id, cpg_id in external_wgs_to_cpg_sample_id_map.items()}
 
     analysis_query_model = AnalysisQueryModel(
-        sample_ids=list(tob_wgs_to_cpg_sample_id_map.values()),
-        projects=['tob-wgs'],
+        sample_ids=list(external_wgs_to_cpg_sample_id_map.values()),
+        projects=[project_id],
         type=AnalysisType("cram"),
         status=AnalysisStatus("completed"),
         meta={"sequence_type": "genome", "source": "nagim"}
@@ -65,14 +68,14 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids["sample_ids"])
     cpg_sids_without_crams = (
-        set(cpg_sample_id_to_tob_wgs_id.keys()) - cpg_sids_with_crams
+        set(cpg_sample_id_to_external_wgs_id.keys()) - cpg_sids_with_crams
     )
     if cpg_sids_without_crams:
-        tob_wgs_sids_without_crams = ", ".join(
-            cpg_sample_id_to_tob_wgs_id[sid] for sid in cpg_sids_without_crams
+        external_wgs_sids_without_crams = ", ".join(
+            cpg_sample_id_to_external_wgs_id[sid] for sid in cpg_sids_without_crams
         )
         logging.warning(
-            f"There were some samples without CRAMs: {tob_wgs_sids_without_crams}"
+            f"There were some samples without CRAMs: {external_wgs_sids_without_crams}"
         )
     EH_regions = b.read_input(variant_catalog)
 
@@ -82,7 +85,7 @@ def main(variant_catalog, tob_wgs_ids: list[str]):  # pylint: disable=missing-fu
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(**{'cram': cram_obj["output"], 'cram.crai': cram_obj["output"]+ '.crai'})
         cpg_sample_id = cram_obj["sample_ids"][0]
-        tob_wgs_id = cpg_sample_id_to_tob_wgs_id[cpg_sample_id]
+        external_wgs_id = cpg_sample_id_to_external_wgs_id[cpg_sample_id]
         
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
