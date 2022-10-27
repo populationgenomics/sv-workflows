@@ -24,8 +24,6 @@ from sample_metadata.models import AnalysisStatus
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import (
-    authenticate_cloud_credentials_in_job,
-    copy_common_env,
     remote_tmpdir,
     output_path,
 )
@@ -64,16 +62,16 @@ def main(
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
-    external_wgs_to_cpg_sample_id_map: dict[
+    external_id_to_cpg_id: dict[
         str, str
     ] = SampleApi().get_sample_id_map_by_external(project_id, list(external_wgs_ids))
-    cpg_sample_id_to_external_wgs_id = {
+    cpg_id_to_external_id = {
         cpg_id: external_wgs_id
-        for external_wgs_id, cpg_id in external_wgs_to_cpg_sample_id_map.items()
+        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
 
     analysis_query_model = AnalysisQueryModel(
-        sample_ids=list(external_wgs_to_cpg_sample_id_map.values()),
+        sample_ids=list(external_id_to_cpg_id.values()),
         projects=[project_id],
         type=AnalysisType('cram'),
         status=AnalysisStatus('completed'),
@@ -82,11 +80,11 @@ def main(
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
     cpg_sids_without_crams = (
-        set(cpg_sample_id_to_external_wgs_id.keys()) - cpg_sids_with_crams
+        set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
     )
     if cpg_sids_without_crams:
         external_wgs_sids_without_crams = ', '.join(
-            cpg_sample_id_to_external_wgs_id[sid] for sid in cpg_sids_without_crams
+            cpg_id_to_external_id[sid] for sid in cpg_sids_without_crams
         )
         logging.warning(
             f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
@@ -101,7 +99,6 @@ def main(
             **{'cram': cram_obj['output'], 'cram.crai': cram_obj['output'] + '.crai'}
         )
         cpg_sample_id = cram_obj['sample_ids'][0]
-        external_wgs_id = cpg_sample_id_to_external_wgs_id[cpg_sample_id]
 
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
