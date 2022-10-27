@@ -22,4 +22,3 @@ curl --location \
         "cwd": "gatk-sv/test/Module00b/WGD",
         "description": "WGD on NA12878"
     }'
-

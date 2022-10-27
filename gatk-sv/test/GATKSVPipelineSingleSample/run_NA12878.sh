@@ -23,4 +23,3 @@ curl --location \
         "cwd": "gatk-sv/test/GATKSVPipelineSingleSample",
         "description": "Single sample pipeline on NA12878"
     }'
-
