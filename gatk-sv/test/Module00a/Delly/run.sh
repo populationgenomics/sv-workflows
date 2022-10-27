@@ -23,4 +23,3 @@ curl --location \
         "cwd": "gatk-sv/test/Module00a/Delly",
         "description": "Delly on NA12878"
     }'
-

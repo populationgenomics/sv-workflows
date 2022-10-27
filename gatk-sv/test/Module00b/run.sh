@@ -23,4 +23,3 @@ curl --location \
         "cwd": "gatk-sv/test/Module00b",
         "description": "Module00b on NA12878"
     }'
-

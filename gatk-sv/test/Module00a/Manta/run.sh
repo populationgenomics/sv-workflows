@@ -23,4 +23,3 @@ curl --location \
         "cwd": "gatk-sv/test/Module00a/Manta",
         "description": "Manta on NA12878"
     }'
-

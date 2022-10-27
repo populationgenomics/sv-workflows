@@ -12,7 +12,7 @@ workflow GatherSampleEvidenceBatch {
     # Use only for crams in requester pays buckets
     Boolean requester_pays_crams = false
 
-    # Use to revise Y, R, W, S, K, M, D, H, V, B, X bases in BAM to N. Use only if providing a CRAM file as input 
+    # Use to revise Y, R, W, S, K, M, D, H, V, B, X bases in BAM to N. Use only if providing a CRAM file as input
     # May be more expensive - use only if necessary
     Boolean revise_base_cram_to_bam = false
     File? primary_contigs_fai # required if using revise_base_cram_to_bam
