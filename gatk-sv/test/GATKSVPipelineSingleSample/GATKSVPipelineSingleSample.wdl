@@ -356,7 +356,7 @@ workflow GATKSVPipelineSingleSample {
     File pe_exclude_list
     File depth_exclude_list
     File empty_file
-    
+
     Int clean_vcf_max_shards_per_chrom_clean_vcf_step1
     Int clean_vcf_min_records_per_shard_clean_vcf_step1
     Int clean_vcf_samples_per_clean_vcf_step2_shard

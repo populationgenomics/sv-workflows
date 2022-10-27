@@ -40,7 +40,7 @@ workflow Whamg {
 
   File bam_file = select_first([RunCramToBam.bam_file, bam_or_cram_file])
   File bam_index = select_first([RunCramToBam.bam_index, bam_or_cram_index, bam_or_cram_file + ".bai"])
-  
+
   # decide whether to use includelist version or baseline
   Boolean use_include_list = defined(include_bed_file)
 

@@ -141,7 +141,7 @@ workflow GatherBatchEvidence {
     File cnmops_allo_file
     Int? cnmops_large_min_size      # minimum size call to be detected by CNMOPS running in large mode
 
-    # Resolve files 
+    # Resolve files
     File cytoband
     File mei_bed
     # QC files
@@ -582,7 +582,7 @@ workflow GatherBatchEvidence {
     File? SR_stats = MatrixQC.SR_stats
     File? BAF_stats = MatrixQC.BAF_stats
     File? Matrix_QC_plot = MatrixQC.QC_plot
-    
+
     Array[File]? manta_tloc = TinyResolve.tloc_manta_vcf
 
     File? metrics_file_batchevidence = GatherBatchEvidenceMetrics.metrics_file

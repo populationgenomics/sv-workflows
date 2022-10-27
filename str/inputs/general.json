@@ -3,4 +3,3 @@
   "ExpansionHunter.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
   "ExpansionHunter.variant_catalog": "gs://cpg-reference/hg38/v0/str/expansionhunter/variant_catalog_hg38_2021-08-18.json"
 }
-

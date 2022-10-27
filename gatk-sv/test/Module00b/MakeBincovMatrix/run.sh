@@ -23,4 +23,3 @@ curl --location \
         "cwd": "gatk-sv/test/Module00b/MakeBincovMatrix",
         "description": "MakeBincovMatrix on NA12878"
     }'
-
