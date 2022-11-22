@@ -69,7 +69,6 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-
     if project_id == 'tob-wgs':
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
@@ -78,7 +77,7 @@ def main(
             status=AnalysisStatus('completed'),
             meta={'sequence_type': 'genome', 'source': 'nagim'},
         )
-    else: 
+    else:
          analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[project_id],
