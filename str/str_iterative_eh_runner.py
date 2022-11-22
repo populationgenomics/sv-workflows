@@ -78,7 +78,7 @@ def main(
             meta={'sequence_type': 'genome', 'source': 'nagim'},
         )
     else:
-         analysis_query_model = AnalysisQueryModel(
+        analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[project_id],
             type=AnalysisType('cram'),
