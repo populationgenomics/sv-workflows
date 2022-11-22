@@ -69,14 +69,22 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-
-    analysis_query_model = AnalysisQueryModel(
-        sample_ids=list(external_id_to_cpg_id.values()),
-        projects=[project_id],
-        type=AnalysisType('cram'),
-        status=AnalysisStatus('completed'),
-        meta={'sequence_type': 'genome', 'source': 'nagim'},
-    )
+    if project_id == 'tob-wgs':
+        analysis_query_model = AnalysisQueryModel(
+            sample_ids=list(external_id_to_cpg_id.values()),
+            projects=[project_id],
+            type=AnalysisType('cram'),
+            status=AnalysisStatus('completed'),
+            meta={'sequence_type': 'genome', 'source': 'nagim'},
+        )
+    else: 
+         analysis_query_model = AnalysisQueryModel(
+            sample_ids=list(external_id_to_cpg_id.values()),
+            projects=[project_id],
+            type=AnalysisType('cram'),
+            status=AnalysisStatus('completed'),
+            meta={},
+        )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
     cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
