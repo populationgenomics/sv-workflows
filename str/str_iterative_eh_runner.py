@@ -33,6 +33,12 @@ config = get_config()
 DATASET = config['workflow']['dataset']
 OUTPUT_SUFFIX = config['workflow']['output_prefix']
 BILLING_PROJECT = config['hail']['billing_project']
+SAMTOOLS_IMAGE = os.path.join(
+    config['workflow']['image_registry_prefix'], 'samtools:v0'
+)
+EH_IMAGE = os.path.join(
+    config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0'
+)
 
 # inputs:
 # variant catalog
@@ -42,22 +48,6 @@ BILLING_PROJECT = config['hail']['billing_project']
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
-
-if project_id == 'tob-wgs':
-    REF_FASTA = os.path.join(
-        config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta'
-    )
-else:
-    REF_FASTA = os.path.join(
-        config['workflow']['reference_prefix'], 'hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
-    )
-SAMTOOLS_IMAGE = os.path.join(
-    config['workflow']['image_registry_prefix'], 'samtools:v0'
-)
-EH_IMAGE = os.path.join(
-    config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0'
-)
-
 def main(
     variant_catalog, project_id, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
@@ -76,6 +66,9 @@ def main(
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
     if project_id == 'tob-wgs':
+        REF_FASTA = os.path.join(
+        config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta'
+        )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[project_id],
@@ -84,6 +77,9 @@ def main(
             meta={'sequence_type': 'genome', 'source': 'nagim'},
         )
     else:
+        REF_FASTA = os.path.join(
+        config['workflow']['reference_prefix'], 'hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
+        )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[project_id],
