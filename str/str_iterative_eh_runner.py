@@ -66,8 +66,9 @@ def main(
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
     if project_id == 'tob-wgs':
-        REF_FASTA = os.path.join(
-        config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta'
+        ref_fasta = os.path.join(
+            config['workflow']['reference_prefix'],
+            'hg38/v0/Homo_sapiens_assembly38.fasta',
         )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
@@ -77,8 +78,9 @@ def main(
             meta={'sequence_type': 'genome', 'source': 'nagim'},
         )
     else:
-        REF_FASTA = os.path.join(
-        config['workflow']['reference_prefix'], 'hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
+        ref_fasta = os.path.join(
+            config['workflow']['reference_prefix'],
+            'hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta',
         )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
@@ -111,9 +113,9 @@ def main(
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
             **dict(
-                base=REF_FASTA,
-                fai=REF_FASTA + '.fai',
-                dict=REF_FASTA.replace('.fasta', '')
+                base=ref_fasta,
+                fai=ref_fasta + '.fai',
+                dict=ref_fasta.replace('.fasta', '')
                 .replace('.fna', '')
                 .replace('.fa', '')
                 + '.dict',
