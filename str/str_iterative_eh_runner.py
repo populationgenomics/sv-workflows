@@ -40,6 +40,7 @@ EH_IMAGE = os.path.join(
     config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0'
 )
 
+
 # inputs:
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
@@ -48,6 +49,7 @@ EH_IMAGE = os.path.join(
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
+
 def main(
     variant_catalog, project_id, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
