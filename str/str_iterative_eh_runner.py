@@ -33,9 +33,14 @@ config = get_config()
 DATASET = config['workflow']['dataset']
 OUTPUT_SUFFIX = config['workflow']['output_prefix']
 BILLING_PROJECT = config['hail']['billing_project']
-REF_FASTA = os.path.join(
-    config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta'
-)
+if project_id == 'tob-wgs':
+    REF_FASTA = os.path.join(
+        config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta'
+    )
+else:
+    REF_FASTA = os.path.join(
+        config['workflow']['reference_prefix'], 'hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
+    )
 SAMTOOLS_IMAGE = os.path.join(
     config['workflow']['image_registry_prefix'], 'samtools:v0'
 )
