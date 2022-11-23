@@ -33,6 +33,16 @@ config = get_config()
 DATASET = config['workflow']['dataset']
 OUTPUT_SUFFIX = config['workflow']['output_prefix']
 BILLING_PROJECT = config['hail']['billing_project']
+
+# inputs:
+# variant catalog
+@click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
+# input project ID
+@click.option('--project-id', help='project-id eg tob-wgs')
+# input sample ID
+@click.argument('external-wgs-ids', nargs=-1)
+@click.command()
+
 if project_id == 'tob-wgs':
     REF_FASTA = os.path.join(
         config['workflow']['reference_prefix'], 'hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -48,15 +58,6 @@ EH_IMAGE = os.path.join(
     config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0'
 )
 
-
-# inputs:
-# variant catalog
-@click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
-# input project ID
-@click.option('--project-id', help='project-id eg tob-wgs')
-# input sample ID
-@click.argument('external-wgs-ids', nargs=-1)
-@click.command()
 def main(
     variant_catalog, project_id, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
