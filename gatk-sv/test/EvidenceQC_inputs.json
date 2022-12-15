@@ -7,6 +7,6 @@
   "EvidenceQC.sv_pipeline_qc_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-pipeline-qc:mw-gnomad-0506-pr-087d4df",
   "EvidenceQC.sv_base_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/sv-base:mw-gnomad-0506-pr-087d4df",
 
-  "EvidenceQC.wgd_scoring_mask": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/wgd_scoring_mask.hg38.gnomad_v3.bed",
-  "EvidenceQC.genome_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/hg38.genome"
+  "EvidenceQC.wgd_scoring_mask": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/wgd_scoring_mask.hg38.gnomad_v3.bed",
+  "EvidenceQC.genome_file": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/hg38.genome"
 }

@@ -1,7 +1,7 @@
 {
-  "Delly.exclude_intervals_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/delly_human.hg38.excl.tsv",
-  "Delly.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
-  "Delly.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "Delly.exclude_intervals_file": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/delly_human.hg38.excl.tsv",
+  "Delly.reference_fasta": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "Delly.reference_index": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
   "Delly.delly_docker": "us.gcr.io/broad-dsde-methods/delly:8645aa",
   "Delly.sv_base_mini_docker": "us.gcr.io/broad-dsde-methods/gatk-sv/sv-base-mini:rlc_posthoc_filtering_cnv_mcnv_compatability_9a8561"
 }
