@@ -1,8 +1,8 @@
 {
-  "Whamg.chr_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
-  "Whamg.include_bed_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/wham_whitelist.bed",
-  "Whamg.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
-  "Whamg.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "Whamg.chr_file": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
+  "Whamg.include_bed_file": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/wham_whitelist.bed",
+  "Whamg.reference_fasta": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "Whamg.reference_index": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
   "Whamg.wham_docker": "us.gcr.io/broad-dsde-methods/wham:8645aa",
   "Whamg.samtools_cloud_docker": "us.gcr.io/broad-dsde-methods/gatk-sv/samtools-cloud:mw-gnomad-02-6a66c96"
 }

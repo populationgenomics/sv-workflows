@@ -15,7 +15,7 @@ TAG="${LOCATION}-docker.pkg.dev/${PROJECT}/${REPO}/${TOOL}:${VERSION}"
 # Needs local MELT tarball
 if [[ ! -f  "$TARBALL" ]]; then
     echo "Downloading MELT tarball from Google Cloud Storage"
-    gsutil cp gs://cpg-reference/sv/MELT/${TARBALL} .
+    gsutil cp gs://cpg-common-main/references/sv/MELT/${TARBALL} .
 fi
 
 docker image build --tag "${TAG}" --build-arg MELT_RELEASE="${VERSION}" .

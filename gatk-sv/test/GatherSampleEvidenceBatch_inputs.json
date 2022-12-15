@@ -1,7 +1,7 @@
 {
-  "GatherSampleEvidenceBatch.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
-  "GatherSampleEvidenceBatch.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
-  "GatherSampleEvidenceBatch.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
+  "GatherSampleEvidenceBatch.reference_fasta": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "GatherSampleEvidenceBatch.reference_index": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "GatherSampleEvidenceBatch.reference_dict": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.dict",
 
   "GatherSampleEvidenceBatch.cloud_sdk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/cloud-sdk",
   "GatherSampleEvidenceBatch.gatk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
@@ -16,11 +16,11 @@
   "GatherSampleEvidenceBatch.wham_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/wham:8645aa",
   "GatherSampleEvidenceBatch.melt_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/melt:2.2.2",
 
-  "GatherSampleEvidenceBatch.wham_include_list_bed_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/wham_whitelist.bed",
-  "GatherSampleEvidenceBatch.delly_exclude_intervals_file": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/delly_human.hg38.excl.tsv",
-  "GatherSampleEvidenceBatch.primary_contigs_list": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
-  "GatherSampleEvidenceBatch.primary_contigs_fai": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/contig.fai",
-  "GatherSampleEvidenceBatch.preprocessed_intervals": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/preprocessed_intervals.interval_list",
-  "GatherSampleEvidenceBatch.manta_region_bed": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/primary_contigs_plus_mito.bed.gz",
-  "GatherSampleEvidenceBatch.melt_standard_vcf_header": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/melt_standard_vcf_header.txt"
+  "GatherSampleEvidenceBatch.wham_include_list_bed_file": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/wham_whitelist.bed",
+  "GatherSampleEvidenceBatch.delly_exclude_intervals_file": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/delly_human.hg38.excl.tsv",
+  "GatherSampleEvidenceBatch.primary_contigs_list": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/primary_contigs.list",
+  "GatherSampleEvidenceBatch.primary_contigs_fai": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/contig.fai",
+  "GatherSampleEvidenceBatch.preprocessed_intervals": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/preprocessed_intervals.interval_list",
+  "GatherSampleEvidenceBatch.manta_region_bed": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/primary_contigs_plus_mito.bed.gz",
+  "GatherSampleEvidenceBatch.melt_standard_vcf_header": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/melt_standard_vcf_header.txt"
 }

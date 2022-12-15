@@ -5,14 +5,14 @@
   "TrainGCNV.gatk_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:4.1.8.1",
   "TrainGCNV.linux_docker": "australia-southeast1-docker.pkg.dev/cpg-common/images/ubuntu1804",
 
-  "TrainGCNV.reference_fasta": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta",
-  "TrainGCNV.reference_index": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
-  "TrainGCNV.reference_dict": "gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.dict",
+  "TrainGCNV.reference_fasta": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "TrainGCNV.reference_index": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta.fai",
+  "TrainGCNV.reference_dict": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.dict",
 
   "TrainGCNV.ref_copy_number_autosomal_contigs": "2",
   "TrainGCNV.allosomal_contigs": ["chrX", "chrY"],
 
-  "TrainGCNV.contig_ploidy_priors": "gs://cpg-reference/hg38/v0/sv-resources/resources/v1/hg38.contig_ploidy_priors_homo_sapiens.tsv",
+  "TrainGCNV.contig_ploidy_priors": "gs://cpg-common-main/references/hg38/v0/sv-resources/resources/v1/hg38.contig_ploidy_priors_homo_sapiens.tsv",
   "TrainGCNV.num_intervals_per_scatter": "5000",
   "TrainGCNV.do_explicit_gc_correction": "true",
   "TrainGCNV.gcnv_enable_bias_factors": "false",
