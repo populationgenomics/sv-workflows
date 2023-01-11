@@ -42,7 +42,7 @@ GANGSTR_IMAGE = os.path.join(
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
 # input project ID
-@click.option('--project-id', help='project-id eg tob-wgs')
+@click.option('--dataset', help='dataset to operate on, eg: tob-wgs')
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
