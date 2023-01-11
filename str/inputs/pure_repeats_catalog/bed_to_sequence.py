@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Converts coordinates in BED file to FASTA sequence 
+Converts coordinates in BED file to FASTA sequence
 """
 import os
 import hailtop.batch as hb
@@ -25,14 +25,14 @@ REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fas
 
 @click.command()
 
-def main():  # pylint: disable=missing-function-docstring 
+def main():  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
-    b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))   
+    b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))  
     bedtools_job = b.new_job(name = f'Get sequence data for FASTA files')
     catalog = b.read_input(CATALOG_PATH)
     fasta = b.read_input(REF_FASTA)
@@ -46,7 +46,7 @@ def main():  # pylint: disable=missing-function-docstring
         
         """)
 
-    #Output writing 
+    #Output writing
     out_fname = f'catalog_fasta_sequences.fasta'
     output_path = f'gs://cpg-tob-wgs-test/hoptan-str/{out_fname}'
     b.write_output(bedtools_job.ofile, output_path)
@@ -54,4 +54,4 @@ def main():  # pylint: disable=missing-function-docstring
     b.run(wait=False)
 
 if __name__ == '__main__':
-    main() 
+    main()
