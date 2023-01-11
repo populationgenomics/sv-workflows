@@ -28,7 +28,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
-GANGSTR_IMAGE = config ['images']['gangstr']
+GANGSTR_IMAGE = config['images']['gangstr']
 
 
 # inputs:
