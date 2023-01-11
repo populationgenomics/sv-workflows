@@ -51,7 +51,7 @@ def main(
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
-        billing_project=get_config()['hail']['billing_project'],
+        billing_project=config['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
