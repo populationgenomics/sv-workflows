@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error
-# pylint: disable=duplicate-code
+# pylint: disable=import-error,duplicate-code
 
 """
 This script uses GangSTRv2.5 to call STRs on WGS cram files.
