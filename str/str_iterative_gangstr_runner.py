@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
+# pylint: disable=duplicate-code
 
 """
 This script uses GangSTRv2.5 to call STRs on WGS cram files.
@@ -23,11 +24,7 @@ from sample_metadata.apis import AnalysisApi, SampleApi
 from sample_metadata.models import AnalysisStatus
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import (
-    remote_tmpdir,
-    output_path,
-    reference_path
-)
+from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
 config = get_config()
 
@@ -68,7 +65,9 @@ def main(
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
     if project_id == 'tob-wgs':
-        ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
+        ref_fasta = (
+            'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
+        )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[project_id],
@@ -128,7 +127,7 @@ def main(
             gangstr_output={
                 'vcf': '{root}.vcf',
                 'insdata': '{root}.insdata.tab',
-                'samplestats': '{root}.samplestats.tab'
+                'samplestats': '{root}.samplestats.tab',
             }
         )
 
