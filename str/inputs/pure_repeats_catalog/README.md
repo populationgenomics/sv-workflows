@@ -4,7 +4,7 @@ Remove complex repeats from Illumina’s 174k loci catalog (.JSON). Convert .JSO
 
   **Motivation**: [Broad’s approach](https://gnomad.broadinstitute.org/news/2022-01-the-addition-of-short-tandem-repeat-calls-to-gnomad/), citing improved EH accuracy when looking at only pure repeats
 
-Input BED catalog file into BEDTOOLS to extract FASTA sequence of each locus. [Script](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/bed_to_sequence.py) [FASTA](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/catalog_fasta_sequences.fasta.txt) [Hail batch](https://batch.hail.populationgenomics.org.au/batches/420088)
+Input BED catalog file into BEDTOOLS to extract FASTA sequence of each locus. [Script](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/bed_to_fasta.py) [FASTA](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/catalog_fasta_sequences.fasta.txt) [Hail batch](https://batch.hail.populationgenomics.org.au/batches/420088)
 
 Run TandemRepeatFinder v4.09 on the BED catalog (completed locally).
 
