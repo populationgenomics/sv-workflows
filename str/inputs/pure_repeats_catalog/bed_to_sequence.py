@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Converts BED file to FASTA sequence 
+Converts coordinates in BED file to FASTA sequence 
 """
 import os
 import hailtop.batch as hb
