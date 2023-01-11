@@ -10,8 +10,6 @@ import click
 from cpg_utils.config import get_config
 
 from cpg_utils.hail_batch import (
-    authenticate_cloud_credentials_in_job,
-    copy_common_env,
     remote_tmpdir,
 )
 config = get_config()
@@ -22,7 +20,7 @@ BILLING_PROJECT = os.getenv('HAIL_BILLING_PROJECT')
 ACCESS_LEVEL = os.getenv('ACCESS_LEVEL')
 
 CATALOG_PATH = 'gs://cpg-tob-wgs-test/hoptan-str/bed_catalog_without_complex_repeats.bed.txt'
-BEDTOOLS_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/bedtools:v2.30.0"
+BEDTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/bedtools:v2.30.0'
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
 
 @click.command()
@@ -39,8 +37,8 @@ def main():  # pylint: disable=missing-function-docstring
     catalog = b.read_input(CATALOG_PATH)
     fasta = b.read_input(REF_FASTA)
     bedtools_job.image(BEDTOOLS_IMAGE)
-    bedtools_job.storage('200G')
-    bedtools_job.cpu(16)
+    bedtools_job.storage('20G')
+    bedtools_job.cpu(8)
 
     bedtools_job.command(f"""
 
