@@ -88,7 +88,7 @@ def main(
         )
     gangstr_regions = b.read_input(variant_catalog)
 
-    # Iterate over each sample to call Expansion Hunter
+    # Iterate over each sample to call GangSTR
     for cram_obj in crams_path:
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
@@ -109,7 +109,7 @@ def main(
             )
         )
 
-        # ExpansionHunter job initialisation
+        # GangSTR job initialisation
         gangstr_job = b.new_job(name=f'GangSTR:{cpg_sample_id} running')
         gangstr_job.image(GANGSTR_IMAGE)
         gangstr_job.storage('50G')
