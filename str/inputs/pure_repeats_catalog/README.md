@@ -1,6 +1,6 @@
 # Workflow:
 
-1) Remove complex repeats from Illumina’s 174k loci catalog (.JSON). Convert .JSON to BED file format. [Script](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/Illumina%20catalog%20to%20BED%20file%20conversion.ipynb) [BED File](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/bed_catalog_without_complex_repeats.bed)
+1) Remove complex repeats from Illumina’s 174k loci catalog (.JSON). Convert .JSON to BED file format. [Script](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/Illumina%20catalog%20to%20BED%20file%20conversion.ipynb) [BED](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/bed_catalog_without_complex_repeats.bed)
 
   **Motivation**: [Broad’s approach](https://gnomad.broadinstitute.org/news/2022-01-the-addition-of-short-tandem-repeat-calls-to-gnomad/), citing improved EH accuracy when looking at only pure repeats
 
