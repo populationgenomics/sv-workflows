@@ -34,13 +34,13 @@ GANGSTR_IMAGE = config['images']['gangstr']
 # inputs:
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
-# input project ID
+# input dataset
 @click.option('--dataset', help='dataset to operate on, eg: tob-wgs')
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
 def main(
-    variant_catalog, project_id, external_wgs_ids: list[str]
+    variant_catalog, dataset, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -50,19 +50,19 @@ def main(
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        project_id, list(external_wgs_ids)
+        dataset, list(external_wgs_ids)
     )
     cpg_id_to_external_id = {
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    if project_id == 'tob-wgs':
+    if dataset == 'tob-wgs':
         ref_fasta = (
             'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[project_id],
+            projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
             meta={'sequence_type': 'genome', 'source': 'nagim'},
@@ -71,7 +71,7 @@ def main(
         ref_fasta = reference_path('broad/ref_fasta')
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[project_id],
+            projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
             meta={},
