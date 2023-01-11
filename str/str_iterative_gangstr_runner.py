@@ -126,7 +126,7 @@ def main(
 
         gangstr_job.declare_resource_group(
             gangstr_output={
-                vcf': '{root}.vcf',
+                'vcf': '{root}.vcf',
                 'insdata': '{root}.insdata.tab',
                 'samplestats': '{root}.samplestats.tab'
             }
