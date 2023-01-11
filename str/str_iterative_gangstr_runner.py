@@ -30,9 +30,7 @@ config = get_config()
 DATASET = config['workflow']['dataset']
 OUTPUT_SUFFIX = config['workflow']['output_prefix']
 BILLING_PROJECT = config['hail']['billing_project']
-SAMTOOLS_IMAGE = os.path.join(
-    config['workflow']['image_registry_prefix'], 'samtools:v0'
-)
+SAMTOOLS_IMAGE = config['images']['samtools']
 GANGSTR_IMAGE = os.path.join(
     config['workflow']['image_registry_prefix'], 'gangstr:v2.5'
 )
