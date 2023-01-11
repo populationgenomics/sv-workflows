@@ -3,9 +3,9 @@
 
 """
 This script uses GangSTRv2.5 to call STRs on WGS cram files.
-Required input: --variant-catalog (file path to variant catalog), --project-id, and external sample IDs
+Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_gangstr_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --project-id=tob-wgs TOB1XXXX TOB1XXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_gangstr_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs TOB1XXXX TOB1XXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -27,13 +27,8 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
 config = get_config()
 
-DATASET = config['workflow']['dataset']
-OUTPUT_SUFFIX = config['workflow']['output_prefix']
-BILLING_PROJECT = config['hail']['billing_project']
 SAMTOOLS_IMAGE = config['images']['samtools']
-GANGSTR_IMAGE = os.path.join(
-    config['workflow']['image_registry_prefix'], 'gangstr:v2.5'
-)
+GANGSTR_IMAGE = config ['images']['gangstr']
 
 
 # inputs:
