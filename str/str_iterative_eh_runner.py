@@ -3,9 +3,9 @@
 
 """
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
-Required input: --variant-catalog (file path to variant catalog), --project-id, and external sample IDs
+Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --project-id=tob-wgs TOB1XXXX TOB1XXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs TOB1XXXX TOB1XXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -23,34 +23,24 @@ from sample_metadata.apis import AnalysisApi, SampleApi
 from sample_metadata.models import AnalysisStatus
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import (
-    remote_tmpdir,
-    output_path,
-)
+from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
 config = get_config()
 
-DATASET = config['workflow']['dataset']
-OUTPUT_SUFFIX = config['workflow']['output_prefix']
-BILLING_PROJECT = config['hail']['billing_project']
-SAMTOOLS_IMAGE = os.path.join(
-    config['workflow']['image_registry_prefix'], 'samtools:v0'
-)
-EH_IMAGE = os.path.join(
-    config['workflow']['image_registry_prefix'], 'expansionhunter:5.0.0'
-)
+SAMTOOLS_IMAGE = config['images']['samtools']
+EH_IMAGE = config['images']['expansionhunter']
 
 
 # inputs:
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
-# input project ID
-@click.option('--project-id', help='project-id eg tob-wgs')
+# input dataset
+@click.option('--dataset', help='dataset eg tob-wgs')
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
 def main(
-    variant_catalog, project_id, external_wgs_ids: list[str]
+    variant_catalog, dataset, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -60,32 +50,28 @@ def main(
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        project_id, list(external_wgs_ids)
+        dataset, list(external_wgs_ids)
     )
     cpg_id_to_external_id = {
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    if project_id == 'tob-wgs':
-        ref_fasta = os.path.join(
-            config['workflow']['reference_prefix'],
-            'hg38/v0/Homo_sapiens_assembly38.fasta',
+    if dataset == 'tob-wgs':
+        ref_fasta = (
+            'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[project_id],
+            projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
             meta={'sequence_type': 'genome', 'source': 'nagim'},
         )
     else:
-        ref_fasta = os.path.join(
-            config['workflow']['reference_prefix'],
-            'hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta',
-        )
+        ref_fasta = reference_path('broad/ref_fasta')
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[project_id],
+            projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
             meta={},
