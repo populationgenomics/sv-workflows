@@ -8,7 +8,7 @@
 
 3) Run TandemRepeatFinder v4.09 on the FASTA sequences (completed locally).
 
-  **Command**: `trf catalog_fasta_sequences.fasta.txt 2 7 7 80 10 2 500 -d -h`
+ * **Command**: `trf catalog_fasta_sequences.fasta.txt 2 7 7 80 10 2 500 -d -h`
 
  * (Used default settings apart from `minscore` = 2, to ensure no locus is dropped
 [TRF Output file](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/trf_output.dat))
