@@ -3,15 +3,11 @@ script alternative to the ipython notebook code
 """
 
 
-import sys
-import csv
-import json
-import re
-
-
 TRF_DATA = 'trf_output.dat'
-SEQUENCE = 'Sequence:'
+BED_CATALOG = 'bed_catalog_without_complex_repeats.bed'
+SEQUENCE = 'Sequence: '
 PARAMETERS = 'Parameters:'
+FASTA_START = '>'
 
 # indices
 PURITY_INDEX = 5
@@ -27,8 +23,8 @@ def get_purest_motif(metric_list: list[str]) -> tuple[str, int]:
     """
     metric_data = []
     for each_metric in metric_list:
-        line_list = each_metric.rstrip().split()
-        metric_data.append((line_list[REPEAT_INDEX], int(line_list[PURITY_INDEX])))
+        split_line = each_metric.rstrip().split()
+        metric_data.append((split_line[REPEAT_INDEX], int(split_line[PURITY_INDEX])))
 
     return max(metric_data, key=lambda x: x[1])
 
@@ -36,7 +32,7 @@ def get_purest_motif(metric_list: list[str]) -> tuple[str, int]:
 sections = []
 
 # parse the file into sections, broken up by 'Sequence:' lines
-with open(sys.argv[1]) as filehandle:
+with open(TRF_DATA, encoding='utf-8') as filehandle:
 
     this_section = []
     for line in filehandle:
@@ -69,9 +65,57 @@ for section in sections:
     this_seq = section[0].removeprefix(SEQUENCE).rstrip()
     motif, purity = get_purest_motif(section[2:])
     if purity == 100:
-        pure_repeats.append((this_seq, motif, purity))
+        pure_repeats.append((this_seq, motif))
 
 
 print(len(blank_coords))  # 6409
 print(len(pure_repeats))  # 161612
 
+
+# bed catalog bits
+motif_dictionary = {}
+with open('bed_catalog_without_complex_repeats.bed', encoding='utf-8') as handle:
+    for line in handle:
+        line_list = line.split('\t')
+        motif_dictionary[f'{line_list[0]}:{line_list[1]}-{line_list[2]}'] = line_list[
+            4
+        ].rstrip()
+
+
+def chunks(iterable, chunk_size):
+    """
+    Yield successive n-sized chunks from an iterable
+    """
+
+    for i in range(0, len(iterable), chunk_size):
+        yield iterable[i : (i + chunk_size)]
+
+
+# fasta_bits
+with open('catalog_fasta_sequences.fasta.txt', encoding='utf-8') as handle:
+    fasta_lines = handle.readlines()
+
+fasta_dict = {}
+# iterate over lines in pairs
+# not efficient, but whatever
+for line_pair in chunks(fasta_lines, 2):
+    assert line_pair[0].startswith(FASTA_START)
+    fasta_dict[line_pair[0].lstrip(FASTA_START).rstrip()] = line_pair[1].rstrip()
+
+print(fasta_dict["chr12:6936716-6936773"])
+print(motif_dictionary["chr12:6936716-6936773"])
+
+impure_repeats = []
+for blank in blank_coords:
+    motif = motif_dictionary[blank]
+    fasta = fasta_dict[blank]
+    num_repeats = len(fasta) / len(motif)
+    if fasta != motif * int(num_repeats):
+        impure_repeats.append(blank)
+    else:
+        pure_repeats.append((blank, motif))
+
+print(len(pure_repeats))
+
+with open('output.txt', 'w') as handle:
+    handle.writelines('\n'.join(['\t'.join(pure) for pure in pure_repeats]))
