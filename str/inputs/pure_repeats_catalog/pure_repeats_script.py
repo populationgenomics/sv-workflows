@@ -37,7 +37,7 @@ sections = []
 with open(TRF_DATA, encoding='utf-8') as filehandle:
 
     # start a fresh section
-    this_section = []
+    this_section: list[str] = []
 
     # iterate over lines in this file
     for line in filehandle:
