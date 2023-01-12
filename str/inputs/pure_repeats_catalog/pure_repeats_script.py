@@ -131,5 +131,5 @@ for blank in blank_coords:
 
 print(len(pure_repeats))
 
-with open('output.txt', 'w') as handle:
+with open('output.txt', 'w', encoding='utf-8') as handle:
     handle.writelines('\n'.join(['\t'.join(pure) for pure in pure_repeats]))
