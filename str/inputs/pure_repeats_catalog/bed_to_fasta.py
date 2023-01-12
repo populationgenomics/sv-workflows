@@ -28,9 +28,13 @@ catalog = b.read_input(CATALOG_PATH)
 fasta = b.read_input(REF_FASTA)
 
 # set the job command
-bedtools_job.command(f'bedtools getfasta -fi {fasta} -bed {catalog} > {bedtools_job.ofile}')
+bedtools_job.command(
+    f'bedtools getfasta -fi {fasta} -bed {catalog} > {bedtools_job.ofile}'
+)
 
 # write output to GCP bucket for this dataset
-b.write_output(bedtools_job.ofile, output_path('catalog_fasta_sequences.fasta', 'analysis'))
+b.write_output(
+    bedtools_job.ofile, output_path('catalog_fasta_sequences.fasta', 'analysis')
+)
 
 b.run(wait=False)
