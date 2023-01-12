@@ -23,11 +23,7 @@ from sample_metadata.apis import AnalysisApi, SampleApi
 from sample_metadata.models import AnalysisStatus
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import (
-    remote_tmpdir,
-    output_path,
-    reference_path
-)
+from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
 config = get_config()
 
