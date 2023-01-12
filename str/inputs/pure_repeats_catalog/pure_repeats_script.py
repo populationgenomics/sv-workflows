@@ -115,8 +115,8 @@ for line_pair in chunks(fasta_lines, 2):
 
 
 # debug
-print(fasta_dict["chr12:6936716-6936773"])
-print(motif_dictionary["chr12:6936716-6936773"])
+print(fasta_dict['chr12:6936716-6936773'])
+print(motif_dictionary['ßchr12:6936716-6936773'])
 
 # check if any of the impure repeats can be recovered
 impure_repeats = []
