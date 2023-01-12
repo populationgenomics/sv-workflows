@@ -10,7 +10,7 @@
 
   **Command**: `trf catalog_fasta_sequences.fasta.txt 2 7 7 80 10 2 500 -d -h`
 
-  (Used default settings apart from `minscore` = 2, to ensure no locus is dropped
+ * (Used default settings apart from `minscore` = 2, to ensure no locus is dropped
 [TRF Output file](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/trf_output.dat))
 
 4) Filter TRF output for pure repeats only (100% purity score). [Script](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/Pure%20repeats%20catalog%20.ipynb) [Loci of pure repeats](https://github.com/populationgenomics/sv-workflows/blob/pure_repeats_PR/str/inputs/pure_repeats_catalog/pure_repeats_loci.txt)
