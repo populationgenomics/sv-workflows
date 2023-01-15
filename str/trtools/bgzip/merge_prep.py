@@ -131,8 +131,8 @@ def main(
             )
             # Output writing
             output_path_gangstr = output_path(f'{id}_gangstr')
-            b.write_output(bcftools_job.vcf_sorted['vcf.gz'], output_path_gangstr)
-            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_gangstr)
+            b.write_output(bcftools_job.vcf_sorted['vcf.gz'], output_path_gangstr+"reheader.vcf.gz")
+            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_gangstr+"vcf.gz.tbi")
 
     b.run(wait=False)
 
