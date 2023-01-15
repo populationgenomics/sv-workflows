@@ -26,7 +26,6 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 config = get_config()
 
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
-TRTOOLS_IMAGE = config['images']['trtools']
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 # inputs:
@@ -57,6 +56,17 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
+
+    ref = b.read_input_group(
+            **dict(
+                base=REF_FASTA,
+                fai=REF_FASTA + '.fai',
+                dict=REF_FASTA.replace('.fasta', '')
+                .replace('.fna', '')
+                .replace('.fa', '')
+                + '.dict',
+            )
+        )
 
     input_vcf_dict = {}
 
@@ -93,7 +103,7 @@ def main(
 
                 bgzip -c {vcf_input} > {bcftools_job.vcf_sorted['vcf.gz']}
             
-                bcftools reheader -f {REF_FASTA} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']} 
+                bcftools reheader -f {ref.base} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']} 
 
                 tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']} > {bcftools_job.vcf_sorted['vcf.gz.tbi']}
             
