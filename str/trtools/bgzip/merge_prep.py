@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 """
 This script prepares GangSTR/EH VCF files for input into mergeSTR. 
 Required input: --caller, --input-dir, and external sample IDs
