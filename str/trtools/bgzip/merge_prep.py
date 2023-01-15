@@ -78,7 +78,7 @@ def main(
         bcftools_job.storage('20G')
         bcftools_job.cpu(8)
 
-        vcf_input = input_vcf_dict[id]
+        vcf_input = b.read_input(input_vcf_dict[id])
 
         if caller == "eh":
             bcftools_job.declare_resource_group(
