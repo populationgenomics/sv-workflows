@@ -25,7 +25,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
 config = get_config()
 
-ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
+ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 # inputs:
@@ -57,26 +57,24 @@ def main(
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
 
-# Working with CRAM files requires the reference fasta
+    # Working with CRAM files requires the reference fasta
     ref = b.read_input_group(
         **dict(
             base=ref_fasta,
             fai=ref_fasta + '.fai',
-            dict=ref_fasta.replace('.fasta', '')
-            .replace('.fna', '')
-            .replace('.fa', '')
+            dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
             + '.dict',
         )
-        )    
+    )
 
     input_vcf_dict = {}
 
     if caller == 'eh':
-        #for id in list(external_id_to_cpg_id.values()):
+        # for id in list(external_id_to_cpg_id.values()):
         for id in external_wgs_ids:
             input_vcf_dict[id] = input_dir + "/" + id + "_EH.vcf"
     elif caller == 'gangstr':
-        #for id in list(external_id_to_cpg_id.values()):
+        # for id in list(external_id_to_cpg_id.values()):
         for id in external_wgs_ids:
             input_vcf_dict[id] = input_dir + "/" + id + "_gangstr.vcf"
     else:
@@ -112,8 +110,8 @@ def main(
             )
             # Output writing
             output_path_eh = output_path(f'{id}_eh')
-            b.write_output(bcftools_job.vcf_sorted['reheader.vcf.gz'], output_path_eh)
-            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_eh)
+            b.write_output(bcftools_job.vcf_sorted['reheader.vcf.gz'], output_path_eh+"reheader.vcf.gz")
+            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_eh+"vcf.gz.tbi")
 
         else:
             bcftools_job.declare_resource_group(
