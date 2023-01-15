@@ -25,7 +25,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
 config = get_config()
 
-REF_FASTA = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
+ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 # inputs:
