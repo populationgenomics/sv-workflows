@@ -71,6 +71,8 @@ def main(
                 vcf =input_dir + "/" + id + "_gangstr.vcf.gz",
                 tbi =b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz.tbi"))
             vcf_input.append(sample_vcf_file.vcf)
+    else:
+        raise Exception("Invalid caller")
     multi_vcf_file_path_string = ""
 
     i = 0
