@@ -59,11 +59,13 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
     if caller == "eh":
         for id in external_wgs_ids: 
             sample_vcf_file = b.read_input(input_dir+"/"+id +"_eh.reheader.vcf.gz")
+            sample_vcf_tbi =b.read_input(input_dir+"/"+id +"_eh.reheader.vcf.gz.tbi")
             vcf_input.append(sample_vcf_file)
     
     elif caller == "gangstr":
         for id in external_wgs_ids: 
-            sample_vcf_file = b.read_input(input_dir+"/"+id +"gangstr.vcf.gz")
+            sample_vcf_file = b.read_input(input_dir+"/"+id +"_gangstr.vcf.gz")
+            sample_vcf_tbi = b.read_input(input_dir+"/"+id +"_gangstr.vcf.gz.tbi")
             vcf_input.append(sample_vcf_file)
     multi_vcf_file_path_string = ""
     
@@ -73,6 +75,7 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
             multi_vcf_file_path_string = multi_vcf_file_path_string + str(vcf_input[i])+","
         else:
             multi_vcf_file_path_string = multi_vcf_file_path_string + str(vcf_input[i])
+        i+=1
 
     trtools_job = b.new_job(name = "mergeSTR")
     trtools_job.image(TRTOOLS_IMAGE)
@@ -88,8 +91,8 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
     """)
     num_samples = len(vcf_input)
 
-    output_path = output_path(f'mergeSTR_{num_samples}_{caller}')
-    b.write_output(bcftools_job.ofile, output_path)
+    output_path_vcf = output_path(f'mergeSTR_{num_samples}_{caller}')
+    b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)
 
