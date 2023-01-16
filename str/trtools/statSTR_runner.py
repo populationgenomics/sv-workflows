@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# pylint: disable=duplicate-code
 """
 This script runs statSTR() from TRTools package on a single/merged STR vcf file and outputs various statistics
 
@@ -10,7 +10,6 @@ Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
 """
 import os
-import logging
 
 import click
 import hailtop.batch as hb
@@ -21,6 +20,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path
 config = get_config()
 
 TRTOOLS_IMAGE = config['images']['trtools']
+
 
 # inputs:
 # file-path
@@ -37,7 +37,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
     vcf_input = b.read_input(file_path)
-    trtools_job = b.new_job(name=f"statSTR {caller}")
+    trtools_job = b.new_job(name=f'statSTR {caller}')
 
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
@@ -60,4 +60,4 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
 
 
 if __name__ == '__main__':
-    main()
+    main()# pylint: disable=no-value-for-parameter

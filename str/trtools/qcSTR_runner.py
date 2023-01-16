@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# pylint: disable=duplicate-code
 """
 This script runs qcSTR() from TRTools package on a single/merged STR vcf file and outputs various QC graphs
 
@@ -11,7 +11,6 @@ Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
 """
 import os
-import logging
 
 import click
 import hailtop.batch as hb
@@ -22,6 +21,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path
 config = get_config()
 
 TRTOOLS_IMAGE = config['images']['trtools']
+
 
 # inputs:
 # file-path
@@ -67,13 +67,13 @@ def main(
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
     vcf_input = b.read_input(file_path)
-    trtools_job = b.new_job(name=f"qcSTR {caller}")
+    trtools_job = b.new_job(name=f'qcSTR {caller}')
 
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
     trtools_job.cpu(8)
 
-    if caller == "eh":
+    if caller == 'eh':
         trtools_job.declare_resource_group(
             ofile={
                 'sample-callnum.pdf': '{root}-sample-callnum.pdf',
@@ -91,7 +91,7 @@ def main(
         """
         )
 
-    elif caller == "gangstr":
+    elif caller == 'gangstr':
         trtools_job.declare_resource_group(
             ofile={
                 'sample-callnum.pdf': '{root}-sample-callnum.pdf',
@@ -111,7 +111,7 @@ def main(
         """
         )
     else:
-        raise Exception("Invalid caller")
+        raise Exception('Invalid caller')
 
     output_path_vcf = output_path(f'qCSTR_samples_{caller}')
     b.write_output(trtools_job.ofile, output_path_vcf)
@@ -120,4 +120,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()
+    main()# pylint: disable=no-value-for-parameter

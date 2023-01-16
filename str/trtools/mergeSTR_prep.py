@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=duplicate-code
 """
 This script prepares GangSTR/EH VCF files for input into mergeSTR. 
 Required input: --caller, --input-dir, and external sample IDs
@@ -10,23 +11,19 @@ pip install sample-metadata hail click
 
 """
 import os
-import logging
-
 import click
 import hailtop.batch as hb
 
-from sample_metadata.model.analysis_type import AnalysisType
-from sample_metadata.model.analysis_query_model import AnalysisQueryModel
-from sample_metadata.apis import AnalysisApi, SampleApi
-from sample_metadata.models import AnalysisStatus
+from sample_metadata.apis import SampleApi
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
+from cpg_utils.hail_batch import remote_tmpdir, output_path
 
 config = get_config()
 
-ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
+REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
 BCFTOOLS_IMAGE = config['images']['bcftools']
+
 
 # inputs:
 # caller
@@ -52,17 +49,13 @@ def main(
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
     )
-    cpg_id_to_external_id = {
-        cpg_id: external_wgs_id
-        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
-    }
 
     # Working with CRAM files requires the reference fasta
     ref = b.read_input_group(
         **dict(
-            base=ref_fasta,
-            fai=ref_fasta + '.fai',
-            dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
+            base=REF_FASTA,
+            fai=REF_FASTA + '.fai',
+            dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
             + '.dict',
         )
     )
@@ -71,12 +64,12 @@ def main(
 
     if caller == 'eh':
         for id in list(external_id_to_cpg_id.values()):
-            input_vcf_dict[id] = input_dir + "/" + id + "_EH.vcf"
+            input_vcf_dict[id] = input_dir + '/' + id + '_EH.vcf'
     elif caller == 'gangstr':
         for id in list(external_id_to_cpg_id.values()):
-            input_vcf_dict[id] = input_dir + "/" + id + "_gangstr.vcf"
+            input_vcf_dict[id] = input_dir + '/' + id + '_gangstr.vcf'
     else:
-        raise Exception("Invalid caller")
+        raise Exception('Invalid caller')
 
     for id in list(input_vcf_dict.keys()):
 
@@ -87,7 +80,7 @@ def main(
 
         vcf_input = b.read_input(input_vcf_dict[id])
 
-        if caller == "eh":
+        if caller == 'eh':
             bcftools_job.declare_resource_group(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
@@ -110,11 +103,11 @@ def main(
             output_path_eh = output_path(f'{id}_eh')
             b.write_output(
                 bcftools_job.vcf_sorted['reheader.vcf.gz'],
-                output_path_eh + ".reheader.vcf.gz",
+                output_path_eh + '.reheader.vcf.gz',
             )
             b.write_output(
                 bcftools_job.vcf_sorted['vcf.gz.tbi'],
-                output_path_eh + ".reheader.vcf.gz.tbi",
+                output_path_eh + '.reheader.vcf.gz.tbi',
             )
 
         else:
@@ -136,15 +129,15 @@ def main(
             # Output writing
             output_path_gangstr = output_path(f'{id}_gangstr')
             b.write_output(
-                bcftools_job.vcf_sorted['vcf.gz'], output_path_gangstr + ".vcf.gz"
+                bcftools_job.vcf_sorted['vcf.gz'], output_path_gangstr + '.vcf.gz'
             )
             b.write_output(
                 bcftools_job.vcf_sorted['vcf.gz.tbi'],
-                output_path_gangstr + ".vcf.gz.tbi",
+                output_path_gangstr + '.vcf.gz.tbi',
             )
 
     b.run(wait=False)
 
 
 if __name__ == '__main__':
-    main()
+    main()# pylint: disable=no-value-for-parameter

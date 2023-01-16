@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# pylint: disable=duplicate-code
 """
 This script runs compareSTR() from TRTools package to compare calls between 2 STR VCFs.
 
@@ -11,8 +11,6 @@ Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
 """
 import os
-import logging
-
 import click
 import hailtop.batch as hb
 
@@ -23,6 +21,7 @@ config = get_config()
 
 TRTOOLS_IMAGE = config['images']['trtools']
 BCFTOOLS_IMAGE = config['images']['bcftools']
+
 
 # inputs:
 # file-path-1
@@ -48,7 +47,7 @@ def main(
     vcf_input_2 = b.read_input(file_path_2)
 
     # BCFTools is needed to sort, zip, and index files before using them as input in TRTools
-    bcftools_job = b.new_job("Files prep")
+    bcftools_job = b.new_job('Files prep')
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.storage('20G')
     bcftools_job.cpu(8)
@@ -79,7 +78,7 @@ def main(
     """
     )
 
-    trtools_job = b.new_job(name=f"compareSTR")
+    trtools_job = b.new_job(name=f'compareSTR')
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
     trtools_job.cpu(8)
@@ -109,4 +108,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()
+    main()# pylint: disable=no-value-for-parameter
