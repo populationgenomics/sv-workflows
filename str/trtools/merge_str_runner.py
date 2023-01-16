@@ -49,7 +49,7 @@ def main(
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
     )
-    
+
     vcf_input = []
     if caller == 'eh':
         for id in list(external_id_to_cpg_id.values()):
@@ -103,4 +103,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()# pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter

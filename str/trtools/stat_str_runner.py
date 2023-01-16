@@ -60,4 +60,4 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
 
 
 if __name__ == '__main__':
-    main()# pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter
