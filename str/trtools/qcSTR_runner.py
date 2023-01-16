@@ -51,15 +51,16 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
                 'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
                 'diffref-bias.pdf': '{root}-diffref-bias.pdf'
                 # EH does not have quality plots
-            })
+            }
+        )
         trtools_job.command(
-        f"""
+            f"""
         set -ex;
         qcSTR --vcf {vcf_input} --vcftype {caller}  --out {trtools_job.ofile}
     
         """
         )
-        
+
     elif caller == "gangstr":
         trtools_job.declare_resource_group(
             ofile={
@@ -73,7 +74,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
             }
         )
         trtools_job.command(
-        f"""
+            f"""
         set -ex;
         qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --out {trtools_job.ofile}
     
