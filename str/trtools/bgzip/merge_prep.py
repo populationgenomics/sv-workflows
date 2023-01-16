@@ -76,7 +76,7 @@ def main(
     elif caller == 'gangstr':
         # for id in list(external_id_to_cpg_id.values()):
         for id in external_wgs_ids:
-            input_vcf_dict[id] = input_dir + "/" + id + "_gangstr.vcf"
+            input_vcf_dict[id] = input_dir + "/" + id + "GangSTR.vcf"
     else:
         raise Exception("Invalid caller")
 
@@ -110,8 +110,8 @@ def main(
             )
             # Output writing
             output_path_eh = output_path(f'{id}_eh')
-            b.write_output(bcftools_job.vcf_sorted['reheader.vcf.gz'], output_path_eh+"reheader.vcf.gz")
-            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_eh+"vcf.gz.tbi")
+            b.write_output(bcftools_job.vcf_sorted['reheader.vcf.gz'], output_path_eh+".reheader.vcf.gz")
+            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_eh+".vcf.gz.tbi")
 
         else:
             bcftools_job.declare_resource_group(
@@ -131,8 +131,8 @@ def main(
             )
             # Output writing
             output_path_gangstr = output_path(f'{id}_gangstr')
-            b.write_output(bcftools_job.vcf_sorted['vcf.gz'], output_path_gangstr+"reheader.vcf.gz")
-            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_gangstr+"vcf.gz.tbi")
+            b.write_output(bcftools_job.vcf_sorted['vcf.gz'], output_path_gangstr+".vcf.gz")
+            b.write_output(bcftools_job.vcf_sorted['vcf.gz.tbi'], output_path_gangstr+".vcf.gz.tbi")
 
     b.run(wait=False)
 
