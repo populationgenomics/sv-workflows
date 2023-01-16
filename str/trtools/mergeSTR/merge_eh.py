@@ -1,31 +1,61 @@
 #!/usr/bin/env python
 
 """
-Running Batch script to merge GangSTR vcf.gz files into one combined VCF. 
+This script merges GangSTR or ExpansionHunter vcf.gz files into one combined VCF. 
+Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
+
+For example: 
+analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' mergeSTR.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs TOBXXXX TOBXXXX
+
+Required packages: sample-metadata, hail, click, os
+pip install sample-metadata hail click
 """
 import os
-import hailtop.batch as hb
+import logging
+
 import click
+import hailtop.batch as hb
 
-DATASET = os.getenv('DATASET')
-HAIL_BUCKET = os.getenv('HAIL_BUCKET')
-OUTPUT_SUFFIX = os.getenv('OUTPUT')
-BILLING_PROJECT = os.getenv('HAIL_BILLING_PROJECT')
-ACCESS_LEVEL = os.getenv('ACCESS_LEVEL')
+from sample_metadata.model.analysis_type import AnalysisType
+from sample_metadata.model.analysis_query_model import AnalysisQueryModel
+from sample_metadata.apis import AnalysisApi, SampleApi
+from sample_metadata.models import AnalysisStatus
 
-REF_FASTA = 'gs://cpg-reference/hg38/v1/Homo_sapiens_assembly38.fasta'
-TRTOOLS_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/trtools:v4.0.2"
-BCFTOOLS_IMAGE = "australia-southeast1-docker.pkg.dev/cpg-common/images/bcftools:1.10.2--h4f4756c_2"
+from cpg_utils.config import get_config
+from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
+config = get_config()
 
-# cram = b.read_input_group(**{'cram': cram_path, 'cram.crai': cram_path + '.crai'})
-@click.command()
+TRTOOLS_IMAGE = config['images']['trtools']
 
-def main():  # pylint: disable=missing-function-docstring 
+# inputs:
+# caller
+@click.option('--caller', help='gangstr or eh')
+# dataset
+@click.option('--dataset', help='dataset eg tob-wgs')
+# input directory
+@click.option('--input-dir', help='gs://...')
+# input sample ID
+@click.argument('external-wgs-ids', nargs=-1)
+
+def main(
+    dataset, caller, input_dir, external_wgs_ids: list[str]
+):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
-    backend = hb.ServiceBackend(billing_project=BILLING_PROJECT, bucket=HAIL_BUCKET)
+    backend = hb.ServiceBackend(
+        billing_project=get_config()['hail']['billing_project'],
+        remote_tmpdir=remote_tmpdir(),
+    )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+    
+    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
+        dataset, list(external_wgs_ids)
+    )
+    cpg_id_to_external_id = {
+        cpg_id: external_wgs_id
+        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
+    }
 
     input_file = b.read_input_group(
     TOB01784 = "gs://cpg-tob-wgs-test/hoptan-str/tob10/bgzip/eh/TOB01784_EHreheader.vcf.gz",
