@@ -50,7 +50,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
     trtools_job.command(
         f"""
         set -ex;
-        statSTR --vcf {vcf_input} --vcftype {caller} --out {trtools_job.ofile} -thresh --afreq --acount --hwep --het --entropy --mean --mode --var --numcalled
+        statSTR --vcf {vcf_input} --vcftype {caller} --out {trtools_job.ofile} --thresh --afreq --acount --hwep --het --entropy --mean --mode --var --numcalled
     
         """
     )
