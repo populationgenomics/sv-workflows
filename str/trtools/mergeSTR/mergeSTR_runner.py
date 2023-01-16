@@ -69,7 +69,7 @@ def main(
         for id in external_wgs_ids:
             sample_vcf_file = b.read_input_group(
                 vcf =input_dir + "/" + id + "_gangstr.vcf.gz",
-                tbi =b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz.tbi"))
+                tbi =input_dir + "/" + id + "_gangstr.vcf.gz.tbi")
             vcf_input.append(sample_vcf_file.vcf)
     else:
         raise Exception("Invalid caller")
