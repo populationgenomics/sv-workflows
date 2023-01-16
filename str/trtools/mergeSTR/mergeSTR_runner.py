@@ -93,7 +93,7 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
     """)
     num_samples = len(vcf_input)
 
-    output_path_vcf = output_path(f'mergeSTR_{num_samples}_{caller}')
+    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_{caller}')
     b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)
