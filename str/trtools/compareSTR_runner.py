@@ -34,8 +34,9 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 # caller-2
 @click.option('--caller-2', help='gangstr or eh')
 @click.command()
-
-def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missing-function-docstring
+def main(
+    file_path_1, file_path_2, caller_1, caller_2
+):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -46,7 +47,7 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
     vcf_input_1 = b.read_input(file_path_1)
     vcf_input_2 = b.read_input(file_path_2)
 
-    # BCFTools is needed to sort, zip, and index files before using them as input in TRTools 
+    # BCFTools is needed to sort, zip, and index files before using them as input in TRTools
     bcftools_job = b.new_job("Files prep")
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.storage('20G')
@@ -60,7 +61,8 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
         vcf_2={'vcf.gz': '{root}.vcf_2.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_2.vcf.gz.tbi'}
     )
 
-    bcftools_job.command(f"""
+    bcftools_job.command(
+        f"""
     set -ex;
     
     echo "compressing {vcf_input_1}";
@@ -74,24 +76,27 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
     
     echo "indexing {bcftools_job.vcf_2['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_2['vcf.gz']};
-    """)
+    """
+    )
 
     trtools_job = b.new_job(name=f"compareSTR")
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
     trtools_job.cpu(8)
 
-    trtools_job.declare_resource_group(ofile = {'overall.tab': '{root}-overall.tab',
-                                               'bubble-periodALL.pdf': '{root}-bubble-periodALL.pdf',
-                                               'locuscompare.tab': '{root}-locuscompare.tab',
-                                               'locuscompare.pdf': '{root}-locuscompare.pdf',
-                                               'samplecompare.tab': '{root}-samplecompare.tab',
-                                               'samplecompare.pdf': '{root}-samplecompare.pdf'
+    trtools_job.declare_resource_group(
+        ofile={
+            'overall.tab': '{root}-overall.tab',
+            'bubble-periodALL.pdf': '{root}-bubble-periodALL.pdf',
+            'locuscompare.tab': '{root}-locuscompare.tab',
+            'locuscompare.pdf': '{root}-locuscompare.pdf',
+            'samplecompare.tab': '{root}-samplecompare.tab',
+            'samplecompare.pdf': '{root}-samplecompare.pdf',
+        }
+    )
 
-
-    })
-
-    trtools_job.command(f"""
+    trtools_job.command(
+        f"""
     set -ex;
     compareSTR --vcf1 {bcftools_job.vcf_1['vcf.gz']} --vcf2 {bcftools_job.vcf_2['vcf.gz']} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
     
@@ -105,4 +110,3 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
 
 if __name__ == '__main__':
     main()
-

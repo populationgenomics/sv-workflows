@@ -43,10 +43,8 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
     trtools_job.storage('20G')
     trtools_job.cpu(8)
 
-    trtools_job.declare_resource_group(
-        ofile={
-            'tab': '{root}.tab'})
-                
+    trtools_job.declare_resource_group(ofile={'tab': '{root}.tab'})
+
     trtools_job.command(
         f"""
         set -ex;

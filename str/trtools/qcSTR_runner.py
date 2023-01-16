@@ -28,15 +28,37 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--file-path', help='gs://...')
 # caller
 @click.option('--caller', help='gangstr or eh')
-#reference bias plot options
-@click.option('--refbias-binsize', help=' Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length. Default=5')
-@click.option('--refbias-metric', help='Determines which metric to use to summarize the reference bias in each bin. Default=mean. Must be one of: mean or median.')
-@click.option('--refbias-mingts', help='Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length. Default=100')
-@click.option('--refbias-xrange-min', help='Exclude points corresponding to TRs with reference length less than this value. Default = 0')
-@click.option('--refbias-xrange-max', help='Exclude points corresponding to TRs with reference length greater than this value. Default = 10000')
-
+# reference bias plot options
+@click.option(
+    '--refbias-binsize',
+    help=' Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length. Default=5',
+)
+@click.option(
+    '--refbias-metric',
+    help='Determines which metric to use to summarize the reference bias in each bin. Default=mean. Must be one of: mean or median.',
+)
+@click.option(
+    '--refbias-mingts',
+    help='Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length. Default=100',
+)
+@click.option(
+    '--refbias-xrange-min',
+    help='Exclude points corresponding to TRs with reference length less than this value. Default = 0',
+)
+@click.option(
+    '--refbias-xrange-max',
+    help='Exclude points corresponding to TRs with reference length greater than this value. Default = 10000',
+)
 @click.command()
-def main(file_path, caller, refbias_binsize, refbias_metric, refbias_mingts, refbias_xrange_min, refbias_xrange_max):  # pylint: disable=missing-function-docstring
+def main(
+    file_path,
+    caller,
+    refbias_binsize,
+    refbias_metric,
+    refbias_mingts,
+    refbias_xrange_min,
+    refbias_xrange_max,
+):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
