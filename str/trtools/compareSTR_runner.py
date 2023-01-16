@@ -22,6 +22,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path
 config = get_config()
 
 TRTOOLS_IMAGE = config['images']['trtools']
+BCFTOOLS_IMAGE = config['images']['bcftools']
 
 # inputs:
 # file-path-1
@@ -44,6 +45,37 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
     vcf_input_1 = b.read_input(file_path_1)
     vcf_input_2 = b.read_input(file_path_2)
+
+    # BCFTools is needed to sort, zip, and index files before using them as input in TRTools 
+    bcftools_job = b.new_job("Files prep")
+    bcftools_job.image(BCFTOOLS_IMAGE)
+    bcftools_job.storage('20G')
+    bcftools_job.cpu(8)
+
+    # declare resource groups, including extensions
+    bcftools_job.declare_resource_group(
+        vcf_1={'vcf.gz': '{root}.vcf_1.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_1.vcf.gz.tbi'}
+    )
+    bcftools_job.declare_resource_group(
+        vcf_2={'vcf.gz': '{root}.vcf_2.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_2.vcf.gz.tbi'}
+    )
+
+    bcftools_job.command(f"""
+    set -ex;
+    
+    echo "compressing {vcf_input_1}";
+    bgzip -c {vcf_input_1} > {bcftools_job.vcf_1['vcf.gz']};
+    
+    echo "indexing {bcftools_job.vcf_1['vcf.gz']}";
+    tabix -p vcf {bcftools_job.vcf_1['vcf.gz']};
+    
+    echo "compressing {vcf_input_2}"; 
+    bgzip -c {vcf_input_2} > {bcftools_job.vcf_2['vcf.gz']};
+    
+    echo "indexing {bcftools_job.vcf_2['vcf.gz']}";
+    tabix -p vcf {bcftools_job.vcf_2['vcf.gz']};
+    """)
+
     trtools_job = b.new_job(name=f"compareSTR")
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
@@ -61,7 +93,7 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
 
     trtools_job.command(f"""
     set -ex;
-    compareSTR --vcf1 {vcf_input_1} --vcf2 {vcf_input_2} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
+    compareSTR --vcf1 {bcftools_job.vcf_1['vcf.gz']} --vcf2 {bcftools_job.vcf_2['vcf.gz']} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
     
     """
     )
