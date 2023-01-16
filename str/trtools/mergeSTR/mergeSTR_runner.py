@@ -68,8 +68,9 @@ def main(
     elif caller == "gangstr":
         for id in list(external_id_to_cpg_id.values()):
             sample_vcf_file = b.read_input_group(
-                vcf =input_dir + "/" + id + "_gangstr.vcf.gz",
-                tbi =input_dir + "/" + id + "_gangstr.vcf.gz.tbi")
+                vcf=input_dir + "/" + id + "_gangstr.vcf.gz",
+                tbi=input_dir + "/" + id + "_gangstr.vcf.gz.tbi",
+            )
             vcf_input.append(sample_vcf_file.vcf)
     else:
         raise Exception("Invalid caller")
