@@ -53,7 +53,6 @@ def main(
     trtools_job.declare_resource_group(ofile = {'sample-callnum.pdf': '{root}-sample-callnum.pdf',
                                                'chrom-callnum.pdf': '{root}-chrom-callnum.pdf',
                                                'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
-                                               'quality.pdf': '{root}-quality.pdf',
                                                'diffref-bias.pdf': '{root}-diffref-bias.pdf',
                                                'quality-per-locus.pdf': '{root}-quality-per-locus.pdf',
                                                'quality-sample-stratified.pdf': '{root}-quality-sample-stratified.pdf',
