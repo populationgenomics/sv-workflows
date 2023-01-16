@@ -70,12 +70,11 @@ def main(
     input_vcf_dict = {}
 
     if caller == 'eh':
-        for id in external_wgs_ids:
-        #for id in list(external_id_to_cpg_id.values()):
+        for id in list(external_id_to_cpg_id.values()):
             input_vcf_dict[id] = input_dir + "/" + id + "_EH.vcf"
     elif caller == 'gangstr':
         for id in list(external_id_to_cpg_id.values()):
-            input_vcf_dict[id] = input_dir + "/" + id + "_GangSTR.vcf"
+            input_vcf_dict[id] = input_dir + "/" + id + "_gangstr.vcf"
     else:
         raise Exception("Invalid caller")
 
