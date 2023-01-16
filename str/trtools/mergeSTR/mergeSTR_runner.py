@@ -67,9 +67,10 @@ def main(
 
     elif caller == "gangstr":
         for id in external_wgs_ids:
-            sample_vcf_file = b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz")
-            sample_vcf_tbi = b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz.tbi")
-            vcf_input.append(sample_vcf_file)
+            sample_vcf_file = b.read_input_group(
+                vcf =input_dir + "/" + id + "_gangstr.vcf.gz",
+                tbi =b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz.tbi"))
+            vcf_input.append(sample_vcf_file.vcf)
     multi_vcf_file_path_string = ""
 
     i = 0
