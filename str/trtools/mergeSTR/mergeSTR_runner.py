@@ -37,10 +37,9 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--input-dir', help='gs://...')
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
+@click.command()
 
-def main(
-    dataset, caller, input_dir, external_wgs_ids: list[str]
-):  # pylint: disable=missing-function-docstring
+def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -56,8 +55,8 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    vcf_input[]
-    if caller == "eh"
+    vcf_input=[]
+    if caller == "eh":
         for id in external_wgs_ids: 
             sample_vcf_file = b.read_input(input_dir+"/"+id +"_eh.reheader.vcf.gz")
             vcf_input.append(sample_vcf_file)
