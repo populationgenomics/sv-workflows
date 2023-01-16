@@ -51,7 +51,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
                 'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
                 'diffref-bias.pdf': '{root}-diffref-bias.pdf'
                 # EH does not have quality plots
-            }
+            })
         trtools_job.command(
         f"""
         set -ex;
@@ -59,7 +59,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
     
         """
         )
-        )
+        
     elif caller == "gangstr":
         trtools_job.declare_resource_group(
             ofile={
