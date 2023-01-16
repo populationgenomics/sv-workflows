@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 """
-This script runs qcSTR() from TRTools package on a single/merged STR vcf file. 
+This script runs qcSTR() from TRTools package on a single/merged STR vcf file and outputs various QC graphs
 
 For example: 
-analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' mergeSTR.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs TOBXXXX TOBXXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' qcSTR_runner.py --caller=eh --file-path=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -15,13 +15,8 @@ import logging
 import click
 import hailtop.batch as hb
 
-from sample_metadata.model.analysis_type import AnalysisType
-from sample_metadata.model.analysis_query_model import AnalysisQueryModel
-from sample_metadata.apis import AnalysisApi, SampleApi
-from sample_metadata.models import AnalysisStatus
-
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
+from cpg_utils.hail_batch import remote_tmpdir, output_path
 
 config = get_config()
 
@@ -32,11 +27,8 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--file-path', help='gs://...')
 # caller
 @click.option('--caller', help='gangstr or eh')
-
 @click.command()
-def main(
-    file_path, caller
-):  # pylint: disable=missing-function-docstring
+def main(file_path, caller):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -45,32 +37,55 @@ def main(
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
     vcf_input = b.read_input(file_path)
-    trtools_job = b.new_job(name="qcSTR")
+    trtools_job = b.new_job(name=f"qcSTR {caller}")
+
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
     trtools_job.cpu(8)
 
-    trtools_job.declare_resource_group(ofile = {'sample-callnum.pdf': '{root}-sample-callnum.pdf',
-                                               'chrom-callnum.pdf': '{root}-chrom-callnum.pdf',
-                                               'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
-                                               'diffref-bias.pdf': '{root}-diffref-bias.pdf',
-                                               'quality-per-locus.pdf': '{root}-quality-per-locus.pdf',
-                                               'quality-sample-stratified.pdf': '{root}-quality-sample-stratified.pdf',
-                                               'quality-per-sample.pdf': '{root}-quality-per-sample.pdf'
-    })
-
-    trtools_job.command(f"""
-    set -ex;
-    qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --out {trtools_job.ofile}
+    if caller == "eh":
+        trtools_job.declare_resource_group(
+            ofile={
+                'sample-callnum.pdf': '{root}-sample-callnum.pdf',
+                'chrom-callnum.pdf': '{root}-chrom-callnum.pdf',
+                'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
+                'diffref-bias.pdf': '{root}-diffref-bias.pdf'
+                # EH does not have quality plots
+            }
+        trtools_job.command(
+        f"""
+        set -ex;
+        qcSTR --vcf {vcf_input} --vcftype {caller}  --out {trtools_job.ofile}
     
-    """
-    )
-    num_samples = len(vcf_input)
+        """
+        )
+        )
+    elif caller == "gangstr":
+        trtools_job.declare_resource_group(
+            ofile={
+                'sample-callnum.pdf': '{root}-sample-callnum.pdf',
+                'chrom-callnum.pdf': '{root}-chrom-callnum.pdf',
+                'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
+                'diffref-bias.pdf': '{root}-diffref-bias.pdf',
+                'quality-per-locus.pdf': '{root}-quality-per-locus.pdf',
+                'quality-sample-stratified.pdf': '{root}-quality-sample-stratified.pdf',
+                'quality-per-sample.pdf': '{root}-quality-per-sample.pdf',
+            }
+        )
+        trtools_job.command(
+        f"""
+        set -ex;
+        qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --out {trtools_job.ofile}
+    
+        """
+        )
+    else:
+        raise Exception("Invalid caller")
 
-    output_path_vcf = output_path(f'qCSTR_{num_samples}_samples_{caller}')
+    output_path_vcf = output_path(f'qCSTR_samples_{caller}')
     b.write_output(trtools_job.ofile, output_path_vcf)
 
-    b.run(wait = False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
