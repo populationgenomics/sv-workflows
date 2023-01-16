@@ -5,6 +5,7 @@ This script runs qcSTR() from TRTools package on a single/merged STR vcf file an
 
 For example: 
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' qcSTR_runner.py --caller=eh --file-path=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
+--refbias-binsize=5 --refbias-metric=mean --refbias-mingts=100 --refbias-xrange-min=0 --rebias-xrange-max=10000
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -27,8 +28,15 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--file-path', help='gs://...')
 # caller
 @click.option('--caller', help='gangstr or eh')
+#reference bias plot options
+@click.option('--refbias-binsize', help=' Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length. Default=5')
+@click.option('--refbias-metric', help='Determines which metric to use to summarize the reference bias in each bin. Default=mean. Must be one of: mean or median.')
+@click.option('--refbias-mingts', help='Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length. Default=100')
+@click.option('--refbias-xrange-min', help='Exclude points corresponding to TRs with reference length less than this value. Default = 0')
+@click.option('--refbias-xrange-max', help='Exclude points corresponding to TRs with reference length greater than this value. Default = 10000')
+
 @click.command()
-def main(file_path, caller):  # pylint: disable=missing-function-docstring
+def main(file_path, caller, refbias_binsize, refbias_metric, refbias_mingts, refbias_xrange_min, refbias_xrange_max):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -56,7 +64,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
         trtools_job.command(
             f"""
         set -ex;
-        qcSTR --vcf {vcf_input} --vcftype {caller}  --out {trtools_job.ofile}
+        qcSTR --vcf {vcf_input} --vcftype {caller} --refbias-binsize {refbias_binsize} --refbias-metric {refbias_metric} --refbias-mingts {refbias_mingts} --refbias-xrange-min {refbias_xrange_min} --refbias-xrange-max {refbias_xrange_max} --out {trtools_job.ofile}
     
         """
         )
@@ -76,7 +84,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
         trtools_job.command(
             f"""
         set -ex;
-        qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --out {trtools_job.ofile}
+        qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --refbias-binsize {refbias_binsize} --refbias-metric {refbias_metric} --refbias-mingts {refbias_mingts} --refbias-xrange-min {refbias_xrange_min} --refbias-xrange-max {refbias_xrange_max} --out {trtools_job.ofile}
     
         """
         )
