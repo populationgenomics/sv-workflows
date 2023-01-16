@@ -64,13 +64,13 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
     set -ex;
     
     echo "compressing {vcf_input_1}";
-    bgzip -c {vcf_input_1} > {bcftools_job.vcf_1['vcf.gz']};
+    bcftools sort {vcf_input_1} | bgzip -c >{bcftools_job.vcf_1['vcf.gz']};
     
     echo "indexing {bcftools_job.vcf_1['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_1['vcf.gz']};
     
     echo "compressing {vcf_input_2}"; 
-    bgzip -c {vcf_input_2} > {bcftools_job.vcf_2['vcf.gz']};
+    bcftools sort {vcf_input_2} | bgzip -c >{bcftools_job.vcf_2['vcf.gz']};
     
     echo "indexing {bcftools_job.vcf_2['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_2['vcf.gz']};
