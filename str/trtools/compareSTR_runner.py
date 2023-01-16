@@ -61,7 +61,7 @@ def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missi
 
     trtools_job.command(f"""
     set -ex;
-    compareSTR --vcf1 {file_path_1} --vcf2 {file_path_2} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
+    compareSTR --vcf1 {vcf_input_1} --vcf2 {vcf_input_2} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
     
     """
     )
