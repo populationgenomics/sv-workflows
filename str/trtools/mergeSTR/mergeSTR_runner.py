@@ -38,8 +38,9 @@ TRTOOLS_IMAGE = config['images']['trtools']
 # input sample ID
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
-
-def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: disable=missing-function-docstring
+def main(
+    caller, dataset, input_dir, external_wgs_ids: list[str]
+):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -47,7 +48,7 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
         remote_tmpdir=remote_tmpdir(),
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
-    
+
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
     )
@@ -55,42 +56,46 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    vcf_input=[]
+    vcf_input = []
     if caller == "eh":
-        for id in external_wgs_ids: 
-            sample_vcf_file= b.read_input_group(
-                vcf = input_dir+"/"+id +"_eh.reheader.vcf.gz",
-                tbi = input_dir+"/"+id +"_eh.reheader.vcf.gz.tbi"
+        for id in list(external_id_to_cpg_id.values()):
+            sample_vcf_file = b.read_input_group(
+                vcf=input_dir + "/" + id + "_eh.reheader.vcf.gz",
+                tbi=input_dir + "/" + id + "_eh.reheader.vcf.gz.tbi",
             )
             vcf_input.append(sample_vcf_file.vcf)
-    
+
     elif caller == "gangstr":
-        for id in external_wgs_ids: 
-            sample_vcf_file = b.read_input(input_dir+"/"+id +"_gangstr.vcf.gz")
-            sample_vcf_tbi = b.read_input(input_dir+"/"+id +"_gangstr.vcf.gz.tbi")
+        for id in list(external_id_to_cpg_id.values()):
+            sample_vcf_file = b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz")
+            sample_vcf_tbi = b.read_input(input_dir + "/" + id + "_gangstr.vcf.gz.tbi")
             vcf_input.append(sample_vcf_file)
     multi_vcf_file_path_string = ""
-    
-    i=0
-    while i<len(vcf_input):
-        if i!= len(vcf_input)-1:
-            multi_vcf_file_path_string = multi_vcf_file_path_string + str(vcf_input[i])+","
+
+    i = 0
+    while i < len(vcf_input):
+        if i != len(vcf_input) - 1:
+            multi_vcf_file_path_string = (
+                multi_vcf_file_path_string + str(vcf_input[i]) + ","
+            )
         else:
             multi_vcf_file_path_string = multi_vcf_file_path_string + str(vcf_input[i])
-        i+=1
+        i += 1
 
-    trtools_job = b.new_job(name = "mergeSTR")
+    trtools_job = b.new_job(name="mergeSTR")
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.storage('20G')
     trtools_job.cpu(8)
 
-    trtools_job.declare_resource_group(ofile = {'vcf': '{root}.vcf'})
-        
-    trtools_job.command(f"""
+    trtools_job.declare_resource_group(ofile={'vcf': '{root}.vcf'})
+
+    trtools_job.command(
+        f"""
      
     mergeSTR --vcfs {multi_vcf_file_path_string} --out {trtools_job.ofile} --vcftype {caller}
      
-    """)
+    """
+    )
     num_samples = len(vcf_input)
 
     output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_{caller}')
@@ -98,5 +103,6 @@ def main(caller,dataset, input_dir, external_wgs_ids: list[str]):  # pylint: dis
 
     b.run(wait=False)
 
+
 if __name__ == '__main__':
-    main() 
+    main()
