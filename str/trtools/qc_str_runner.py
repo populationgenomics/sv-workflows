@@ -113,7 +113,7 @@ def main(
     else:
         raise Exception('Invalid caller')
 
-    output_path_vcf = output_path(f'qCSTR_samples_{caller}')
+    output_path_vcf = output_path(f'qCSTR_samples_{caller}', 'analysis')
     b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)
