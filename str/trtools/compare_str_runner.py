@@ -101,7 +101,7 @@ def main(
     
     """
     )
-    output_path_vcf = output_path(f'compareSTR_samples_{caller_1}_{caller_2}')
+    output_path_vcf = output_path(f'compareSTR_samples_{caller_1}_{caller_2}', 'analysis')
     b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)
