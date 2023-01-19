@@ -80,6 +80,7 @@ def main(
 
     trtools_job = b.new_job(name=f'compareSTR')
     trtools_job.image(TRTOOLS_IMAGE)
+    trtools_job.depends_on(bcftools_job)
     trtools_job.storage('20G')
     trtools_job.cpu(8)
 
