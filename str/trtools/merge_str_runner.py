@@ -68,17 +68,7 @@ def main(
             vcf_input.append(sample_vcf_file.vcf)
     else:
         raise Exception('Invalid caller')
-    multi_vcf_file_path_string = ''
-
-    i = 0
-    while i < len(vcf_input):
-        if i != len(vcf_input) - 1:
-            multi_vcf_file_path_string = (
-                multi_vcf_file_path_string + str(vcf_input[i]) + ','
-            )
-        else:
-            multi_vcf_file_path_string = multi_vcf_file_path_string + str(vcf_input[i])
-        i += 1
+    multi_vcf_file_path_string = ','.join(str(vcf_path) for vcf_path in vcf_input)
 
     trtools_job = b.new_job(name='mergeSTR')
     trtools_job.image(TRTOOLS_IMAGE)
