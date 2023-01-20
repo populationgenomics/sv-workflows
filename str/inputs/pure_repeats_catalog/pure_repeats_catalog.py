@@ -10,7 +10,7 @@ from str_analysis.utils.find_repeat_unit import extend_repeat_into_sequence
 ## File loading of catalog with L/R flanks that are one motif length long. 
 d= open('intermediate_files/catalog_with_flanks_one_motif_length.fasta')
 flank_catalog_one_motif_length = d.readlines()
-print(len(flank_catalog_one_motif_length))#996198 lines (ie each of the 16603 loci gets 6 lines)
+print(len(flank_catalog_one_motif_length))#989094 lines (ie each of the 164849 loci gets 6 lines)
 
 ## Dictionary creation
 flank_catalog_one_motif_length_dict={}
@@ -21,7 +21,7 @@ while i<len(flank_catalog_one_motif_length)-5:
         value = (flank_catalog_one_motif_length[i+3].rstrip(),flank_catalog_one_motif_length[i+5].rstrip()) # tuple (FASTA + R flank, FASTA + L flank)
         flank_catalog_one_motif_length_dict[key] = value 
     i+=6
-print(len(flank_catalog_one_motif_length_dict)) #166033
+print(len(flank_catalog_one_motif_length_dict)) #164849
 
 ## Pure repeat catalog dictionary for comparison
 f = open("intermediate_files/pure_repeat_catalog_not_final.txt")
@@ -56,9 +56,9 @@ print(len(right_flank_one_motif_added_repeat_loci)) #0
 print(len(both_flanks_one_motif_added_repeat_loci)) #0
 
 # optional 
-#left_flank_added_repeat_loci_file = open("left_flank_one_motif_added_repeat_loci.txt", "w")
-#left_flank_added_repeat_loci_file.write(str(left_flank_one_motif_added_repeat_loci))
-#left_flank_added_repeat_loci_file.close()
+left_flank_added_repeat_loci_file = open("intermediate_files/left_flank_one_motif_added_repeat_loci.txt", "w")
+left_flank_added_repeat_loci_file.write(str(left_flank_one_motif_added_repeat_loci))
+left_flank_added_repeat_loci_file.close()
 
 #right_flank_added_repeat_loci and both_flanks_added_repeat_loci are empty 
 
@@ -67,10 +67,10 @@ print(len(both_flanks_one_motif_added_repeat_loci)) #0
 ## File loading of catalog with L/R flanks that are two motif lengths long. 
 g= open('intermediate_files/catalog_with_flanks_two_motif_lengths.fasta')
 flank_catalog_two_motif_lengths = g.readlines()
-print(len(flank_catalog_two_motif_lengths))#996198 lines (ie each of the 16603 loci gets 6 lines)
+print(len(flank_catalog_two_motif_lengths))#989094 lines (ie each of the 164849 loci gets 6 lines)
 
 ## Dictionary creation of catalog with L/R flanks that are two motif lengths long: 
-flank_catalog_two_motif_lengths_dict={} #166033
+flank_catalog_two_motif_lengths_dict={} #164849
 
 i=0
 while i<len(flank_catalog_two_motif_lengths)-5:
@@ -109,7 +109,7 @@ for locus in pure_catalog_dict:
         revised_pure_catalog_dict[revised_locus] = (motif,revised_repeat_count)
     else:
         revised_pure_catalog_dict[locus]= (motif, repeat_count)
-print(len(revised_pure_catalog_dict)) #166033
+print(len(revised_pure_catalog_dict)) #164849
 
 #testing out revised pure catalog: 
 #print(pure_catalog_dict["chr10:10022442-10022450"]) #('CTGC', '2')

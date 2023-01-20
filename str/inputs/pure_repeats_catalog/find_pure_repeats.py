@@ -34,14 +34,16 @@ for k in orig_catalog_dict:
     repeat_unit, repeat_count = orig_catalog_dict[k]
     if repeat_count == 1:#ie impure repeat sequence 
         excluded_loci.append(k)
-    if len(repeat_unit)==1:#homopolymers
+    elif len(repeat_unit)==1:#homopolymers
+        excluded_loci.append(k)
+    elif len(repeat_unit)>6: #remove loci with motifs greater than 6bp (STR definition is 2-6bp motif)
         excluded_loci.append(k)
 
 ## Remove the excluded_loci from the Illumina catalog dictionary 
 for m in excluded_loci:
     del orig_catalog_dict[m]
 
-print(len(orig_catalog_dict)) #166033 pure repeat loci 
+print(len(orig_catalog_dict)) #164849 pure repeat loci 
 
 ## Write out the pure repeat loci to an output file 
 pure_repeat_catalog = open("intermediate_files/pure_repeat_catalog_not_final.txt","w")
