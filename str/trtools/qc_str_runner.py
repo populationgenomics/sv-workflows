@@ -10,13 +10,11 @@ analysis-runner --access-level test --dataset tob-wgs --description 'tester' --o
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
 """
-import os
 
 import click
-import hailtop.batch as hb
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path
+from cpg_utils.hail_batch import output_path
 from cpg_workflows.batch import get_batch
 
 config = get_config()
