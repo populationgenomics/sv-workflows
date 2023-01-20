@@ -17,6 +17,7 @@ import hailtop.batch as hb
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
+from cpg_workflows.batch import get_batch
 
 config = get_config()
 
@@ -27,7 +28,11 @@ TRTOOLS_IMAGE = config['images']['trtools']
 # file-path
 @click.option('--file-path', help='gs://...')
 # caller
-@click.option('--caller', help='gangstr or eh')
+@click.option(
+    '--caller',
+    help='gangstr or eh',
+    type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
+)
 # reference bias plot options
 @click.option(
     '--refbias-binsize',
@@ -61,11 +66,7 @@ def main(
 ):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
-    backend = hb.ServiceBackend(
-        billing_project=get_config()['hail']['billing_project'],
-        remote_tmpdir=remote_tmpdir(),
-    )
-    b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+    b = get_batch()
     vcf_input = b.read_input(file_path)
     trtools_job = b.new_job(name=f'qcSTR {caller}')
 

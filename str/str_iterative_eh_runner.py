@@ -133,7 +133,7 @@ def main(
         """
         )
         # ExpansionHunter output writing
-        eh_output_path = output_path(f'{cpg_sample_id}_EH')
+        eh_output_path = output_path(f'{cpg_sample_id}_eh')
         b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)

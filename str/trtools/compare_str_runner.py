@@ -16,6 +16,7 @@ import hailtop.batch as hb
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
+from cpg_workflows.batch import get_batch
 
 config = get_config()
 
@@ -38,11 +39,8 @@ def main(
 ):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
-    backend = hb.ServiceBackend(
-        billing_project=get_config()['hail']['billing_project'],
-        remote_tmpdir=remote_tmpdir(),
-    )
-    b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+    b = get_batch()
+
     vcf_input_1 = b.read_input(file_path_1)
     vcf_input_2 = b.read_input(file_path_2)
 

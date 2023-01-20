@@ -18,6 +18,8 @@ from sample_metadata.apis import SampleApi
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
+from cpg_workflows.batch import get_batch
+
 
 config = get_config()
 
@@ -27,7 +29,11 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 
 # inputs:
 # caller
-@click.option('--caller', help='gangstr or eh')
+@click.option(
+    '--caller',
+    help='gangstr or eh',
+    type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
+)
 # dataset
 @click.option('--dataset', help='dataset eg tob-wgs')
 # input directory
@@ -40,11 +46,7 @@ def main(
 ):  # pylint: disable=missing-function-docstring
 
     # Initializing Batch
-    backend = hb.ServiceBackend(
-        billing_project=get_config()['hail']['billing_project'],
-        remote_tmpdir=remote_tmpdir(),
-    )
-    b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+    b = get_batch()
 
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
@@ -62,14 +64,8 @@ def main(
 
     input_vcf_dict = {}
 
-    if caller == 'eh':
-        for id in list(external_id_to_cpg_id.values()):
-            input_vcf_dict[id] = input_dir + '/' + id + '_EH.vcf'
-    elif caller == 'gangstr':
-        for id in list(external_id_to_cpg_id.values()):
-            input_vcf_dict[id] = input_dir + '/' + id + '_gangstr.vcf'
-    else:
-        raise Exception('Invalid caller')
+    for id in list(external_id_to_cpg_id.values()):
+        input_vcf_dict[id] = os.path.join(input_dir, f'{id}_{caller}.vcf')
 
     for id in list(input_vcf_dict.keys()):
 
