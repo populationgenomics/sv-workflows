@@ -63,7 +63,8 @@ def main(
 
     input_vcf_dict = {}
 
-    for id in list(external_id_to_cpg_id.values()):
+    #for id in list(external_id_to_cpg_id.values()):
+    for id in external_wgs_ids:
         input_vcf_dict[id] = os.path.join(input_dir, f'{id}_{caller}.vcf')
 
     for id in list(input_vcf_dict.keys()):
