@@ -79,8 +79,8 @@ def main(
             bcftools_job.declare_resource_group(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
-                    'reheader.vcf.gz': '{root}.reheader.vcf.gz',
-                    'vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
+                    'reheader.vcf.gz': '{root}.reheader.vcf.gz'
+                   # 'vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
                 }
             )
             bcftools_job.command(
@@ -100,10 +100,10 @@ def main(
                 bcftools_job.vcf_sorted['reheader.vcf.gz'],
                 output_path_eh + '.reheader.vcf.gz',
             )
-            b.write_output(
-                bcftools_job.vcf_sorted['vcf.gz.tbi'],
-                output_path_eh + '.reheader.vcf.gz.tbi',
-            )
+           # b.write_output(
+           #     bcftools_job.vcf_sorted['vcf.gz.tbi'],
+            #    output_path_eh + '.reheader.vcf.gz.tbi',
+           # )
 
         else:
             bcftools_job.declare_resource_group(
