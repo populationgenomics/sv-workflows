@@ -81,7 +81,7 @@ def main(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
                     'reheader.vcf.gz': '{root}.reheader.vcf.gz',
-                    'vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
+                    'reheader.vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
                 }
             )
             bcftools_job.command(
