@@ -34,23 +34,33 @@ TRTOOLS_IMAGE = config['images']['trtools']
 # reference bias plot options
 @click.option(
     '--refbias-binsize',
-    help=' Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length', default=5, type=int
+    help=' Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length',
+    default=5,
+    type=int,
 )
 @click.option(
     '--refbias-metric',
-    help='Determines which metric to use to summarize the reference bias in each bin.', type=click.Choice(['mean', 'median'], case_sensitive=True), default='mean'
+    help='Determines which metric to use to summarize the reference bias in each bin.',
+    type=click.Choice(['mean', 'median'], case_sensitive=True),
+    default='mean',
 )
 @click.option(
     '--refbias-mingts',
-    help='Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length.', type=int, default=100
+    help='Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length.',
+    type=int,
+    default=100,
 )
 @click.option(
     '--refbias-xrange-min',
-    help='Exclude points corresponding to TRs with reference length less than this value.', type=int, default=0
+    help='Exclude points corresponding to TRs with reference length less than this value.',
+    type=int,
+    default=0,
 )
 @click.option(
     '--refbias-xrange-max',
-    help='Exclude points corresponding to TRs with reference length greater than this value.', type=int, default=10000
+    help='Exclude points corresponding to TRs with reference length greater than this value.',
+    type=int,
+    default=10000,
 )
 @click.command()
 def main(
