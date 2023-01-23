@@ -106,7 +106,7 @@ def main(
             bcftools_job.declare_resource_group(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
-                    'vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
+                    'vcf.gz.tbi': '{root}.vcf.gz.tbi',
                 }
             )
             bcftools_job.command(
