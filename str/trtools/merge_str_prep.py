@@ -63,9 +63,8 @@ def main(
 
     input_vcf_dict = {}
 
-    #for id in list(external_id_to_cpg_id.values()):
-    for id in external_wgs_ids:
-        input_vcf_dict[id] = os.path.join(input_dir, f'{id}_GangSTR.vcf')
+    for id in list(external_id_to_cpg_id.values()):
+        input_vcf_dict[id] = os.path.join(input_dir, f'{id}{caller}.vcf')
 
     for id in list(input_vcf_dict.keys()):
 
@@ -97,10 +96,7 @@ def main(
             )
             # Output writing
             output_path_eh = output_path(f'{id}_eh')
-            b.write_output(
-                bcftools_job.vcf_sorted,
-                output_path_eh
-            )
+            b.write_output(bcftools_job.vcf_sorted, output_path_eh)
 
         else:
             bcftools_job.declare_resource_group(
@@ -120,10 +116,7 @@ def main(
             )
             # Output writing
             output_path_gangstr = output_path(f'{id}_gangstr')
-            b.write_output(
-                bcftools_job.vcf_sorted,
-                output_path_gangstr
-            )
+            b.write_output(bcftools_job.vcf_sorted, output_path_gangstr)
 
     b.run(wait=False)
 
