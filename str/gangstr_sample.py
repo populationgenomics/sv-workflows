@@ -39,7 +39,7 @@ GANGSTR_IMAGE = config['images']['gangstr']
 
 @click.command()
 def main(
-    variant_catalog, dataset, external_wgs_ids: list[str]
+    variant_catalog, dataset
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
