@@ -125,7 +125,7 @@ def main(
 
         gangstr_job.command(
             f"""
-        GangSTR --bam {crams['cram']} --ref {ref.base} --regions {gangstr_regions} --out {gangstr_job.gangstr_output}
+        GangSTR --bam {crams['cram']} --ref {ref.base} --regions {gangstr_regions} --out {gangstr_job.gangstr_output} --bam-samps {cpg_sample_id}
         """
         )
         # GangSTR output writing
