@@ -90,7 +90,7 @@ def main(
                 'realigned_bam': '{root}_realigned.bam',
             }
         )
-
+        eh_regions = b.read_input(variant_catalog)
         eh_job.command(
             f"""
         ExpansionHunter  \\
