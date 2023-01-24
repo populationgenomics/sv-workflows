@@ -50,24 +50,8 @@ def main(
 
     if dataset == 'tob-wgs':
         ref_fasta = (
-            'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
-        )
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequence_type': 'genome', 'source': 'nagim'},
-        )
-    else:
-        ref_fasta = reference_path('broad/ref_fasta')
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={},
-        )
+            'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
+        
     crams_path = ["gs://cpg-tob-wgs-test/cram/nagim/CPG199760.cram"]
 
     gangstr_regions = b.read_input(variant_catalog)
