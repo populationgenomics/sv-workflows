@@ -5,7 +5,7 @@
 This script uses GangSTRv2.5 to call STRs on WGS cram files.
 Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'hoptan-str/CPG199760' gangstr_sample.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/catalogs/gangstr_pure_repeats_catalog.bed --dataset=tob-wgs
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'hoptan-str/CPG199760' eh_sample.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/catalogs/eh_pure_repeats_catalog.json --dataset=tob-wgs
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -28,7 +28,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
-GANGSTR_IMAGE = config['images']['gangstr']
+EH_IMAGE = config['images']['expansionhunter']
 
 
 # inputs:
@@ -77,28 +77,33 @@ def main(
             )
         )
 
-        # GangSTR job initialisation
-        gangstr_job = b.new_job(name=f'GangSTR:{cpg_sample_id} running')
-        gangstr_job.image(GANGSTR_IMAGE)
-        gangstr_job.storage('50G')
-        gangstr_job.cpu(8)
+        # ExpansionHunter job initialisation
+        eh_job = b.new_job(name=f'ExpansionHunter:{cpg_sample_id} running')
+        eh_job.image(EH_IMAGE)
+        eh_job.storage('50G')
+        eh_job.cpu(8)
 
-        gangstr_job.declare_resource_group(
-            gangstr_output={
+        eh_job.declare_resource_group(
+            eh_output={
                 'vcf': '{root}.vcf',
-                'insdata': '{root}.insdata.tab',
-                'samplestats': '{root}.samplestats.tab',
+                'json': '{root}.json',
+                'realigned_bam': '{root}_realigned.bam',
             }
         )
 
-        gangstr_job.command(
+        eh_job.command(
             f"""
-        GangSTR --bam {crams['cram']} --ref {ref.base} --regions {gangstr_regions} --out {gangstr_job.gangstr_output}
+        ExpansionHunter  \\
+        --reads {crams['cram']} \\
+        --reference {ref.base} --variant-catalog {eh_regions}\\
+         --threads 16 --analysis-mode streaming \\
+         --output-prefix {eh_job.eh_output}
         """
         )
-        # GangSTR output writing
-        gangstr_output_path = output_path(f'CPG199760_1_gangstr')
-        b.write_output(gangstr_job.gangstr_output, gangstr_output_path)
+        # ExpansionHunter output writing
+        eh_output_path = output_path(f'{cpg_sample_id}_eh')
+        b.write_output(eh_job.eh_output, eh_output_path)
+
 
     b.run(wait=False)
 
