@@ -39,6 +39,14 @@ for k in orig_catalog_dict:
     elif len(repeat_unit)>6: #remove loci with motifs greater than 6bp (STR definition is 2-6bp motif)
         excluded_loci.append(k)
 
+## Write out excluded_loci into an output file 
+excluded_loci_catalog = open("intermediate_files/excluded_loci_catalog.txt","w")
+for m in excluded_loci: 
+    motif, repeat_count = orig_catalog_dict[m]
+    excluded_loci_catalog.write(m + " "+motif+" "+str(repeat_count)+"\n")
+excluded_loci_catalog.close()
+print(len(excluded_loci)) #9438
+
 ## Remove the excluded_loci from the Illumina catalog dictionary 
 for m in excluded_loci:
     del orig_catalog_dict[m]
