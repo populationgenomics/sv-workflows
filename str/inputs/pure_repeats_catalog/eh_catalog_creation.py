@@ -107,7 +107,7 @@ for i in file:
         entry['OfftargetRegions'] = chr9_27573528_27573546_off_target_regions
     eh_catalog.append(entry)
 
-print(len(eh_catalog)) #166033
+print(len(eh_catalog)) #164847
 with open("catalogs/eh_pure_repeats_catalog.json", "w") as eh:
         json.dump(eh_catalog, eh, indent=4)
 

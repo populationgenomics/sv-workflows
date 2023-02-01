@@ -38,6 +38,8 @@ for k in orig_catalog_dict:
         excluded_loci.append(k)
     elif len(repeat_unit)>6: #remove loci with motifs greater than 6bp (STR definition is 2-6bp motif)
         excluded_loci.append(k)
+excluded_loci.append("chr8:49170487-49170547") #manual removal of 2 loci that overlap each other (representing a compound repeat structure)
+excluded_loci.append("chr8:49170544-49170552")
 
 ## Write out excluded_loci into an output file 
 excluded_loci_catalog = open("intermediate_files/excluded_loci_catalog.txt","w")
@@ -45,13 +47,13 @@ for m in excluded_loci:
     motif, repeat_count = orig_catalog_dict[m]
     excluded_loci_catalog.write(m + " "+motif+" "+str(repeat_count)+"\n")
 excluded_loci_catalog.close()
-print(len(excluded_loci)) #9438
+print(len(excluded_loci)) #9440
 
 ## Remove the excluded_loci from the Illumina catalog dictionary 
 for m in excluded_loci:
     del orig_catalog_dict[m]
 
-print(len(orig_catalog_dict)) #164849 pure repeat loci 
+print(len(orig_catalog_dict)) #164847 pure repeat loci 
 
 ## Write out the pure repeat loci to an output file 
 pure_repeat_catalog = open("intermediate_files/pure_repeat_catalog_not_final.txt","w")
