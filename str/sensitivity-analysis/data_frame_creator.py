@@ -19,7 +19,7 @@ def eh_csv_writer(file):
     #csv = ""            
    # for line in file: 
     #    csv+=line
-    return csv
+    return file
 
 """
 def concatenate_csv(csv_array):
