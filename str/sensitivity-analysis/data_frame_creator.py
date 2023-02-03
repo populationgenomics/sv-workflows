@@ -16,9 +16,9 @@ from google.cloud import storage
 config = get_config()
 
 def eh_csv_writer(file):
-    file = open(file)
+    file_reader = open(file)
     csv = ""            
-    for line in file: 
+    for line in file_reader: 
         if line.startswith("##"):
             continue
         if line.startswith("#CHROM"):
