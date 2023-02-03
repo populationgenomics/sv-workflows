@@ -23,11 +23,13 @@ backend = hb.ServiceBackend(
     )
 b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 """
+def main(): 
+    b = hb.Batch("name", default_python_image=config['workflow']['driver_image'])
+    j = b.new_python_job(name = "potato")
 
-b = hb.Batch("name", default_python_image=config['workflow']['driver_image'])
-j = b.new_python_job(name = "potato")
-
-text = (j.call(hello_world, 'alice')).as_str()
-#result = j.call(upper, hello_str)
-b.write_output(text, output_path('output/hello-alice.txt'))
-b.run()
+    text = (j.call(hello_world, 'alice')).as_str()
+    #result = j.call(upper, hello_str)
+    b.write_output(text, output_path('output/hello-alice.txt'))
+    b.run(wait = False)
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
