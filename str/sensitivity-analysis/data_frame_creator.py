@@ -16,60 +16,12 @@ from google.cloud import storage
 config = get_config()
 
 def eh_csv_writer(file):
-    file_reader = open(file)
     csv = ""            
-    for line in file_reader: 
-        if line.startswith("##"):
-            continue
-        if line.startswith("#CHROM"):
-            header = line.split()
-            sample_id = header[9]
-            continue
-        attributes = line.split()
-        chr = attributes[0]
-        start = attributes[1]
-        e_qual = attributes[6]
-        locus_characteristics = attributes[7].split(";")
-        end = locus_characteristics[0][4:]
-        repeat_units_in_ref = locus_characteristics[1][4:]
-        ref_sequence_length = locus_characteristics[2][3:]
-        motif = locus_characteristics[3][3:]
-        variant_characteristics = attributes[9].split(":")
-        e_GT = variant_characteristics[0]
-        e_SO = variant_characteristics[1]
-        e_allele_1 = variant_characteristics[2].split("/")[0]
-        e_allele_2 = variant_characteristics[2].split("/")[1]
-        e_REPCI = variant_characteristics[3]
-        e_ADSP = variant_characteristics[4]
-        e_ADFL = variant_characteristics[5]
-        e_ADIR = variant_characteristics[6]
-        e_LC = variant_characteristics[7]
-        csv = csv+(
-            ','.join(
-                [
-                    sample_id, 
-                    chr, 
-                    start, 
-                    e_qual, 
-                    end,
-                    repeat_units_in_ref,
-                    ref_sequence_length, 
-                    motif,
-                    e_GT,
-                    e_SO, 
-                    e_allele_1,
-                    e_allele_2,
-                    e_REPCI,
-                    e_ADSP, 
-                    e_ADFL,
-                    e_ADIR,
-                    e_LC
-                ]
-            )+'\n'
-        )
-        return csv
+    for line in file: 
+        csv+=line
+    return csv
 
-        """
+"""
 def concatenate_csv(csv_array):
     combo_csv = ""
     for i in csv_array: 
