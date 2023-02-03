@@ -26,7 +26,12 @@ b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
 b = hb.Batch("name", default_python_image=config['workflow']['driver_image'])
 j = b.new_python_job(name = "potato")
-hello_str = j.call(hello_world, 'alice')
+j.declare_resource_group(
+            eh_output={
+                'txt': '{root}.txt'
+            }
+        )
+j.eh_output = j.call(hello_world, 'alice')
 #result = j.call(upper, hello_str)
-b.write_output(hello_str.as_str(), output_path('output/hello-alice.txt'))
+b.write_output(j.eh_output.as_str(), output_path('output/hello-alice.txt'))
 b.run()
