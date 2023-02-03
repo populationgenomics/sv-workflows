@@ -51,7 +51,7 @@ def main(
         if file.endswith(".cram"): 
                 crams_path.append(file)
 
-    eh_regions = b.read_input(variant_catalog)
+    gangstr_regions = b.read_input(variant_catalog)
 
     # Iterate over each sample to call Expansion Hunter
     for cram_obj in crams_path:
