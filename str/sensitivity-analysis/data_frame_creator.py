@@ -22,7 +22,7 @@ config = get_config()
 def main(input_dir):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-    j = b.new_job(name = "EH dataframe writer")
+    j = b.new_python_job(name = "EH dataframe writer")
 
     vcf_path = []
     bucket_name, *components = input_dir[5:].split('/')
