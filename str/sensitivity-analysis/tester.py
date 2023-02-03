@@ -18,7 +18,7 @@ def upper(s):
 
 
 b = get_batch()
-j = b.new_python_job()
+j = b.new_python_job(name = "potato")
 hello_str = j.call(hello_world, 'alice')
 result = j.call(upper, hello_str)
 b.write_output(result.as_str(), 'output/hello-alice.txt')
