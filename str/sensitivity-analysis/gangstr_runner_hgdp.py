@@ -23,7 +23,7 @@ from google.cloud import storage
 config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
-EH_IMAGE = config['images']['expansionhunter']
+GANGSTR_IMAGE = config['images']['gangstr']
 
 
 # inputs:
