@@ -34,7 +34,7 @@ def main(input_dir):  # pylint: disable=missing-function-docstring
     for file in files: 
         if file.endswith(".vcf"): 
                 vcf_path.append(file)
-    def eh_csv_writer(vcf_path):
+    def eh_csv_writer(vcf_path: list[str]):
         print(
             ','.join(
                 [   
