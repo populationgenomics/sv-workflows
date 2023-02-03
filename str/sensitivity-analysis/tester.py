@@ -31,7 +31,7 @@ j.declare_resource_group(
                 'txt': '{root}.txt'
             }
         )
-j.eh_output = j.call(hello_world, 'alice')
+j.eh_output = (j.call(hello_world, 'alice')).as_str()
 #result = j.call(upper, hello_str)
-b.write_output(j.eh_output.as_str(), output_path('output/hello-alice.txt'))
+b.write_output(j.eh_output, output_path('output/hello-alice.txt'))
 b.run()
