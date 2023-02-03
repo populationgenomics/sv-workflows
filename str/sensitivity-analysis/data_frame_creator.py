@@ -49,9 +49,9 @@ def main():
     for file in files: 
         if file.endswith(".vcf"): 
                 vcf_path.append(file)
-    for vcf_file in vcf_path:
-        file= b.read_input("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
-        tester = j.call(eh_csv_writer(file)).as_str() 
+    #for vcf_file in vcf_path:
+    file= b.read_input("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
+    tester = j.call(eh_csv_writer(file))
 
     b.write_output(tester, output_path('eh_data_frame.csv'))
     b.run(wait=False)
