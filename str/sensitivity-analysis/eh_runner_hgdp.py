@@ -39,7 +39,7 @@ def main(
 
     #ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
   
-    ref_fasta = reference_path('broad/ref_fasta')
+    ref_fasta = str(reference_path('broad/ref_fasta'))
     
     crams_path = []
     bucket_name, *components = input_dir[5:].split('/')
