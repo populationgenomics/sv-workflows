@@ -28,7 +28,7 @@ bucket_name, *components = input_dir[5:].split('/')
 client = storage.Client()
 
 blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
-files: Set[str] = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
+files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
 for file in files: 
     if file.endswith(".vcf"): 
             vcf_path.append(file)
