@@ -30,6 +30,6 @@ def main():
     text = (j.call(hello_world, 'alice')).as_str()
     #result = j.call(upper, hello_str)
     b.write_output(text, output_path('output/hello-alice.txt'))
-    b.run(wait = False)
+    b.run()
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
