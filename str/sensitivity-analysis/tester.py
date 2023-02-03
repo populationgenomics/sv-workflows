@@ -5,6 +5,8 @@ import logging
 
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
+import hailtop.batch as hb
+
 
 config = get_config()
 
@@ -14,9 +16,15 @@ def hello_world(name):
 
 def upper(s):
     return s.upper()
+"""
+backend = hb.ServiceBackend(
+        billing_project=get_config()['hail']['billing_project'],
+        remote_tmpdir=remote_tmpdir(),
+    )
+b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+"""
 
-
-b = Batch("name", default_python_image=config['workflow']['driver_image'])
+b = hb.Batch("name", default_python_image=config['workflow']['driver_image'])
 j = b.new_python_job(name = "potato")
 hello_str = j.call(hello_world, 'alice')
 result = j.call(upper, hello_str)
