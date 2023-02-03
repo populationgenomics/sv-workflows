@@ -16,7 +16,7 @@ def upper(s):
     return s.upper()
 
 
-b = get_batch()
+b = Batch("name", default_python_image=config['workflow']['driver_image'])
 j = b.new_python_job(name = "potato")
 hello_str = j.call(hello_world, 'alice')
 result = j.call(upper, hello_str)
