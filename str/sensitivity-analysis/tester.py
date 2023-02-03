@@ -4,7 +4,7 @@ import logging
 
 
 from cpg_utils.config import get_config
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 import hailtop.batch as hb
 
 
@@ -28,5 +28,5 @@ b = hb.Batch("name", default_python_image=config['workflow']['driver_image'])
 j = b.new_python_job(name = "potato")
 hello_str = j.call(hello_world, 'alice')
 result = j.call(upper, hello_str)
-b.write_output(result.as_str(), 'output/hello-alice.txt')
+b.write_output(result.as_str(), output_path('output/hello-alice.txt'))
 b.run()
