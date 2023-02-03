@@ -62,6 +62,17 @@ def main(
         )
         cpg_sample_id = cram_obj[30:38]
 
+        ref = b.read_input_group(
+            **dict(
+                base=ref_fasta,
+                fai=ref_fasta + '.fai',
+                dict=ref_fasta.replace('.fasta', '')
+                .replace('.fna', '')
+                .replace('.fa', '')
+                + '.dict',
+            )
+        )
+
         gangstr_job = b.new_job(name=f'GangSTR:{cpg_sample_id} running')
         gangstr_job.image(GANGSTR_IMAGE)
         gangstr_job.storage('50G')
