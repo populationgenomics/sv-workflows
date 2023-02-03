@@ -112,7 +112,11 @@ def main(input_dir):  # pylint: disable=missing-function-docstring
                 )
     csv_output = j.call(eh_csv_writer, vcf_path)
     b.write_output(csv_output, output_path('eh_data_frame.csv'))
+    b.run(wait=False)
 
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
 
 
 
