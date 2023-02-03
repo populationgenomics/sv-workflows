@@ -16,6 +16,7 @@ from google.cloud import storage
 config = get_config()
 
 def eh_csv_writer(file):
+    file = open(file)
     csv = ""            
     for line in file: 
         if line.startswith("##"):
@@ -67,12 +68,14 @@ def eh_csv_writer(file):
             )+'\n'
         )
         return csv
+
+        """
 def concatenate_csv(csv_array):
     combo_csv = ""
     for i in csv_array: 
      #   file = 
         combo_csv= combo_csv+i
-    return combo_csv
+    return combo_csv"""
 
 def main():
 # pylint: disable=missing-function-docstring
@@ -94,13 +97,11 @@ def main():
     for file in files: 
         if file.endswith(".vcf"): 
                 vcf_path.append(file)
-    csv_array=[]
     for vcf_file in vcf_path:
         file= b.read_input("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
-        csv_array.append(j.call(eh_csv_writer(file)).as_str()) 
-    jumbo_csv = j.call(concatenate_csv(csv_array)).as_str()
+        tester = j.call(eh_csv_writer(file)).as_str() 
 
-    b.write_output(jumbo_csv, output_path('eh_data_frame.csv'))
+    b.write_output(tester, output_path('eh_data_frame.csv'))
     b.run(wait=False)
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
