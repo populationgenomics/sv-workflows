@@ -19,6 +19,8 @@ import click
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path, reference_path
 from cpg_workflows.batch import get_batch
+from google.cloud import storage
+
 config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
@@ -41,6 +43,8 @@ def main(
     
     crams_path = []
     bucket_name, *components = input_dir[5:].split('/')
+
+    client = storage.Client()
 
     blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
     files: Set[str] = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
