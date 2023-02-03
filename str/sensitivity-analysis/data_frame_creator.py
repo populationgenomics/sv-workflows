@@ -109,5 +109,5 @@ def eh_csv_writer(vcf_path: list[str]):
                 )+'\n'
             )
 csv_output = j.call(eh_csv_writer, vcf_path)
-b.write_output(csv_output, output_path('eh_data_frame.csv'))
+b.write_output(csv_output.as_str(), output_path('eh_data_frame.csv'))
 b.run(wait=False)
