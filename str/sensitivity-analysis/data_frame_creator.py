@@ -11,7 +11,7 @@ import logging
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
 import hailtop.batch as hb
-
+from google.cloud import storage
 
 config = get_config()
 
