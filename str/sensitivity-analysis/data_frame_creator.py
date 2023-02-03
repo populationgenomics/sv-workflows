@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# pylint: disable=import-error
 """
 analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/eh' data_frame_creator.py --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh
 
