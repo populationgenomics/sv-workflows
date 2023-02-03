@@ -59,9 +59,9 @@ def main(
 
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(
-            **{'cram': cram_obj['output'], 'cram.crai': cram_obj['output'] + '.crai'}
+            **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
         )
-        cpg_sample_id = cram_obj['sample_ids'][0]
+        cpg_sample_id = file[30:39]
 
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
