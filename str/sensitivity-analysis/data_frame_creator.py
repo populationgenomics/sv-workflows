@@ -16,9 +16,9 @@ from google.cloud import storage
 config = get_config()
 
 def eh_csv_writer(file):
-    csv = ""            
-    for line in file: 
-        csv+=line
+    #csv = ""            
+   # for line in file: 
+    #    csv+=line
     return csv
 
 """
@@ -55,5 +55,6 @@ def main():
 
     b.write_output(tester, output_path('eh_data_frame.csv'))
     b.run(wait=False)
+
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
