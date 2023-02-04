@@ -55,7 +55,7 @@ def main(input_dir):
     j = b.new_python_job(name = "EH dataframe writer")
     
     #for vcf_file in vcf_path:
-    tester = j.call(eh_csv_writer)
+    tester = j.call(eh_csv_writer(input_dir=input_dir))
 
     b.write_output(tester.as_str(), output_path('eh_data_frame.txt'))
     b.run(wait=False)
