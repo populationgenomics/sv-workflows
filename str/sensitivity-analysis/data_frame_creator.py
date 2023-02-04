@@ -167,19 +167,19 @@ def gangstr_csv_writer():
                         g_STDERR = attributes[9]
                         g_QEXP = attributes[9]
                         continue
-                    locus_characteristics = attributes[9].split(":|\|")
-                    g_GT = locus_characteristics[0]
-                    g_DP = locus_characteristics[1]
-                    g_Q = locus_characteristics[2]
-                    g_REPCN = locus_characteristics[3]
-                    g_REPCI = locus_characteristics[4]
-                    g_RC = locus_characteristics[5]
-                    g_ENCLREADS = locus_characteristics[6]
-                    g_FLNKREADS = locus_characteristics[7]
-                    g_ML = locus_characteristics[8]
-                    g_INS = locus_characteristics[9]
-                    g_STDERR = locus_characteristics[10]
-                    g_QEXP = locus_characteristics[11]
+                    g_locus_characteristics = attributes[9].split(":") #fix this 
+                    g_GT = g_locus_characteristics[0]
+                    g_DP = g_locus_characteristics[1]
+                    g_Q = g_locus_characteristics[2]
+                    g_REPCN = g_locus_characteristics[3]
+                    g_REPCI = g_locus_characteristics[4]
+                    g_RC = g_locus_characteristics[5]
+                    g_ENCLREADS = g_locus_characteristics[6]
+                    g_FLNKREADS = g_locus_characteristics[7]
+                    g_ML = g_locus_characteristics[8]
+                    g_INS = g_locus_characteristics[9]
+                    g_STDERR = g_locus_characteristics[10]
+                    g_QEXP = g_locus_characteristics[11]
                     #g_allele_1 = g_REPCN.split(",")[0]
                     #g_allele_2 = g_REPCN.split(",")[1]
                     csv = csv+(
@@ -218,7 +218,6 @@ def main(input_dir):
     b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name = "EH dataframe writer")
     g = b.new_python_job(name = "GangSTR dataframe writer")
-    combo = b.new_python_job(name ="Combined dataframe writer")
     
     eh_csv = j.call(eh_csv_writer)
     gangstr_csv = g.call(gangstr_csv_writer)
