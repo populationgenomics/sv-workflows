@@ -228,7 +228,7 @@ def main(input_dir):
     
     eh_csv = j.call(eh_csv_writer)
     gangstr_csv = g.call(gangstr_csv_writer)
-    merged_csv = combo.call(merge_csv(eh_csv, gangstr_csv))
+    merged_csv = combo.call(merge_csv(eh_csv.as_str(), gangstr_csv.as_str()))
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
     b.write_output(gangstr_csv.as_str(), output_path('gangstr.csv'))
