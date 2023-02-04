@@ -35,9 +35,10 @@ def eh_csv_writer():
         #file= open("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
         #file = pd.read_csv(file, sep='\t', skiprows = 100)
         file = ""
-        f = open(blob)
-        for line in f: 
-            file+= line
+        with blob.open("r") as f: 
+            array = f.readlines() 
+            for line in array: 
+                file+= line
         return file
 
 def main():
