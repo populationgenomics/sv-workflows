@@ -55,7 +55,7 @@ def main():
         file = pd.read_csv(file, sep='\t', skiprows = 100)
         for line in file: 
             print(line)
-    tester = j.call(eh_csv_writer())
+    tester = j.call(eh_csv_writer)
 
     b.write_output(tester, output_path('eh_data_frame.csv'))
     b.run(wait=False)
