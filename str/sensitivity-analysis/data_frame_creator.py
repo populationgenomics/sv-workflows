@@ -17,16 +17,6 @@ from google.cloud import storage
 config = get_config()
 
 
-
-
-
-"""
-def concatenate_csv(csv_array):
-    combo_csv = ""
-    for i in csv_array: 
-     #   file = 
-        combo_csv= combo_csv+i
-    return combo_csv"""
 def eh_csv_writer():
     input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/eh' #can't seem to code this as an argument
     bucket_name, *components = input_dir[5:].split('/')
@@ -207,9 +197,10 @@ def main(input_dir):
         )
     b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name = "EH dataframe writer")
+    g = b.new_python_job(name = "GangSTR dataframe writer")
     
     eh_csv = j.call(eh_csv_writer)
-    gangstr_csv = j.call(gangstr_csv_writer)
+    gangstr_csv = g.call(gangstr_csv_writer)
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
     b.write_output(gangstr_csv.as_str(), output_path('gangstr.csv'))
