@@ -34,7 +34,10 @@ def eh_csv_writer():
         blob = bucket.get_blob('str/sensitivity-analysis/eh/CPG19869_eh.vcf')
         #file= open("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
         #file = pd.read_csv(file, sep='\t', skiprows = 100)
-        file = blob.download_as_string()
+        file = ""
+        with blob.open("r") as f:
+            potato = f.readline()
+            file+= potato
         return file
 
 def main():
