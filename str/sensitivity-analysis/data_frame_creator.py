@@ -52,7 +52,6 @@ def main(input_dir):
             remote_tmpdir=remote_tmpdir(),
         )
     b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
-    eh_csv_writer(b, input_dir)
     j = b.new_python_job(name = "EH dataframe writer")
     
     #for vcf_file in vcf_path:
