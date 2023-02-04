@@ -7,6 +7,7 @@ analysis-runner --access-level test --dataset hgdp --description 'EH data frame 
 import os
 import logging
 import click
+import pandas as pd
 
 
 from cpg_utils.config import get_config
@@ -203,6 +204,14 @@ def gangstr_csv_writer():
                         )+'\n'
         )
     return csv
+def merge_csv(eh_csv, gangstr_csv):
+    eh_csv = pd.read_csv(eh_csv)
+    gangstr_csv = pd.read_csv(gangstr_csv)
+    merged = eh_csv.merge(gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
+    return merged
+
+
+
 @click.command()
 @click.option('--input-dir')
 def main(input_dir):
@@ -215,12 +224,15 @@ def main(input_dir):
     b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name = "EH dataframe writer")
     g = b.new_python_job(name = "GangSTR dataframe writer")
+    combo = b.new_python_job(name ="Combined dataframe writer")
     
     eh_csv = j.call(eh_csv_writer)
     gangstr_csv = g.call(gangstr_csv_writer)
+    merged_csv = combo.call(merge_csv(eh_csv, gangstr_csv))
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
     b.write_output(gangstr_csv.as_str(), output_path('gangstr.csv'))
+    b.write_output(merged_csv.as_str(), output_path('merged.csv'))
 
     b.run(wait=False)
 
