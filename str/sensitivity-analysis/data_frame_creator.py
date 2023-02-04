@@ -114,7 +114,7 @@ def gangstr_csv_writer():
     blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
     files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
     csv = (
-            ','.join(
+            '\t'.join(
                 [   
                     'sample_id',
                     'chr',
@@ -167,7 +167,7 @@ def gangstr_csv_writer():
                         g_STDERR = attributes[9]
                         g_QEXP = attributes[9]
                         continue
-                    g_locus_characteristics = attributes[9].split(":") #fix this 
+                    g_locus_characteristics = attributes[9].split(":")
                     g_GT = g_locus_characteristics[0]
                     g_DP = g_locus_characteristics[1]
                     g_Q = g_locus_characteristics[2]
@@ -183,7 +183,7 @@ def gangstr_csv_writer():
                     #g_allele_1 = g_REPCN.split(",")[0]
                     #g_allele_2 = g_REPCN.split(",")[1]
                     csv = csv+(
-                        ','.join(
+                        '\t'.join(
                             [
                                 sample_id, 
                                 chr, 
@@ -223,7 +223,7 @@ def main(input_dir):
     gangstr_csv = g.call(gangstr_csv_writer)
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
-    b.write_output(gangstr_csv.as_str(), output_path('gangstr.txt'))
+    b.write_output(gangstr_csv.as_str(), output_path('gangstr.tsv'))
 
     b.run(wait=False)
 
