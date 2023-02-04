@@ -36,7 +36,7 @@ def eh_csv_writer(input_dir):
     files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
     for file in files: 
         if file.endswith(".vcf"): 
-            blob = bucket.blob(input_dir[6+len(bucket_name):])
+            blob = bucket.blob(file[6+len(bucket_name):])
             with blob.open("r") as f: 
                 array = f.readlines() 
                 for line in array: 
