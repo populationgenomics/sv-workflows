@@ -150,8 +150,23 @@ def gangstr_csv_writer():
                     attributes = line.split()
                     chr = attributes[0]
                     start = attributes[1]
+                    if attributes[9] == ".": #ie variant is not called
+                        g_GT = attributes[9]
+                        g_DP = attributes[9]
+                        g_Q = attributes[9]
+                        g_REPCN = attributes[9]
+                        g_allele_1 = attributes[9]
+                        g_allele_2=attributes[9]
+                        g_REPCI = attributes[9]
+                        g_RC = attributes[9]
+                        g_ENCLREADS = attributes[9]
+                        g_FLNKREADS = attributes[9]
+                        g_ML = attributes[9]
+                        g_INS = attributes[9]
+                        g_STDERR = attributes[9]
+                        g_QEXP = attributes[9]
+                        continue
                     locus_characteristics = attributes[9].split(":")
-                    print(attributes[9])
                     g_GT = locus_characteristics[0]
                     g_DP = locus_characteristics[1]
                     g_Q = locus_characteristics[2]
