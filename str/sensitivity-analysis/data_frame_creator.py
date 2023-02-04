@@ -6,8 +6,7 @@ analysis-runner --access-level test --dataset hgdp --description 'EH data frame 
 """
 import os
 import logging
-import pandas as pd
-
+import click
 
 
 from cpg_utils.config import get_config
@@ -18,7 +17,7 @@ from google.cloud import storage
 config = get_config()
 
 
-    #csv = ""            
+
 
 
 """
