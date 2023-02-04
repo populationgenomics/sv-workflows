@@ -15,12 +15,7 @@ from google.cloud import storage
 
 config = get_config()
 
-def eh_csv_writer():
-    file= b.read_input("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
-    with open(file) as readfile: 
-        lines = readfile.readlines()
-        for line in lines: 
-            print(line)
+
     #csv = ""            
 
 
@@ -53,6 +48,12 @@ def main():
         if file.endswith(".vcf"): 
                 vcf_path.append(file)
     #for vcf_file in vcf_path:
+    def eh_csv_writer():
+        file= b.read_input("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
+        with open(file) as readfile: 
+            lines = readfile.readlines()
+            for line in lines: 
+                print(line)
     tester = j.call(eh_csv_writer())
 
     b.write_output(tester, output_path('eh_data_frame.csv'))
