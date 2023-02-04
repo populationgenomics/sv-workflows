@@ -28,6 +28,10 @@ def concatenate_csv(csv_array):
      #   file = 
         combo_csv= combo_csv+i
     return combo_csv"""
+def eh_csv_writer():
+        file= open("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
+        #file = pd.read_csv(file, sep='\t', skiprows = 100)
+        return file
 
 def main():
 # pylint: disable=missing-function-docstring
@@ -50,10 +54,6 @@ def main():
         if file.endswith(".vcf"): 
                 vcf_path.append(file)
     #for vcf_file in vcf_path:
-    def eh_csv_writer():
-        file= ("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
-        file = pd.read_csv(file, sep='\t', skiprows = 100)
-        return file
     tester = j.call(eh_csv_writer)
 
     b.write_output(tester.as_str(), output_path('eh_data_frame.csv'))
