@@ -180,8 +180,8 @@ def gangstr_csv_writer():
                     g_INS = g_locus_characteristics[9]
                     g_STDERR = g_locus_characteristics[10]
                     g_QEXP = g_locus_characteristics[11]
-                    #g_allele_1 = g_REPCN.split(",")[0]
-                    #g_allele_2 = g_REPCN.split(",")[1]
+                    g_allele_1 = g_REPCN.split(",")[0]
+                    g_allele_2 = g_REPCN.split(",")[1]
                     csv = csv+(
                         '\t'.join(
                             [
@@ -198,8 +198,8 @@ def gangstr_csv_writer():
                                 g_ML,
                                 g_INS,
                                 g_STDERR,
-                                #g_allele_1, 
-                                #g_allele_2,
+                                g_allele_1, 
+                                g_allele_2,
                                 g_QEXP
                             ]
                         )+'\n'
