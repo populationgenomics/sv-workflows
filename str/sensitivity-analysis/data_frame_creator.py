@@ -56,7 +56,7 @@ def main():
         return file
     tester = j.call(eh_csv_writer)
 
-    b.write_output(tester, output_path('eh_data_frame.csv'))
+    b.write_output(tester.as_str(), output_path('eh_data_frame.csv'))
     b.run(wait=False)
 
 if __name__ == '__main__':
