@@ -35,9 +35,9 @@ def eh_csv_writer():
         #file= open("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
         #file = pd.read_csv(file, sep='\t', skiprows = 100)
         file = ""
-        with blob.open("r") as f:
-            potato = f.readline()
-            file+= potato
+        f = open(blob)
+        for line in f: 
+            file+= line
         return file
 
 def main():
@@ -63,7 +63,7 @@ def main():
     #for vcf_file in vcf_path:
     tester = j.call(eh_csv_writer)
 
-    b.write_output(tester.as_str(), output_path('eh_data_frame.csv'))
+    b.write_output(tester.as_str(), output_path('eh_data_frame.txt'))
     b.run(wait=False)
 
 if __name__ == '__main__':
