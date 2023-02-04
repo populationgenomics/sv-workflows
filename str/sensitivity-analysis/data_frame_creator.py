@@ -28,18 +28,20 @@ def concatenate_csv(csv_array):
      #   file = 
         combo_csv= combo_csv+i
     return combo_csv"""
-def eh_csv_writer():
-        client = storage.Client()
-        bucket = client.get_bucket('cpg-hgdp-test')
-        blob = bucket.get_blob('str/sensitivity-analysis/eh/CPG19869_eh.vcf')
-        #file= open("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
-        #file = pd.read_csv(file, sep='\t', skiprows = 100)
-        file = ""
-        with blob.open("r") as f: 
-            array = f.readlines() 
-            for line in array: 
-                file+= line
-        return file
+def eh_csv_writer(input_dir):
+    file = ""
+    bucket_name, *components = input_dir[5:].split('/')
+    client = storage.Client()
+    blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
+    files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
+    for file in files: 
+        if file.endswith(".vcf"): 
+            blob = bucket_name.get_blob(input_dir[6+len(bucket_name):])
+            with blob.open("r") as f: 
+                array = f.readlines() 
+                for line in array: 
+                    file+= line
+    return file
 
 def main():
 # pylint: disable=missing-function-docstring
@@ -50,17 +52,7 @@ def main():
         )
     b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name = "EH dataframe writer")
-    input_dir = "gs://cpg-hgdp-test/str/sensitivity-analysis/eh"
-    vcf_path = []
-    bucket_name, *components = input_dir[5:].split('/')
-
-    client = storage.Client()
-
-    blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
-    files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
-    for file in files: 
-        if file.endswith(".vcf"): 
-                vcf_path.append(file)
+    
     #for vcf_file in vcf_path:
     tester = j.call(eh_csv_writer)
 
