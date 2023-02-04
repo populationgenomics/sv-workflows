@@ -223,7 +223,7 @@ def main(input_dir):
     gangstr_csv = g.call(gangstr_csv_writer)
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
-    b.write_output(gangstr_csv.as_str(), output_path('gangstr.csv'))
+    b.write_output(gangstr_csv.as_str(), output_path('gangstr.txt'))
 
     b.run(wait=False)
 
