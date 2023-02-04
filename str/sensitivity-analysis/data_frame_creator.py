@@ -16,10 +16,10 @@ from google.cloud import storage
 config = get_config()
 
 def eh_csv_writer(file):
-    csv = ""            
-    for line in file: 
-        csv+=line
-    return csv
+    #csv = ""            
+    #for line in file: 
+        #sv+=line
+    return file
 
 """
 def concatenate_csv(csv_array):
