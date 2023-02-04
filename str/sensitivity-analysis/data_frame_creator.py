@@ -53,8 +53,7 @@ def main():
     def eh_csv_writer():
         file= ("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
         file = pd.read_csv(file, sep='\t', skiprows = 100)
-        for line in file: 
-            print(line)
+        return file
     tester = j.call(eh_csv_writer)
 
     b.write_output(tester, output_path('eh_data_frame.csv'))
