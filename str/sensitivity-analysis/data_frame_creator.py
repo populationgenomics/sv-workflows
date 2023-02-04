@@ -17,9 +17,8 @@ config = get_config()
 
 def eh_csv_writer(file):
     #csv = ""            
-    #for line in file: 
-        #sv+=line
-    return file
+    for line in file: 
+        print(line)
 
 """
 def concatenate_csv(csv_array):
