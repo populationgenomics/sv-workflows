@@ -29,7 +29,7 @@ def concatenate_csv(csv_array):
     return combo_csv"""
 def eh_csv_writer():
     input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/eh'
-    file = ""
+    big_output = ""
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
     bucket = client.bucket(bucket_name)
@@ -41,8 +41,8 @@ def eh_csv_writer():
             with blob.open("r") as f: 
                 array = f.readlines() 
                 for line in array: 
-                    file+= line
-    return file
+                    big_output+= line
+    return big_output
 @click.command()
 @click.option('--input-dir')
 def main(input_dir):
