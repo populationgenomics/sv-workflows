@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/eh' data_frame_creator.py --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh
+analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames' data_frame_creator.py --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh
 
 """
 import os
@@ -172,7 +172,8 @@ def gangstr_csv_writer():
                     g_DP = locus_characteristics[1]
                     g_Q = locus_characteristics[2]
                     g_REPCN = locus_characteristics[3]
-                    g_allele_1,g_allele_2 = g_REPCN.split(",")
+                    g_allele_1 = g_REPCN.split(",")[0]
+                    g_allele_2 = g_REPCN.split(",")[1]
                     g_REPCI = locus_characteristics[4]
                     g_RC = locus_characteristics[5]
                     g_ENCLREADS = locus_characteristics[6]
@@ -204,13 +205,6 @@ def gangstr_csv_writer():
                         )+'\n'
         )
     return csv
-def merge_csv(eh_csv, gangstr_csv):
-    eh_csv = pd.read_csv(eh_csv)
-    gangstr_csv = pd.read_csv(gangstr_csv)
-    merged = eh_csv.merge(gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
-    return merged
-
-
 
 @click.command()
 @click.option('--input-dir')
@@ -232,7 +226,6 @@ def main(input_dir):
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
     b.write_output(gangstr_csv.as_str(), output_path('gangstr.csv'))
-    b.write_output(merged_csv.as_str(), output_path('merged.csv'))
 
     b.run(wait=False)
 
