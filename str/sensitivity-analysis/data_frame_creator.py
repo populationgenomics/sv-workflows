@@ -148,7 +148,7 @@ def gangstr_csv_writer():
                         header = line.split()
                         sample_id = header[9]
                         continue
-                    attributes = line.split("/t")
+                    attributes = line.split()
                     chr = attributes[0]
                     start = attributes[1]
                     if attributes[9] == ".": #ie variant is not called
