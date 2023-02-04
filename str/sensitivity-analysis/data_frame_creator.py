@@ -27,7 +27,8 @@ def concatenate_csv(csv_array):
      #   file = 
         combo_csv= combo_csv+i
     return combo_csv"""
-def eh_csv_writer(input_dir:str):
+def eh_csv_writer():
+    input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/eh'
     file = ""
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
@@ -55,7 +56,7 @@ def main(input_dir):
     j = b.new_python_job(name = "EH dataframe writer")
     
     #for vcf_file in vcf_path:
-    tester = j.call(eh_csv_writer(input_dir))
+    tester = j.call(eh_csv_writer)
 
     b.write_output(tester.as_str(), output_path('eh_data_frame.txt'))
     b.run(wait=False)
