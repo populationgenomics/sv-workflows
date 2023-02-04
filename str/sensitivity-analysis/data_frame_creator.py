@@ -167,7 +167,7 @@ def gangstr_csv_writer():
                         g_STDERR = attributes[9]
                         g_QEXP = attributes[9]
                         continue
-                    locus_characteristics = attributes[9].split(":")
+                    locus_characteristics = attributes[9].split(":|\|")
                     g_GT = locus_characteristics[0]
                     g_DP = locus_characteristics[1]
                     g_Q = locus_characteristics[2]
