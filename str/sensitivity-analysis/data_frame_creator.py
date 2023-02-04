@@ -52,7 +52,7 @@ def main():
     #for vcf_file in vcf_path:
     def eh_csv_writer():
         file= ("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/CPG19869_eh.vcf")
-        file = pd.read_csv(file, sep='\t')
+        file = pd.read_csv(file, sep='\t', skiprows = 100)
         for line in file: 
             print(line)
     tester = j.call(eh_csv_writer())
