@@ -42,7 +42,8 @@ def eh_csv_writer(input_dir):
                 for line in array: 
                     file+= line
     return file
-
+@click.command()
+@click.option('--input-dir')
 def main(input_dir):
 # pylint: disable=missing-function-docstring
 # Initializing Batch
