@@ -150,7 +150,7 @@ def gangstr_csv_writer():
                     attributes = line.split()
                     chr = attributes[0]
                     start = attributes[1]
-                    locus_characteristics = attributes[5].split(":")
+                    locus_characteristics = attributes[9].split(":")
                     g_GT = locus_characteristics[0]
                     g_DP = locus_characteristics[1]
                     g_Q = locus_characteristics[2]
@@ -181,7 +181,8 @@ def gangstr_csv_writer():
                                 g_INS,
                                 g_STDERR,
                                 g_allele_1, 
-                                g_allele_2
+                                g_allele_2,
+                                g_QEXP
                             ]
                         )+'\n'
         )
