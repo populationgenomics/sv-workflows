@@ -31,11 +31,12 @@ def eh_csv_writer(input_dir):
     file = ""
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
+    bucket = client.bucket(bucket_name)
     blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
     files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
     for file in files: 
         if file.endswith(".vcf"): 
-            blob = bucket_name.get_blob(input_dir[6+len(bucket_name):])
+            blob = bucket.blob(input_dir[6+len(bucket_name):])
             with blob.open("r") as f: 
                 array = f.readlines() 
                 for line in array: 
