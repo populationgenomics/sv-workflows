@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames' data_frame_creator.py --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh
+analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames' data_frame_creator.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr
 
 """
 import os
@@ -106,8 +106,8 @@ def eh_csv_writer(input_dir):
         )
     return csv
 
-def gangstr_csv_writer():
-    input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr' #can't seem to code this as an argument
+def gangstr_csv_writer(input_dir):
+   # input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr' #can't seem to code this as an argument
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
     bucket = client.bucket(bucket_name)
@@ -213,8 +213,9 @@ def merge_csv(eh_csv_obj, gangstr_csv_obj):
     return merged
 """
 @click.command()
-@click.option('--input-dir')
-def main(input_dir):
+@click.option('--input-dir-eh')
+@click.option('--input-dir-gangstr')
+def main(input_dir_eh, input_dir_gangstr):
 # pylint: disable=missing-function-docstring
 # Initializing Batch
     backend = hb.ServiceBackend(
@@ -226,8 +227,8 @@ def main(input_dir):
     g = b.new_python_job(name = "GangSTR dataframe writer")
     #c = b.new_python_job(name = "Merger of EH and GangSTR dataframes")
     
-    eh_csv = j.call(eh_csv_writer,input_dir)
-    gangstr_csv = g.call(gangstr_csv_writer)
+    eh_csv = j.call(eh_csv_writer,input_dir_eh)
+    gangstr_csv = g.call(gangstr_csv_writer,input_dir_gangstr)
     #merger_csv = c.call(merge_csv(eh_csv.as_str(), gangstr_csv.as_str()))
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
