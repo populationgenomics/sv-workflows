@@ -208,7 +208,7 @@ def gangstr_csv_writer(input_dir):
 
 def merge_csv(eh_csv_obj, gangstr_csv_obj):
     eh_csv = pd.read_csv(eh_csv_obj)
-    gangstr_csv = pd.read_csv(gangstr_csv_obj)
+    gangstr_csv = pd.read_csv(gangstr_csv_obj, sep ="\t")
     merged = eh_csv.merge(gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
     return merged
 
