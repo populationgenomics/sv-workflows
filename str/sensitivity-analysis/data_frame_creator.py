@@ -19,7 +19,7 @@ config = get_config()
 
 
 def eh_csv_writer(input_dir):
-    #input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/eh' #can't seem to code this as an argument
+    #input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/eh'
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
     bucket = client.bucket(bucket_name)
@@ -205,13 +205,13 @@ def gangstr_csv_writer(input_dir):
                         )+'\n'
         )
     return csv
-"""
+
 def merge_csv(eh_csv_obj, gangstr_csv_obj):
     eh_csv = pd.read_csv(eh_csv_obj)
     gangstr_csv = pd.read_csv(gangstr_csv_obj)
     merged = eh_csv.merge(gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
     return merged
-"""
+
 @click.command()
 @click.option('--input-dir-eh')
 @click.option('--input-dir-gangstr')
@@ -225,15 +225,15 @@ def main(input_dir_eh, input_dir_gangstr):
     b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name = "EH dataframe writer")
     g = b.new_python_job(name = "GangSTR dataframe writer")
-    #c = b.new_python_job(name = "Merger of EH and GangSTR dataframes")
+    c = b.new_python_job(name = "Merger of EH and GangSTR dataframes")
     
     eh_csv = j.call(eh_csv_writer,input_dir_eh)
     gangstr_csv = g.call(gangstr_csv_writer,input_dir_gangstr)
-    #merger_csv = c.call(merge_csv(eh_csv.as_str(), gangstr_csv.as_str()))
+    merger_csv = c.call(merge_csv,eh_csv.as_str(), gangstr_csv.as_str())
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
     b.write_output(gangstr_csv.as_str(), output_path('gangstr.tsv'))
-    #b.write_output(merger_csv.as_str(), output_path('merged_dataframe.csv'))
+    b.write_output(merger_csv.as_str(), output_path('merged_dataframe.csv'))
 
     b.run(wait=False)
 
