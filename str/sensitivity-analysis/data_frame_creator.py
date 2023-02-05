@@ -150,7 +150,7 @@ def gangstr_csv_writer(input_dir):
                         continue
                     attributes = line.split()
                     chr = attributes[0]
-                    start = attributes[1]
+                    start = str(int(attributes[1])-1) #convert back to 0-based to match with EH 
                     if attributes[9] == ".": #ie variant is not called
                         g_GT = attributes[9]
                         g_DP = attributes[9]
