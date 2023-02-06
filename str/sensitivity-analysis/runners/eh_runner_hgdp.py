@@ -61,7 +61,8 @@ def main(
         crams = b.read_input_group(
             **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
         )
-        cpg_sample_id = cram_obj[30:38]
+        
+        cpg_sample_id = cram_obj.replace('.cram','')[30:]
 
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
