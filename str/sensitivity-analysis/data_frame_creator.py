@@ -210,7 +210,7 @@ def merge_csv(eh_csv_obj, gangstr_csv_obj):
     eh_csv = pd.read_csv(eh_csv_obj)
     gangstr_csv = pd.read_csv(gangstr_csv_obj, sep ="\t")
     merged = pd.merge(eh_csv,gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
-    return merged
+    return merged.to_csv()
 
 @click.command()
 @click.option('--input-dir-eh')
