@@ -5,7 +5,7 @@
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
 Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'tester EH' --output-dir 'str/sensitivity-analysis/eh' eh_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/marshfield_regions_eh.json --input-dir=gs://cpg-hgdp-test/cram/nagim
+analysis-runner --access-level test --dataset hgdp --description 'tester EH' --output-dir 'str/sensitivity-analysis/eh/untrimmed_coordinates' eh_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/marshfield_regions_eh_untrimmed_coordinates.json --input-dir=gs://cpg-hgdp-test/cram/nagim
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
