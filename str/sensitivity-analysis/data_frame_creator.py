@@ -4,27 +4,21 @@
 analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames' data_frame_creator.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr
 
 """
-import os
-import logging
 import click
+
 import pandas as pd
+from cloudpathlib import AnyPath, CloudPath
 
-
+from cyvcf2 import VCFReader
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path
-import hailtop.batch as hb
-from google.cloud import storage
+from cpg_utils.hail_batch import output_path
 
 config = get_config()
 
 
 def eh_csv_writer(input_dir):
     #input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/eh'
-    bucket_name, *components = input_dir[5:].split('/')
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
-    files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
+
     csv = (
             ','.join(
                 [   
@@ -50,10 +44,30 @@ def eh_csv_writer(input_dir):
             +'\n'
         )
 
-    for file in files: 
-        if file.endswith(".vcf"): 
-            blob = bucket.blob(file[6+len(bucket_name):])
-            with blob.open("r") as f: 
+    directory_files = [file for file in AnyPath(input_dir).iterdir() if file.suffix == '.vcf']
+    for file in directory_files:
+
+        # use cloudpathlib to copy this file into a local temp file
+        tmp_name = f'tmp_{file.name}'
+        local_vcf = file.copy(tmp_name)
+
+        # open a vcf reader instance
+        for variant in VCFReader(str(local_vcf)):
+            chr = variant.CHROM
+            start = variant.START
+            filter = variant.FILTER or 'PASS'
+            # ...
+
+            # getting things from the FORMAT data
+            # 'variant_characteristics' below
+            # first (and only) index, as this is a single sample VCF
+            e_GT = variant.filter('GT'[0])
+
+            # getting things from the INFO string (in dict form)
+            csq = variant.INFO.get('CSQ')
+
+            # ...
+            with blob.open("r") as f:
                 array = f.readlines() 
                 for line in array:
                     if line.startswith("##"):
@@ -102,9 +116,9 @@ def eh_csv_writer(input_dir):
                                 e_ADIR,
                                 e_LC
                             ]
-                        )+'\n'
+                        )
         )
-    return csv
+    return '\n'.join(csv)
 
 def gangstr_csv_writer(input_dir):
    # input_dir = 'gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr' #can't seem to code this as an argument
@@ -218,22 +232,16 @@ def merge_csv(eh_csv_obj, gangstr_csv_obj):
 def main(input_dir_eh, input_dir_gangstr):
 # pylint: disable=missing-function-docstring
 # Initializing Batch
-    backend = hb.ServiceBackend(
-            billing_project=get_config()['hail']['billing_project'],
-            remote_tmpdir=remote_tmpdir(),
-        )
-    b = hb.Batch(backend= backend, default_python_image=config['workflow']['driver_image'])
-    j = b.new_python_job(name = "EH dataframe writer")
-    g = b.new_python_job(name = "GangSTR dataframe writer")
-    c = b.new_python_job(name = "Merger of EH and GangSTR dataframes")
-    
-    eh_csv = j.call(eh_csv_writer,input_dir_eh)
-    gangstr_csv = g.call(gangstr_csv_writer,input_dir_gangstr)
-    merger_csv = c.call(merge_csv,eh_csv.as_str(), gangstr_csv.as_str())
+
+    eh_csv = eh_csv_writer(AnyPath(input_dir_eh))
+
+    # --- not edited below
+    gangstr_csv = gangstr_csv_writer(input_dir_gangstr)
+    merged_csv = merge_csv(eh_csv, gangstr_csv)
 
     b.write_output(eh_csv.as_str(), output_path('eh.csv'))
     b.write_output(gangstr_csv.as_str(), output_path('gangstr.tsv'))
-    b.write_output(merger_csv.as_str(), output_path('merged_dataframe.csv'))
+    b.write_output(merged_csv.as_str(), output_path('merged_dataframe.csv'))
 
     b.run(wait=False)
 
