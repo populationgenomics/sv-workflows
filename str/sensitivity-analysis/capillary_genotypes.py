@@ -1,10 +1,25 @@
 import warnings
+from itertools import chain, islice
 
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-file = open("combinedmicrosats_627loci_1048indivs_numRpts.stru.txt")
+def generator_chunks(generator, size):
+    """
+    Iterates across a generator, returning specifically sized chunks
+    Args:
+        generator (): any generator or method implementing yield
+        size (): size of iterator to return
+    Returns:
+        a subset of the generator results
+    """
+    iterator = iter(generator)
+    for first in iterator:
+        yield list(chain([first], islice(iterator, size - 1)))
+
+
+file = open("combinedmicrosats_627loci_1048indivs_numRpts.stru")
 # file = file.readlines()
 
 loci = file.readline().rstrip().split()
@@ -33,7 +48,8 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
             [
                 'sample_id',
                 'locus_id',
-                'genotype',
+                'genotype_1',
+                'genotype_2',
                 'population_id',
                 'population_name',
                 'geographic_population',
@@ -45,13 +61,21 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
         + '\n'
     )
 
-    for line in file:
-        attributes = line.split()
-        sample_id = attributes[0]
-        population_id = attributes[1]
-        population_name = attributes[2]
-        geographic_population = attributes[3]
-        predefined_region = attributes[4]
+    for line_1, line_2 in generator_chunks(file, 2):
+
+        attributes_1 = line_1.split()
+        attributes_2 = line_2.split()
+        # checks
+        assert attributes_1[:5] == attributes_2[:5]
+
+        sample_id = attributes_1[0]
+        population_id = attributes_1[1]
+        population_name = attributes_1[2]
+        geographic_population = attributes_1[3]
+        predefined_region = attributes_1[4]
+
+        genotypes_1 = attributes_1[5:]
+        genotypes_2 = attributes_2[5:]
 
         for i, locus in enumerate(loci):
 
@@ -61,7 +85,8 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
                     [
                         sample_id,
                         locus,
-                        attributes[5 + i],
+                        genotypes_1[i],
+                        genotypes_2[i],
                         population_id,
                         population_name,
                         geographic_population,
