@@ -9,6 +9,9 @@ capillary = pd.merge(capillary, alternate_name, left_on = "locus_id", right_on =
 #print(capillary)
 
 coordinates = pd.read_csv("hg38_coordinates.bed", sep = "\t", names = ["chr", "start", "end", "locus_id", "num"])
+coordinates['start'] = coordinates['start'].astype(int).astype(str)
+coordinates['end'] = coordinates['end'].astype(int).astype(str)
+
 
 capillary = pd.merge(capillary, coordinates, left_on = "alternateName", right_on = "locus_id" ,how = "left")
 
