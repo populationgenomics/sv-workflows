@@ -87,7 +87,7 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
              cpg_id = sample_dict_inverted[sample_id]
         except: 
             print(f'{sample_id} does not map to a CPG id')
-            cpg_id = "NA"
+            continue
         population_id = attributes_1[1]
         population_name = attributes_1[2]
         geographic_population = attributes_1[3]
