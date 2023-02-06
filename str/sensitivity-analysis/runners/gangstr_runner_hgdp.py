@@ -4,7 +4,7 @@
 """
 This script uses GangSTR to call STRs on WGS cram files.
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'tester EH' --output-dir 'str/sensitivity-analysis/gangstr' gangstr_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/marshfield_regions_gangstr.bed --input-dir=gs://cpg-hgdp-test/cram/nagim
+analysis-runner --access-level test --dataset hgdp --description 'gangstr run' --output-dir 'str/sensitivity-analysis/gangstr' gangstr_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/marshfield_regions_gangstr.bed --input-dir=gs://cpg-hgdp-test/cram/nagim
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -60,7 +60,7 @@ def main(
         crams = b.read_input_group(
             **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
         )
-        cpg_sample_id = cram_obj[30:38]
+        cpg_sample_id = cram_obj.replace('.cram','')[30:]
 
         ref = b.read_input_group(
             **dict(
