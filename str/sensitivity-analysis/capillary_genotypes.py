@@ -1,5 +1,6 @@
 import warnings
 from itertools import chain, islice
+import json
 
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -19,7 +20,12 @@ def generator_chunks(generator, size):
         yield list(chain([first], islice(iterator, size - 1)))
 
 
-file = open("combinedmicrosats_627loci_1048indivs_numRpts.stru")
+file = open("combinedmicrosats_627loci_1048indivs_numRpts.stru.txt")
+cpg_hgdp = open("hgdp_cpg_key.json")
+sample_dict = json.load(cpg_hgdp)
+sample_dict_inverted = {}
+for key in sample_dict: 
+    sample_dict_inverted[sample_dict[key]] = key
 # file = file.readlines()
 
 loci = file.readline().rstrip().split()
@@ -47,6 +53,7 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
         ','.join(
             [
                 'sample_id',
+                'cpg_id',
                 'locus_id',
                 'genotype_1',
                 'genotype_2',
@@ -68,7 +75,19 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
         # checks
         assert attributes_1[:5] == attributes_2[:5]
 
-        sample_id = attributes_1[0]
+        if len(str(attributes_1[0])) ==1: 
+            sample_id = "HGDP0000"+ attributes_1[0]
+        elif len(str(attributes_1[0])) ==2: 
+            sample_id = "HGDP000"+attributes_1[0]
+        elif len(str(attributes_1[0])) ==3: 
+            sample_id = "HGDP00"+attributes_1[0]
+        elif len(str(attributes_1[0])) ==4: 
+            sample_id = "HGDP0"+attributes_1[0]
+        try:
+             cpg_id = sample_dict_inverted[sample_id]
+        except: 
+            print(f'{sample_id} does not map to a CPG id')
+            cpg_id = "NA"
         population_id = attributes_1[1]
         population_name = attributes_1[2]
         geographic_population = attributes_1[3]
@@ -84,6 +103,7 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
                 ','.join(
                     [
                         sample_id,
+                        cpg_id,
                         locus,
                         genotypes_1[i],
                         genotypes_2[i],
@@ -97,3 +117,4 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
                 )
                 + '\n'
             )
+            

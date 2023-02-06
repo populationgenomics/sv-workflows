@@ -210,7 +210,10 @@ def merge_csv(eh_csv_obj, gangstr_csv_obj):
     eh_csv = pd.read_csv(eh_csv_obj)
     gangstr_csv = pd.read_csv(gangstr_csv_obj, sep ="\t")
     merged = pd.merge(eh_csv,gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
+    capillary = pd.read_csv("gs://cpg-hgdp-test/str/capillary_genotypes_with_coordinates.csv")
+    merged = pd.merge(merged, capillary, left_on = "sample_id", right_on = "cpg_id", how = 'left')
     return merged.to_csv()
+
 
 @click.command()
 @click.option('--input-dir-eh')

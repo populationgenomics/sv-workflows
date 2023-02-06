@@ -17,7 +17,6 @@ config = get_config()
 def merge_csv(eh_csv, gangstr_csv):
     eh_csv = pd.read_csv(eh_csv)
     gangstr_csv = pd.read_csv("gs://cpg-hgdp-test/str/sensitivity-analysis/eh/gangstr.csv")
-    merged = eh_csv.merge(gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
     return merged
 
 
