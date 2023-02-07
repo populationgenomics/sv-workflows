@@ -81,7 +81,7 @@ def main(
         hipstr_job.declare_resource_group(
             hipstr_output={
                 'vcf.gz': '{root}.vcf.gz',
-                'viz.gz': '{root:.viz.gz'
+                'viz.gz': '{root}.viz.gz'
             }
         )
 
