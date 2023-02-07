@@ -91,7 +91,7 @@ def main(
         """
         )
         # HipSTR output writing
-        hipstr_output_path = output_path(f'{cpg_sample_id}_hipstr')
+        hipstr_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf.gz')
         b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path)
 
     b.run(wait=False)
