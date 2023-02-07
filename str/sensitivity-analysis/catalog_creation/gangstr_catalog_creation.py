@@ -78,7 +78,7 @@ counter_2=0
 for locus in hg38_dict:
     chr, start, end = hg38_dict[locus]
     trf_dict_key = f'{chr}:{start}-{end}'
-    start = str(int(start)+1) #Gangstr is 1-based
+    start = str(int(start)) #Gangstr is 1-based and HipSTR is 1-based too
     motif = trf_dict[trf_dict_key]
     motif_len = str(len(motif))
     gangstr_catalog.write(chr+"\t"+start+"\t"+end+"\t"+motif_len+"\t"+motif+"\n")
