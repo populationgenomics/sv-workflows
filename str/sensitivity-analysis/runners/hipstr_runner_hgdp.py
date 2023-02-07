@@ -87,12 +87,12 @@ def main(
 
         hipstr_job.command(
             f"""
-        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output} 
+        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} 
         """
         )
         # HipSTR output writing
         hipstr_output_path = output_path(f'{cpg_sample_id}_hipstr')
-        b.write_output(hipstr_job.hipstr_output, hipstr_output_path)
+        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path)
 
     b.run(wait=False)
 
