@@ -80,19 +80,22 @@ def main(
 
         hipstr_job.declare_resource_group(
             hipstr_output={
-                'vcf.gz': '{root}.vcf.gz'
-               
+                'vcf.gz': '{root}.vcf.gz',
+                'viz.gz': '{root:.viz.gz'
             }
         )
 
         hipstr_job.command(
             f"""
-        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} 
+        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25
         """
         )
         # HipSTR output writing
-        hipstr_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf.gz')
-        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path)
+        hipstr_output_path_vcf = output_path(f'{cpg_sample_id}_hipstr.vcf.gz')
+        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
+
+        hipstr_output_path_viz = output_path(f'{cpg_sample_id}_hipstr.viz.gz')
+        b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
 
     b.run(wait=False)
 
