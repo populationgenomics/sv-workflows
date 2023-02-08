@@ -102,11 +102,9 @@ def main(
         bcftools_job.image(BCFTOOLS_IMAGE)
         bcftools_job.storage('20G')
         bcftools_job.cpu(8)
-        vcf_input = b.read_input(hipstr_job.hipstr_output['vcf.gz'])
-
         bcftools_job.command(
                 f"""
-                bgzip -d {vcf_input} > {bcftools_job.ofile}
+                bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {bcftools_job.ofile}
             
                 """
             )
