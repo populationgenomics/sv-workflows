@@ -98,19 +98,19 @@ def main(
         hipstr_output_path_viz = output_path(f'{cpg_sample_id}_hipstr.viz.gz')
         b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
 
-        bcftools_job = b.new_job(name=f'{cpg_sample_id} Unzip VCF')
-        bcftools_job.image(BCFTOOLS_IMAGE)
-        bcftools_job.storage('20G')
-        bcftools_job.cpu(8)
+        samtools_job = b.new_job(name=f'{cpg_sample_id} Unzip VCF')
+        samtools_job.image(SAMTOOLS_IMAGE)
+        samtools_job.storage('20G')
+        samtools_job.cpu(8)
 
-        bcftools_job.command(
+        samtools_job.command(
                 f"""
-                bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {bcftools_job.ofile}
+                bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {samtools_job.ofile}
             
                 """
             )
-        bcftools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
-        b.write_output(bcftools_job.ofile, bcftools_job_output_path)
+        samtools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
+        b.write_output(samtools_job.ofile, samtools_job_output_path)
 
 
     b.run(wait=False)
