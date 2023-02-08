@@ -10,7 +10,7 @@ print(capillary)
 
 coordinates = pd.read_csv("hg38_coordinates.bed", sep = "\t", names = ["chr", "start", "end", "locus_id", "num"])
 print(coordinates)
-coordinates['start'] = coordinates['start'].astype(int).astype(str)
+coordinates['start'] = (coordinates['start'].astype(int)-1).astype(str) # convert to EH notation
 coordinates['end'] = coordinates['end'].astype(int).astype(str)
 
 
