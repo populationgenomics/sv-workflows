@@ -206,6 +206,68 @@ def gangstr_csv_writer(input_dir):
         )
     return csv
 
+def hipstr_csv_writer(input_dir):
+    bucket_name, *components = input_dir[5:].split('/')
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
+    files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
+    csv = (
+            '\t'.join(
+                [   
+                    'sample_id',
+                    'chr',
+                    'start',
+                    'end',
+                    'h_allele_1',
+                    'h_allele_2'
+                ]
+            )
+            +'\n'
+        )
+    for file in files: 
+        if file.endswith(".vcf"): 
+            blob = bucket.blob(file[6+len(bucket_name):])
+            with blob.open("r") as f: 
+                array = f.readlines() 
+                for line in array:
+                    if line.startswith("##"):
+                        continue
+                    if line.startswith("#CHROM"):
+                        header = line.split()
+                        sample_id = header[9]
+                        continue
+                    attributes = line.split()
+                    chr = attributes[0]
+                    start = (int(attributes[1])-1) #convert back to 0-based to match with EH 
+                    if attributes[9] == ".": #ie variant is not called
+                        h_allele_1 = attributes[9]
+                        h_allele_2 = attributes[9]
+                        continue
+                    h_locus_characteristics = attributes[7].split(";")
+                    end = int(h_locus_characteristics[7][4:])
+                    period = float(h_locus_characteristics[8][7])
+                    ref_num_repeats = (end-start)/period 
+                    h_call_characteristics = attributes[9].split(":")
+                    h_gb = h_call_characteristics[1]
+                    h_gb_1 = int(h_gb.split("|")[0])
+                    h_gb_2 = int(h_gb.split("|")[1])
+                    h_allele_1 = ref_num_repeats + h_gb_1/period 
+                    h_allele_2 = ref_num_repeats +h_gb_2/period                
+                    csv = csv+(
+                        '\t'.join(
+                            [
+                                sample_id, 
+                                chr, 
+                                str(start), 
+                                str(end), 
+                                str(h_allele_1),
+                                str(h_allele_2)
+                            ]
+                        )+'\n'
+        )
+    return csv
+    
 def merge_csv(eh_csv_obj, gangstr_csv_obj):
     eh_csv = pd.read_csv(eh_csv_obj)
     gangstr_csv = pd.read_csv(gangstr_csv_obj, sep ="\t")
