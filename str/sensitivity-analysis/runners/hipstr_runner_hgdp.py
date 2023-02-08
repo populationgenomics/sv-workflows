@@ -2,7 +2,7 @@
 # pylint: disable=import-error
 
 """
-This script uses GangSTR to call STRs on WGS cram files.
+This script uses HipSTR to call STRs on WGS cram files.
 For example:
 analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr/untrimmed_coordinates' hipstr_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --input-dir=gs://cpg-hgdp-test/cram/nagim
 
