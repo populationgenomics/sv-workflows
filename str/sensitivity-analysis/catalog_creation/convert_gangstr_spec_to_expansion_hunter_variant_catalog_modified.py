@@ -39,7 +39,7 @@ def process_variant_catalog(gangstr_spec_path, output_file_path, verbose=False):
         for i, row in tqdm.tqdm(enumerate(f), unit=" records"):
             fields = row.strip("\n").split("\t")
             chrom = fields[0]
-            start_0based = int(fields[1]) - 1
+            start_0based = int(fields[1]) 
             end_1based = int(fields[2])
             repeat_unit = fields[4]
             if len(fields) > 5:
