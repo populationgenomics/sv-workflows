@@ -24,7 +24,6 @@ config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
 HIPSTR_IMAGE = config['images']['hipstr']
-BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
 # inputs:
@@ -82,34 +81,27 @@ def main(
         hipstr_job.declare_resource_group(
             hipstr_output={
                 'vcf.gz': '{root}.vcf.gz',
-                'viz.gz': '{root}.viz.gz'
+                'viz.gz': '{root}.viz.gz',
+                'vcf': '{root}.vcf'
             }
         )
 
         hipstr_job.command(
             f"""
         HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25
+
+        bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {hipstr_job.hipstr_output['vcf']}
         """
         )
         # HipSTR output writing
-        hipstr_output_path_vcf = output_path(f'{cpg_sample_id}_hipstr.vcf.gz')
-        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
+        hipstr_output_path_vcf_gz = output_path(f'{cpg_sample_id}_hipstr.vcf.gz')
+        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf_gz)
 
         hipstr_output_path_viz = output_path(f'{cpg_sample_id}_hipstr.viz.gz')
         b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
 
-        bcftools_job = b.new_job(name=f'{cpg_sample_id} Unzip VCF')
-        bcftools_job.image(BCFTOOLS_IMAGE)
-        bcftools_job.storage('20G')
-        bcftools_job.cpu(8)
-        bcftools_job.command(
-                f"""
-                bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {bcftools_job.ofile}
-            
-                """
-            )
-        bcftools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
-        b.write_output(bcftools_job.ofile, bcftools_job_output_path)
+        hipstr_output_path_vcf = output_path(f'{cpg_sample_id}_hipstr.vcf')
+        b.write_output(hipstr_job.hipstr_output['vcf'], hipstr_output_path_vcf)
 
 
     b.run(wait=False)
