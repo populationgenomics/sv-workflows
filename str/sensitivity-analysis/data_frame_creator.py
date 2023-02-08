@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/untrimmed_coordinates' data_frame_creator.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/untrimmed_coordinates --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/untrimmed_coordinates
+analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/trimmed_coordinates' data_frame_creator.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/trimmed_coordinates
 
 """
 import os
@@ -64,7 +64,7 @@ def eh_csv_writer(input_dir):
                         continue
                     attributes = line.split()
                     chr = attributes[0]
-                    start = attributes[1]
+                    start = str(int(attributes[1])+1)
                     e_qual = attributes[6]
                     locus_characteristics = attributes[7].split(";")
                     end = locus_characteristics[0][4:]
