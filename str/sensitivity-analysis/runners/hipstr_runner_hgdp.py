@@ -88,7 +88,7 @@ def main(
 
         hipstr_job.command(
             f"""
-        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25
+        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25 --bam-samps {cpg_sample_id}
 
         bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {hipstr_job.hipstr_output['vcf']}
         """
