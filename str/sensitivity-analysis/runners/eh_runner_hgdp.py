@@ -53,14 +53,14 @@ def main(
                 crams_path.append(file)
     """
 
-    data = ParticipantApi().get_participants('hgdp')
+    data = ParticipantApi().get_participants('hgdp-test')
     population_groups = ["French", "Yoruba", "Han", "Northern Han"]
     participant_ids = []
 
     for i in data: 
         if i["meta"]["Population name"] in population_groups: 
             participant_ids.append(i['id']) 
-    samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp'], "participant_ids": participant_ids})
+    samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp-test'], "participant_ids": participant_ids})
     for i in samples: 
         crams_path.append("gs://cpg-hgdp-test/cram/str-nagim/"+i["id"]+".cram")
 
