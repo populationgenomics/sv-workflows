@@ -73,7 +73,7 @@ while n< len(trf_output):
 print(trf_dict["chr22:47865081-47865104"])
 print(len(trf_dict))#482 loci
 
-gangstr_catalog = open("marshfield_regions_gangstr_untrimmed_coordinates.bed", "w")
+gangstr_catalog = open("catalogs/marshfield_regions_gangstr_untrimmed_coordinates.bed", "w")
 counter_2=0
 for locus in hg38_dict:
     chr, start, end = hg38_dict[locus]
