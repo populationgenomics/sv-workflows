@@ -5,7 +5,7 @@
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
 Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'tester EH' --output-dir 'str/sensitivity-analysis/eh/trimmed_coordinates' eh_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/trimmed_coordinates_resources/marshfield_regions_eh_trimmed_coordinates.json --input-dir=gs://cpg-hgdp-test/cram/nagim
+analysis-runner --access-level test --dataset hgdp --description 'tester EH' --output-dir 'str/sensitivity-analysis/eh/untrimmed_coordinates' eh_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/marshfield_regions_eh_untrimmed_coordinates.json 
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -15,7 +15,7 @@ import os
 import logging
 
 import click
-
+from sample_metadata.apis import SampleApi, ParticipantApi
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path, reference_path
 from cpg_workflows.batch import get_batch
@@ -30,10 +30,9 @@ EH_IMAGE = config['images']['expansionhunter']
 # inputs:
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
-@click.option('--input-dir', help='Full path to directory containing crams')
 @click.command()
 def main(
-    variant_catalog, input_dir):  # pylint: disable=missing-function-docstring
+    variant_catalog):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
 
@@ -43,7 +42,7 @@ def main(
     
     crams_path = []
     bucket_name, *components = input_dir[5:].split('/')
-
+    """
     client = storage.Client()
 
     blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
@@ -51,6 +50,19 @@ def main(
     for file in files: 
         if file.endswith(".cram"): 
                 crams_path.append(file)
+    """
+
+    data = ParticipantApi().get_participants('hgdp')
+    population_groups = ["French", "Yoruba", "Han", "Northern Han"]
+    participant_ids = []
+
+    for i in data: 
+        if i["meta"]["Population name"] in population_groups: 
+            participant_ids.append(i['id']) 
+    samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp'], "participant_ids": participant_ids})
+    for i in samples: 
+        crams_path.append("gs://cpg-hgdp-test/cram/str-nagim/"+i["id"]+".cram")
+
 
     eh_regions = b.read_input(variant_catalog)
 
@@ -62,7 +74,7 @@ def main(
             **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
         )
         
-        cpg_sample_id = cram_obj.replace('.cram','')[30:]
+        cpg_sample_id = cram_obj.replace('.cram','')[33:]
 
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(

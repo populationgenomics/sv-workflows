@@ -15,8 +15,9 @@ for i in data:
         participant_ids.append(i['id']) 
 sample_ids=[]
 samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp'], "participant_ids": participant_ids})
+print(samples[1])
 for i in samples: 
-    sample_ids.append(i["external_id"])
+    sample_ids.append(i["id"])
 
 
 
