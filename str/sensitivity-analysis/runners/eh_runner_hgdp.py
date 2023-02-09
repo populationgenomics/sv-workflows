@@ -41,8 +41,9 @@ def main(
     #ref_fasta = str(reference_path('broad/ref_fasta'))
     
     crams_path = []
-    bucket_name, *components = input_dir[5:].split('/')
     """
+    bucket_name, *components = input_dir[5:].split('/')
+
     client = storage.Client()
 
     blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
