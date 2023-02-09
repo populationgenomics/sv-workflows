@@ -1,7 +1,7 @@
 import warnings
 from itertools import chain, islice
 import json
-
+from sample_metadata.apis import SeqrApi
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -21,11 +21,8 @@ def generator_chunks(generator, size):
 
 
 file = open("combinedmicrosats_627loci_1048indivs_numRpts.stru.txt")
-cpg_hgdp = open("hgdp_cpg_key.json")
-sample_dict = json.load(cpg_hgdp)
-sample_dict_inverted = {}
-for key in sample_dict: 
-    sample_dict_inverted[sample_dict[key]] = key
+hgdp_cpg_id = SeqrApi().get_external_participant_id_to_internal_sample_id('hgdp-test')
+hgdp_cpg_id = dict(hgdp_cpg_id)
 # file = file.readlines()
 
 loci = file.readline().rstrip().split()
@@ -84,7 +81,7 @@ with open("capillary_genotypes.csv", 'w', encoding='utf-8') as handle:
         elif len(str(attributes_1[0])) ==4: 
             sample_id = "HGDP0"+attributes_1[0]
         try:
-             cpg_id = sample_dict_inverted[sample_id]
+             cpg_id = hgdp_cpg_id[sample_id]
         except: 
             print(f'{sample_id} does not map to a CPG id')
             continue
