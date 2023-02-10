@@ -106,7 +106,7 @@ def main(
                 """
             )
         samtools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
-        b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
+        b.write_output(samtools_job.vcf, samtools_job_output_path)
 
 
     b.run(wait=False)
