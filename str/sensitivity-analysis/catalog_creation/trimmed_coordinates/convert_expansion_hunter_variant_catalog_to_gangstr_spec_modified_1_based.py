@@ -9,7 +9,7 @@ import json
 import re
 import tqdm
 
-from str_analysis.utils.misc_utils import parse_interval
+from misc_utils import parse_interval
 
 
 def main():

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/trimmed_coordinates' data_frame_creator.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/trimmed_coordinates
+analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/trimmed_coordinates/trimmed_coordinates_1_based' data_frame_creator_trimmed_1_based.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_1_based --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/trimmed_coordinates_1_based
 
 """
 import os
@@ -64,7 +64,7 @@ def eh_csv_writer(input_dir):
                         continue
                     attributes = line.split()
                     chr = attributes[0]
-                    start = str(int(attributes[1])+1)
+                    start = str(int(attributes[1]))
                     e_qual = attributes[6]
                     locus_characteristics = attributes[7].split(";")
                     end = locus_characteristics[0][4:]
@@ -239,7 +239,7 @@ def hipstr_csv_writer(input_dir):
                         continue
                     attributes = line.split()
                     chr = attributes[0]
-                    start = (int(attributes[1])-1) #convert back to 0-based to match with EH 
+                    start = (int(attributes[1]))
                     if attributes[9] == ".": #ie variant is not called
                         h_allele_1 = attributes[9]
                         h_allele_2 = attributes[9]
