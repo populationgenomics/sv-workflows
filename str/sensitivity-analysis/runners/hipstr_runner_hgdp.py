@@ -101,12 +101,12 @@ def main(
 
         samtools_job.command(
                 f"""
-                bgzip -d {hipstr_job.hipstr_output['vcf.gz']}
+                bgzip -d -c {hipstr_job.hipstr_output['vcf.gz']} > {samtools_job.vcf['vcf']}
             
                 """
             )
         samtools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
-        b.write_output(samtools_job.vcf, samtools_job_output_path)
+        b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
 
     b.run(wait=False)
