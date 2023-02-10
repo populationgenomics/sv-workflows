@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files.
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr/untrimmed_coordinates' hipstr_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --input-dir=gs://cpg-hgdp-test/cram/nagim
+analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr/untrimmed_coordinates_1_based' hipstr_runner_hgdp.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --input-dir=gs://cpg-hgdp-test/cram/nagim
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -41,18 +41,9 @@ def main(
   
     #ref_fasta = str(reference_path('broad/ref_fasta'))
     
-    crams_path = []
-    bucket_name, *components = input_dir[5:].split('/')
+    crams_path = ["gs://cpg-hgdp-test/cram/nagim/CPG198697.cram"]
 
-    client = storage.Client()
-
-    blobs = client.list_blobs(bucket_name, prefix = '/'.join(components))
-    files: Set[str] = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
-    for file in files: 
-        if file.endswith(".cram"): 
-                crams_path.append(file)
-
-    gangstr_regions = b.read_input(variant_catalog)
+    hipstr_regions = b.read_input(variant_catalog)
 
     # Iterate over each sample to call Expansion Hunter
     for cram_obj in crams_path:
@@ -88,7 +79,7 @@ def main(
 
         hipstr_job.command(
             f"""
-        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {gangstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25
+        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25
         """
         )
         # HipSTR output writing
@@ -102,15 +93,20 @@ def main(
         samtools_job.image(SAMTOOLS_IMAGE)
         samtools_job.storage('20G')
         samtools_job.cpu(8)
+        samtools_job.declare_resource_group(
+            vcf = {
+                'vcf': '{root}.vcf'
+            }
+        )
 
         samtools_job.command(
                 f"""
-                bgzip -d {hipstr_job.hipstr_output['vcf.gz']} > {samtools_job.ofile}
+                bgzip -d {hipstr_job.hipstr_output['vcf.gz']}
             
                 """
             )
         samtools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
-        b.write_output(samtools_job.ofile, samtools_job_output_path)
+        b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
 
     b.run(wait=False)
