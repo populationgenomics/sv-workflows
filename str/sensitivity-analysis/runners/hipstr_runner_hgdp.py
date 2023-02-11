@@ -56,11 +56,13 @@ def main(
         cram = b.read_input(cram_obj)
         b.read_input(cram_obj+'.crai')
         cram_collection[cpg_sample_id] = cram
+    
     crams_batch_path = ""
     for i in cram_collection:
         crams_batch_path+=str(i)
         crams_batch_path+= ","
     crams_batch_path = crams_batch_path[:-1]
+    print(crams_batch_path)
 
     ref = b.read_input_group(
             **dict(
