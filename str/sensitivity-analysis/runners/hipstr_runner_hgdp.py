@@ -16,7 +16,7 @@ import hailtop.batch as hb
 
 
 import click
-
+from sample_metadata.apis import SampleApi, ParticipantApi
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path, reference_path
 from cpg_workflows.batch import get_batch
@@ -42,9 +42,18 @@ def main(
     ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
   
     #ref_fasta = str(reference_path('broad/ref_fasta'))
-    
-    crams_gcp_path = ["gs://cpg-hgdp-test/cram/nagim/CPG198697.cram", "gs://cpg-hgdp-test/cram/nagim/CPG198705.cram"]
+    crams_gcp_path =[]
+    data = ParticipantApi().get_participants('hgdp-test')
+    population_groups = ["French", "Yoruba", "Han", "Northern Han"]
+    participant_ids = []
 
+    for i in data: 
+        if i["meta"]["Population name"] in population_groups: 
+            participant_ids.append(i['id']) 
+    samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp-test'], "participant_ids": participant_ids})
+    for i in samples: 
+        crams_gcp_path.append("gs://cpg-hgdp-test/cram/nagim/"+i["id"]+".cram")
+    
     hipstr_regions = b.read_input(variant_catalog)
 
     cram_collection = {}
@@ -63,7 +72,6 @@ def main(
         crams_batch_path+=str(cram_collection[i])
         crams_batch_path+= ","
     crams_batch_path = crams_batch_path[:-1]
-    print(crams_batch_path)
 
     ref = b.read_input_group(
             **dict(
@@ -95,13 +103,14 @@ def main(
     """
     )
     # HipSTR output writing
-    hipstr_output_path_vcf = output_path(f'tester_hipstr.vcf.gz')
+    file_name = "91_hgdp_genomes"
+    hipstr_output_path_vcf = output_path(f'{file_name}.vcf.gz')
     b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
 
-    hipstr_output_path_viz = output_path(f'tester_hipstr.viz.gz')
+    hipstr_output_path_viz = output_path(f'{file_name}_hipstr.viz.gz')
     b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
 
-    hipstr_output_path_log = output_path(f'tester_hipstr.log.txt')
+    hipstr_output_path_log = output_path(f'{file_name}_hipstr.log.txt')
     b.write_output(hipstr_job.hipstr_output['log.txt'], hipstr_output_path_log)
 
     samtools_job = b.new_job(name=f'tester Unzip VCF')
@@ -120,7 +129,7 @@ def main(
         
             """
         )
-    samtools_job_output_path = output_path(f'tester_hipstr.vcf')
+    samtools_job_output_path = output_path(f'{file_name}_hipstr.vcf')
     b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
 
