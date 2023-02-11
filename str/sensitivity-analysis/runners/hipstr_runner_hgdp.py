@@ -101,6 +101,9 @@ def main(
     hipstr_output_path_viz = output_path(f'tester_hipstr.viz.gz')
     b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
 
+    hipstr_output_path_log = output_path(f'tester_hipstr.log.txt')
+    b.write_output(hipstr_job.hipstr_output['log.txt'], hipstr_output_path_log)
+
     samtools_job = b.new_job(name=f'tester Unzip VCF')
     samtools_job.image(SAMTOOLS_IMAGE)
     samtools_job.storage('20G')
