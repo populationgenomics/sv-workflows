@@ -59,7 +59,7 @@ def main(
     
     crams_batch_path = ""
     for i in cram_collection:
-        crams_batch_path+=str(i)
+        crams_batch_path+=str(cram_collection[i])
         crams_batch_path+= ","
     crams_batch_path = crams_batch_path[:-1]
     print(crams_batch_path)
