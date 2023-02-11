@@ -54,7 +54,7 @@ def main(
         cpg_sample_id = cram_obj.replace('.cram','')[30:]
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(
-            **{'cram': cram_obj['output'], 'cram.crai': cram_obj['output'] + '.crai'}
+            **{'cram': cram_obj, 'cram.crai': cram_obj + '.crai'}
         )
         cram_collection[cpg_sample_id] = crams['cram']
     
