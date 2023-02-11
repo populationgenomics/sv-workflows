@@ -12,6 +12,8 @@ pip install sample-metadata hail click
 """
 import os
 import logging
+import hailtop.batch as hb
+
 
 import click
 
@@ -34,27 +36,34 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.command()
 def main(
     variant_catalog, input_dir):  # pylint: disable=missing-function-docstring
-    # Initializing Batch
+    # Initializing Batch 
     b = get_batch()
 
     ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
   
     #ref_fasta = str(reference_path('broad/ref_fasta'))
     
-    crams_path = ["gs://cpg-hgdp-test/cram/nagim/CPG198697.cram"]
+    crams_gcp_path = ["gs://cpg-hgdp-test/cram/nagim/CPG198697.cram", "gs://cpg-hgdp-test/cram/nagim/CPG198705.cram"]
 
     hipstr_regions = b.read_input(variant_catalog)
 
-    # Iterate over each sample to call Expansion Hunter
-    for cram_obj in crams_path:
+    cram_collection = {}
 
+    # Iterate over each sample to add to cram_collection
+    for cram_obj in crams_gcp_path:
+        cpg_sample_id = cram_obj.replace('.cram','')[30:]
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(
             **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
         )
-        cpg_sample_id = cram_obj.replace('.cram','')[30:]
+        cram_collection[cpg_sample_id] = crams
+    crams_batch_path = ""
+    for i in cram_collection:
+        crams_batch_path+=str(i['cram'])
+        crams_batch_path+= ","
+    crams_batch_path = crams_batch_path[:-1]
 
-        ref = b.read_input_group(
+    ref = b.read_input_group(
             **dict(
                 base=ref_fasta,
                 fai=ref_fasta + '.fai',
@@ -65,51 +74,51 @@ def main(
             )
         )
 
-        hipstr_job = b.new_job(name=f'HipSTR:{cpg_sample_id} running')
-        hipstr_job.image(HIPSTR_IMAGE)
-        hipstr_job.storage('50G')
-        hipstr_job.cpu(8)
+    hipstr_job = b.new_job(name=f'HipSTR running')
+    hipstr_job.image(HIPSTR_IMAGE)
+    hipstr_job.storage('50G')
+    hipstr_job.cpu(8)
 
-        hipstr_job.declare_resource_group(
-            hipstr_output={
-                'vcf.gz': '{root}.vcf.gz',
-                'viz.gz': '{root}.viz.gz'
-            }
-        )
+    hipstr_job.declare_resource_group(
+        hipstr_output={
+            'vcf.gz': '{root}.vcf.gz',
+            'viz.gz': '{root}.viz.gz'
+        }
+    )
 
-        hipstr_job.command(
+    hipstr_job.command(
+        f"""
+    HipSTR --bams {crams_batch_path} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 10
+    """
+    )
+    # HipSTR output writing
+    hipstr_output_path_vcf = output_path(f'tester_hipstr.vcf.gz')
+    b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
+
+    hipstr_output_path_viz = output_path(f'tester_hipstr.viz.gz')
+    b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
+
+    samtools_job = b.new_job(name=f'tester Unzip VCF')
+    samtools_job.image(SAMTOOLS_IMAGE)
+    samtools_job.storage('20G')
+    samtools_job.cpu(8)
+    samtools_job.declare_resource_group(
+        vcf = {
+            'vcf': '{root}.vcf'
+        }
+    )
+
+    samtools_job.command(
             f"""
-        HipSTR --bams {crams['cram']} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 25
-        """
+            bgzip -d -c {hipstr_job.hipstr_output['vcf.gz']} > {samtools_job.vcf['vcf']}
+        
+            """
         )
-        # HipSTR output writing
-        hipstr_output_path_vcf = output_path(f'{cpg_sample_id}_hipstr.vcf.gz')
-        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
-
-        hipstr_output_path_viz = output_path(f'{cpg_sample_id}_hipstr.viz.gz')
-        b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
-
-        samtools_job = b.new_job(name=f'{cpg_sample_id} Unzip VCF')
-        samtools_job.image(SAMTOOLS_IMAGE)
-        samtools_job.storage('20G')
-        samtools_job.cpu(8)
-        samtools_job.declare_resource_group(
-            vcf = {
-                'vcf': '{root}.vcf'
-            }
-        )
-
-        samtools_job.command(
-                f"""
-                bgzip -d -c {hipstr_job.hipstr_output['vcf.gz']} > {samtools_job.vcf['vcf']}
-            
-                """
-            )
-        samtools_job_output_path = output_path(f'{cpg_sample_id}_hipstr.vcf')
-        b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
+    samtools_job_output_path = output_path(f'tester_hipstr.vcf')
+    b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
 
-    b.run(wait=False)
+    b.run(wait = False)
 
 
 if __name__ == '__main__':
