@@ -53,13 +53,12 @@ def main(
     for cram_obj in crams_gcp_path:
         cpg_sample_id = cram_obj.replace('.cram','')[30:]
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
-        crams = b.read_input_group(
-            **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
-        )
-        cram_collection[cpg_sample_id] = crams
+        cram = b.read_input(cram_obj)
+        b.read_input(cram_obj+'.crai')
+        cram_collection[cpg_sample_id] = cram
     crams_batch_path = ""
     for i in cram_collection:
-        crams_batch_path+=str(i['cram'])
+        crams_batch_path+=str(i)
         crams_batch_path+= ","
     crams_batch_path = crams_batch_path[:-1]
 
