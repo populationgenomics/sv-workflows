@@ -84,13 +84,14 @@ def main(
     hipstr_job.declare_resource_group(
         hipstr_output={
             'vcf.gz': '{root}.vcf.gz',
-            'viz.gz': '{root}.viz.gz'
+            'viz.gz': '{root}.viz.gz', 
+            'log.txt': '{root}.log.txt'
         }
     )
 
     hipstr_job.command(
         f"""
-    HipSTR --bams {crams_batch_path} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --min-reads 10
+    HipSTR --bams {crams_batch_path} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --log {hipstr_job.hipstr_output['log.txt']} --output-filters
     """
     )
     # HipSTR output writing
