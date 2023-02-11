@@ -86,8 +86,8 @@ def main(
 
     hipstr_job = b.new_job(name=f'HipSTR running')
     hipstr_job.image(HIPSTR_IMAGE)
-    hipstr_job.storage('150G')
-    hipstr_job.cpu(8)
+    hipstr_job.storage('1500G')
+    hipstr_job.cpu(64)
 
     hipstr_job.declare_resource_group(
         hipstr_output={
