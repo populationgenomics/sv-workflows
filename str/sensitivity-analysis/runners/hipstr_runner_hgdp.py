@@ -52,7 +52,7 @@ def main(
         }
     )
 
-    hipstr_job.cloudfuse('cpg-hgdp-test/cram/nagim', '/cramfuse')
+    hipstr_job.cloudfuse('cpg-hgdp-test', '/cramfuse')
     ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
   
     #ref_fasta = str(reference_path('broad/ref_fasta'))
