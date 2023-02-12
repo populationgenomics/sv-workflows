@@ -66,7 +66,7 @@ def main(
             participant_ids.append(i['id']) 
     samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp-test'], "participant_ids": participant_ids})
     for i in samples: 
-        crams_path+="/cramfuse/"+i["id"]+".cram,"
+        crams_path+="/cramfuse/cram/nagim"+i["id"]+".cram,"
     crams_path = crams_path[:-1]
     
     hipstr_regions = b.read_input(variant_catalog)    
