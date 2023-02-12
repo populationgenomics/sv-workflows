@@ -39,10 +39,24 @@ def main(
     # Initializing Batch 
     b = get_batch()
 
+    hipstr_job = b.new_job(name=f'HipSTR running')
+    hipstr_job.image(HIPSTR_IMAGE)
+    hipstr_job.storage('375G')
+    hipstr_job.cpu(16)
+
+    hipstr_job.declare_resource_group(
+        hipstr_output={
+            'vcf.gz': '{root}.vcf.gz',
+            'viz.gz': '{root}.viz.gz', 
+            'log.txt': '{root}.log.txt'
+        }
+    )
+
+    hipstr_job.cloudfuse('cpg-hgdp-test/cram/nagim', '/cramfuse')
     ref_fasta = ('gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta')
   
     #ref_fasta = str(reference_path('broad/ref_fasta'))
-    crams_gcp_path =[]
+    crams_path = ""
     data = ParticipantApi().get_participants('hgdp-test')
     population_groups = ["French", "Yoruba", "Han", "Northern Han"]
     participant_ids = []
@@ -52,26 +66,10 @@ def main(
             participant_ids.append(i['id']) 
     samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp-test'], "participant_ids": participant_ids})
     for i in samples: 
-        crams_gcp_path.append("gs://cpg-hgdp-test/cram/nagim/"+i["id"]+".cram")
+        crams_path+="/cramfuse/"+i["id"]+".cram,"
+    crams_path = crams_path[:-1]
     
-    hipstr_regions = b.read_input(variant_catalog)
-
-    cram_collection = {}
-
-    # Iterate over each sample to add to cram_collection
-    for cram_obj in crams_gcp_path:
-        cpg_sample_id = cram_obj.replace('.cram','')[30:]
-        # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
-        crams = b.read_input_group(
-            **{'cram': cram_obj, 'cram.crai': cram_obj + '.crai'}
-        )
-        cram_collection[cpg_sample_id] = crams['cram']
-    
-    crams_batch_path = ""
-    for i in cram_collection:
-        crams_batch_path+=str(cram_collection[i])
-        crams_batch_path+= ","
-    crams_batch_path = crams_batch_path[:-1]
+    hipstr_regions = b.read_input(variant_catalog)    
 
     ref = b.read_input_group(
             **dict(
@@ -84,22 +82,9 @@ def main(
             )
         )
 
-    hipstr_job = b.new_job(name=f'HipSTR running')
-    hipstr_job.image(HIPSTR_IMAGE)
-    hipstr_job.storage('1500G')
-    hipstr_job.cpu(16)
-
-    hipstr_job.declare_resource_group(
-        hipstr_output={
-            'vcf.gz': '{root}.vcf.gz',
-            'viz.gz': '{root}.viz.gz', 
-            'log.txt': '{root}.log.txt'
-        }
-    )
-
     hipstr_job.command(
         f"""
-    HipSTR --bams {crams_batch_path} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --log {hipstr_job.hipstr_output['log.txt']} --output-filters
+    HipSTR --bams {crams_path} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --log {hipstr_job.hipstr_output['log.txt']} --output-filters
     """
     )
     # HipSTR output writing
