@@ -73,7 +73,7 @@ def main(
         crams = b.read_input_group(
             **{'cram': cram_obj, 'cram.crai': cram_obj+ '.crai'}
         )
-        cpg_sample_id = cram_obj.replace('.cram','')[34:]
+        cpg_sample_id = cram_obj.replace('.cram','')[24:]
 
         ref = b.read_input_group(
             **dict(
