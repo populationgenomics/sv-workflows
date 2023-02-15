@@ -62,7 +62,7 @@ def main(
             participant_ids.append(i['id']) 
     samples = SampleApi().get_samples(body_get_samples={'project_ids':['hgdp-test'], "participant_ids": participant_ids})
     for i in samples: 
-        crams_path.append("gs://cpg-hgdp-test/cram/str-nagim/"+i["id"]+".cram")
+        crams_path.append("gs://cpg-hgdp-test/cram/nagim/"+i["id"]+".cram")
 
     gangstr_regions = b.read_input(variant_catalog)
 

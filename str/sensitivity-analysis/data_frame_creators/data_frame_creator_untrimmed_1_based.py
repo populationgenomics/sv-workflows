@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/untrimmed_coordinates' data_frame_creator.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/untrimmed_coordinates --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/untrimmed_coordinates
+analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/untrimmed_coordinates' data_frame_creator_untrimmed_1_based.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/untrimmed_coordinates --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/untrimmed_coordinates
 
 """
 import os
