@@ -1,9 +1,0 @@
-from convert_gangstr_spec_to_expansion_hunter_variant_catalog_modified_1_based import process_variant_catalog
-
-process_variant_catalog("catalogs/gangstr_catalog_hg38_backbone_untrimmed.bed", "catalogs/eh_catalog_hg38_backbone_untrimmed_1_based.bed.json")
-
-
-
-
-
-
