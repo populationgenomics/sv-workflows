@@ -298,7 +298,7 @@ def main(input_dir_eh, input_dir_gangstr):
 
     #b.write_output(eh_csv.as_str(), output_path('eh.csv'))
    # b.write_output(gangstr_csv.as_str(), output_path('gangstr.tsv'))
-    b.write_output(merger_csv.as_str(), output_path('merged_dataframe_rosenberg2005.csv'))
+    b.write_output(merger_csv.as_str(), output_path('merged_dataframe_0_based_0_based.csv'))
 
     b.run(wait=False)
 
