@@ -11,7 +11,7 @@ library('spgs')
 ```
 
 ```{r}
-trf_output = fromJSON(file = "filtered_trf_output_modified.txt") %>% as.data.frame() %>% gather() 
+trf_output = fromJSON(file = "TRF_find_motif/filtered_trf_output_modified.txt") %>% as.data.frame() %>% gather() 
 trf_output = trf_output %>% mutate (key = case_when(key == "X16PTEL06"~ "16PTEL06",
                                        key == "X18QTEL11"~ "18QTEL11",
                                        key == "X2QTEL47" ~ "2QTEL47",
@@ -24,7 +24,7 @@ trf_output = trf_output %>% mutate (key = case_when(key == "X16PTEL06"~ "16PTEL0
 `
 
 ```{r}
-fasta = read_excel("482_loci_with_primers_UCSC_remove_fix_alt.xlsx") %>% select(-...1)
+fasta = read_excel("UCSC_insilicoPCR/482_loci_with_primers_UCSC_remove_fix_alt.xlsx") %>% select(-...1)
 fasta$coordinate = gsub("\r\n", " ", fasta$coordinate)
 fasta$coordinate = str_trim(fasta$coordinate, side = "both")
 fasta = fasta %>% filter(coordinate != "no match")%>% separate(coordinate, c("coordinates", "PCR_length", "forward_primer", "reverse_primer", "PCR_sequence_1", "PCR_sequence_2", "PCR_sequence_3", "PCR_sequence_4", "PCR_sequence_5", "PCR_sequence_6", "PCR_sequence_7", "PCR_sequence_8"), sep = " ")
@@ -65,7 +65,7 @@ fasta$trf_end_index = as.numeric(fasta$trf_end_index)
 fasta$end_coordinate_PCR = as.numeric(fasta$end_coordinate_PCR)
 fasta$start_coordinate_PCR = as.numeric(fasta$start_coordinate_PCR)
 
-fasta = fasta %>% mutate(catalog_start_coordinate = case_when(
+fasta = fasta %>% mutate(catalog_start_coordinate_0_based = case_when(
   sense == "sense" ~ start_coordinate_PCR + trf_start_index-2, 
   sense== "antisense" ~ end_coordinate_PCR - trf_end_index
 ),
@@ -81,33 +81,85 @@ fasta = fasta %>% mutate ( trf_repeat_sequence = case_when(
                   TRUE ~ trf_repeat_sequence)  
                   )
 
-trf_input = fasta %>% filter(sense == "antisense") %>% select(chr,catalog_start_coordinate, catalog_end_coordinate, trf_repeat_sequence)
-trf_input$name = paste(">",trf_input$chr,":" ,trf_input$catalog_start_coordinate, "-", trf_input$catalog_end_coordinate, sep = "")
-trf_input = trf_input %>% select(name, trf_repeat_sequence)
-
+## creation of trf input to redefine motifs on antisense strand
+#trf_input = fasta %>% filter(sense == "antisense") %>% select(chr,catalog_start_coordinate_0_based, catalog_end_coordinate, trf_repeat_sequence)
+#trf_input$name = paste(">",trf_input$chr,":" ,trf_input$catalog_start_coordinate_0_based, "-", trf_input$catalog_end_coordinate, sep = "")
+#trf_input = trf_input %>% select(name, trf_repeat_sequence)
 #write.table(trf_input, file = "trf_input_antisense.txt", sep = "\n", row.names = FALSE, quote = FALSE)
 
-
+fasta = fasta %>% mutate(catalog_start_coordinate_1_based = catalog_start_coordinate_0_based+1)
 ```
 
 ```{r}
-trf_output_antisense = read.csv("trf_output_antisense.txt") %>% separate(sequence, c("chr","coordinates" ), sep = ":") %>% separate(coordinates, c("catalog_start_coordinate", "catalog_end_coordinate"), sep = "-") %>% rename("updated_motif" = "motif")
+trf_output_antisense = read.csv("redefining_motifs_on_antisense/trf_output_antisense.txt") %>% separate(sequence, c("chr","coordinates" ), sep = ":") %>% separate(coordinates, c("catalog_start_coordinate_0_based", "catalog_end_coordinate"), sep = "-") %>% rename("updated_motif" = "motif")
 ```
 
 
 ```{r}
-fasta = merge(fasta, trf_output_antisense, by = c("chr", "catalog_start_coordinate", "catalog_end_coordinate"), all.x = TRUE)
+fasta = merge(fasta, trf_output_antisense, by = c("chr", "catalog_start_coordinate_0_based", "catalog_end_coordinate"), all.x = TRUE)
 ```
 
 ```{r}
 fasta = fasta %>% mutate(trf_motif = case_when(sense == "antisense"~ updated_motif,
                                        TRUE ~trf_motif))
 fasta = fasta %>% select(-updated_motif)
+fasta %>% filter(catalog_start_coordinate_0_based == 6404707)
 ```
 
 ```{r}
-gangstr_catalog = fasta %>% select(chr,catalog_start_coordinate, catalog_end_coordinate, trf_motif) %>% mutate(motif_len= nchar(trf_motif)) %>% select(chr, catalog_start_coordinate, catalog_end_coordinate, motif_len, trf_motif)
 
-write.table(gangstr_catalog, file = "catalogs/gangstr_catalog_hg38_backbone.bed", sep = "\t", row.names = FALSE, quote = FALSE)
+## gangstr catalog creation
+gangstr_catalog = fasta %>% select(chr,catalog_start_coordinate_1_based, catalog_end_coordinate, trf_motif) %>% mutate(motif_len= nchar(trf_motif)) %>% select(chr, catalog_start_coordinate_1_based, catalog_end_coordinate, motif_len, trf_motif)
+
+write.table(gangstr_catalog, file = "catalogs/gangstr_catalog_hg38_backbone_1_based.bed", sep = "\t", row.names = FALSE, quote = FALSE)
+```
+
+```{r}
+capillary_genotypes = read.csv("capillary_genotypes_with_locusNames_rosenberg2005.csv") %>% select(-X,-locus_id, -population_id, - geographic_population, -predefined_region)
+
+fasta_with_capillary = merge(fasta, capillary_genotypes, by.x = "key", by.y = "alternateName", all.x = TRUE) %>% rename("PCR_1" = genotype_1, "PCR_2" = genotype_2)
+
+fasta_with_capillary$PCR_1 = na_if(fasta_with_capillary$PCR_1, -9)
+fasta_with_capillary$PCR_2 = na_if(fasta_with_capillary$PCR_2, -9)
+fasta_with_capillary$trf_num_repeats = as.numeric(fasta_with_capillary$trf_num_repeats)
+fasta_with_capillary$PCR_length = as.numeric(fasta_with_capillary$PCR_length)
+```
+
+```{r}
+eh = read.csv("str_sensitivity-analysis_data_frames_untrimmed_coordinates_hg38_backbone_1_based_hg38_backbone_untrimmed_1_based_eh.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_alelle_2) %>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+
+gangstr = read.delim("str_sensitivity-analysis_data_frames_untrimmed_coordinates_hg38_backbone_1_based_hg38_backbone_untrimmed_1_based_gangstr.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+
+eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id" = "sample_id")
+
+fasta_with_capillary_eh_gangstr = merge(eh_gangstr, fasta_with_capillary, by = c("cpg_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE)
+
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(trf_num_repeats = (end -catalog_start_coordinate_0_based)/as.numeric(trf_period))
+
+fasta_with_capillary_eh_gangstr %>% select(trf_num_repeats)
+
+```
+
+```{r}
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(capillary_allele_1 = floor(trf_num_repeats) + (PCR_1 -PCR_length)/nchar(trf_motif),
+                               capillary_allele_2 = floor(trf_num_repeats) + (PCR_2 -PCR_length)/nchar(trf_motif) )
+
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = e_allele_1+e_alelle_2, 
+                 g_alleles = g_allele_2+g_allele_1,
+                 capillary_alleles = floor(capillary_allele_1) + floor(capillary_allele_2)) #summed diploid genotypes 
+```
+
+```{r}
+fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!is.na(capillary_alleles))
+fasta_with_capillary_eh_gangstr %>% filter(e_alleles == g_alleles) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(e_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(g_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+```
+
+```{r}
+pemberton = read.table("Pemberton_AdditionalFile1_11242009.txt", sep = "\t", header = TRUE) 
+pemberton = merge(fasta, pemberton, by.x = "key", by.y = "alternateName", all.x = TRUE)
+pemberton = pemberton %>% separate(repeatStructureInRefSeq, c("motif", "pemberton_repeat_number"), sep = "\\)")
+pemberton %>% select(key, trf_num_repeats, pemberton_repeat_number) %>% rename("TRF_num_repeats_hg38" = trf_num_repeats, "Pemberton_2009_num_repeats" = pemberton_repeat_number)
 ```
 
