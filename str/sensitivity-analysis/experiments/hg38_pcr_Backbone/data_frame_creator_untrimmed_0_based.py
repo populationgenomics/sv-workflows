@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/trimmed_coordinates/hg38_backbone_1_based' data_frame_creator_untrimmed_0_based.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_1_based_hg38_backbone --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/trimmed_coordinates_1_based_hg38_backbone
+analysis-runner --access-level test --dataset hgdp --description 'data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/trimmed_coordinates/hg38_backbone_0_based' data_frame_creator_untrimmed_0_based.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_0_based_hg38_backbone --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/trimmed_coordinates_0_based_hg38_backbone
 
 """
 import os
@@ -296,8 +296,8 @@ def main(input_dir_eh, input_dir_gangstr):
     gangstr_csv = g.call(gangstr_csv_writer,input_dir_gangstr)
     #merger_csv = c.call(merge_csv,eh_csv.as_str(), gangstr_csv.as_str())
 
-    b.write_output(eh_csv.as_str(), output_path('hg38_backbone_trimmed_1_based_eh.csv'))
-    b.write_output(gangstr_csv.as_str(), output_path('hg38_backbone_trimmed_1_based_gangstr.tsv'))
+    b.write_output(eh_csv.as_str(), output_path('hg38_backbone_trimmed_0_based_eh.csv'))
+    b.write_output(gangstr_csv.as_str(), output_path('hg38_backbone_trimmed_0_based_gangstr.tsv'))
     #b.write_output(merger_csv.as_str(), output_path('merged_dataframe_rosenberg2005.csv'))
 
     b.run(wait=False)
