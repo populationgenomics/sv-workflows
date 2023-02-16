@@ -1,0 +1,3 @@
+from convert_expansion_hunter_variant_catalog_to_gangstr_spec_trimmed import process_variant_catalog
+
+process_variant_catalog("catalogs/marshfield_regions_eh_untrimmed_coordinates_0_based.json", "catalogs/marshfield_regions_gangstr_untrimmed_coordinates_0_based.bed")

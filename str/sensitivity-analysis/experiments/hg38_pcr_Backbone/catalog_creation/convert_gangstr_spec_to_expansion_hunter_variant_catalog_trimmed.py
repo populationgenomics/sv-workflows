@@ -53,7 +53,7 @@ def process_variant_catalog(gangstr_spec_path, output_file_path, verbose=False):
 
             counter["total input loci"] += 1
 ## can remove trimming if needed
-            trim_bp = (end_1based - start_0based) % len(repeat_unit)
+            trim_bp = (end_1based - start_0based+1) % len(repeat_unit)
             if trim_bp != 0:
                 counter["trimmed locus"] += 1
                 if verbose:
@@ -61,7 +61,7 @@ def process_variant_catalog(gangstr_spec_path, output_file_path, verbose=False):
                           f"which is not a multiple of the repeat unit {repeat_unit} (size {len(repeat_unit)}). "
                           f"Changing it to {chrom}:{start_0based}-{end_1based - trim_bp}")
                 end_1based -= trim_bp
-                assert (end_1based - start_0based) % len(repeat_unit) == 0
+                assert (end_1based - start_0based+1) % len(repeat_unit) == 0
 # remove trimming if needed
             locus_id = f"{chrom}-{start_0based}-{end_1based}-{repeat_unit}"
             if locus_id in existing_locus_ids:

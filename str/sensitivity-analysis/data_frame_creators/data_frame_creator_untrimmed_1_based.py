@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 """
-analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/untrimmed_coordinates' data_frame_creator_untrimmed_1_based.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/untrimmed_coordinates --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/untrimmed_coordinates
+analysis-runner --access-level test --dataset hgdp --description 'EH data frame creator' --output-dir 'str/sensitivity-analysis/data_frames/untrimmed_coordinates/untrimmed_coordinates_0_based' data_frame_creator_untrimmed_1_based.py --input-dir-eh=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/untrimmed_coordinates_0_based --input-dir-gangstr=gs://cpg-hgdp-test/str/sensitivity-analysis/gangstr/untrimmed_coordinates_0_based
 
 """
 import os
@@ -150,7 +150,7 @@ def gangstr_csv_writer(input_dir):
                         continue
                     attributes = line.split()
                     chr = attributes[0]
-                    start = str(int(attributes[1]))
+                    start = str(int(attributes[1])+1)
                     if attributes[9] == ".": #ie variant is not called
                         g_GT = attributes[9]
                         g_DP = attributes[9]
@@ -239,7 +239,7 @@ def hipstr_csv_writer(input_dir):
                         continue
                     attributes = line.split()
                     chr = attributes[0]
-                    start = (int(attributes[1]))
+                    start = str(int(attributes[1])+1)
                     if attributes[9] == ".": #ie variant is not called
                         h_allele_1 = attributes[9]
                         h_allele_2 = attributes[9]
@@ -272,7 +272,7 @@ def merge_csv(eh_csv_obj, gangstr_csv_obj):
     eh_csv = pd.read_csv(eh_csv_obj)
     gangstr_csv = pd.read_csv(gangstr_csv_obj, sep ="\t")
     merged = pd.merge(eh_csv,gangstr_csv, on = ['sample_id', 'chr', 'start'], how = 'outer')
-    capillary = pd.read_csv("gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/capillary_genotypes_with_coordinates_rosenberg2005.csv")
+    capillary = pd.read_csv("gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/capillary_genotypes_with_coordinates.csv")
     merged = pd.merge(merged, capillary, left_on = ["sample_id", "chr", "start"], right_on = ["cpg_id", "chr", "start"])
     return merged.to_csv()
 
