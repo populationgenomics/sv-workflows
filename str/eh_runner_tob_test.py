@@ -5,7 +5,7 @@
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
 Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester EH' --output-dir 'hoptan-str/tob_test_crams/output_calls/eh_0_based' eh_runner_tob_test.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/catalogs/eh_pure_repeats_catalog.json
+analysis-runner --access-level test --dataset tob-wgs --description 'tester EH' --output-dir 'hoptan-str/tob_test_crams/output_calls/eh_1_based' eh_runner_tob_test.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/catalogs/eh_pure_repeats_catalog_1_based.json --input-dir=gs://cpg-tob-wgs-test/cram/nagim
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click

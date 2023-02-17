@@ -4,7 +4,7 @@
 """
 This script uses GangSTR to call STRs on WGS cram files.
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'gangstr run' --output-dir 'hoptan-str/tob_test_crams/output_calls/gangstr_1_based' gangstr_runner_tob_test.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/catalogs/gangstr_pure_repeats_catalog.bed --input-dir=gs://cpg-tob-wgs-test/cram/nagim
+analysis-runner --access-level test --dataset tob-wgs --description 'gangstr run' --output-dir 'hoptan-str/tob_test_crams/output_calls/gangstr_0_based' gangstr_runner_tob_test.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/catalogs/gangstr_pure_repeats_catalog_0_based.bed --input-dir=gs://cpg-tob-wgs-test/cram/nagim
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
