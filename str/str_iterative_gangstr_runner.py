@@ -56,7 +56,7 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    if dataset == 'tob-wgs':
+    if dataset in ['tob-wgs', 'hgdp']:
         ref_fasta = (
             'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
