@@ -39,7 +39,7 @@ def main(
     variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
-
+    #Create HipSTR job 
     hipstr_job = b.new_job(name=f'HipSTR running')
     hipstr_job.image(HIPSTR_IMAGE)
     hipstr_job.storage('375G')
@@ -55,6 +55,7 @@ def main(
     hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
 
+    #Extract CPG IDs from external sample IDs
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
     )
@@ -81,6 +82,7 @@ def main(
         logging.warning(
             f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
         )
+    #Create string containing paths based on /cramfuse
     cramfuse_path = ''
     for cram_obj in crams_path:
         cpg_sample_id = cram_obj['sample_ids'][0]
@@ -90,8 +92,10 @@ def main(
             cramfuse_path += '/cramfuse/cram/' + cpg_sample_id + '.cram,'
     cramfuse_path = crams_path[:-1] #removes the terminating comma 
 
+    #Read in HipSTR variant catalog
     hipstr_regions = b.read_input(variant_catalog)
 
+    #Read in reference 
     ref = b.read_input_group(
         **dict(
             base=ref_fasta,
@@ -116,6 +120,7 @@ def main(
     hipstr_output_path_log = output_path(f'{output_file_name}_hipstr.log.txt')
     b.write_output(hipstr_job.hipstr_output['log.txt'], hipstr_output_path_log)
 
+    #Unzip .VCF.GZ output into .VCF
     samtools_job = b.new_job(name='Unzip VCF')
     samtools_job.image(SAMTOOLS_IMAGE)
     samtools_job.storage('20G')
