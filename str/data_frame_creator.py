@@ -105,10 +105,10 @@ def eh_csv_writer(input_dir):
 
 def gangstr_csv_writer(input_dir):
     """Creates a TSV file containing dataframe of merged GangSTR VCFs"""
-    bucket_name, *components = input_dir[5:].split('/')
+    bucket_name, prefix = input_dir[5:].split('/', maxsplit=1)
     client = storage.Client()
     bucket = client.bucket(bucket_name)
-    blobs = client.list_blobs(bucket_name, prefix='/'.join(components))
+    blobs = client.list_blobs(bucket_name, prefix=prefix))
     files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
     csv = (
         '\t'.join(
