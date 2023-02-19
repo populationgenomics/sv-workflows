@@ -140,7 +140,7 @@ def main(
     b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
 
-    b.run(dry_run=True)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
