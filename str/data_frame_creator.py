@@ -16,11 +16,7 @@ config = get_config()
 
 def eh_csv_writer(input_dir):
     """Creates a CSV file containing dataframe of merged EH VCFs"""
-    bucket_name, *components = input_dir[5:].split('/')
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blobs = client.list_blobs(bucket_name, prefix='/'.join(components))
-    files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
+    files = to_path(input_dir).glob('*.vcf')
     csv = (
         ','.join(
             [
