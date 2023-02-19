@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option. 
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr/untrimmed_coordinates_1_based' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp HGDP00511
+analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp HGDP00511
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -33,7 +33,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('external-wgs-ids', nargs=-1)
-@click.option('--output-file-name', help="Output file name without file extension")
+@click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def main(
     variant_catalog, dataset, external_wgs_ids, output_file_name
@@ -134,7 +134,6 @@ def main(
     b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
     b.run(wait=False)
-
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
