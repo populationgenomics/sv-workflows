@@ -38,8 +38,6 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def main(
     variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
-    # Initializing Batch
-    # b = get_batch()
     b = get_batch()
 
     hipstr_job = b.new_job(name=f'HipSTR running')
