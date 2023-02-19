@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error
+# pylint: disable=import-error, too-many-locals, broad-exception-raised
 """
 This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter) or .TSV (GangSTR) format that can be read into R. 
 analysis-runner --access-level test --dataset tob-wgs --description 'data frame creator' --output-dir 'hoptan-str/tob_test_crams/data_frames' data_frame_creator.py  --input-dir-eh=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/eh_0_based --input-dir-gangstr=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/gangstr_0_based --output-name-eh=eh.csv --output-name-gangstr=gangstr.tsv
@@ -13,8 +13,9 @@ from google.cloud import storage
 
 config = get_config()
 
+
 def eh_csv_writer(input_dir):
-    """ Creates a CSV file containing dataframe of merged EH VCFs """
+    """Creates a CSV file containing dataframe of merged EH VCFs"""
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
     bucket = client.bucket(bucket_name)
@@ -104,7 +105,7 @@ def eh_csv_writer(input_dir):
 
 
 def gangstr_csv_writer(input_dir):
-    """ Creates a TSV file containing dataframe of merged GangSTR VCFs """
+    """Creates a TSV file containing dataframe of merged GangSTR VCFs"""
     bucket_name, *components = input_dir[5:].split('/')
     client = storage.Client()
     bucket = client.bucket(bucket_name)
@@ -152,7 +153,7 @@ def gangstr_csv_writer(input_dir):
                         g_gt = attributes[9]
                         g_dp = attributes[9]
                         g_q = attributes[9]
-                        g_REPCN = attributes[9]
+                        g_repcn = attributes[9]
                         g_allele_1 = attributes[9]
                         g_allele_2 = attributes[9]
                         g_repci = attributes[9]
@@ -168,7 +169,7 @@ def gangstr_csv_writer(input_dir):
                     g_gt = g_locus_characteristics[0]
                     g_dp = g_locus_characteristics[1]
                     g_q = g_locus_characteristics[2]
-                    g_REPCN = g_locus_characteristics[3]
+                    g_repcn = g_locus_characteristics[3]
                     g_repci = g_locus_characteristics[4]
                     g_rc = g_locus_characteristics[5]
                     g_enclreads = g_locus_characteristics[6]
@@ -177,8 +178,8 @@ def gangstr_csv_writer(input_dir):
                     g_ins = g_locus_characteristics[9]
                     g_stderr = g_locus_characteristics[10]
                     g_qexp = g_locus_characteristics[11]
-                    g_allele_1 = g_REPCN.split(',')[0]
-                    g_allele_2 = g_REPCN.split(',')[1]
+                    g_allele_1 = g_repcn.split(',')[0]
+                    g_allele_2 = g_repcn.split(',')[1]
                     csv = csv + (
                         '\t'.join(
                             [
