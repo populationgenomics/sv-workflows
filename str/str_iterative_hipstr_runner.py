@@ -71,6 +71,10 @@ def main(
     
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
+    cpg_id_to_external_id = {
+        cpg_id: external_wgs_id
+        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
+    }
     cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
     if cpg_sids_without_crams:
         external_wgs_sids_without_crams = ', '.join(
@@ -79,13 +83,13 @@ def main(
         logging.warning(
             f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
         )
-    cramfuse_path = ""
+    cramfuse_path = ''
     for cram_obj in crams_path:
         cpg_sample_id = cram_obj['sample_ids'][0]
-        if dataset == "tob-wgs":
-            cramfuse_path+="/cramfuse/cram/nagim/"+cpg_sample_id+".cram,"
+        if dataset == 'tob-wgs':
+            cramfuse_path+='/cramfuse/cram/nagim/'+cpg_sample_id+'.cram,'
         else:
-            cramfuse_path+="/cramfuse/cram/"+cpg_sample_id+".cram,"
+            cramfuse_path+='/cramfuse/cram/'+cpg_sample_id+'.cram,'
     cramfuse_path = crams_path[:-1]
     
     hipstr_regions = b.read_input(variant_catalog)    
