@@ -90,7 +90,7 @@ def main(
             cramfuse_path += '/cramfuse/cram/nagim/' + cpg_sample_id + '.cram,'
         else:
             cramfuse_path += '/cramfuse/cram/' + cpg_sample_id + '.cram,'
-    cramfuse_path = crams_path[:-1]
+    cramfuse_path = crams_path[:-1] #removes the terminating comma 
 
     hipstr_regions = b.read_input(variant_catalog)
 
