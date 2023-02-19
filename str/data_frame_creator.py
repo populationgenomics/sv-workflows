@@ -50,8 +50,7 @@ def eh_csv_writer(input_dir):
         if file.endswith('.vcf'):
             blob = bucket.blob(file[6 + len(bucket_name) :])
             with blob.open('r') as f:
-                array = f.readlines()
-                for line in array:
+                for line in f:
                     if line.startswith('##'):
                         continue
                     if line.startswith('#CHROM'):
