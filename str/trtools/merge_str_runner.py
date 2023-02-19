@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code,broad-exception-raised
 """
 This script merges GangSTR or ExpansionHunter vcf.gz files into one combined VCF. 
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code,broad-exception-raised
 """
 This script runs qcSTR() from TRTools package on a single/merged STR vcf file and outputs various QC graphs
 
