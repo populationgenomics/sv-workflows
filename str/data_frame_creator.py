@@ -12,7 +12,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path
 import hailtop.batch as hb
 from cpg_utils import to_path
 from google.cloud import storage
-
+import os
 
 config = get_config()
 
@@ -183,6 +183,7 @@ def gangstr_tsv_writer(input_dir):
 def main(input_dir_eh, input_dir_gangstr, output_name_eh, output_name_gangstr):
     # pylint: disable=missing-function-docstring
     # Initializing Batch
+    os.environ['HTSLIB_CONFIGURE_OPTIONS'] = "--enable-gcs"
     backend = hb.ServiceBackend(
         billing_project=get_config()["hail"]["billing_project"],
         remote_tmpdir=remote_tmpdir(),
