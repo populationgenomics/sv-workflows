@@ -157,6 +157,7 @@ def gangstr_tsv_writer(input_dir):
             except:
                 print(variant.format("REPCN"))
                 print(sample_id)
+                print(variant.POS)
             g_repci = str(variant.format("REPCI")[0])
             g_rc = str(variant.format("RC")[0])
             g_enclreads =str( variant.format("ENCLREADS")[0])
