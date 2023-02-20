@@ -47,6 +47,9 @@ def eh_csv_writer(input_dir):
     )
 
     for file in files:
+        if isinstance(file, GSPath):
+            file.copy('localfile.vcf')
+            file = 'localfile.vcf'
         sample_id = str(VCFReader(file).samples[0])
         for variant in VCFReader(file):
             chr = str(variant.CHROM)
@@ -119,6 +122,9 @@ def gangstr_tsv_writer(input_dir):
         + "\n"
     )
     for file in files:
+        if isinstance(file, GSPath):
+            file.copy('localfile.vcf')
+            file = 'localfile.vcf'
         sample_id = str(VCFReader(file).samples[0])
         for variant in VCFReader(file):
             chr = str(variant.CHROM)
