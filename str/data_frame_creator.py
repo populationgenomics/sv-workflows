@@ -150,14 +150,9 @@ def gangstr_tsv_writer(input_dir):
             g_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
             g_dp = str(variant.format("DP")[0][0])
             g_q = str(variant.format("Q")[0][0])
-            try:
-                g_repcn = (
+            g_repcn = (
                     f'{variant.format("REPCN")[0][0]}, {variant.format("REPCN")[0][1]}'
                 )
-            except:
-                print(variant.format("REPCN"))
-                print(sample_id)
-                print(variant.POS)
             g_repci = str(variant.format("REPCI")[0])
             g_rc = str(variant.format("RC")[0])
             g_enclreads =str( variant.format("ENCLREADS")[0])
