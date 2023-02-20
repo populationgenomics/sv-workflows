@@ -45,24 +45,24 @@ def eh_csv_writer(input_dir):
     )
 
     for file in files:
-        sample_id = VCF(file).samples[0]
+        sample_id = str(VCF(file).samples[0])
         for variant in VCF(file):
-            chr = variant.CHROM
-            start = variant.POS
-            e_qual = variant.FILTER
-            end = variant.INFO.get("END")
-            repeat_units_in_ref = variant.INFO.get("REF")
-            ref_sequence_length = variant.INFO.get("RL")
-            motif = variant.INFO.get("RU")
+            chr = str(variant.CHROM)
+            start = str(variant.POS)
+            e_qual = str(variant.FILTER)
+            end = str(variant.INFO.get("END"))
+            repeat_units_in_ref = str(variant.INFO.get("REF"))
+            ref_sequence_length = str(variant.INFO.get("RL"))
+            motif = str(variant.INFO.get("RU"))
             e_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
-            e_so = variant.format("SO")[0]
-            e_allele_1 = variant.format("REPCN")[0].split("/")[0]
-            e_allele_2 = variant.format("REPCN")[0].split("/")[1]
-            e_repci = variant.format("REPCI")[0]
-            e_adsp = variant.format("ADSP")[0]
-            e_adfl = variant.format("ADFL")[0]
-            e_adir = variant.format("ADIR")[0]
-            e_lc = variant.format("LC")[0][0]
+            e_so = str(variant.format("SO")[0])
+            e_allele_1 = str(variant.format("REPCN")[0].split("/")[0])
+            e_allele_2 = str(variant.format("REPCN")[0].split("/")[1])
+            e_repci = str(variant.format("REPCI")[0])
+            e_adsp = str(variant.format("ADSP")[0])
+            e_adfl = str(variant.format("ADFL")[0])
+            e_adir = str(variant.format("ADIR")[0])
+            e_lc = str(variant.format("LC")[0][0])
             csv = csv + (
                 ",".join(
                     [
@@ -117,28 +117,28 @@ def gangstr_tsv_writer(input_dir):
         + "\n"
     )
     for file in files:
-        sample_id = VCF(file).samples[0]
+        sample_id = str(VCF(file).samples[0])
         for variant in VCF(file):
-            chr = variant.CHROM
-            start = variant.POS
+            chr = str(variant.CHROM)
+            start = str(variant.POS)
             g_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
-            g_dp = variant.format("DP")[0][0]
-            g_q = variant.format("Q")[0][0]
+            g_dp = str(variant.format("DP")[0][0])
+            g_q = str(variant.format("Q")[0][0])
             g_repcn = (
                 f'{variant.format("REPCN")[0][0]}, {variant.format("REPCN")[0][1]}'
             )
-            g_repci = variant.format("REPCI")[0]
-            g_rc = variant.format("RC")[0]
-            g_enclreads = variant.format("ENCLREADS")[0]
-            g_flnkreads = variant.format("FLNKREADS")[0]
-            g_ml = variant.format("ML")[0][0]
+            g_repci = str(variant.format("REPCI")[0])
+            g_rc = str(variant.format("RC")[0])
+            g_enclreads =str( variant.format("ENCLREADS")[0])
+            g_flnkreads = str(variant.format("FLNKREADS")[0])
+            g_ml = str(variant.format("ML")[0][0])
             g_ins = f'{variant.format("INS")[0][0]},{variant.format("INS")[0][1]}'
             g_stderr = (
                 f'{variant.format("STDERR")[0][0]},{variant.format("STDERR")[0][1]}'
             )
             g_qexp = f'{variant.format("QEXP")[0][0]},{variant.format("QEXP")[0][1]},{variant.format("QEXP")[0][2]}'
-            g_allele_1 = g_repcn.split(",")[0].strip()
-            g_allele_2 = g_repcn.split(",")[1].strip()
+            g_allele_1 = str(g_repcn.split(",")[0].strip())
+            g_allele_2 = str(g_repcn.split(",")[1].strip())
             csv = csv + (
                 "\t".join(
                     [
