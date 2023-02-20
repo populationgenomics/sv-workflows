@@ -12,7 +12,7 @@ pip install sample-metadata hail click
 """
 import logging
 
-
+import os
 import click
 from sample_metadata.apis import AnalysisApi, SampleApi
 from sample_metadata.model.analysis_type import AnalysisType
@@ -36,6 +36,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def get_cloudfuse_paths(dataset, external_wgs_ids):
+    """ Retrieves cloud fuse paths and outputs as a comma-separated string for crams associated with the external-wgs-ids"""
     # Extract CPG IDs from external sample IDs
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
