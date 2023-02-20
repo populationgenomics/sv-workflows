@@ -124,8 +124,9 @@ def gangstr_tsv_writer(input_dir):
         if isinstance(file, GSPath):
             file.copy(file.name)
             file = file.name
-        sample_id = str(VCFReader(file).samples[0])
-        for variant in VCFReader(file):
+        reader = VCFReader(file)
+        sample_id = str(reader.samples[0])
+        for variant in reader:
             chr = str(variant.CHROM)
             start = str(variant.POS)
             g_gt = str(variant.format('GT')[0])
