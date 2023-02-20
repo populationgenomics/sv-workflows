@@ -188,8 +188,8 @@ def main(input_dir_eh, input_dir_gangstr, output_name_eh, output_name_gangstr):
     eh_csv = j.call(eh_csv_writer, input_dir_eh)
     gangstr_tsv = g.call(gangstr_tsv_writer, input_dir_gangstr)
 
-    b.write_output(eh_csv.as_str(), output_path({output_name_eh}, "analysis"))
-    b.write_output(gangstr_tsv.as_str(), output_path({output_name_gangstr}, "analysis"))
+    b.write_output(eh_csv.as_str(), output_path(output_name_eh, "analysis"))
+    b.write_output(gangstr_tsv.as_str(), output_path(output_name_gangstr, "analysis"))
 
     b.run(wait=False)
 
