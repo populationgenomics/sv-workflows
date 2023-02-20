@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error, too-many-locals, broad-exception-raised
-#!export HTSLIB_CONFIGURE_OPTIONS="--enable-gcs"
-#!apt-get install libbz2-dev libcurl4-openssl-dev
-#!pip3 install pysam -v --force-reinstall --no-binary :all:
+
 """
 This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter) or .TSV (GangSTR) format that can be read into R. 
 analysis-runner --access-level test --dataset tob-wgs --description 'data frame creator' --output-dir 'hoptan-str/tob_test_crams/data_frames' data_frame_creator.py  --input-dir-eh=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/eh_0_based --input-dir-gangstr=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/gangstr_0_based --output-name-eh=eh.csv --output-name-gangstr=gangstr.tsv
@@ -22,11 +20,7 @@ config = get_config()
 
 def eh_csv_writer(input_dir):
     """Creates a CSV file containing dataframe of merged EH VCFs"""
-    bucket_name, *components = input_dir[5:].split('/')
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blobs = client.list_blobs(bucket_name, prefix='/'.join(components))
-    files = {f'gs://{bucket_name}/{blob.name}' for blob in blobs}
+    files = to_path(input_dir).glob("*.vcf")
     csv = (
         ",".join(
             [
@@ -52,52 +46,49 @@ def eh_csv_writer(input_dir):
         + "\n"
     )
 
-    for file_path in files:
-        if file_path.endswith('.vcf'):
-            blob = bucket.blob(file_path[6 + len(bucket_name) :])
-            with blob.open('r') as file:
-                sample_id = str(VCF(file).samples[0])
-                for variant in VCF(file):
-                    chr = str(variant.CHROM)
-                    start = str(variant.POS)
-                    e_qual = str(variant.FILTER)
-                    end = str(variant.INFO.get("END"))
-                    repeat_units_in_ref = str(variant.INFO.get("REF"))
-                    ref_sequence_length = str(variant.INFO.get("RL"))
-                    motif = str(variant.INFO.get("RU"))
-                    e_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
-                    e_so = str(variant.format("SO")[0])
-                    e_allele_1 = str(variant.format("REPCN")[0].split("/")[0])
-                    e_allele_2 = str(variant.format("REPCN")[0].split("/")[1])
-                    e_repci = str(variant.format("REPCI")[0])
-                    e_adsp = str(variant.format("ADSP")[0])
-                    e_adfl = str(variant.format("ADFL")[0])
-                    e_adir = str(variant.format("ADIR")[0])
-                    e_lc = str(variant.format("LC")[0][0])
-                    csv = csv + (
-                        ",".join(
-                            [
-                                sample_id,
-                                chr,
-                                start,
-                                e_qual,
-                                end,
-                                repeat_units_in_ref,
-                                ref_sequence_length,
-                                motif,
-                                e_gt,
-                                e_so,
-                                e_allele_1,
-                                e_allele_2,
-                                e_repci,
-                                e_adsp,
-                                e_adfl,
-                                e_adir,
-                                e_lc,
-                            ]
-                        )
-                        + "\n"
-                    )
+    for file in files:
+        sample_id = str(VCF(file).samples[0])
+        for variant in VCF(file):
+            chr = str(variant.CHROM)
+            start = str(variant.POS)
+            e_qual = str(variant.FILTER)
+            end = str(variant.INFO.get("END"))
+            repeat_units_in_ref = str(variant.INFO.get("REF"))
+            ref_sequence_length = str(variant.INFO.get("RL"))
+            motif = str(variant.INFO.get("RU"))
+            e_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
+            e_so = str(variant.format("SO")[0])
+            e_allele_1 = str(variant.format("REPCN")[0].split("/")[0])
+            e_allele_2 = str(variant.format("REPCN")[0].split("/")[1])
+            e_repci = str(variant.format("REPCI")[0])
+            e_adsp = str(variant.format("ADSP")[0])
+            e_adfl = str(variant.format("ADFL")[0])
+            e_adir = str(variant.format("ADIR")[0])
+            e_lc = str(variant.format("LC")[0][0])
+            csv = csv + (
+                ",".join(
+                    [
+                        sample_id,
+                        chr,
+                        start,
+                        e_qual,
+                        end,
+                        repeat_units_in_ref,
+                        ref_sequence_length,
+                        motif,
+                        e_gt,
+                        e_so,
+                        e_allele_1,
+                        e_allele_2,
+                        e_repci,
+                        e_adsp,
+                        e_adfl,
+                        e_adir,
+                        e_lc,
+                    ]
+                )
+                + "\n"
+            )
     return csv
 
 
@@ -186,7 +177,6 @@ def gangstr_tsv_writer(input_dir):
 def main(input_dir_eh, input_dir_gangstr, output_name_eh, output_name_gangstr):
     # pylint: disable=missing-function-docstring
     # Initializing Batch
-    os.environ['HTSLIB_CONFIGURE_OPTIONS'] = "--enable-gcs"
     backend = hb.ServiceBackend(
         billing_project=get_config()["hail"]["billing_project"],
         remote_tmpdir=remote_tmpdir(),
