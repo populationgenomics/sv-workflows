@@ -107,7 +107,13 @@ def main(
 
     hipstr_job.command(
         f"""
-    HipSTR --bams {cramfuse_path} --fasta {ref.base} --regions {hipstr_regions} --str-vcf {hipstr_job.hipstr_output['vcf.gz']} --viz-out {hipstr_job.hipstr_output['viz.gz']} --log {hipstr_job.hipstr_output['log.txt']} --output-filters
+    HipSTR --bams {cramfuse_path} \\
+        --fasta {ref.base} \\
+        --regions {hipstr_regions} \\
+        --str-vcf {hipstr_job.hipstr_output['vcf.gz']} \\
+        --viz-out {hipstr_job.hipstr_output['viz.gz']} \\
+        --log {hipstr_job.hipstr_output['log.txt']} \\
+        --output-filters
     """
     )
     # HipSTR output writing
