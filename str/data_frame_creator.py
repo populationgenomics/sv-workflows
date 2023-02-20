@@ -130,6 +130,22 @@ def gangstr_tsv_writer(input_dir):
         for variant in VCFReader(file):
             chr = str(variant.CHROM)
             start = str(variant.POS)
+            if g_gt == '.':  # ie variant is not called
+                g_gt = '.'
+                g_dp = '.'
+                g_q = '.'
+                g_repcn = '.'
+                g_allele_1 = '.'
+                g_allele_2 = '.'
+                g_repci = '.'
+                g_rc = '.'
+                g_enclreads = '.'
+                g_flnkreads = '.'
+                g_ml = '.'
+                g_ins = '.'
+                g_stderr = '.'
+                g_qexp = '.'
+                continue
             g_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
             g_dp = str(variant.format("DP")[0][0])
             g_q = str(variant.format("Q")[0][0])
