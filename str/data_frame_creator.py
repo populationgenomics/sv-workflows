@@ -130,8 +130,8 @@ def gangstr_tsv_writer(input_dir):
         for variant in VCFReader(file):
             chr = str(variant.CHROM)
             start = str(variant.POS)
-            g_rc = str(variant.format("RC")[0])
-            if g_rc == '.':  # ie variant is not called
+            g_gt = str(variant.format("GT")[0])
+            if g_rc == '':  # ie variant is not called
                 g_gt = '.'
                 g_dp = '.'
                 g_q = '.'
