@@ -35,6 +35,45 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.argument('external-wgs-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
+
+def get_cloudfuse_paths(dataset, external_wgs_ids):
+    #Extract CPG IDs from external sample IDs
+    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
+        dataset, list(external_wgs_ids)
+    )
+    analysis_query_model = AnalysisQueryModel(
+        sample_ids=list(external_id_to_cpg_id.values()),
+        projects=[dataset],
+        type=AnalysisType('cram'),
+        status=AnalysisStatus('completed'),
+        meta={'sequence_type': 'genome', 'source': 'nagim'},
+    )
+    crams_path = AnalysisApi().query_analyses(analysis_query_model)
+    cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
+    cpg_id_to_external_id = {
+        cpg_id: external_wgs_id
+        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
+    }
+    cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
+    if cpg_sids_without_crams:
+        external_wgs_sids_without_crams = ', '.join(
+            cpg_id_to_external_id[sid] for sid in cpg_sids_without_crams
+        )
+        logging.warning(
+            f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
+        )
+    #Create string containing paths based on /cramfuse
+    cramfuse_path = ''
+    for cram_obj in crams_path:
+        cpg_sample_id = os.path.basename(cram_obj['output']).split('.')[0]
+        if dataset == 'tob-wgs':
+            cramfuse_path += '/cramfuse/cram/nagim/' + cpg_sample_id + '.cram,'
+        else:
+            cramfuse_path += '/cramfuse/cram/' + cpg_sample_id + '.cram,'
+    cramfuse_path = crams_path[:-1] #removes the terminating comma 
+    return cramfuse_path
+
+
 def main(
     variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
@@ -55,42 +94,7 @@ def main(
     hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
 
-    #Extract CPG IDs from external sample IDs
-    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        dataset, list(external_wgs_ids)
-    )
-
-    analysis_query_model = AnalysisQueryModel(
-        sample_ids=list(external_id_to_cpg_id.values()),
-        projects=[dataset],
-        type=AnalysisType('cram'),
-        status=AnalysisStatus('completed'),
-        meta={'sequence_type': 'genome', 'source': 'nagim'},
-    )
-
-    crams_path = AnalysisApi().query_analyses(analysis_query_model)
-    cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
-    cpg_id_to_external_id = {
-        cpg_id: external_wgs_id
-        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
-    }
-    cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
-    if cpg_sids_without_crams:
-        external_wgs_sids_without_crams = ', '.join(
-            cpg_id_to_external_id[sid] for sid in cpg_sids_without_crams
-        )
-        logging.warning(
-            f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
-        )
-    #Create string containing paths based on /cramfuse
-    cramfuse_path = ''
-    for cram_obj in crams_path:
-        cpg_sample_id = cram_obj['sample_ids'][0]
-        if dataset == 'tob-wgs':
-            cramfuse_path += '/cramfuse/cram/nagim/' + cpg_sample_id + '.cram,'
-        else:
-            cramfuse_path += '/cramfuse/cram/' + cpg_sample_id + '.cram,'
-    cramfuse_path = crams_path[:-1] #removes the terminating comma 
+    cramfuse_path = get_cloudfuse_paths(dataset, external_wgs_ids)
 
     #Read in HipSTR variant catalog
     hipstr_regions = b.read_input(variant_catalog)
@@ -125,22 +129,6 @@ def main(
 
     hipstr_output_path_log = output_path(f'{output_file_name}_hipstr.log.txt')
     b.write_output(hipstr_job.hipstr_output['log.txt'], hipstr_output_path_log)
-
-    #Unzip .VCF.GZ output into .VCF
-    samtools_job = b.new_job(name='Unzip VCF')
-    samtools_job.image(SAMTOOLS_IMAGE)
-    samtools_job.storage('20G')
-    samtools_job.cpu(8)
-    samtools_job.declare_resource_group(vcf={'vcf': '{root}.vcf'})
-
-    samtools_job.command(
-        f"""
-            bgzip -d -c {hipstr_job.hipstr_output['vcf.gz']} > {samtools_job.vcf['vcf']}
-        
-            """
-    )
-    samtools_job_output_path = output_path(f'{output_file_name}_hipstr.vcf')
-    b.write_output(samtools_job.vcf['vcf'], samtools_job_output_path)
 
     b.run(wait=False)
 
