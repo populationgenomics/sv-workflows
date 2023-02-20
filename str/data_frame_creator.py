@@ -44,7 +44,8 @@ def eh_csv_writer(input_dir):
         + "\n"
     )
 
-    for file in files:
+    for file_path in files:
+        file = file_path.open()
         sample_id = str(VCF(file).samples[0])
         for variant in VCF(file):
             chr = str(variant.CHROM)
