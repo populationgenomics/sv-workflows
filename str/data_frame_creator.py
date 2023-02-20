@@ -151,11 +151,11 @@ def gangstr_tsv_writer(input_dir):
             g_dp = str(variant.format("DP")[0][0])
             g_q = str(variant.format("Q")[0][0])
             g_repcn = (
-                    f'{variant.format("REPCN")[0][0]}, {variant.format("REPCN")[0][1]}'
-                )
+                f'{variant.format("REPCN")[0][0]}, {variant.format("REPCN")[0][1]}'
+            )
             g_repci = str(variant.format("REPCI")[0])
             g_rc = str(variant.format("RC")[0])
-            g_enclreads =str( variant.format("ENCLREADS")[0])
+            g_enclreads = str(variant.format("ENCLREADS")[0])
             g_flnkreads = str(variant.format("FLNKREADS")[0])
             g_ml = str(variant.format("ML")[0][0])
             g_ins = f'{variant.format("INS")[0][0]},{variant.format("INS")[0][1]}'
