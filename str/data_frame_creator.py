@@ -131,7 +131,7 @@ def gangstr_tsv_writer(input_dir):
             chr = str(variant.CHROM)
             start = str(variant.POS)
             g_gt = str(variant.format("GT")[0])
-            if g_rc == '':  # ie variant is not called
+            if g_gt == '':  # ie variant is not called
                 g_gt = '.'
                 g_dp = '.'
                 g_q = '.'
