@@ -51,7 +51,7 @@ def eh_csv_writer(input_dir):
 
     for file_path in files:
         if file_path.endswith('.vcf'):
-            blob = bucket.blob(file[6 + len(bucket_name) :])
+            blob = bucket.blob(file_path[6 + len(bucket_name) :])
             with blob.open('r') as file:
                 sample_id = str(VCF(file).samples[0])
                 for variant in VCF(file):
