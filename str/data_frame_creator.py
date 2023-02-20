@@ -14,6 +14,7 @@ import hailtop.batch as hb
 from cpg_utils import to_path
 from google.cloud import storage
 import os
+from cloudpathlib import GSPath
 
 config = get_config()
 
@@ -48,8 +49,8 @@ def eh_csv_writer(input_dir):
 
     for file in files:
         if isinstance(file, GSPath):
-            file.copy('localfile.vcf')
-            file = 'localfile.vcf'
+            file.copy(file.name)
+            file = file.name
         sample_id = str(VCFReader(file).samples[0])
         for variant in VCFReader(file):
             chr = str(variant.CHROM)
@@ -123,8 +124,8 @@ def gangstr_tsv_writer(input_dir):
     )
     for file in files:
         if isinstance(file, GSPath):
-            file.copy('localfile.vcf')
-            file = 'localfile.vcf'
+            file.copy(file.name)
+            file = file.name
         sample_id = str(VCFReader(file).samples[0])
         for variant in VCFReader(file):
             chr = str(variant.CHROM)
