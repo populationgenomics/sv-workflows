@@ -48,7 +48,7 @@ def eh_csv_writer(input_dir):
 
     for file in files:
         sample_id = str(VCFReader(file).samples[0])
-        for variant in VCF(file):
+        for variant in VCFReader(file):
             chr = str(variant.CHROM)
             start = str(variant.POS)
             e_qual = str(variant.FILTER)
@@ -119,8 +119,8 @@ def gangstr_tsv_writer(input_dir):
         + "\n"
     )
     for file in files:
-        sample_id = str(VCF(file).samples[0])
-        for variant in VCF(file):
+        sample_id = str(VCFReader(file).samples[0])
+        for variant in VCFReader(file):
             chr = str(variant.CHROM)
             start = str(variant.POS)
             g_gt = f"{variant.genotypes[0][0]}/{variant.genotypes[0][1]}"
