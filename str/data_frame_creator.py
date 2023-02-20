@@ -6,7 +6,7 @@ This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter
 analysis-runner --access-level test --dataset tob-wgs --description 'data frame creator' --output-dir 'hoptan-str/tob_test_crams/data_frames' data_frame_creator.py  --input-dir-eh=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/eh_0_based --input-dir-gangstr=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/gangstr_0_based --output-name-eh=eh.csv --output-name-gangstr=gangstr.tsv
 
 """
-from cyvcf2 import VCF
+from cyvcf2 import VCFReader
 import click
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
@@ -47,7 +47,7 @@ def eh_csv_writer(input_dir):
     )
 
     for file in files:
-        sample_id = str(VCF(file).samples[0])
+        sample_id = str(VCFReader(file).samples[0])
         for variant in VCF(file):
             chr = str(variant.CHROM)
             start = str(variant.POS)
