@@ -97,7 +97,7 @@ def eh_csv_writer(input_dir):
 def gangstr_tsv_writer(input_dir):
     """Creates a TSV file containing dataframe of merged GangSTR VCFs"""
     files = to_path(input_dir).glob('*.vcf')
-    csv = (
+    tsv = (
         '\t'.join(
             [
                 'sample_id',
@@ -163,7 +163,7 @@ def gangstr_tsv_writer(input_dir):
             g_qexp = f'{variant.format("QEXP")[0][0]},{variant.format("QEXP")[0][1]},{variant.format("QEXP")[0][2]}'
             g_allele_1 = str(g_repcn.split(',')[0].strip())
             g_allele_2 = str(g_repcn.split(',')[1].strip())
-            csv = csv + (
+            tsv = tsv + (
                 '\t'.join(
                     [
                         sample_id,
@@ -186,7 +186,7 @@ def gangstr_tsv_writer(input_dir):
                 )
                 + '\n'
             )
-    return csv
+    return tsv
 
 
 @click.command()
