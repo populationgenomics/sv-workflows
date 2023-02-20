@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error, too-many-locals, broad-exception-raised
+# pylint: disable=import-error, too-many-locals, broad-exception-raised, ungrouped-imports
 
 """
 This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter) or .TSV (GangSTR) format that can be read into R. 
