@@ -41,7 +41,7 @@ def get_cloudfuse_paths(dataset, external_wgs_ids):
             projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
-            meta={'sequence_type': 'genome', 'source': 'nagim'},
+            meta={'sequencing_type': 'genome', 'source': 'nagim'},
         )
     else: 
         analysis_query_model = AnalysisQueryModel(
