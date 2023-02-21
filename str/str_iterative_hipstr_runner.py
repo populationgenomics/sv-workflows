@@ -66,14 +66,11 @@ def get_cloudfuse_paths(dataset, external_wgs_ids):
             f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
         )
     # Create string containing paths based on /cramfuse
-    cramfuse_path = ''
+    cramfuse_path = []
     for cram_obj in crams_path:
-        cpg_sample_id = os.path.basename(cram_obj['output']).split('.')[0]
-        if dataset == 'tob-wgs':
-            cramfuse_path += '/cramfuse/cram/nagim/' + cpg_sample_id + '.cram,'
-        else:
-            cramfuse_path += '/cramfuse/cram/' + cpg_sample_id + '.cram,'
-    cramfuse_path = crams_path[:-1]  # removes the terminating comma
+        suffix = cram_obj['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
+        cramfuse_path.append(f'/cramfuse/{suffix}')
+    cramfuse_path = ','.join(cramfuse_path) # string format for input into hipstr 
     return cramfuse_path
 
 # inputs:
