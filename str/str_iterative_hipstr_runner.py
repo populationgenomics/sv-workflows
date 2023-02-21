@@ -43,13 +43,13 @@ def get_cloudfuse_paths(dataset, external_wgs_ids):
             status=AnalysisStatus('completed'),
             meta={'sequencing_type': 'genome', 'source': 'nagim'},
         )
-    else: 
+    else:
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
-            meta={},
+            meta={'sequencing_type': 'genome'},
         )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
@@ -70,8 +70,9 @@ def get_cloudfuse_paths(dataset, external_wgs_ids):
     for cram_obj in crams_path:
         suffix = cram_obj['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
         cramfuse_path.append(f'/cramfuse/{suffix}')
-    cramfuse_path = ','.join(cramfuse_path) # string format for input into hipstr 
+    cramfuse_path = ','.join(cramfuse_path)  # string format for input into hipstr
     return cramfuse_path
+
 
 # inputs:
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
