@@ -29,25 +29,28 @@ HIPSTR_IMAGE = config['images']['hipstr']
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-# inputs:
-@click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
-@click.option('--dataset', help='dataset eg tob-wgs')
-@click.argument('external-wgs-ids', nargs=-1)
-@click.option('--output-file-name', help='Output file name without file extension')
-@click.command()
 def get_cloudfuse_paths(dataset, external_wgs_ids):
     """Retrieves cloud fuse paths and outputs as a comma-separated string for crams associated with the external-wgs-ids"""
     # Extract CPG IDs from external sample IDs
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
         dataset, list(external_wgs_ids)
     )
-    analysis_query_model = AnalysisQueryModel(
-        sample_ids=list(external_id_to_cpg_id.values()),
-        projects=[dataset],
-        type=AnalysisType('cram'),
-        status=AnalysisStatus('completed'),
-        meta={'sequence_type': 'genome', 'source': 'nagim'},
-    )
+    if dataset == 'tob-wgs':
+        analysis_query_model = AnalysisQueryModel(
+            sample_ids=list(external_id_to_cpg_id.values()),
+            projects=[dataset],
+            type=AnalysisType('cram'),
+            status=AnalysisStatus('completed'),
+            meta={'sequence_type': 'genome', 'source': 'nagim'},
+        )
+    else: 
+        analysis_query_model = AnalysisQueryModel(
+            sample_ids=list(external_id_to_cpg_id.values()),
+            projects=[dataset],
+            type=AnalysisType('cram'),
+            status=AnalysisStatus('completed'),
+            meta={},
+        )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
     cpg_id_to_external_id = {
@@ -73,7 +76,12 @@ def get_cloudfuse_paths(dataset, external_wgs_ids):
     cramfuse_path = crams_path[:-1]  # removes the terminating comma
     return cramfuse_path
 
-
+# inputs:
+@click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
+@click.option('--dataset', help='dataset eg tob-wgs')
+@click.argument('external-wgs-ids', nargs=-1)
+@click.option('--output-file-name', help='Output file name without file extension')
+@click.command()
 def main(
     variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
