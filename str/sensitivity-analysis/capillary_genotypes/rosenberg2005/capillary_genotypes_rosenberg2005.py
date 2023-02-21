@@ -21,8 +21,9 @@ def generator_chunks(generator, size):
 
 
 file = open("combinedmicrosats-1048.stru.txt")
-hgdp_cpg_id = SeqrApi().get_external_participant_id_to_internal_sample_id('hgdp-test')
-hgdp_cpg_id = dict(hgdp_cpg_id)
+mapping = open("210_sgdp_sample_mappings.txt")
+hgdp_cpg_id = json.load(mapping)
+hgdp_cpg_id = dict((v, k) for k, v in hgdp_cpg_id.items())
 # file = file.readlines()
 
 loci = file.readline().rstrip().split()

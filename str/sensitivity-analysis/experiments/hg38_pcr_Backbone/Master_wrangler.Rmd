@@ -8,6 +8,7 @@ output: html_document
 ```{r}
 library('rjson')
 library('spgs')
+library(readxl)
 ```
 
 ```{r}
@@ -134,7 +135,7 @@ fasta = fasta %>% select(-updated_motif)
 
 
 ```{r}
-fermikit_indels = read.table("263.intersect_PCR.vcf", sep = "\t", header = TRUE) %>% gather("sample_id", "gt", 10:15) %>% rename("start_coordinate_indel_hg19" = POS, "chr" = CHROM) %>% mutate(end_coordinate_indel_hg19 = start_coordinate_indel_hg19 +nchar(REF)-1,chr = paste("chr", chr, sep = "") ) %>% select(chr, start_coordinate_indel_hg19, end_coordinate_indel_hg19, sample_id, gt)
+fermikit_indels = read.table("263_all_samples_intersect.vcf", sep = "\t", header = TRUE) %>% gather("sample_id", "gt", 10:272) %>% rename("start_coordinate_indel_hg19" = POS, "chr" = CHROM) %>% mutate(end_coordinate_indel_hg19 = start_coordinate_indel_hg19 +nchar(REF)-1,chr = paste("chr", chr, sep = "") ) %>% select(chr, start_coordinate_indel_hg19, end_coordinate_indel_hg19, sample_id, gt) 
 
 #fermikit_indels %>% select(chr, start_coordinate, end_coordinate) %>% write.table(file = "fermikit_indel_coordinates_hg19.bed", sep = "\t", row.names = FALSE, quote = FALSE) #note hg19 - must liftover back to hg38 to interseect 
 
@@ -148,33 +149,38 @@ fermikit_indels_hg38 = merge(fermikit_indels, fermikit_indels_hg38, by= c("chr",
 
 indel_fasta_intersect = read.table("indel_fasta_intersect.bed", sep ="\t", header = FALSE) %>% select(-V4)%>% rename("chr" = V1,"start_coordinate_indel_hg38" = V2, "end_coordinate_indel_hg38" = V3, "start_coordinate_PCR" = V5, "end_coordinate_PCR" = V6) %>% distinct(chr, start_coordinate_indel_hg38, end_coordinate_indel_hg38, start_coordinate_PCR, end_coordinate_PCR)
 
-fermikit_indels_hg38_clean = merge(fermikit_indels_hg38, indel_fasta_intersect, by = c("chr", "start_coordinate_indel_hg38", "end_coordinate_indel_hg38"), all.x = TRUE) %>% rename("indel_gt"= gt)%>% mutate(indel_gt = case_when (indel_gt == "0/0" ~0, TRUE ~ 1)) %>% group_by(sample_id, start_coordinate_PCR, end_coordinate_PCR) %>% summarise(indel_gt = sum(indel_gt)) %>% filter(!is.na(start_coordinate_PCR) & !is.na(end_coordinate_PCR))
+fermikit_indels_hg38_clean = merge(fermikit_indels_hg38, indel_fasta_intersect, by = c("chr", "start_coordinate_indel_hg38", "end_coordinate_indel_hg38"), all.x = TRUE) %>% rename("indel_gt"= gt)%>% mutate(indel_gt = case_when (indel_gt == "0/0" ~0, TRUE ~ 1)) %>% group_by(sample_id, start_coordinate_PCR, end_coordinate_PCR) %>% summarise(indel_gt = sum(indel_gt)) %>% filter(!is.na(start_coordinate_PCR) & !is.na(end_coordinate_PCR)) %>% ungroup () 
+
+sgdp_metadata = read.table("SGDP_metadata.279public.21signedLetter.44Fan.samples.txt", header = TRUE, sep = "\t") %>% mutate(SGDP_ID=gsub("-", ".", SGDP_ID)) %>% select(SGDP_ID, Sample_ID)
+
+sgdp_metadata %>% filter(grepl("S_Abkhasian",SGDP_ID))
+
+fermikit_indels_hg38_clean = merge(fermikit_indels_hg38_clean, sgdp_metadata, by.x = "sample_id", by.y = "SGDP_ID",all.x = TRUE) %>% rename("hgdp_sample_id"= "Sample_ID")
 ```
 
 ```{r}
 capillary_genotypes = read.csv("capillary_gt/capillary_genotypes_with_locusNames_rosenberg2005.csv") %>% select(-X,-locus_id, -population_id, - geographic_population, -predefined_region)
 
-fasta_with_capillary = merge(fasta, capillary_genotypes, by.x = "key", by.y = "alternateName", all.x = TRUE) %>% rename("PCR_1" = genotype_1, "PCR_2" = genotype_2)
+
+fasta_with_capillary = merge(fasta, capillary_genotypes, by.x = "key", by.y = "alternateName", all.y = TRUE) %>% rename("PCR_1" = genotype_1, "PCR_2" = genotype_2, "hgdp_sample_id" = "sample_id")
 
 fasta_with_capillary$PCR_1 = na_if(fasta_with_capillary$PCR_1, -9)
 fasta_with_capillary$PCR_2 = na_if(fasta_with_capillary$PCR_2, -9)
 fasta_with_capillary$trf_num_repeats = as.numeric(fasta_with_capillary$trf_num_repeats)
 fasta_with_capillary$PCR_length = as.numeric(fasta_with_capillary$PCR_length)
 
-## working with fermikit calls - ie only 6 samples
-fasta_with_capillary = fasta_with_capillary %>% filter(sample_id %in% c("HGDP00530","HGDP00526","HGDP00783", "HGDP00785","HGDP00928","HGDP00932"))
-excluded_calls = merge(fasta_with_capillary, fermikit_indels_hg38_clean, by = c("sample_id", "start_coordinate_PCR", "end_coordinate_PCR"), all.x = TRUE)%>% filter(!is.na(indel_gt)| indel_gt!= 0) 
+## working with fermikit calls
+excluded_calls = merge(fasta_with_capillary, fermikit_indels_hg38_clean, by = c("hgdp_sample_id", "start_coordinate_PCR", "end_coordinate_PCR"), all.x = TRUE)%>% filter(indel_gt!= 0 |is.na(indel_gt)) 
 ```
 
 ```{r}
-eh = read.csv("str_sensitivity-analysis_data_frames_trimmed_coordinates_hg38_backbone_0_based_hg38_backbone_trimmed_0_based_eh.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_alelle_2) %>% rename("catalog_start_coordinate_0_based" = start)
+eh = read.csv("~/Downloads/str_sensitivity-analysis_sgdp_410_loci_trimmed_eh_trimmed_0_based.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
 
 #%>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
-gangstr = read.delim("str_sensitivity-analysis_data_frames_trimmed_coordinates_hg38_backbone_0_based_hg38_backbone_trimmed_0_based_gangstr.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_0_based" = start) 
-#%>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+gangstr = read.delim("~/Downloads/str_sensitivity-analysis_sgdp_410_loci_trimmed_gangstr_trimmed_1_based.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
-eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id" = "sample_id")
+eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id"= "sample_id")
 
 fasta_with_capillary_eh_gangstr = merge(eh_gangstr, fasta_with_capillary, by = c("cpg_id", "chr", "catalog_start_coordinate_0_based"), all.y = TRUE)
 
@@ -182,7 +188,7 @@ fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(trf
 
 fasta_with_capillary_eh_gangstr %>% select(trf_num_repeats)
 
-fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, excluded_calls,by = c("sample_id", "start_coordinate_PCR", "end_coordinate_PCR"))
+fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, excluded_calls,by = c("cpg_id", "start_coordinate_PCR", "end_coordinate_PCR"))
 
 ```
 
@@ -190,8 +196,8 @@ fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, exc
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(capillary_allele_1 = (trf_num_repeats) + (PCR_1 -PCR_length)/nchar(trf_motif),
                                capillary_allele_2 = (trf_num_repeats) + (PCR_2 -PCR_length)/nchar(trf_motif) )
 
-fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = e_allele_1+e_alelle_2, 
-                 g_alleles = g_allele_2+g_allele_1,
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = as.numeric(e_allele_1)+as.numeric(e_allele_2), 
+                 g_alleles = as.numeric(g_allele_2)+as.numeric(g_allele_1),
                  capillary_alleles = floor(capillary_allele_1) + floor(capillary_allele_2)) #summed diploid genotypes 
 ```
 
