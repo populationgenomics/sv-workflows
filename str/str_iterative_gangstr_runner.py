@@ -60,6 +60,9 @@ def main(
         ref_fasta = (
             'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
+    else:
+        ref_fasta = reference_path('broad/ref_fasta')
+    if dataset == 'tob-wgs':
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[dataset],
@@ -68,7 +71,6 @@ def main(
             meta={'sequence_type': 'genome', 'source': 'nagim'},
         )
     else:
-        ref_fasta = reference_path('broad/ref_fasta')
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[dataset],
