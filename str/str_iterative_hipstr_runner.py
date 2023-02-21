@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error
+# pylint: disable=import-error,broad-exception-raised
 
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option. 
@@ -12,7 +12,6 @@ pip install sample-metadata hail click
 """
 import logging
 
-import os
 import click
 from sample_metadata.apis import AnalysisApi, SampleApi
 from sample_metadata.model.analysis_type import AnalysisType
