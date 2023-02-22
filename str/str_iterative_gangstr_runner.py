@@ -68,7 +68,7 @@ def main(
             projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
-            meta={'sequence_type': 'genome', 'source': 'nagim'},
+            meta={'sequencing_type': 'genome', 'source': 'nagim'},
         )
     else:
         analysis_query_model = AnalysisQueryModel(
@@ -76,7 +76,7 @@ def main(
             projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
-            meta={},
+            meta={'sequencing_type': 'genome'},
         )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
