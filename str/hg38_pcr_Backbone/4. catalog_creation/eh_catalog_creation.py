@@ -1,0 +1,11 @@
+from str_analysis.convert_gangstr_spec_to_expansion_hunter_variant_catalog import process_variant_catalog
+
+process_variant_catalog("catalogs/gangstr_catalog_hg38_backbone_untrimmed_0_based.bed", "catalogs/eh_catalog_hg38_backbone_trimmed_1_based.json")
+
+
+from str_analysis.convert_expansion_hunter_variant_catalog_to_gangstr_spec import process_variant_catalog
+process_variant_catalog("catalogs/eh_catalog_hg38_backbone_trimmed_1_based.json", "catalogs/gangstr_catalog_hg38_backbone_trimmed_0_based.bed")
+
+
+
+

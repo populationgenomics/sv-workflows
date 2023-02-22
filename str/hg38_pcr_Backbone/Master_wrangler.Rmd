@@ -1,0 +1,236 @@
+---
+title: "trf_output"
+author: "Hope"
+date: "15/02/2023"
+output: html_document
+---
+
+```{r}
+library('rjson')
+library('spgs')
+library(readxl)
+```
+
+```{r}
+#reads in dictionary value of locusName: TRF motif metrics output
+trf_output = fromJSON(file = "TRF_find_motif/filtered_trf_output_modified.txt") %>% as.data.frame() %>% gather() 
+trf_output = trf_output %>% mutate (key = case_when(key == "X16PTEL06"~ "16PTEL06",
+                                       key == "X18QTEL11"~ "18QTEL11",
+                                       key == "X2QTEL47" ~ "2QTEL47",
+                                       key == "X4PTEL04"~ "4PTEL04",
+                                       key == "MFD424.TTTA003"~ "MFD424-TTTA003",
+                                       key == "MFD442.GTTT002" ~ "MFD442-GTTT002",
+                                       key == "MFD455.AAT052"~"MFD455-AAT052",
+                                       TRUE ~ key))
+```
+`
+
+```{r}
+#read in PCR sequences for each locus 
+fasta = read_excel("UCSC_insilicoPCR/482_loci_with_primers_UCSC_remove_fix_alt.xlsx") %>% select(-...1)
+fasta$coordinate = gsub("\r\n", " ", fasta$coordinate)
+fasta$coordinate = str_trim(fasta$coordinate, side = "both")
+
+#there's a random pattern of white space that separates the PCR sequence, so I had to separate everything and then recombine, probably a better way to do this! 
+fasta = fasta %>% filter(coordinate != "no match")%>% separate(coordinate, c("coordinates", "PCR_length", "forward_primer", "reverse_primer", "PCR_sequence_1", "PCR_sequence_2", "PCR_sequence_3", "PCR_sequence_4", "PCR_sequence_5", "PCR_sequence_6", "PCR_sequence_7", "PCR_sequence_8"), sep = " ")
+
+fasta = fasta %>% mutate(PCR_sequence_2 = replace_na(PCR_sequence_2, ""),
+                  PCR_sequence_3 = replace_na(PCR_sequence_3, ""),
+                  PCR_sequence_4 = replace_na(PCR_sequence_4, ""),
+                  PCR_sequence_5 = replace_na(PCR_sequence_5, ""),
+                  PCR_sequence_6 = replace_na(PCR_sequence_6, ""),
+                  PCR_sequence_7 = replace_na(PCR_sequence_7, ""),
+                  PCR_sequence_8 = replace_na(PCR_sequence_8, "")
+  
+)
+
+fasta$PCR_sequence = paste(fasta$PCR_sequence_1, fasta$PCR_sequence_2, fasta$PCR_sequence_3, fasta$PCR_sequence_4, fasta$PCR_sequence_5, fasta$PCR_sequence_6, fasta$PCR_sequence_7, fasta$PCR_sequence_8)
+
+fasta$PCR_sequence = gsub(" ", "", fasta$PCR_sequence)
+
+#remove unnecc variables 
+fasta = fasta %>% select(-PCR_sequence_1, -PCR_sequence_2, - PCR_sequence_3, -PCR_sequence_4, -PCR_sequence_5, -PCR_sequence_6, -PCR_sequence_7, -PCR_sequence_8, -forward_primer, -reverse_primer)
+
+fasta$PCR_length = gsub("bp", "", fasta$PCR_length)
+```
+
+```{r}
+#combine the PCR sequences with TRF output data
+fasta = merge(trf_output, fasta, all.y = TRUE, by.x = "key", by.y = "alternateName")
+
+#separate trf metrics output into various attributes 
+fasta = fasta %>% separate(value, c("trf_start_index", "trf_end_index", "trf_period", "trf_num_repeats", "trf_size_consensus", "trf_percent_match", "trf_percent_indels", "trf_alignment", "trf_percent_composition_1", "trf_percent_composition_2", "trf_percent_composition_3", "trf_percent_composition_4", "trf_entropy", "trf_motif", "trf_repeat_sequence"), sep = " ")
+
+#categorise TRF outputs based on sense of the strand 
+fasta= fasta %>% mutate(sense = case_when(
+  grepl("-", coordinates)~"antisense",
+  grepl("+", coordinates)~ "sense",
+  TRUE ~ "nosense"
+))
+
+#new variables start_coordinate_PCR and end_coordinate_PCR
+fasta = fasta %>% separate(coordinates, c("chr", "coordinates"), sep = ":") %>% separate(coordinates, c("start_coordinate_PCR", "end_coordinate_PCR"), sep = "[+|-]") 
+
+fasta$chr = gsub(">", "", fasta$chr)
+
+fasta$trf_start_index = as.numeric(fasta$trf_start_index)
+fasta$trf_end_index = as.numeric(fasta$trf_end_index)
+fasta$end_coordinate_PCR = as.numeric(fasta$end_coordinate_PCR)
+fasta$start_coordinate_PCR = as.numeric(fasta$start_coordinate_PCR)
+
+
+#create new variables representing the catalog_start_coordinate and catalog_end_coordinate. catalog refers to the coordinates for the STR locus catalog. So the start and end coordinates should be the start and end of the STR regions 
+
+fasta = fasta %>% mutate(catalog_start_coordinate_0_based = case_when(
+  sense == "sense" ~ start_coordinate_PCR + trf_start_index-2, 
+  sense== "antisense" ~ end_coordinate_PCR - trf_end_index
+),
+  catalog_end_coordinate = case_when(
+sense == "sense"  ~start_coordinate_PCR + trf_end_index -1,
+sense == "antisense" ~ end_coordinate_PCR - trf_start_index+1
+
+  )
+)
+
+#STRs defined on antisense strands need a bit of extra work to polish. 
+
+## found the reverse complement of the repeat_sequence identified by TRF for each STR defined on antisense strand 
+fasta = fasta %>% mutate (trf_repeat_sequence = case_when(
+                  sense == "antisense"~ reverseComplement(trf_repeat_sequence),
+                  TRUE ~ trf_repeat_sequence)  
+                  )
+
+## Need to run TRF to redefine motifs on the antisense strand so --> creation of trf input
+
+#trf_input = fasta %>% filter(sense == "antisense") %>% select(chr,catalog_start_coordinate_0_based, catalog_end_coordinate, trf_repeat_sequence)
+
+#trf_input$name = paste(">",trf_input$chr,":" ,trf_input$catalog_start_coordinate_0_based, "-", trf_input$catalog_end_coordinate, sep = "")
+#trf_input = trf_input %>% select(name, trf_repeat_sequence)
+#write.table(trf_input, file = "trf_input_antisense.txt", sep = "\n", row.names = FALSE, quote = FALSE)
+
+fasta = fasta %>% mutate(catalog_start_coordinate_1_based = catalog_start_coordinate_0_based+1)
+```
+
+```{r}
+trf_output_antisense = read.csv("redefining_motifs_on_antisense/trf_output_antisense.txt") %>% separate(sequence, c("chr","coordinates" ), sep = ":") %>% separate(coordinates, c("catalog_start_coordinate_0_based", "catalog_end_coordinate"), sep = "-") %>% rename("updated_motif" = "motif")
+```
+
+
+```{r}
+#Update fasta dataframe with redefined antisense motifs 
+fasta = merge(fasta, trf_output_antisense, by = c("chr", "catalog_start_coordinate_0_based", "catalog_end_coordinate"), all.x = TRUE)
+```
+
+```{r}
+fasta = fasta %>% mutate(trf_motif = case_when(sense == "antisense"~ updated_motif,
+                                       TRUE ~trf_motif))
+fasta = fasta %>% select(-updated_motif)
+
+```
+
+```{r}
+#gangstr catalog creation
+#gangstr_catalog = fasta %>% select(chr,catalog_start_coordinate_1_based, catalog_end_coordinate, trf_motif) %>% mutate(motif_len= nchar(trf_motif)) %>% select(chr, catalog_start_coordinate_1_based, catalog_end_coordinate, motif_len, trf_motif)
+
+#write.table(gangstr_catalog, file = "catalog_creation/atalogs/gangstr_catalog_hg38_backbone_1_based.bed", sep = "\t", row.names = FALSE, quote = FALSE)
+```
+
+
+```{r}
+##bed file for fermikit filtering
+
+#fermikit_bed_1 = fasta %>% mutate(flank_1_f= start_coordinate_PCR-1, flank_1_r = catalog_start_coordinate_0_based-15) %>% select(chr, flank_1_f, flank_1_r) %>% filter(flank_1_f <=flank_1_r)
+
+#fermikit_bed_2 = fasta %>% mutate(flank_1_f =catalog_end_coordinate+15, flank_1_r = end_coordinate_PCR) %>% select(chr, flank_1_f, flank_1_r)%>% filter(flank_1_f <=flank_1_r)
+#write.table(rbind(fermikit_bed_1, fermikit_bed_2), file = "fermikit_upstream_downstream_regions_hg38.bed", sep = "\t", row.names = FALSE, quote = FALSE)
+```
+
+
+```{r}
+#generate hg19 input for fermikit intersection
+
+#fermikit_liftover = read.table("fermikit_upstream_downstream_regions_hg38_liftover_to_hg19.bed", header = F, sep = "\t")
+#fermikit_input_hg19 = fermikit_liftover %>% mutate(V1= gsub("chr","", V1)) %>% select(V1, V2, V3)
+#write.table(fermikit_input_hg19, file = "fermikit_upstream_downstream_regions_hg19.bed", sep = "\t", row.names = FALSE, quote = FALSE)
+```
+
+
+```{r}
+fermikit_indels = read.table("263_all_samples_intersect.vcf", sep = "\t", header = TRUE) %>% gather("sample_id", "gt", 10:272) %>% rename("start_coordinate_indel_hg19" = POS, "chr" = CHROM) %>% mutate(end_coordinate_indel_hg19 = start_coordinate_indel_hg19 +nchar(REF)-1,chr = paste("chr", chr, sep = "") ) %>% select(chr, start_coordinate_indel_hg19, end_coordinate_indel_hg19, sample_id, gt) 
+
+#fermikit_indels %>% select(chr, start_coordinate, end_coordinate) %>% write.table(file = "fermikit_indel_coordinates_hg19.bed", sep = "\t", row.names = FALSE, quote = FALSE) #note hg19 - must liftover back to hg38 to merge with the `fasta` dataframe 
+
+fermikit_indels_hg38 = read.table("fermikit_indel_coordinates_hg19_liftover_to_hg38.bed", sep = "\t", header = FALSE) %>% select(-V5)%>% rename("chr" = V1, "start_coordinate_indel_hg38" = V2, "end_coordinate_indel_hg38"= V3) %>% separate(V4, c("chr_hg19", "coordinates"), sep = ":") %>% separate(coordinates, c("start_coordinate_indel_hg19", "end_coordinate_indel_hg19"), sep = "-") %>% mutate(start_coordinate_indel_hg19 = as.numeric(start_coordinate_indel_hg19)-1) %>% distinct()
+
+fermikit_indels_hg38 = merge(fermikit_indels, fermikit_indels_hg38, by= c("chr", "start_coordinate_indel_hg19", "end_coordinate_indel_hg19"))  %>% select(chr, start_coordinate_indel_hg38, end_coordinate_indel_hg38, sample_id,gt)
+
+#fermikit_indels_hg38 %>% select(chr, start_coordinate_indel_hg38, end_coordinate_indel_hg38) %>% write.table(file = "fermikit_indel_coordinates_hg38_clean.bed", sep = "\t", row.names = FALSE, quote = FALSE) 
+
+#fasta %>% select(chr, start_coordinate_PCR, end_coordinate_PCR) %>% write.table(file = "fasta_pcr_coordinates.bed", sep = "\t", row.names = FALSE, quote = FALSE)
+
+#bedtools intersect fasta_pcr_coordinates.bed with fermikit_indel_coordinates_hg38_clean.bed > output is indel_fasta_intersect.bed
+
+indel_fasta_intersect = read.table("indel_fasta_intersect.bed", sep ="\t", header = FALSE) %>% select(-V4)%>% rename("chr" = V1,"start_coordinate_indel_hg38" = V2, "end_coordinate_indel_hg38" = V3, "start_coordinate_PCR" = V5, "end_coordinate_PCR" = V6) %>% distinct(chr, start_coordinate_indel_hg38, end_coordinate_indel_hg38, start_coordinate_PCR, end_coordinate_PCR)
+
+fermikit_indels_hg38_clean = merge(fermikit_indels_hg38, indel_fasta_intersect, by = c("chr", "start_coordinate_indel_hg38", "end_coordinate_indel_hg38"), all.x = TRUE) %>% rename("indel_gt"= gt)%>% mutate(indel_gt = case_when (indel_gt == "0/0" ~0, TRUE ~ 1)) %>% group_by(sample_id, start_coordinate_PCR, end_coordinate_PCR) %>% summarise(indel_gt = sum(indel_gt)) %>% filter(!is.na(start_coordinate_PCR) & !is.na(end_coordinate_PCR)) %>% ungroup () 
+
+sgdp_metadata = read.table("SGDP_metadata.279public.21signedLetter.44Fan.samples.txt", header = TRUE, sep = "\t") %>% mutate(SGDP_ID=gsub("-", ".", SGDP_ID)) %>% select(SGDP_ID, Sample_ID)
+
+fermikit_indels_hg38_clean = merge(fermikit_indels_hg38_clean, sgdp_metadata, by.x = "sample_id", by.y = "SGDP_ID",all.x = TRUE) %>% rename("hgdp_sample_id"= "Sample_ID")
+```
+
+```{r}
+capillary_genotypes = read.csv("capillary_gt/capillary_genotypes_with_locusNames_rosenberg2005.csv") %>% select(-X,-locus_id, -population_id, - geographic_population, -predefined_region)
+
+
+fasta_with_capillary = merge(fasta, capillary_genotypes, by.x = "key", by.y = "alternateName", all.y = TRUE) %>% rename("PCR_1" = genotype_1, "PCR_2" = genotype_2, "hgdp_sample_id" = "sample_id")
+
+fasta_with_capillary$PCR_1 = na_if(fasta_with_capillary$PCR_1, -9)
+fasta_with_capillary$PCR_2 = na_if(fasta_with_capillary$PCR_2, -9)
+fasta_with_capillary$trf_num_repeats = as.numeric(fasta_with_capillary$trf_num_repeats)
+fasta_with_capillary$PCR_length = as.numeric(fasta_with_capillary$PCR_length)
+
+## working with fermikit calls
+excluded_calls = merge(fasta_with_capillary, fermikit_indels_hg38_clean, by = c("hgdp_sample_id", "start_coordinate_PCR", "end_coordinate_PCR"), all.x = TRUE)%>% filter(indel_gt!= 0 |is.na(indel_gt)) 
+```
+
+```{r}
+eh = read.csv("~/Downloads/str_sensitivity-analysis_sgdp_410_loci_trimmed_eh_trimmed_0_based.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
+
+#%>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+
+gangstr = read.delim("~/Downloads/str_sensitivity-analysis_sgdp_410_loci_trimmed_gangstr_trimmed_1_based.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+
+eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id"= "sample_id")
+
+fasta_with_capillary_eh_gangstr = merge(eh_gangstr, fasta_with_capillary, by = c("cpg_id", "chr", "catalog_start_coordinate_0_based"), all.y = TRUE)
+
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(trf_num_repeats = (end -catalog_start_coordinate_0_based)/as.numeric(trf_period))
+
+fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, excluded_calls,by = c("cpg_id", "start_coordinate_PCR", "end_coordinate_PCR"))
+
+```
+
+```{r}
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(capillary_allele_1 = (trf_num_repeats) + (PCR_1 -PCR_length)/nchar(trf_motif),
+                               capillary_allele_2 = (trf_num_repeats) + (PCR_2 -PCR_length)/nchar(trf_motif) )
+
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = as.numeric(e_allele_1)+as.numeric(e_allele_2), 
+                 g_alleles = as.numeric(g_allele_2)+as.numeric(g_allele_1),
+                 capillary_alleles = floor(capillary_allele_1) + floor(capillary_allele_2)) #summed diploid genotypes 
+```
+
+```{r}
+fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!is.na(capillary_alleles))
+fasta_with_capillary_eh_gangstr %>% filter(e_alleles == g_alleles) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(e_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(g_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+```
+
+```{r}
+pemberton = read.table("Pemberton_AdditionalFile1_11242009.txt", sep = "\t", header = TRUE) 
+pemberton = merge(fasta, pemberton, by.x = "key", by.y = "alternateName", all.x = TRUE)
+pemberton = pemberton %>% separate(repeatStructureInRefSeq, c("motif", "pemberton_repeat_number"), sep = "\\)")
+pemberton %>% select(key, trf_num_repeats, pemberton_repeat_number) %>% rename("TRF_num_repeats_hg38" = trf_num_repeats, "Pemberton_2009_num_repeats" = pemberton_repeat_number)
+```
+
