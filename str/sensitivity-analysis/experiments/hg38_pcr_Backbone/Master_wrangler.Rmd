@@ -135,6 +135,7 @@ fasta = fasta %>% select(-updated_motif)
 
 
 ```{r}
+#fasta %>% select(chr,catalog_start_coordinate_0_based, catalog_end_coordinate,trf_num_repeats, trf_motif) %>% write.table(file = "STR_regions_hg38backbone_0_based.bed", sep = "\t", row.names = FALSE, quote = FALSE)
 fermikit_indels = read.table("263_all_samples_intersect.vcf", sep = "\t", header = TRUE) %>% gather("sample_id", "gt", 10:272) %>% rename("start_coordinate_indel_hg19" = POS, "chr" = CHROM) %>% mutate(end_coordinate_indel_hg19 = start_coordinate_indel_hg19 +nchar(REF)-1,chr = paste("chr", chr, sep = "") ) %>% select(chr, start_coordinate_indel_hg19, end_coordinate_indel_hg19, sample_id, gt) 
 
 #fermikit_indels %>% select(chr, start_coordinate, end_coordinate) %>% write.table(file = "fermikit_indel_coordinates_hg19.bed", sep = "\t", row.names = FALSE, quote = FALSE) #note hg19 - must liftover back to hg38 to interseect 
