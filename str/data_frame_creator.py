@@ -266,7 +266,7 @@ def hipstr_csv_writer(input_dir):
 @click.option(
     '--output-name-hipstr', help='Output file name for HipSTR eg hipstr.csv'
 )
-def main(input_dir_eh, input_dir_gangstr, ,input_dir_hipstr, output_name_eh, output_name_gangstr, output_name_hipstr):
+def main(input_dir_eh, input_dir_gangstr,input_dir_hipstr, output_name_eh, output_name_gangstr, output_name_hipstr):
     # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
