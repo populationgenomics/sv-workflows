@@ -214,42 +214,42 @@ def hipstr_csv_writer(input_dir):
     if isinstance(file, GSPath):
         file.copy(file.name)
         file = file.name
-        reader = VCFReader(file)
-        for variant in reader:
-            chr = variant.CHROM
-            ref = variant.REF
-            pos = variant.POS
-            id = variant.ID
-            start = variant.INFO.get('START')
-            end = variant.INFO.get('END')
-            period = variant.INFO.get('PERIOD')
-            samples_dict = {}
-            i = 0
-            while i < len(reader.samples):
-                sample = reader.samples[i]
-                gb = variant.format("GB")[i]
-                q = variant.format("Q")[i][0]
-                samples_dict[sample] = (gb, q)
-                i += 1
-            for sample in samples_dict:
-                gb, q = samples_dict[sample]
-                csv = csv + (
-                    ','.join(
-                        [
-                            sample,
-                            chr,
-                            ref,
-                            str(pos),
-                            id,
-                            str(start),
-                            str(end),
-                            str(period),
-                            gb,
-                            str(q),
-                        ]
-                    )
-                    + '\n'
+    reader = VCFReader(file)
+    for variant in reader:
+        chr = variant.CHROM
+        ref = variant.REF
+        pos = variant.POS
+        id = variant.ID
+        start = variant.INFO.get('START')
+        end = variant.INFO.get('END')
+        period = variant.INFO.get('PERIOD')
+        samples_dict = {}
+        i = 0
+        while i < len(reader.samples):
+            sample = reader.samples[i]
+            gb = variant.format("GB")[i]
+            q = variant.format("Q")[i][0]
+            samples_dict[sample] = (gb, q)
+            i += 1
+        for sample in samples_dict:
+            gb, q = samples_dict[sample]
+            csv = csv + (
+                ','.join(
+                    [
+                        sample,
+                        chr,
+                        ref,
+                        str(pos),
+                        id,
+                        str(start),
+                        str(end),
+                        str(period),
+                        gb,
+                        str(q),
+                    ]
                 )
+                + '\n'
+            )
 
     return csv
 
