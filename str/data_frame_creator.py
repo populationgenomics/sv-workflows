@@ -232,8 +232,8 @@ def hipstr_csv_writer(input_dir):
                 q = variant.format('Q')[i][0]
                 samples_dict[sample] = (gb, q)
                 i += 1
-            for sample in samples_dict:
-                gb, q = samples_dict[sample]
+            for sample, content in samples_dict.items():
+                gb, q = content
                 csv = csv + (
                     ','.join(
                         [
