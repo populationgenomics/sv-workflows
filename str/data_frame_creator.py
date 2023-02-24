@@ -228,7 +228,7 @@ def hipstr_csv_writer(input_dir):
             for index, sample in enumerate(reader.samples):
                 gb = variant.format('GB')[index]
                 q = variant.format('Q')[index][0]
-                samples_dict[sample] = (gb,q)
+                samples_dict[sample] = (gb, q)
             for sample, content in samples_dict.items():
                 gb, q = content
                 csv = csv + (
