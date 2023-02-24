@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error, too-many-locals, broad-exception-raised, ungrouped-imports, condsider-using-dict-items
+# pylint: disable=import-error, too-many-locals, broad-exception-raised, ungrouped-imports,
 
 """
 This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter) or .TSV (GangSTR) format that can be read into R. 
@@ -232,8 +232,8 @@ def hipstr_csv_writer(input_dir):
                 q = variant.format('Q')[i][0]
                 samples_dict[sample] = (gb, q)
                 i += 1
-            for sample, content in samples_dict.items():
-                gb, q = content
+            for sample in samples_dict:
+                gb, q = samples_dict[sample]
                 csv = csv + (
                     ','.join(
                         [
