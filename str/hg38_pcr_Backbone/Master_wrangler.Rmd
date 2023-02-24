@@ -254,6 +254,15 @@ fasta_with_capillary_eh_gangstr%>% filter(e_alleles!= capillary_alleles) %>% gro
 
 ```{r}
 fasta_with_capillary_eh_gangstr%>% filter(key == "GATA138G03") %>% select(e_alleles, capillary_alleles) 
+
+
+data = read.csv("~/Desktop/capillary_genotypes_with_coordinates.csv") %>% mutate(genotypes = genotype_1+genotype_2) %>% select(cpg_id, genotypes, nameInGenotypeDataFile)
+merge(data, fasta_with_capillary_eh_gangstr, by = c("cpg_id", "nameInGenotypeDataFile"))
+
+
 fasta_with_capillary_eh_gangstr%>% filter(e_alleles == capillary_alleles) %>% group_by(key)%>% summarise(n=n())%>% arrange(desc(n))
+```
+```{r}
+
 ```
 
