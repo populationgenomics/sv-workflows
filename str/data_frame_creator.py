@@ -225,15 +225,12 @@ def hipstr_csv_writer(input_dir):
             end = variant.INFO.get('END')
             period = variant.INFO.get('PERIOD')
             samples_dict = {}
-            i = 0
-            while i < len(reader.samples):
-                sample = reader.samples[i]
-                gb = variant.format('GB')[i]
-                q = variant.format('Q')[i][0]
-                samples_dict[sample] = (gb, q)
-                i += 1
-            for sample in samples_dict:
-                gb, q = samples_dict[sample]
+            for index, sample in enumerate(reader.samples):
+                gb = variant.format('GB')[index]
+                q = variant.format('Q')[index][0]
+                samples_dict[sample] = (gb,q)
+            for sample, content in samples_dict.items():
+                gb, q = content
                 csv = csv + (
                     ','.join(
                         [
