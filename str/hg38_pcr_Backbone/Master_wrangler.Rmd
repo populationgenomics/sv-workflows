@@ -196,11 +196,11 @@ excluded_calls = merge(fasta_with_capillary, fermikit_indels_hg38_clean, by = c(
 ```
 
 ```{r}
-eh = read.csv("~/Downloads/str_sensitivity-analysis_sgdp_410_loci_trimmed_eh_trimmed_0_based.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
+eh = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_eh.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
 
 #%>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
-gangstr = read.delim("~/Downloads/str_sensitivity-analysis_sgdp_410_loci_trimmed_gangstr_trimmed_1_based.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+gangstr = read.delim("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_gangstr.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
 eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id"= "sample_id")
 
@@ -216,6 +216,18 @@ fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, exc
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(capillary_allele_1 = (trf_num_repeats) + (PCR_1 -PCR_length)/nchar(trf_motif),
                                capillary_allele_2 = (trf_num_repeats) + (PCR_2 -PCR_length)/nchar(trf_motif) )
 
+fasta_with_capillary_eh_gangstr$trf_num_repeats = as.numeric(fasta_with_capillary_eh_gangstr$trf_num_repeats)
+fasta_with_capillary_eh_gangstr= fasta_with_capillary_eh_gangstr %>% mutate(e_allele_amplicon_length_1 = (as.numeric(e_allele_1) -trf_num_repeats)*nchar(trf_motif) + PCR_length, 
+                                           e_allele_amplicon_length_2 = (as.numeric(e_allele_2) -trf_num_repeats)*nchar(trf_motif) + PCR_length,
+                                           g_allele_amplicon_length_1 = (as.numeric(g_allele_1) -trf_num_repeats)*nchar(trf_motif) + PCR_length,
+                                           g_allele_amplicon_length_2 = (as.numeric(g_allele_2) -trf_num_repeats)*nchar(trf_motif) + PCR_length,
+  
+)
+
+fasta_with_capillary_eh_gangstr= fasta_with_capillary_eh_gangstr %>% mutate(e_allele_amplicon_lengths = e_allele_amplicon_length_1 + e_allele_amplicon_length_2,
+                                           g_allele_amplicon_lengths = g_allele_amplicon_length_1 + g_allele_amplicon_length_2,
+                                           PCR_cap_lengths = PCR_1 + PCR_2)
+
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = as.numeric(e_allele_1)+as.numeric(e_allele_2), 
                  g_alleles = as.numeric(g_allele_2)+as.numeric(g_allele_1),
                  capillary_alleles = floor(capillary_allele_1) + floor(capillary_allele_2)) #summed diploid genotypes 
@@ -224,14 +236,24 @@ fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_a
 ```{r}
 fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!is.na(capillary_alleles))
 fasta_with_capillary_eh_gangstr %>% filter(e_alleles == g_alleles) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
-(fasta_with_capillary_eh_gangstr %>% filter(e_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
-(fasta_with_capillary_eh_gangstr %>% filter(g_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+fasta_with_capillary_eh_gangstr %>% filter(e_allele_amplicon_lengths == g_allele_amplicon_lengths) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
+
+
+(fasta_with_capillary_eh_gangstr %>% filter(e_alleles== capillary_alleles|e_alleles == g_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(e_allele_amplicon_lengths== PCR_cap_lengths) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+
+
+(fasta_with_capillary_eh_gangstr %>% filter(g_alleles== capillary_alleles|e_alleles == g_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(g_allele_amplicon_lengths== PCR_cap_lengths) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+
 ```
 
 ```{r}
-pemberton = read.table("Pemberton_AdditionalFile1_11242009.txt", sep = "\t", header = TRUE) 
-pemberton = merge(fasta, pemberton, by.x = "key", by.y = "alternateName", all.x = TRUE)
-pemberton = pemberton %>% separate(repeatStructureInRefSeq, c("motif", "pemberton_repeat_number"), sep = "\\)")
-pemberton %>% select(key, trf_num_repeats, pemberton_repeat_number) %>% rename("TRF_num_repeats_hg38" = trf_num_repeats, "Pemberton_2009_num_repeats" = pemberton_repeat_number)
+fasta_with_capillary_eh_gangstr%>% filter(e_alleles!= capillary_alleles) %>% group_by(nameInGenotypeDataFile) %>% summarise(n= n()) %>% arrange(desc(n))
+```
+
+```{r}
+fasta_with_capillary_eh_gangstr%>% filter(key == "GATA138G03") %>% select(e_alleles, capillary_alleles) 
+fasta_with_capillary_eh_gangstr%>% filter(e_alleles == capillary_alleles) %>% group_by(key)%>% summarise(n=n())%>% arrange(desc(n))
 ```
 
