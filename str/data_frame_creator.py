@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error, too-many-locals, broad-exception-raised, ungrouped-imports
+# pylint: disable=import-error, too-many-locals, broad-exception-raised, ungrouped-imports,
 
 """
 This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter) or .TSV (GangSTR) format that can be read into R. 
@@ -191,14 +191,86 @@ def gangstr_tsv_writer(input_dir):
     return tsv
 
 
+def hipstr_csv_writer(input_dir):
+    """Creates a CSV file containing dataframe of merged HipSTR VCFs"""
+    files = to_path(input_dir).glob('*.vcf.gz')  # HipSTR output is a merged vcf.gz file
+    csv = (
+        ','.join(
+            [
+                'sample_id',
+                'h_chr',
+                'h_ref',
+                'h_pos',
+                'h_id',
+                'h_start',
+                'h_end',
+                'h_period',
+                'h_gb',
+                'h_q',
+            ]
+        )
+        + '\n'
+    )
+    for file in files:
+        if isinstance(file, GSPath):
+            file.copy(file.name)
+            file = file.name
+        reader = VCFReader(file)
+        for variant in reader:
+            chr = variant.CHROM
+            ref = variant.REF
+            pos = variant.POS
+            id = variant.ID
+            start = variant.INFO.get('START')
+            end = variant.INFO.get('END')
+            period = variant.INFO.get('PERIOD')
+            samples_dict = {}
+            for index, sample in enumerate(reader.samples):
+                gb = variant.format('GB')[index]
+                q = variant.format('Q')[index][0]
+                samples_dict[sample] = (gb, q)
+            for sample, content in samples_dict.items():
+                gb, q = content
+                csv = csv + (
+                    ','.join(
+                        [
+                            sample,
+                            chr,
+                            ref,
+                            str(pos),
+                            id,
+                            str(start),
+                            str(end),
+                            str(period),
+                            gb,
+                            str(q),
+                        ]
+                    )
+                    + '\n'
+                )
+
+    return csv
+
+
 @click.command()
 @click.option('--input-dir-eh', help='Input directory for ExpansionHunter VCFs')
 @click.option('--input-dir-gangstr', help='Input directory for GangSTR VCFs')
+@click.option(
+    '--input-dir-hipstr', help='Input directory for HipSTR merged VCF.gz file'
+)
 @click.option('--output-name-eh', help='Output file name for ExpansionHunter eg eh.csv')
 @click.option(
     '--output-name-gangstr', help='Output file name for GangSTR eg gangstr.tsv'
 )
-def main(input_dir_eh, input_dir_gangstr, output_name_eh, output_name_gangstr):
+@click.option('--output-name-hipstr', help='Output file name for HipSTR eg hipstr.csv')
+def main(
+    input_dir_eh,
+    input_dir_gangstr,
+    input_dir_hipstr,
+    output_name_eh,
+    output_name_gangstr,
+    output_name_hipstr,
+):
     # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -210,12 +282,15 @@ def main(input_dir_eh, input_dir_gangstr, output_name_eh, output_name_gangstr):
     )
     j = b.new_python_job(name='EH dataframe writer')
     g = b.new_python_job(name='GangSTR dataframe writer')
+    h = b.new_python_job(name='HipSTR dataframe writer')
 
     eh_csv = j.call(eh_csv_writer, input_dir_eh)
     gangstr_tsv = g.call(gangstr_tsv_writer, input_dir_gangstr)
+    hipstr_csv = h.call(hipstr_csv_writer, input_dir_hipstr)
 
     b.write_output(eh_csv.as_str(), output_path(output_name_eh, 'analysis'))
     b.write_output(gangstr_tsv.as_str(), output_path(output_name_gangstr, 'analysis'))
+    b.write_output(hipstr_csv.as_str(), output_path(output_name_hipstr, 'analysis'))
 
     b.run(wait=False)
 
