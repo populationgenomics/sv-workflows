@@ -204,12 +204,11 @@ gangstr = read.delim("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_ga
 
 eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id"= "sample_id")
 
-fasta_with_capillary_eh_gangstr = merge(eh_gangstr, fasta_with_capillary, by = c("cpg_id", "chr", "catalog_start_coordinate_0_based"), all.y = TRUE)
+fasta_with_capillary_eh_gangstr = merge(eh_gangstr, fasta_with_capillary, by = c("cpg_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE)
 
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(trf_num_repeats = (end -catalog_start_coordinate_0_based)/as.numeric(trf_period))
 
 fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, excluded_calls,by = c("cpg_id", "start_coordinate_PCR", "end_coordinate_PCR"))
-
 ```
 
 ```{r}
@@ -239,7 +238,7 @@ fasta_with_capillary_eh_gangstr %>% filter(e_alleles == g_alleles) %>% count()/ 
 fasta_with_capillary_eh_gangstr %>% filter(e_allele_amplicon_lengths == g_allele_amplicon_lengths) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
 
 
-(fasta_with_capillary_eh_gangstr %>% filter(e_alleles== capillary_alleles|e_alleles == g_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
+(fasta_with_capillary_eh_gangstr %>% filter(e_alleles== capillary_alleles|e_alleles+2 == capillary_alleles|e_alleles+4 == capillary_alleles|e_alleles+6 == capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
 (fasta_with_capillary_eh_gangstr %>% filter(e_allele_amplicon_lengths== PCR_cap_lengths) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
 
 
@@ -248,21 +247,35 @@ fasta_with_capillary_eh_gangstr %>% filter(e_allele_amplicon_lengths == g_allele
 
 ```
 
-```{r}
-fasta_with_capillary_eh_gangstr%>% filter(e_alleles!= capillary_alleles) %>% group_by(nameInGenotypeDataFile) %>% summarise(n= n()) %>% arrange(desc(n))
-```
 
 ```{r}
-fasta_with_capillary_eh_gangstr%>% filter(key == "GATA138G03") %>% select(e_alleles, capillary_alleles) 
-
-
-data = read.csv("~/Desktop/capillary_genotypes_with_coordinates.csv") %>% mutate(genotypes = genotype_1+genotype_2) %>% select(cpg_id, genotypes, nameInGenotypeDataFile)
-merge(data, fasta_with_capillary_eh_gangstr, by = c("cpg_id", "nameInGenotypeDataFile"))
-
-
-fasta_with_capillary_eh_gangstr%>% filter(e_alleles == capillary_alleles) %>% group_by(key)%>% summarise(n=n())%>% arrange(desc(n))
+library(ggbeeswarm)
+library(ggforce)
+my_vec = fasta_with_capillary_eh_gangstr %>% distinct(key)
+my_vec = my_vec$key
+split_keys = split(my_vec,             # Applying split() function
+      ceiling(seq_along(my_vec) / 50))
+unlist(split_keys[1]) 
+fasta_with_capillary_eh_gangstr %>% select(key, e_alleles,g_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",5:6)  %>%filter(key %in%unlist(split_keys[1])  ) %>%ggplot(aes(x = key, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
+geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-30,10,1))
 ```
 ```{r}
+# Create the function.
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
 
+keys_of_minus_2 = fasta_with_capillary_eh_gangstr %>% select(key, e_alleles,g_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles) %>% group_by(key) %>% mutate(max_EH_capillary = max(`EH-capillary`), min_EH_capillary = min(`EH-capillary`)) %>% filter(min_EH_capillary==max_EH_capillary & min_EH_capillary ==-2) %>% distinct(key)
+
+keys_100_concord = fasta_with_capillary_eh_gangstr %>% select(key, e_alleles,g_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles) %>% group_by(key) %>% mutate(max_EH_capillary = max(`EH-capillary`), min_EH_capillary = min(`EH-capillary`)) %>% filter(min_EH_capillary==max_EH_capillary & min_EH_capillary ==-0) %>% distinct(key)
+
+
+fasta %>% filter(key %in% keys_of_minus_2$key) 
+```
+
+
+```{r}
+fasta%>% filter(key %in% keys_100_concord$key)
 ```
 
