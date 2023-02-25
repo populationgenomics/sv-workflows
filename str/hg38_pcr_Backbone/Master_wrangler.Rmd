@@ -210,6 +210,13 @@ fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(trf
 
 fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, excluded_calls,by = c("cpg_id", "start_coordinate_PCR", "end_coordinate_PCR"))
 ```
+```{r}
+hipstr = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_hipstr.csv")%>% separate(h_gb, c("h_gb_1", "h_gb_2"), sep = "\\|") %>% mutate(h_gb_1 = as.numeric(h_gb_1), h_gb_2 = as.numeric(h_gb_2)) %>% mutate(h_allele_1 = (nchar(h_ref)+h_gb_1)/h_period, h_allele_2 = (nchar(h_ref)+h_gb_2)/h_period, h_alleles = floor(h_allele_1) + floor(h_allele_2)) %>% rename("key"= h_id,"hgdp_sample_id"= sample_id) %>% select(hgdp_sample_id, key, h_allele_1, h_allele_2, h_alleles)
+
+hipstr %>% select(hgdp_sample_id) %>%as.vector()%>% write.table("hgdp_sample_ids.txt", sep = ",", row.names = FALSE)
+
+merge(fasta_with_capillary_eh_gangstr, hipstr, by =c("hgdp_sample_id", "key")) %>% distinct(hgdp_sample_id)
+```
 
 ```{r}
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(capillary_allele_1 = (trf_num_repeats) + (PCR_1 -PCR_length)/nchar(trf_motif),
