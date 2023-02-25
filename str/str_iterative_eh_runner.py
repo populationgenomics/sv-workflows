@@ -121,7 +121,7 @@ def main(
             eh_output={
                 'vcf': '{root}.vcf',
                 'json': '{root}.json',
-                'realigned_bam': '{root}_realigned.bam',
+                'realigned.bam': '{root}_realigned.bam',
             }
         )
 
