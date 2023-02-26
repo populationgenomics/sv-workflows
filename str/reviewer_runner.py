@@ -13,7 +13,11 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
 from cpg_workflows.batch import get_batch
 
+<<<<<<< Updated upstream
 REF_FASTA = 'gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta'
+=======
+REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
+>>>>>>> Stashed changes
 
 config = get_config()
 
