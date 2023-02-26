@@ -42,7 +42,7 @@ def main(locus,catalog,input_dir,cpg_wgs_ids:list[str]):
             )  
     for cpg_id in cpg_wgs_ids: 
         #read in bam file from EH output
-        bam_input = b.read_input( f'{input_dir}/{cpg_id}_eh.realigned_bam')
+        bam_input = b.read_input( f'{input_dir}/{cpg_id}_eh.realigned.bam')
 
         #read in VCF from EH output
         vcf_input = b.read_input( f'{input_dir}/{cpg_id}_eh.vcf')
