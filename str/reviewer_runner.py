@@ -77,8 +77,8 @@ def main(locus,catalog,input_dir,cpg_wgs_ids:list[str]):
         reviewer_job.cpu(8)
         
         reviewer_job.declare_resource_group(ofile = {'svg': '{root}.'+f'{locus}.svg',
-                                               'metrics.tsv': '{root}.'+f'{locus}.metrics.tsv'
-                                            #   'phasing.tsv': '{root}.'+f'{locus}.phasing.tsv'
+                                               'metrics.tsv': '{root}.metrics.tsv',
+                                               'phasing.tsv': '{root}.phasing.tsv'
         })
 
         reviewer_job.command(f"""
