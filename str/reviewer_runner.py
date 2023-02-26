@@ -2,7 +2,7 @@
 
 """
 This script will output REViewer svg based on inputs: one/multiple CPG IDs and one locus, as defined in the variant catalog. 
-analysis-runner --access-level test --dataset hgdp --description "reviewer" --output-dir 'str/410_sgd_loci/reviewer' reviewer_runner.py --catalog =gs://cpg-hgdp-test/str/410_sgdp_loci/catalogs/eh_catalog_hg38_backbone_trimmed_0_based.json --locus=chr3-67969584-67969611-AAC --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_0_based_hg38_backbone CPG265538		
+analysis-runner --access-level test --dataset hgdp --description "reviewer" --output-dir 'str/410_sgd_loci/reviewer' reviewer_runner.py --catalog=gs://cpg-hgdp-test/str/410_sgdp_loci/catalogs/eh_catalog_hg38_backbone_trimmed_0_based.json --locus=chr3-67969584-67969611-AAC --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_0_based_hg38_backbone CPG265538		
 
 """
 import os
@@ -26,7 +26,7 @@ REVIEWER_IMAGE = config['images']['reviewer']
 @click.option('input-dir', help='GCP path to input-dir, includes gs://')
 @click.argument('cpg-wgs-ids',nargs =-1 )
 
-def main(cpg_wgs_ids:list[str], locus: str, catalog:str, input_dir: str):
+def main(locus,catalog,input_dir,cpg_wgs_ids:list[str]):
 
     # Initializing Batch
     b= get_batch()
