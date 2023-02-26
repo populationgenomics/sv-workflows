@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 """
-This script will output REViewer svg based on input (CPG ID) and locus ID, as defined in the variant catalog. 
-Do not use this if inputting multiple sample IDs or locus IDs
+This script will output REViewer svg based on inputs: one/multiple CPG IDs and one locus, as defined in the variant catalog. 
+
 """
 import os
 import click
 
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
+from cpg_utils.hail_batch import output_path
 from cpg_workflows.batch import get_batch
 
 REF_FASTA = 'gs://cpg-reference/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -20,56 +20,71 @@ SAMTOOLS_IMAGE = config['images']['samtools']
 REVIEWER_IMAGE = config['images']['reviewer']
 
 @click.command()
-@click.argument('id', )
-@click.argument('locus')
-@click.argument('catalog', 'GCP path to catalog')
-@click.argument('input-dir', 'GCP path to input-dir, includes gs://')
+@click.option('locus', help = 'Locus identifier as per catalog')
+@click.option('catalog', help='GCP path to catalog')
+@click.option('input-dir', help='GCP path to input-dir, includes gs://')
+@click.argument('cpg-wgs-ids',nargs =-1 )
 
-def main(id:list[str], locus: str, catalog:str, input_dir: str):
+def main(cpg_wgs_ids:list[str], locus: str, catalog:str, input_dir: str):
 
     # Initializing Batch
     b= get_batch()
-    samtools_job = b.new_job(name = f'Sorting and indexing')
-    samtools_job.image(SAMTOOLS_IMAGE)
-    samtools_job.storage('20G')
-    samtools_job.cpu(8) 
-
-    samtools_job.command(f"""
-
-    """)
-
-    var_inputs = b.read_input_group(**{'reads_bam': f'{input_dir}/'+id+ f'_EH_realigned_sorted.bam', 'vcf': f'{input_dir}/'+id +f'_EH.vcf',
-                                       'reads_bai': f'{input_dir}/'+id+ f'_EH_realigned_sorted.bam.bai'})
-
     ref = b.read_input_group(
-            **dict(
-                base=REF_FASTA,
-                catalog = catalog,
-                fai=REF_FASTA + '.fai',
-                dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-                + '.dict',
-            )
-        )  
+                **dict(
+                    base=REF_FASTA,
+                    catalog = catalog,
+                    fai=REF_FASTA + '.fai',
+                    dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
+                    + '.dict',
+                )
+            )  
+    for cpg_id in cpg_wgs_ids: 
+        #read in bam file from EH output
+        bam_input = b.read_input( f'{input_dir}/{cpg_id}_eh.realigned.bam')
 
-    # Adding a job and giving it a descriptive name.
-    reviewer_job = b.new_job(name = f'Visualising ' + locus)
-    reviewer_job.image(REVIEWER_IMAGE)
-    reviewer_job.storage('20G')
-    reviewer_job.cpu(8)
+        #read in VCF from EH output
+        vcf_input = b.read_input( f'{input_dir}/{cpg_id}_eh.vcf')
 
+        #BAM file must be sorted and indexed prior to inputting into REViewer 
+        samtools_job = b.new_job(name = f'Sorting and indexing {cpg_id}')
+        samtools_job.image(SAMTOOLS_IMAGE)
+        samtools_job.storage('20G')
+        samtools_job.cpu(8) 
+        samtools_job.declare_resource_group(
+            bam= {
+            'sorted.bam':'{root}.sorted.bam',
+            'sorted.bam.bai':'{root}.sorted.bam.bai'
+            }
+        )
 
-    reviewer_job.declare_resource_group(ofile = {'svg': '{root}.'+locus+'.svg',
-                                               'metrics.tsv': '{root}.metrics.tsv',
-                                               'phasing.tsv': '{root}.phasing.tsv'
+        samtools_job.command(f"""
+
+        echo "sorting {bam_input}";
+        samtools sort {bam_input} -o {samtools_job.bam['sorted.bam']};
+
+        echo "indexing {samtools_job.bam['sorted.bam']}";
+        samtools index {samtools_job.bam['sorted.bam']} -b -o {samtools_job.bam['sorted.bam.bai']};
+
+        """)
+
+        # REViewer job 
+        reviewer_job = b.new_job(name = f'Visualising {locus} for {cpg_id}')
+        reviewer_job.image(REVIEWER_IMAGE)
+        reviewer_job.depends_on(samtools_job)
+        reviewer_job.storage('20G')
+        reviewer_job.cpu(8)
+        
+        reviewer_job.declare_resource_group(ofile = {'svg': f'{root}.{locus}.svg',
+                                               'metrics.tsv': f'{root}.{locus}.metrics.tsv',
+                                               'phasing.tsv': f'{root}.{locus}.phasing.tsv'
         })
 
-    reviewer_job.command(f"""
-        ./REViewer-v0.2.7-linux_x86_64 --reads {var_inputs['reads_bam']} --vcf {var_inputs['vcf']} --reference {ref.base} --catalog {ref.catalog} --out {reviewer_job.ofile} --locus {locus}
-        """
-        )
+        reviewer_job.command(f"""
+            ./REViewer-v0.2.7-linux_x86_64 --reads {samtools_job.bam['sorted.bam']} --vcf {vcf_input} --reference {ref.base} --catalog {ref.catalog} --out {reviewer_job.ofile} --locus {locus}
+            """
+            )
     # output writing    
-    reviewer_out_fname = f'{locus}/{id}_{locus}_reviewer'
-    reviewer_output_path = f'gs://cpg-tob-wgs-test/hoptan-str/tob10/reviewer/{reviewer_out_fname}'
+    reviewer_output_path = output_path(f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis')
     b.write_output(reviewer_job.ofile, reviewer_output_path)
 
     b.run(wait=False)
