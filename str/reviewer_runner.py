@@ -20,9 +20,9 @@ config = get_config()
 SAMTOOLS_IMAGE = config['images']['samtools']
 REVIEWER_IMAGE = config['images']['reviewer']
 
-@click.option('locus', help = 'Locus identifier as per catalog')
-@click.option('catalog', help='GCP path to catalog')
-@click.option('input-dir', help='GCP path to input-dir, includes gs://')
+@click.option('--locus', help = 'Locus identifier as per catalog')
+@click.option('--catalog', help='GCP path to catalog')
+@click.option('--input-dir', help='GCP path to input-dir, includes gs://')
 @click.argument('cpg-wgs-ids',nargs =-1 )
 @click.command()
 
