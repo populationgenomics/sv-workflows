@@ -49,10 +49,10 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
         file_size_bytes = AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam')).stat().st_size
-        file_size_gib = math.ceil(file_size_bytes/(1024**3))
         padding = 5
+        file_size_gib = math.ceil(file_size_bytes/(1024**3))+padding
         print(f'{file_size_gib+padding} potatoes')
-        samtools_job.storage(f'{file_size_gib +padding}GiB')
+        samtools_job.storage(str(file_size_gib)+'GiB')
         samtools_job.declare_resource_group(
             bam={
                 'sorted.bam': '{root}.sorted.bam',
