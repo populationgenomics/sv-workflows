@@ -52,7 +52,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         padding = 5
         file_size_gib = math.ceil(file_size_bytes/(1024**3))+padding
         print(f'{file_size_gib+padding} potatoes')
-        samtools_job.storage(str(file_size_gib)+'GiB')
+        samtools_job.storage('6G')
         samtools_job.declare_resource_group(
             bam={
                 'sorted.bam': '{root}.sorted.bam',
