@@ -6,8 +6,10 @@ analysis-runner --access-level test --dataset hgdp --description "reviewer" --ou
 
 """
 import click
+import os
 
-
+import math
+import AnyPath from 'cloudpathlib'
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
 from cpg_workflows.batch import get_batch
@@ -46,6 +48,10 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         # BAM file must be sorted and indexed prior to inputting into REViewer
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
+        file_size_bytes = AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam')).stat().st_size
+        file_size_gib = math.ceil(file_size_bytes/(1024**3))
+        padding = 5
+        samtools_job.storage(f'{file_size_gib +padding}GiB')
         samtools_job.declare_resource_group(
             bam={
                 'sorted.bam': '{root}.sorted.bam',
