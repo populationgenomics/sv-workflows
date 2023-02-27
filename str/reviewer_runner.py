@@ -62,10 +62,10 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         samtools_job.command(
             f"""
         echo "sorting {bam_input}";
-        samtools sort {bam_input} -o {samtools_job.bam['sorted.bam']};
+        samtools sort -@ 4 {bam_input} -o {samtools_job.bam['sorted.bam']};
 
         echo "indexing {samtools_job.bam['sorted.bam']}";
-        samtools index {samtools_job.bam['sorted.bam']} -b -o {samtools_job.bam['sorted.bam.bai']};
+        samtools index -@ 4 {samtools_job.bam['sorted.bam']} -b -o {samtools_job.bam['sorted.bam.bai']};
 
         """
         )
