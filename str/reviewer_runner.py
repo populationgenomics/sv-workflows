@@ -30,13 +30,11 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
     # Initializing Batch
     b = get_batch()
     ref = b.read_input_group(
-        **dict(
-            base=REF_FASTA,
-            catalog=catalog,
-            fai=REF_FASTA + '.fai',
-            dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
+        base=REF_FASTA,
+        catalog=catalog,
+        fai=REF_FASTA + '.fai',
+        dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
             + '.dict',
-        )
     )
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
