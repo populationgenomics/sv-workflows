@@ -59,7 +59,6 @@ def main(locus, catalog, input_dir, cpg_wgs_ids: list[str]):
 
         samtools_job.command(
             f"""
-
         echo "sorting {bam_input}";
         samtools sort {bam_input} -o {samtools_job.bam['sorted.bam']};
 
