@@ -36,11 +36,11 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         catalog=catalog,
         fai=REF_FASTA + '.fai',
         dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-            + '.dict',
+        + '.dict',
     )
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
-        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam'))
+        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
 
         # read in VCF from EH output
         vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.vcf'))
@@ -48,9 +48,13 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         # BAM file must be sorted and indexed prior to inputting into REViewer
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
-        file_size_bytes = AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam')).stat().st_size
+        file_size_bytes = (
+            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
+            .stat()
+            .st_size
+        )
         padding = 5
-        file_size_gib = str(math.ceil(file_size_bytes/(1024**3))+padding)+'G'
+        file_size_gib = str(math.ceil(file_size_bytes / (1024**3)) + padding) + 'G'
         samtools_job.storage(file_size_gib)
         samtools_job.declare_resource_group(
             bam={
