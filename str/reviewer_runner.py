@@ -9,7 +9,7 @@ import click
 import os
 
 import math
-import AnyPath from 'cloudpathlib'
+from cloudpathlib import AnyPath
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
 from cpg_workflows.batch import get_batch
