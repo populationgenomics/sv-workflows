@@ -51,6 +51,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         file_size_bytes = AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam')).stat().st_size
         file_size_gib = math.ceil(file_size_bytes/(1024**3))
         padding = 5
+        print(file_size_gib+padding)
         samtools_job.storage(f'{file_size_gib +padding}GiB')
         samtools_job.declare_resource_group(
             bam={
