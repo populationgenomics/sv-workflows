@@ -81,7 +81,9 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
 
         reviewer_job.command(
             f"""
-            ./REViewer-v0.2.7-linux_x86_64 --reads {samtools_job.bam['sorted.bam']} --vcf {vcf_input} --reference {ref.base} --catalog {ref.catalog} --out {reviewer_job.ofile} --locus {locus}
+            ./REViewer-v0.2.7-linux_x86_64 --reads {samtools_job.bam['sorted.bam']} \\
+            --vcf {vcf_input} --reference {ref.base} --catalog {ref.catalog} \\
+            --out {reviewer_job.ofile} --locus {locus}
             """
         )
     # output writing
