@@ -43,7 +43,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam'))
 
         # read in VCF from EH output
-        vcf_input = b.read_input(f'{input_dir}/{cpg_id}_eh.vcf')
+        vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.vcf'))
 
         # BAM file must be sorted and indexed prior to inputting into REViewer
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
