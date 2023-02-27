@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-
+# pylint: disable=undefined-loop-variable,missing-function-docstring,no-member
 """
 This script will output REViewer svg based on inputs: one/multiple CPG IDs and one locus, as defined in the variant catalog. 
 analysis-runner --access-level test --dataset hgdp --description "reviewer" --output-dir 'str/410_sgd_loci/reviewer' reviewer_runner.py --catalog=gs://cpg-hgdp-test/str/410_sgdp_loci/catalogs/eh_catalog_hg38_backbone_trimmed_0_based.json --locus=chr1-216547253-216547277-TGA --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_0_based_hg38_backbone CPG265538		
 
 """
-import click
-import os
 
+import os
 import math
+import click
+
 from cloudpathlib import AnyPath
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
