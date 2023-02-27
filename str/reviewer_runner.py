@@ -94,4 +94,4 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter, missing-function-docstring
+    main()  # pylint: disable=no-value-for-parameter,missing-function-docstring
