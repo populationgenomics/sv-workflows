@@ -83,7 +83,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
 
         reviewer_job.declare_resource_group(
             ofile={
-                'svg': '{root}.' + f'{locus}.svg',
+f'{{root}}.{locus}.svg',
                 'metrics.tsv': '{root}.metrics.tsv',
                 'phasing.tsv': '{root}.phasing.tsv',
             }
