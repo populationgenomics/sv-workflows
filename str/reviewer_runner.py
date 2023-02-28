@@ -2,7 +2,7 @@
 # pylint: disable=missing-function-docstring,no-member
 """
 This script will output REViewer svg based on inputs: one/multiple CPG IDs and one locus, as defined in the variant catalog. 
-analysis-runner --access-level test --dataset hgdp --description "reviewer" --output-dir 'str/410_sgd_loci/reviewer' reviewer_runner.py --catalog=gs://cpg-hgdp-test/str/410_sgdp_loci/catalogs/eh_catalog_hg38_backbone_trimmed_0_based.json --locus=chr1-216547253-216547277-TGA --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_0_based_hg38_backbone CPG265538		
+analysis-runner --access-level test --dataset hgdp --description "reviewer" --output-dir 'str/410_sgd_loci/reviewer' reviewer_runner.py --catalog=gs://cpg-hgdp-test/str/410_sgdp_loci/catalogs/eh_catalog_hg38_backbone_trimmed_0_based.json --locus=chr1-216547253-216547277-TGA --input-dir=gs://cpg-hgdp-test/str/sensitivity-analysis/eh/trimmed_coordinates_0_based_hg38_backbone CPG265538 CPG264721		
 
 """
 
@@ -41,7 +41,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
     )
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
-        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
+        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam'))
 
         # read in VCF from EH output
         vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.vcf'))
@@ -50,7 +50,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
         file_size_bytes = (
-            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
+            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam'))
             .stat()
             .st_size
         )
@@ -83,7 +83,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
 
         reviewer_job.declare_resource_group(
             ofile={
-f'{{root}}.{locus}.svg',
+                 'svg': f'{{root}}.{locus}.svg',
                 'metrics.tsv': '{root}.metrics.tsv',
                 'phasing.tsv': '{root}.phasing.tsv',
             }
@@ -96,9 +96,9 @@ f'{{root}}.{locus}.svg',
             --out {reviewer_job.ofile} --locus {locus}
             """
         )
-    # output writing
-    reviewer_output_path = output_path(f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis')
-    b.write_output(reviewer_job.ofile, reviewer_output_path)
+        # output writing
+        reviewer_output_path = output_path(f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis')
+        b.write_output(reviewer_job.ofile, reviewer_output_path)
 
     b.run(wait=False)
 
