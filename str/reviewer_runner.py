@@ -41,7 +41,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
     )
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
-        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam'))
+        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
 
         # read in VCF from EH output
         vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.vcf'))
@@ -50,7 +50,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
         file_size_bytes = (
-            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned_bam'))
+            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
             .stat()
             .st_size
         )
