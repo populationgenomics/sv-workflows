@@ -64,7 +64,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
             }
         )
 
-        samtools_job.cpu(4) # to support the -@ 4
+        samtools_job.cpu(4)  # to support the -@ 4
         samtools_job.command(
             f"""
         echo "sorting {bam_input}";
@@ -83,7 +83,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
 
         reviewer_job.declare_resource_group(
             ofile={
-                 'svg': f'{{root}}.{locus}.svg',
+                'svg': f'{{root}}.{locus}.svg',
                 'metrics.tsv': '{root}.metrics.tsv',
                 'phasing.tsv': '{root}.phasing.tsv',
             }
@@ -97,7 +97,9 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
             """
         )
         # output writing
-        reviewer_output_path = output_path(f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis')
+        reviewer_output_path = output_path(
+            f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis'
+        )
         b.write_output(reviewer_job.ofile, reviewer_output_path)
 
     b.run(wait=False)
