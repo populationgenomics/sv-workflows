@@ -55,7 +55,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
             .st_size
         )
         padding = 5
-        file_size_gib = str(math.ceil(file_size_bytes / (1024**3)) + padding) + 'G'
+        file_size_gib = str(math.ceil(file_size_bytes / (1024**3)) + padding) + 'Gi'
         samtools_job.storage(file_size_gib)
         samtools_job.declare_resource_group(
             bam={
