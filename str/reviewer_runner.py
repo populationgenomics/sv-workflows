@@ -64,6 +64,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
             }
         )
 
+        samtools_job.cpu(4) # to support the -@ 4
         samtools_job.command(
             f"""
         echo "sorting {bam_input}";
