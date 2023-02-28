@@ -251,6 +251,7 @@ fasta_with_capillary_eh_gangstr= fasta_with_capillary_eh_gangstr %>% mutate(e_al
                                            
 """
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(PCR_summed_diffs = PCR_1+PCR_2 -2*PCR_length)
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(PCR_diff_1 = PCR_1-PCR_length, PCR_diff_2 = PCR_2-PCR_length)
 
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = as.numeric(e_allele_1)+as.numeric(e_allele_2), 
                  g_alleles = as.numeric(g_allele_2)+as.numeric(g_allele_1),
@@ -287,7 +288,7 @@ my_vec = my_vec$key
 split_keys = split(my_vec,             # Applying split() function
       ceiling(seq_along(my_vec) / 20))
 unlist(split_keys[1]) 
-fasta_with_capillary_eh_gangstr %>% select(key.x, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",6:8)  %>%filter(key.x %in%unlist(split_keys[1])  ) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
+fasta_with_capillary_eh_gangstr %>% select(key.x, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",6:8)  %>%filter(key.x %in%unlist(split_keys[9])  ) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
 geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-30,10,1))
 ```
 
@@ -316,6 +317,7 @@ fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles == h_alleles) %>% nr
 
 (fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
 
+fasta_with_capillary_eh_gangstr %>% filter(key.x == "GAT004") %>% select(PCR_summed_diffs)
 ```
 
 
