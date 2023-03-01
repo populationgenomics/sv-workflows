@@ -1,0 +1,13 @@
+---
+title: "additionalfile"
+author: "Hope"
+date: "01/03/2023"
+output: html_document
+---
+
+```{r}
+data = read.table("~/Documents/sv-workflows/str/hg38_pcr_Backbone/Pemberton_AdditionalFile1_11242009.txt", header = TRUE)
+
+data %L% 
+```
+

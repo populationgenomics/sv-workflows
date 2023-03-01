@@ -208,11 +208,16 @@ excluded_calls = merge(fasta_with_capillary, fermikit_indels_hg38_clean, by = c(
 ```{r}
 eh = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_eh.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
 
+gangstr %>% filter(catalog_start_coordinate_0_based ==98177578) %>% filter(sample_id=="CPG148163")
+
 #%>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
 gangstr = read.delim("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_gangstr.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
 eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id"= "sample_id")
+
+eh_gangstr %>% filter(catalog_start_coordinate_0_based ==98177578) %>% filter(cpg_id=="CPG148163")
+
 
 fasta_with_capillary_eh_gangstr = merge(eh_gangstr, fasta_with_capillary, by = c("cpg_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE)
 
@@ -222,7 +227,9 @@ fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, exc
 ```
 
 ```{r}
-hipstr = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_hipstr (1).csv")%>% separate(h_gb, c("h_gb_1", "h_gb_2"), sep = "\\|") %>% mutate(h_gb_1 = as.numeric(h_gb_1), h_gb_2 = as.numeric(h_gb_2)) %>% mutate(h_allele_1 = (nchar(h_ref)+h_gb_1)/h_period, h_allele_2 = (nchar(h_ref)+h_gb_2)/h_period, h_alleles = floor(h_allele_1) + floor(h_allele_2), h_gbs = h_gb_1 + h_gb_2) %>% rename("key"= h_id,"hgdp_sample_id"= sample_id) %>% rename("end" = h_end, "chr" = h_chr)
+hipstr = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_hipstr (1).csv")%>% separate(h_gb, c("h_gb_1", "h_gb_2"), sep = "\\|") %>% mutate(h_gb_1 = as.numeric(h_gb_1), h_gb_2 = as.numeric(h_gb_2)) %>% mutate(h_allele_1 = (nchar(h_ref)+h_gb_1)/h_period, h_allele_2 = (nchar(h_ref)+h_gb_2)/h_period, h_alleles = (h_allele_1) + (h_allele_2), h_gbs = h_gb_1 + h_gb_2) %>% rename("key"= h_id,"hgdp_sample_id"= sample_id) %>% rename("end" = h_end, "chr" = h_chr)
+
+hipstr %>% filter(key =="GAAT1A4") %>% filter(hgdp_sample_id=="HGDP00540")
 
 mappings = read.table("~/Desktop/210_sample_mappings.txt", sep = ",") %>% rename("hgdp_sample_id" = V1, "cpg_id" = V2)
 
@@ -235,27 +242,14 @@ fasta_with_capillary_eh_gangstr = merge(fasta_with_capillary_eh_gangstr, hipstr,
 ```{r}
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(capillary_allele_1 = floor(trf_num_repeats) + (PCR_1 -PCR_length)/nchar(trf_motif),
                                capillary_allele_2 = floor(trf_num_repeats) + (PCR_2 -PCR_length)/nchar(trf_motif) )
-"""
-fasta_with_capillary_eh_gangstr$trf_num_repeats = as.numeric(fasta_with_capillary_eh_gangstr$trf_num_repeats)
-fasta_with_capillary_eh_gangstr= fasta_with_capillary_eh_gangstr %>% mutate(e_allele_amplicon_length_1 = (as.numeric(e_allele_1) -trf_num_repeats)*nchar(trf_motif) + PCR_length, 
-                                           e_allele_amplicon_length_2 = (as.numeric(e_allele_2) -trf_num_repeats)*nchar(trf_motif) + PCR_length,
-                                           g_allele_amplicon_length_1 = (as.numeric(g_allele_1) -trf_num_repeats)*nchar(trf_motif) + PCR_length,
-                                           g_allele_amplicon_length_2 = (as.numeric(g_allele_2) -trf_num_repeats)*nchar(trf_motif) + PCR_length,
-  
-)
 
-
-fasta_with_capillary_eh_gangstr= fasta_with_capillary_eh_gangstr %>% mutate(e_allele_amplicon_lengths = e_allele_amplicon_length_1 + e_allele_amplicon_length_2,
-                                           g_allele_amplicon_lengths = g_allele_amplicon_length_1 + g_allele_amplicon_length_2,
-                                           PCR_cap_lengths = PCR_1 + PCR_2)
-                                           
-"""
+                                          
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(PCR_summed_diffs = PCR_1+PCR_2 -2*PCR_length)
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(PCR_diff_1 = PCR_1-PCR_length, PCR_diff_2 = PCR_2-PCR_length)
 
 fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_alleles = as.numeric(e_allele_1)+as.numeric(e_allele_2), 
                  g_alleles = as.numeric(g_allele_2)+as.numeric(g_allele_1),
-                 capillary_alleles = floor(capillary_allele_1) + floor(capillary_allele_2)) #summed diploid genotypes 
+                 capillary_alleles = (capillary_allele_1) + (capillary_allele_2)) #summed diploid genotypes 
 ```
 
 ```{r}
@@ -283,13 +277,19 @@ fasta_with_capillary_eh_gangstr %>% filter(g_alleles == h_alleles) %>% count()/ 
 ```{r}
 library(ggbeeswarm)
 library(ggforce)
-my_vec = fasta_with_capillary_eh_gangstr %>% distinct(key)
-my_vec = my_vec$key
+my_vec = fasta_with_capillary_eh_gangstr %>% distinct(key.x)
+my_vec = my_vec$key.x
 split_keys = split(my_vec,             # Applying split() function
       ceiling(seq_along(my_vec) / 20))
 unlist(split_keys[1]) 
-fasta_with_capillary_eh_gangstr %>% select(key.x, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",6:8)  %>%filter(key.x %in%unlist(split_keys[9])  ) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
-geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-30,10,1))
+fasta_with_capillary_eh_gangstr %>% select(key.x, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",6:8)  %>%filter(key.x %in% unlist(split_keys[1])) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
+geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-15,0,1))
+```
+```{r}
+fasta_with_capillary_eh_gangstr%>% group_by(key.x)%>% filter(e_alleles==capillary_alleles)%>% summarise(n=n()) %>% arrange(desc(n))
+
+
+fasta_with_capillary_eh_gangstr%>% filter(key.x == "GAAT1A4") %>% filter(cpg_id=="CPG148163")
 ```
 
 
@@ -317,7 +317,6 @@ fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles == h_alleles) %>% nr
 
 (fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
 
-fasta_with_capillary_eh_gangstr %>% filter(key.x == "GAT004") %>% select(PCR_summed_diffs)
 ```
 
 
