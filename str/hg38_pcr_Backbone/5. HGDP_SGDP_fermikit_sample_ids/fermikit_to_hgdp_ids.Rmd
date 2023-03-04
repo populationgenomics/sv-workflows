@@ -10,9 +10,10 @@ fermikit_samples = read.table("263.bgt.spl", sep = "\t", header = FALSE) %>% sel
 ```
 
 ```{r}
-sgdp_metadata = read.table("SGDP_metadata.279public.21signedLetter.44Fan.samples.txt", sep = "\t", header = TRUE)
+sgdp_metadata = read.table("SGDP_metadata.279public.21signedLetter.44Fan.samples.txt", sep = "\t", header = TRUE) 
 ```
 ```{r}
+#S_Naxi-2 dropped because not found in sample_metadata for SGDP
 merge(fermikit_samples, sgdp_metadata) %>% select(SGDP_ID,Illumina_ID, Sample_ID) %>% write.csv("Fermikit_ID_mapping.csv", row.names = FALSE, quote = FALSE) #equivalent to external_sample_ID on metamist  
 
 # a bit annoying that sometimes the Illumina_ID matches with external_sample_ID on metamist, but sometimes it doesn't match and you have to use the Sample_ID attribute. example is HGDP00540

@@ -8,6 +8,12 @@ output: html_document
 ```{r}
 data = read.table("~/Documents/sv-workflows/str/hg38_pcr_Backbone/Pemberton_AdditionalFile1_11242009.txt", header = TRUE)
 
-data %L% 
+data %>% distinct(marshfieldSetNumber)
+
+
+data %>% filter(alternateName %in% c("GATA13", "GAT004"))
+data %>% filter(alternateName %in% good_call_loci$key.x)
+
+data %>% filter(alternateName %in% bad_call_loci$key.x)
 ```
 
