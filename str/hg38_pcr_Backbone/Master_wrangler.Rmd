@@ -471,6 +471,14 @@ bad_call_loci = fasta_with_capillary_eh_gangstr%>% group_by(key.x)%>% filter(e_a
 
 
 ```{r}
-fasta_with_capillary_eh_gangstr %>% filter(catalog_start_coordinate_0_based==216547253)
+
+#HipSTR loci with different pos and start values 
+read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_hipstr (1).csv")%>% separate(h_gb, c("h_gb_1", "h_gb_2"), sep = "\\|") %>% mutate(h_gb_1 = as.numeric(h_gb_1), h_gb_2 = as.numeric(h_gb_2)) %>% mutate(h_allele_1 = (nchar(h_ref)+h_gb_1)/h_period, h_allele_2 = (nchar(h_ref)+h_gb_2)/h_period, h_alleles = floor(h_allele_1) + floor(h_allele_2), h_gbs = h_gb_1 + h_gb_2) %>% rename("key"= h_id,"hgdp_sample_id"= sample_id) %>% rename("end" = h_end, "chr" = h_chr) %>% filter(h_pos != h_start) %>% distinct(key)
 ```
+
+```{r}
+fasta_with_capillary_eh_gangstr %>% filter(key.x == "GGAT2G06") %>% select(e_alleles, g_alleles, capillary_alleles)
+```
+
+
 
