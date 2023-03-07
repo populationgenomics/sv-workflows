@@ -1,7 +1,6 @@
 import warnings
 from itertools import chain, islice
 import json
-from sample_metadata.apis import SeqrApi
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
