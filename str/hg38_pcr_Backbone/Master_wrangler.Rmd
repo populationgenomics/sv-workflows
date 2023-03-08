@@ -127,6 +127,7 @@ fasta = fasta %>% mutate(trf_motif = case_when(sense == "antisense"~ updated_mot
 fasta = fasta %>% select(-updated_motif)
 
 fasta %>% filter(sense == "antisense") %>% select(chr, catalog_start_coordinate_0_based, catalog_end_coordinate, trf_num_repeats, trf_motif, start_coordinate_PCR, end_coordinate_PCR)
+
 ```
 
 ```{r}
@@ -204,12 +205,12 @@ excluded_calls = merge(fasta_with_capillary, fermikit_indels_hg38_clean, by = c(
 ```
 
 ```{r}
-eh = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_eh.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
+eh = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_eh_debugged.csv") %>% select(sample_id, chr, start, end, e_allele_1, e_allele_2) %>% rename("catalog_start_coordinate_0_based" = start)
 
 
 #%>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
-gangstr = read.delim("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_gangstr.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2,g_q)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
+gangstr = read.delim("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_gangstr_debugged.tsv", sep = "\t") %>% select(sample_id, chr, start, g_allele_1, g_allele_2,g_q)%>% rename("catalog_start_coordinate_1_based" = start) %>% mutate(catalog_start_coordinate_0_based = as.numeric(catalog_start_coordinate_1_based)-1)
 
 eh_gangstr = merge(eh, gangstr, by = c("sample_id", "chr", "catalog_start_coordinate_0_based"), all.x = TRUE) %>% rename("cpg_id"= "sample_id")
 
@@ -224,7 +225,7 @@ fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% filter(!ke
 ```
 
 ```{r}
-hipstr = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_hipstr (1).csv")%>% separate(h_gb, c("h_gb_1", "h_gb_2"), sep = "\\|") %>% mutate(h_gb_1 = as.numeric(h_gb_1), h_gb_2 = as.numeric(h_gb_2))  %>% rename("key"= h_id,"hgdp_sample_id"= sample_id) %>% rename("end" = h_end, "chr" = h_chr)
+hipstr = read.csv("~/Downloads/str_410_sgdp_loci_data-frames_410_sgdp_loci_hipstr_debugged.csv")%>% separate(h_gb, c("h_gb_1", "h_gb_2"), sep = "\\|") %>% mutate(h_gb_1 = as.numeric(h_gb_1), h_gb_2 = as.numeric(h_gb_2))  %>% rename("key"= h_id,"hgdp_sample_id"= sample_id) %>% rename("end" = h_end, "chr" = h_chr)
 
 mappings = read.table("~/Desktop/210_sample_mappings.txt", sep = ",") %>% rename("hgdp_sample_id" = V1, "cpg_id" = V2)
 
@@ -309,7 +310,7 @@ getmode <- function(v) {
    uniqv <- unique(v)
    uniqv[which.max(tabulate(match(v, uniqv)))]
 }
-fasta_with_capillary_eh_gangstr_edited=fasta_with_capillary_eh_gangstr %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles,`HipSTR-capillary` = h_alleles-capillary_alleles) %>% group_by(key.x) %>% mutate(mode_EH_capillary = getmode(`EH-capillary`),mode_GangSTR_capillary = getmode(`GangSTR-capillary`), mode_HipSTR_capillary = getmode(`HipSTR-capillary`), median_EH_capillary = median(`EH-capillary`), median_GangSTR_capillary = median(`GangSTR-capillary`), median_HipSTR_capillary = median(`HipSTR-capillary`)) %>% ungroup() %>% mutate(is_mode_EH_capillary = case_when(mode_EH_capillary == `EH-capillary` ~ 1, TRUE ~0), is_mode_GangSTR_capillary = case_when(mode_GangSTR_capillary == `GangSTR-capillary` ~ 1, TRUE ~0), is_mode_HipSTR_capillary = case_when(mode_HipSTR_capillary == `HipSTR-capillary` ~ 1, TRUE ~0)) %>% group_by(key.x) %>% mutate(mode_EH_capillary_proportion = sum(is_mode_EH_capillary)/n(), mode_GangSTR_capillary_proportion = sum(is_mode_GangSTR_capillary)/n(),mode_HipSTR_capillary_proportion = sum(is_mode_HipSTR_capillary)/n())  %>%  mutate(capillary_alleles = case_when(mode_GangSTR_capillary==mode_EH_capillary & mode_EH_capillary == mode_HipSTR_capillary  & mode_EH_capillary_proportion >=0.5 &mode_HipSTR_capillary_proportion >=0.5 &mode_GangSTR_capillary_proportion >=0.5 &mode_GangSTR_capillary!=0 &mode_HipSTR_capillary == median_HipSTR_capillary & mode_EH_capillary == median_EH_capillary  ~ capillary_alleles+mode_EH_capillary, TRUE ~ capillary_alleles))
+fasta_with_capillary_eh_gangstr_edited=fasta_with_capillary_eh_gangstr %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles,`HipSTR-capillary` = h_alleles-capillary_alleles) %>% group_by(key.x) %>% mutate(mode_EH_capillary = getmode(`EH-capillary`),mode_GangSTR_capillary = getmode(`GangSTR-capillary`), mode_HipSTR_capillary = getmode(`HipSTR-capillary`), median_EH_capillary = median(`EH-capillary`), median_GangSTR_capillary = median(`GangSTR-capillary`), median_HipSTR_capillary = median(`HipSTR-capillary`)) %>% ungroup() %>% mutate(is_mode_EH_capillary = case_when(mode_EH_capillary == `EH-capillary` ~ 1, TRUE ~0), is_mode_GangSTR_capillary = case_when(mode_GangSTR_capillary == `GangSTR-capillary` ~ 1, TRUE ~0), is_mode_HipSTR_capillary = case_when(mode_HipSTR_capillary == `HipSTR-capillary` ~ 1, TRUE ~0)) %>% group_by(key.x) %>% mutate(mode_EH_capillary_proportion = sum(is_mode_EH_capillary)/n(), mode_GangSTR_capillary_proportion = sum(is_mode_GangSTR_capillary)/n(),mode_HipSTR_capillary_proportion = sum(is_mode_HipSTR_capillary)/n())  %>%  mutate(capillary_alleles = case_when(mode_GangSTR_capillary==mode_EH_capillary & mode_EH_capillary == mode_HipSTR_capillary  & mode_EH_capillary_proportion >=0.5 &mode_HipSTR_capillary_proportion >=0.5 &mode_GangSTR_capillary_proportion >=0.5 &mode_GangSTR_capillary!=0 &mode_HipSTR_capillary == median_HipSTR_capillary & mode_EH_capillary == median_EH_capillary  ~ NA, TRUE ~ capillary_alleles))
 
 
 fasta_with_capillary_eh_gangstr_edited=fasta_with_capillary_eh_gangstr_edited %>% filter(!is.na(capillary_alleles))
