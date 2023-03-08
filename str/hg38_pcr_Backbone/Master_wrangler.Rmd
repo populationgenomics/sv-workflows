@@ -219,6 +219,8 @@ fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(trf
 
 fasta_with_capillary_eh_gangstr = anti_join(fasta_with_capillary_eh_gangstr, excluded_calls,by = c("cpg_id", "start_coordinate_PCR", "end_coordinate_PCR"))
 
+fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% filter(!key %in% c("AFM193xh4","AFM248vc5", "AFMb035xb9", "ATA092", "ATA67B07", "ATAA009", "GATA29A05", "GATA63B12", "GATA63F09", "GGAA17G05", "TTTA063", "ATA080", "ATA22G07", "ATA9B04", "ATGA020", "GATA178C11", "GATA31B11", "GATA46A12", "GATA63C02", "GGAA17G05", "SRA", "TCTA026", "2QTEL47")) #remove loci with fix_ or alt_ sequences in UCSC
+
 ```
 
 ```{r}
@@ -252,9 +254,7 @@ fasta_with_capillary_eh_gangstr = fasta_with_capillary_eh_gangstr %>% mutate(e_a
 ```{r}
 fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!is.na(capillary_alleles))
 fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!is.na(h_alleles))
-fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!grepl("_", nameInGenotypeDataFile))
-
-fasta_with_capillary_eh_gangstr %>% distinct(key.x)
+#fasta_with_capillary_eh_gangstr =fasta_with_capillary_eh_gangstr %>% filter(!grepl("_", nameInGenotypeDataFile))
 
 fasta_with_capillary_eh_gangstr %>% filter(e_alleles == g_alleles) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
 fasta_with_capillary_eh_gangstr %>% filter(e_alleles == h_alleles) %>% count()/ (fasta_with_capillary_eh_gangstr %>% count())
@@ -268,10 +268,6 @@ fasta_with_capillary_eh_gangstr %>% filter(g_alleles == h_alleles) %>% count()/ 
 
 
 (fasta_with_capillary_eh_gangstr %>% filter(g_alleles== capillary_alleles) %>%count())/ (fasta_with_capillary_eh_gangstr %>% count())
-
-fasta_with_capillary_eh_gangstr %>% filter(key.x == "GATA7G07")%>% select(h_allele_1, h_allele_2, capillary_allele_1, capillary_allele_2, trf_num_repeats)
-fasta_with_capillary_eh_gangstr %>% distinct(nameInGenotypeDataFile,)
-
 
 ```
 
@@ -287,7 +283,6 @@ split_keys = split(my_vec,             # Applying split() function
 fasta_with_capillary_eh_gangstr  %>% select(key.x, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",6:8)  %>%filter(key.x %in% unlist(split_keys[5])) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
 geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-15,0,1))
 
-fasta_with_capillary_eh_gangstr%>% filter(key.x == "AFMb035xb9") %>% select(e_alleles, capillary_alleles) %>% filter(e_alleles == capillary_alleles)
 ```
 
 ```{r}
@@ -307,18 +302,88 @@ fasta_with_capillary_eh_gangstr %>% select(trf_num_repeats)
 
 ```
 
-
-
 ```{r}
+
 # Create the function.
 getmode <- function(v) {
    uniqv <- unique(v)
    uniqv[which.max(tabulate(match(v, uniqv)))]
 }
+fasta_with_capillary_eh_gangstr_edited=fasta_with_capillary_eh_gangstr %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles,`HipSTR-capillary` = h_alleles-capillary_alleles) %>% group_by(key.x) %>% mutate(mode_EH_capillary = getmode(`EH-capillary`),mode_GangSTR_capillary = getmode(`GangSTR-capillary`), mode_HipSTR_capillary = getmode(`HipSTR-capillary`), median_EH_capillary = median(`EH-capillary`), median_GangSTR_capillary = median(`GangSTR-capillary`), median_HipSTR_capillary = median(`HipSTR-capillary`)) %>% ungroup() %>% mutate(is_mode_EH_capillary = case_when(mode_EH_capillary == `EH-capillary` ~ 1, TRUE ~0), is_mode_GangSTR_capillary = case_when(mode_GangSTR_capillary == `GangSTR-capillary` ~ 1, TRUE ~0), is_mode_HipSTR_capillary = case_when(mode_HipSTR_capillary == `HipSTR-capillary` ~ 1, TRUE ~0)) %>% group_by(key.x) %>% mutate(mode_EH_capillary_proportion = sum(is_mode_EH_capillary)/n(), mode_GangSTR_capillary_proportion = sum(is_mode_GangSTR_capillary)/n(),mode_HipSTR_capillary_proportion = sum(is_mode_HipSTR_capillary)/n())  %>%  mutate(capillary_alleles = case_when(mode_GangSTR_capillary==mode_EH_capillary & mode_EH_capillary == mode_HipSTR_capillary  & mode_EH_capillary_proportion >=0.5 &mode_HipSTR_capillary_proportion >=0.5 &mode_GangSTR_capillary_proportion >=0.5 &mode_GangSTR_capillary!=0 &mode_HipSTR_capillary == median_HipSTR_capillary & mode_EH_capillary == median_EH_capillary  ~ capillary_alleles+mode_EH_capillary, TRUE ~ capillary_alleles))
+
+
+fasta_with_capillary_eh_gangstr_edited=fasta_with_capillary_eh_gangstr_edited %>% filter(!is.na(capillary_alleles))
+
+
+fasta_with_capillary_eh_gangstr_edited %>% filter(e_alleles == g_alleles) %>% nrow() / (fasta_with_capillary_eh_gangstr_edited %>%nrow())
+
+fasta_with_capillary_eh_gangstr_edited %>% filter(e_alleles == h_alleles) %>% nrow()/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
+fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles == h_alleles) %>% nrow()/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
+
+
+(fasta_with_capillary_eh_gangstr_edited %>% filter(e_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
+
+(fasta_with_capillary_eh_gangstr_edited %>% filter((h_gbs-PCR_summed_diffs) ==0) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
+
+(fasta_with_capillary_eh_gangstr_edited %>% filter(h_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
+
+
+(fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
+
+```
+
+# Allele specific visualisation
+
+```{r}
+#the allele with the greater length will be max_allele, and the other allele will be min_allele
+fasta_with_capillary_eh_gangstr_al = fasta_with_capillary_eh_gangstr
+fasta_with_capillary_eh_gangstr_al$e_allele_1 = as.numeric(fasta_with_capillary_eh_gangstr_al$e_allele_1)
+fasta_with_capillary_eh_gangstr_al$e_allele_2 = as.numeric(fasta_with_capillary_eh_gangstr_al$e_allele_2)
+fasta_with_capillary_eh_gangstr_al$g_allele_1 = as.numeric(fasta_with_capillary_eh_gangstr_al$g_allele_1)
+fasta_with_capillary_eh_gangstr_al$g_allele_2 = as.numeric(fasta_with_capillary_eh_gangstr_al$g_allele_2)
+
+fasta_with_capillary_eh_gangstr_al$max_e_allele = apply(fasta_with_capillary_eh_gangstr_al[, 5:6 ], 1, max)
+fasta_with_capillary_eh_gangstr_al$min_e_allele = apply(fasta_with_capillary_eh_gangstr_al[, 5:6 ], 1, min)
+
+fasta_with_capillary_eh_gangstr_al$max_g_allele = apply(fasta_with_capillary_eh_gangstr_al[,8:9],1,max)
+fasta_with_capillary_eh_gangstr_al$min_g_allele = apply(fasta_with_capillary_eh_gangstr_al[,8:9],1,min)
+
+fasta_with_capillary_eh_gangstr_al$max_h_allele = apply(fasta_with_capillary_eh_gangstr_al[,51:52],1,max)
+fasta_with_capillary_eh_gangstr_al$min_h_allele = apply(fasta_with_capillary_eh_gangstr_al[,51:52],1,min)
+
+fasta_with_capillary_eh_gangstr_al$max_cap_allele = floor(apply(fasta_with_capillary_eh_gangstr_al[,55:56],1,max))
+fasta_with_capillary_eh_gangstr_al$min_cap_allele = floor(apply(fasta_with_capillary_eh_gangstr_al[,55:56],1,min))
+
+#create 2 variables storing the difference in alleles
+fasta_with_capillary_eh_gangstr_al = fasta_with_capillary_eh_gangstr_al %>% mutate(
+                              max_e_allele_diff = max_e_allele - max_cap_allele, 
+                              min_e_allele_diff = min_e_allele - min_cap_allele,
+                              max_g_allele_diff = max_g_allele - max_cap_allele, 
+                              min_g_allele_diff = min_g_allele - min_cap_allele,
+                              max_h_allele_diff = max_h_allele - max_cap_allele, 
+                              min_h_allele_diff = min_h_allele - min_cap_allele,
+                              )
+fasta_with_capillary_eh_gangstr_al=fasta_with_capillary_eh_gangstr_al %>% gather(key = "caller_minus_capillary", value = "difference",71:76)
+
+fasta_with_capillary_eh_gangstr_al%>%filter(key.x %in% unlist(split_keys[10])) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
+geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-15,0,1))
+
+
+split_keys
+```
+```{r}
+fasta_with_capillary_eh_gangstr %>% filter(key.x == "GAT004")%>% select(e_alleles, capillary_alleles)
+```
+
+
+```{r}
+
 good_loci = fasta_with_capillary_eh_gangstr %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles) %>% group_by(key.x) %>% mutate(mode_EH_capillary = getmode(`EH-capillary`),mode_GangSTR_capillary = getmode(`GangSTR-capillary`)) %>% ungroup() %>% mutate(is_mode_EH_capillary = case_when(mode_EH_capillary == `EH-capillary` ~ 1, TRUE ~0), is_mode_GangSTR_capillary = case_when(mode_GangSTR_capillary == `GangSTR-capillary` ~ 1, TRUE ~0)) %>% group_by(key.x) %>% mutate(mode_EH_capillary_proportion = sum(is_mode_EH_capillary)/n(), n= n(), mode_GangSTR_capillary_proportion = sum(is_mode_GangSTR_capillary)/n()) %>% mutate(capillary_alleles = case_when(mode_GangSTR_capillary==mode_EH_capillary & mode_EH_capillary_proportion >0.85 &mode_GangSTR_capillary_proportion >0.75 &mode_GangSTR_capillary==0 ~ NA, TRUE ~ capillary_alleles)) %>% filter(is.na(capillary_alleles))%>% select(nameInGenotypeDataFile) %>% distinct()
 
 loci_with_systemic_shifts = fasta_with_capillary_eh_gangstr %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles) %>% group_by(key.x) %>% mutate(mode_EH_capillary = getmode(`EH-capillary`),mode_GangSTR_capillary = getmode(`GangSTR-capillary`)) %>% ungroup() %>% mutate(is_mode_EH_capillary = case_when(mode_EH_capillary == `EH-capillary` ~ 1, TRUE ~0), is_mode_GangSTR_capillary = case_when(mode_GangSTR_capillary == `GangSTR-capillary` ~ 1, TRUE ~0)) %>% group_by(key.x) %>% mutate(mode_EH_capillary_proportion = sum(is_mode_EH_capillary)/n(), n= n(), mode_GangSTR_capillary_proportion = sum(is_mode_GangSTR_capillary)/n()) %>% mutate(capillary_alleles = case_when(mode_GangSTR_capillary==mode_EH_capillary & mode_EH_capillary_proportion >0.85 &mode_GangSTR_capillary_proportion >0.75 &mode_GangSTR_capillary!=0 ~ NA, TRUE ~ capillary_alleles)) %>% filter(is.na(capillary_alleles))%>% select(nameInGenotypeDataFile) %>% distinct()
 ```
+
+# Misc analysis
 ```{r}
 #comparing GC content in loci with good concordance with capillary vs systemic shifts
 
@@ -330,7 +395,6 @@ fasta %>% mutate(num_g = str_count(trf_repeat_sequence, "g"), num_c = str_count(
 
 ```
 Good concordance loci have an average GC content that is half that of systemic shift loci 
-
 
 ```{r}
 #Graph of GC content in PCR sequence 
@@ -441,33 +505,6 @@ geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab
 
 ```
 
-
-```{r}
-
-
-fasta_with_capillary_eh_gangstr_edited = fasta_with_capillary_eh_gangstr %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles,`HipSTR-capillary` = h_alleles-capillary_alleles) %>% group_by(key.x) %>% mutate(mode_EH_capillary = getmode(`EH-capillary`),mode_GangSTR_capillary = getmode(`GangSTR-capillary`), mode_HipSTR_capillary = getmode(`HipSTR-capillary`)) %>% ungroup() %>% mutate(is_mode_EH_capillary = case_when(mode_EH_capillary == `EH-capillary` ~ 1, TRUE ~0), is_mode_GangSTR_capillary = case_when(mode_GangSTR_capillary == `GangSTR-capillary` ~ 1, TRUE ~0), is_mode_HipSTR_capillary = case_when(mode_HipSTR_capillary == `HipSTR-capillary` ~ 1, TRUE ~0)) %>% group_by(key.x) %>% mutate(mode_EH_capillary_proportion = sum(is_mode_EH_capillary)/n(), mode_GangSTR_capillary_proportion = sum(is_mode_GangSTR_capillary)/n(),mode_HipSTR_capillary_proportion = sum(is_mode_HipSTR_capillary)/n()) %>% mutate(capillary_alleles = case_when(mode_GangSTR_capillary==mode_EH_capillary & mode_EH_capillary == mode_HipSTR_capillary & mode_EH_capillary_proportion >0.85 &mode_EH_capillary_proportion >0.85 &mode_GangSTR_capillary_proportion >0.75 &mode_GangSTR_capillary!=0 ~ NA, TRUE ~ capillary_alleles))
-fasta_with_capillary_eh_gangstr_edited=fasta_with_capillary_eh_gangstr_edited %>% filter(!is.na(capillary_alleles))
-
-
-fasta_with_capillary_eh_gangstr_edited %>% filter(e_alleles == g_alleles) %>% nrow() / (fasta_with_capillary_eh_gangstr_edited %>%nrow())
-
-fasta_with_capillary_eh_gangstr_edited %>% filter(e_alleles == h_alleles) %>% nrow()/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
-fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles == h_alleles) %>% nrow()/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
-
-
-(fasta_with_capillary_eh_gangstr_edited %>% filter(e_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
-
-(fasta_with_capillary_eh_gangstr_edited %>% filter((h_gbs-PCR_summed_diffs) ==0) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
-
-(fasta_with_capillary_eh_gangstr_edited %>% filter(h_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
-
-
-(fasta_with_capillary_eh_gangstr_edited %>% filter(g_alleles== capillary_alleles) %>%nrow())/ (fasta_with_capillary_eh_gangstr_edited %>% nrow())
-
-```
-
-
-
 ```{r}
 
 #gencode work 
@@ -500,7 +537,6 @@ bad_call_loci = fasta %>% filter(key %in% bad_keys$key.x)%>%  select(chr, catalo
 #write.table(bad_call_loci, file = "Rosenberg_bad_loci_STR_catalog_coordinates.bed", sep = "\t", row.names = FALSE, quote = FALSE)
 
 ```
-
 
 ```{r}
 #HipSTR loci with different pos and start values 
