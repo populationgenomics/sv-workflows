@@ -14,7 +14,7 @@ library(tidyverse)
 
 ```{r}
 #reads in dictionary value of locusName: TRF motif metrics output
-trf_output = fromJSON(file = "2. TRF_find_motif/filtered_trf_output_debugged _modified.txt") %>% as.data.frame() %>% gather() 
+trf_output = fromJSON(file = "2. TRF_find_motif/filtered_trf_output_modified.txt") %>% as.data.frame() %>% gather() 
 trf_output = trf_output %>% mutate (key = case_when(key == "X16PTEL06"~ "16PTEL06",
                                        key == "X18QTEL11"~ "18QTEL11",
                                        key == "X2QTEL47" ~ "2QTEL47",
@@ -106,13 +106,13 @@ trf_input = fasta %>% filter(sense == "antisense") %>% select(chr,catalog_start_
 
 trf_input$name = paste(">",trf_input$chr,":" ,trf_input$catalog_start_coordinate_0_based, "-", trf_input$catalog_end_coordinate, sep = "")
 trf_input = trf_input %>% select(name, trf_repeat_sequence)
-write.table(trf_input, file = "trf_input_antisense_debugged.txt", sep = "\n", row.names = FALSE, quote = FALSE)
+write.table(trf_input, file = "trf_input_antisense.txt", sep = "\n", row.names = FALSE, quote = FALSE)
 
 fasta = fasta %>% mutate(catalog_start_coordinate_1_based = catalog_start_coordinate_0_based+1)
 ```
 
 ```{r}
-trf_output_antisense = read.csv("3. redefining_motifs_on_antisense/trf_output_antisense_debugged.txt") %>% separate(sequence, c("chr","coordinates" ), sep = ":") %>% separate(coordinates, c("catalog_start_coordinate_0_based", "catalog_end_coordinate"), sep = "-") %>% rename("updated_motif" = "motif")
+trf_output_antisense = read.csv("3. redefining_motifs_on_antisense/trf_output_antisense.txt") %>% separate(sequence, c("chr","coordinates" ), sep = ":") %>% separate(coordinates, c("catalog_start_coordinate_0_based", "catalog_end_coordinate"), sep = "-") %>% rename("updated_motif" = "motif")
 ```
 
 
@@ -281,7 +281,9 @@ my_vec = my_vec$key.x
 split_keys = split(my_vec,             # Applying split() function
       ceiling(seq_along(my_vec) / 20))
 
-fasta_with_capillary_eh_gangstr  %>% select(key.x, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",6:8)  %>%filter(key.x %in% unlist(split_keys[5])) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
+%>%filter(key.x %in% unlist(split_keys[5]))
+
+fasta_with_capillary_eh_gangstr  %>% select(key.x,trf_period, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",7:9)  %>%filter(key.x %in% unlist(split_keys[6])) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
 geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-15,0,1))
 
 ```
@@ -374,6 +376,11 @@ split_keys
 ```
 ```{r}
 fasta_with_capillary_eh_gangstr %>% filter(key.x == "GAT004")%>% select(e_alleles, capillary_alleles)
+```
+```{r}
+fasta_with_capillary_eh_gangstr %>% filter(key.x == "GAT004") 
+
+hipstr %>% filter(h_start == 216547254 & hgdp_sample_id == "LP6005441-DNA_H03")
 ```
 
 
