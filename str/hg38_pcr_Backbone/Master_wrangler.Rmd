@@ -281,10 +281,10 @@ my_vec = my_vec$key.x
 split_keys = split(my_vec,             # Applying split() function
       ceiling(seq_along(my_vec) / 20))
 
-%>%filter(key.x %in% unlist(split_keys[5]))
-
 fasta_with_capillary_eh_gangstr  %>% select(key.x,trf_period, e_alleles,g_alleles,h_alleles,capillary_alleles) %>% mutate(`EH-capillary` = e_alleles-capillary_alleles, `GangSTR-capillary` = g_alleles-capillary_alleles, `HipSTR-capillary` = h_alleles-capillary_alleles) %>% gather(key = "caller_minus_capillary", value = "difference",7:9)  %>%filter(key.x %in% unlist(split_keys[6])) %>%ggplot(aes(x = key.x, y= difference, colour =caller_minus_capillary, alpha = 0.6,position = 'dodge' ))  +
 geom_boxplot()+ theme_minimal()+ theme(panel.grid.minor = element_blank())+ xlab("locus")  +labs(color='Discrepancy') +ylab("Difference (num.repeats) from capillary")+ scale_y_continuous(breaks=seq(-15,0,1))
+
+fasta_with_capillary_eh_gangstr %>% filter(key.x == "GAT004")
 
 ```
 
