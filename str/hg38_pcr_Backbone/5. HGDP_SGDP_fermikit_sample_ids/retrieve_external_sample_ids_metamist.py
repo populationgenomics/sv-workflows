@@ -56,7 +56,8 @@ illumina_ids_to_ingest = sgdp_metadata_dataframe[["Illumina_ID"]]
 PRJEB9586 = open("filereport_read_run_PRJEB9586_json.txt") #file report of the PRJEB9586 project that contains the 279 SGDP genomes
 PRJEB9586 = json.load(PRJEB9586)
 sample_accessions_to_ingest=[] #stores sample accession ids that need to be ingested
-external_ids_to_ingest=[] #stores sample external ids that correspond to the sample accession ids that need to be ingested 
+#external_ids_to_ingest=[] #stores sample external ids that correspond to the sample accession ids that need to be ingested 
+links_to_ingest =[]
 for i in PRJEB9586: 
     try: 
         link_1,link_2 = i['submitted_ftp'].split(";") 
@@ -66,18 +67,26 @@ for i in PRJEB9586:
     link_1_extension_length = len(link_1_sample_id_extension)
     link_1_sample_id = link_1_sample_id_extension[:link_1_extension_length-11] #removes the '_1.fastq.gz' suffix to obtain the sample id
     if link_1_sample_id in illumina_ids_to_ingest.values: 
-        external_ids_to_ingest.append(link_1_sample_id)
+        #external_ids_to_ingest.append(link_1_sample_id)
         sample_accessions_to_ingest.append(i['sample_accession'])
+        links_to_ingest.append('https://'+link_1)
+        links_to_ingest.append('https://'+link_2)
 
 
+links_to_ingest=list(dict.fromkeys(links_to_ingest)) # removes duplicates
 sample_accessions_to_ingest =list(dict.fromkeys(sample_accessions_to_ingest)) #remove duplicates
-external_ids_to_ingest = list(dict.fromkeys(external_ids_to_ingest)) #remove duplicates
+#external_ids_to_ingest = list(dict.fromkeys(external_ids_to_ingest)) #remove duplicates
 
 
-print(sample_accessions_to_ingest)
+print(len(links_to_ingest))
+#print(sample_accessions_to_ingest)
 print(len(sample_accessions_to_ingest)) #148
-print(external_ids_to_ingest)
-print(len(external_ids_to_ingest)) #148
+#print(external_ids_to_ingest)
+#print(len(external_ids_to_ingest)) #148
+
+with open('sgdp_links_to_ingest.txt', 'w') as output_file: 
+    for i in links_to_ingest: 
+        output_file.write(i+'\n')
 
 
 #with open('sgdp_id_to_external_sample_id.txt', 'w') as convert_file:
