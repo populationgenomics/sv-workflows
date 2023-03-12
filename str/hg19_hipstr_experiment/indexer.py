@@ -20,7 +20,6 @@ def main():
     b = get_batch()
     ref = b.read_input_group(
         base=REF_FASTA,
-        catalog=catalog,
         fai=REF_FASTA + '.fai',
         dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
         + '.dict',
