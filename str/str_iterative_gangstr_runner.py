@@ -56,25 +56,27 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    if dataset == 'tob-wgs':
+    if dataset in ['tob-wgs', 'hgdp']:
         ref_fasta = (
             'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequence_type': 'genome', 'source': 'nagim'},
-        )
     else:
         ref_fasta = reference_path('broad/ref_fasta')
+    if dataset == 'tob-wgs':
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
-            meta={},
+            meta={'sequencing_type': 'genome', 'source': 'nagim'},
+        )
+    else:
+        analysis_query_model = AnalysisQueryModel(
+            sample_ids=list(external_id_to_cpg_id.values()),
+            projects=[dataset],
+            type=AnalysisType('cram'),
+            status=AnalysisStatus('completed'),
+            meta={'sequencing_type': 'genome'},
         )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
@@ -125,7 +127,7 @@ def main(
 
         gangstr_job.command(
             f"""
-        GangSTR --bam {crams['cram']} --ref {ref.base} --regions {gangstr_regions} --out {gangstr_job.gangstr_output}
+        GangSTR --bam {crams['cram']} --ref {ref.base} --regions {gangstr_regions} --out {gangstr_job.gangstr_output} --bam-samps {cpg_sample_id}
         """
         )
         # GangSTR output writing

@@ -56,25 +56,27 @@ def main(
         cpg_id: external_wgs_id
         for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
     }
-    if dataset == 'tob-wgs':
+    if dataset in ['tob-wgs', 'hgdp']:
         ref_fasta = (
             'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequence_type': 'genome', 'source': 'nagim'},
-        )
     else:
         ref_fasta = reference_path('broad/ref_fasta')
+    if dataset == 'tob-wgs':
         analysis_query_model = AnalysisQueryModel(
             sample_ids=list(external_id_to_cpg_id.values()),
             projects=[dataset],
             type=AnalysisType('cram'),
             status=AnalysisStatus('completed'),
-            meta={},
+            meta={'sequencing_type': 'genome', 'source': 'nagim'},
+        )
+    else:
+        analysis_query_model = AnalysisQueryModel(
+            sample_ids=list(external_id_to_cpg_id.values()),
+            projects=[dataset],
+            type=AnalysisType('cram'),
+            status=AnalysisStatus('completed'),
+            meta={'sequencing_type': 'genome'},
         )
     crams_path = AnalysisApi().query_analyses(analysis_query_model)
     cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
@@ -119,7 +121,7 @@ def main(
             eh_output={
                 'vcf': '{root}.vcf',
                 'json': '{root}.json',
-                'realigned_bam': '{root}_realigned.bam',
+                'realigned.bam': '{root}_realigned.bam',
             }
         )
 
@@ -133,7 +135,7 @@ def main(
         """
         )
         # ExpansionHunter output writing
-        eh_output_path = output_path(f'{cpg_sample_id}_EH')
+        eh_output_path = output_path(f'{cpg_sample_id}_eh')
         b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
