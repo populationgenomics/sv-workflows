@@ -1,7 +1,0 @@
-#from convert_gangstr_spec_to_expansion_hunter_variant_catalog_modified import process_variant_catalog
-
-#process_variant_catalog("catalogs/gangstr_pure_repeats_catalog_1_based.bed", "catalogs/eh_pure_repeats_catalog_1_based.json")
-
-from convert_expansion_hunter_variant_catalog_to_gangstr_spec_modified import process_variant_catalog
-
-process_variant_catalog("catalogs/eh_pure_repeats_catalog_0_based.json", "catalogs/gangstr_pure_repeats_catalog_0_based.bed")
