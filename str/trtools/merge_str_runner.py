@@ -66,7 +66,7 @@ def main(
             )
             vcf_input.append(sample_vcf_file.vcf)
     else:
-        raise Exception('Invalid caller')
+        raise ValueError('Invalid caller')
     multi_vcf_file_path_string = ','.join(str(vcf_path) for vcf_path in vcf_input)
 
     trtools_job = b.new_job(name='mergeSTR')
