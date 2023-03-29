@@ -81,7 +81,6 @@ with open(PURE_CATALOG_OUTPUT_JSON, 'w', encoding='utf-8') as json_handle:
 with open(CATALOG_ONE_BED, 'w', encoding='utf-8') as one_handle:
     with open(CATALOG_TWO_BED, 'w', encoding='utf-8') as two_handle:
         for key, (motif, _repeat_count) in catalog_dict.items():
-
             # utils method
             chrom, start, end = break_coordinate_string(key)
 

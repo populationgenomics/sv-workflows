@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code,broad-exception-raised
+# pylint: disable=duplicate-code
 """
 This script prepares GangSTR/EH VCF files for input into mergeSTR. 
 Required input: --caller, --input-dir, and external sample IDs
@@ -43,7 +43,6 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def main(
     dataset, caller, input_dir, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
-
     # Initializing Batch
     b = get_batch()
 
@@ -67,7 +66,6 @@ def main(
         input_vcf_dict[id] = os.path.join(input_dir, f'{id}_{caller}.vcf')
 
     for id in list(input_vcf_dict.keys()):
-
         bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
         bcftools_job.image(BCFTOOLS_IMAGE)
         bcftools_job.storage('20G')

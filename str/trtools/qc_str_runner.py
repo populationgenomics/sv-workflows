@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code,broad-exception-raised
+# pylint: disable=duplicate-code
 """
 This script runs qcSTR() from TRTools package on a single/merged STR vcf file and outputs various QC graphs
 
@@ -72,7 +72,6 @@ def main(
     refbias_xrange_min,
     refbias_xrange_max,
 ):  # pylint: disable=missing-function-docstring
-
     # Initializing Batch
     b = get_batch()
     vcf_input = b.read_input(file_path)

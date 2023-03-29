@@ -42,7 +42,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 def main(
     caller, dataset, input_dir, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
-
     # Initializing Batch
     b = get_batch()
 

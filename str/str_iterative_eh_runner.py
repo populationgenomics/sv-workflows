@@ -92,7 +92,6 @@ def main(
 
     # Iterate over each sample to call Expansion Hunter
     for cram_obj in crams_path:
-
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(
             **{'cram': cram_obj['output'], 'cram.crai': cram_obj['output'] + '.crai'}
