@@ -71,7 +71,7 @@ with open(PURE_CATALOG_OUTPUT, 'w') as handle:
 with open(CATALOG_ONE_BED, 'w') as one_handle:
     with open(CATALOG_TWO_BED, 'w') as two_handle:
         for key, (motif, repeat_count) in catalog_dict.items():
-            chrom, numerical = key.split(':')[0]
+            chrom, numerical = key.split(':')
 
             # split the start and end coordinates, apply int() to both
             (start, end) = map(int, numerical.split('-'))
