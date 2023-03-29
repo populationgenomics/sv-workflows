@@ -17,9 +17,9 @@ from utils import break_coordinate_string, read_lines_from_file
 
 INPUT_FASTA = 'intermediate_files/catalog_with_flanks_one_motif_length.fasta'
 PURE_NOT_FINAL_JSON = 'intermediate_files/pure_repeat_catalog_not_final.json'
-LEFT_FLANK_ONE = "intermediate_files/left_flank_one_motif_added_repeat_loci.txt"
+LEFT_FLANK_ONE = 'intermediate_files/left_flank_one_motif_added_repeat_loci.txt'
 TWO_MOTIF_FLANKS = 'intermediate_files/catalog_with_flanks_two_motif_lengths.fasta'
-PURE_BED = "intermediate_files/pure_repeats_loci.bed"
+PURE_BED = 'intermediate_files/pure_repeats_loci.bed'
 
 
 def read_fasta_content_from_6_line_groups(filename: str) -> dict[str, tuple[str, str]]:
@@ -34,7 +34,7 @@ def read_fasta_content_from_6_line_groups(filename: str) -> dict[str, tuple[str,
     # create something to return the data
     return_dict = {}
 
-    with open(filename) as read_handle:
+    with open(filename, encoding='utf-8') as read_handle:
         while True:
             line_group = read_lines_from_file(read_handle, 6)
             if not line_group:
@@ -64,7 +64,7 @@ flank_catalog_one_motif_length_dict = read_fasta_content_from_6_line_groups(INPU
 # endregion
 
 # region: load pure catalog dictionary
-with open(PURE_NOT_FINAL_JSON) as handle:
+with open(PURE_NOT_FINAL_JSON, encoding='utf-8') as handle:
     pure_catalog_dict = json.load(handle)
 # endregion
 
@@ -95,7 +95,7 @@ print(f'both flanks one added: {len(both_flanks_one_motif_added_repeat_loci)}') 
 
 # region: write left flank added loci
 # right_flank_added_repeat_loci and both_flanks_added_repeat_loci are empty
-with open(LEFT_FLANK_ONE, 'w') as handle:
+with open(LEFT_FLANK_ONE, 'w', encoding='utf-8') as handle:
     for locus in left_flank_one_motif_added_repeat_loci:
         handle.write(f'{locus}\n')
 # endregion
@@ -114,17 +114,17 @@ print(
 # Look into L flank for additional repeats
 left_flank_two_motif_added_repeat_loci = []
 
-for locus in flank_catalog_two_motif_lengths_dict:
-    right_flank, left_flank = flank_catalog_two_motif_lengths_dict[locus]
+for locus, (_right_flank, left_flank) in flank_catalog_two_motif_lengths_dict.items():
     motif, num_repeats = pure_catalog_dict[locus]
     left_repeats = extend_repeat_into_sequence(motif, left_flank)[0]
-    if left_repeats > int(
-        num_repeats
-    ):  # just checking L flank now because the R flank yielded no additional repeats in prev. iteration
+
+    # just checking L flank now because the R flank yielded
+    # no additional repeats in prev. iteration
+    if left_repeats > int(num_repeats):
         left_flank_two_motif_added_repeat_loci.append(locus)
-print(
-    len(left_flank_two_motif_added_repeat_loci)
-)  # 0, suggesting that all the repeats in the left flanks are only one copy
+
+# 0, suggesting that all the repeats in the left flanks are only one copy
+print(len(left_flank_two_motif_added_repeat_loci))
 
 # region: Edit pure repeats catalog to append repeats in L flank
 revised_pure_catalog_dict = {}
@@ -143,15 +143,15 @@ print(len(revised_pure_catalog_dict))  # 164847
 
 # region: testing out revised pure catalog:
 # (no harm keeping these in as asserts, no manual review needed)
-assert pure_catalog_dict["chr10:10022442-10022450"] == ['CTGC', 2]
-assert revised_pure_catalog_dict["chr10:10022438-10022450"] == ('CTGC', 3)
-assert pure_catalog_dict["chr10:129364172-129364184"] == ['AATA', 3]
-assert revised_pure_catalog_dict["chr10:129364168-129364184"] == ('AATA', 4)
+assert pure_catalog_dict['chr10:10022442-10022450'] == ['CTGC', 2]
+assert revised_pure_catalog_dict['chr10:10022438-10022450'] == ('CTGC', 3)
+assert pure_catalog_dict['chr10:129364172-129364184'] == ['AATA', 3]
+assert revised_pure_catalog_dict['chr10:129364168-129364184'] == ('AATA', 4)
 # endregion
 
 # Write out revised pure repeat catalog as a BED file in the format
 # chr \t start_coordinate \t end_coordinate \t motif_length \t motif \t num_repeats
-with open(PURE_BED, 'w') as handle:
+with open(PURE_BED, 'w', encoding='utf-8') as handle:
     for p, (motif, repeat_count) in revised_pure_catalog_dict.items():
         motif_length = len(motif)
         chrom, start, end = break_coordinate_string(p)
