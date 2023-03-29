@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code,broad-exception-raised
 """
 This script prepares GangSTR/EH VCF files for input into mergeSTR. 
 Required input: --caller, --input-dir, and external sample IDs
