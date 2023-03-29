@@ -18,6 +18,7 @@
 # 11. no-else-return
 # 12. redefined-builtin
 # 13. arguments-renamed
+# 14. duplicate-code
 #
 # The following require installing the python modules imported in the source code.
 #    Add these if you don't want to include all dependencies into the dev environment:
@@ -25,7 +26,7 @@
 #    no-member
 #    c-extension-no-member
 #
-disable=f-string-without-interpolation,inherit-non-class,too-few-public-methods,fixme,logging-fstring-interpolation,trailing-whitespace,use-dict-literal,too-many-instance-attributes,line-too-long,no-else-return,redefined-builtin,arguments-renamed,import-error
+disable=f-string-without-interpolation,inherit-non-class,too-few-public-methods,fixme,logging-fstring-interpolation,trailing-whitespace,use-dict-literal,too-many-instance-attributes,line-too-long,no-else-return,redefined-builtin,arguments-renamed,import-error,R0801
 
 # Overriding variable name patterns to allow short 1- or 2-letter variables
 attr-rgx=[a-z_][a-z0-9_]{0,30}$
