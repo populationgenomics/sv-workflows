@@ -9,13 +9,16 @@ python3 -m pip install --upgrade str_analysis
 # TODO this is best contained in a requirements.txt file at the project root
 """
 
-
+from itertools import islice
+import json
 from str_analysis.utils.find_repeat_unit import find_repeat_unit_kmer
 
+from utils import break_coordinate_string
 
 INPUT_FILE = 'intermediate_files/Illumina_catalog_sequences.fasta.txt'
 EXCLUDED_LOCUS_FILE = 'intermediate_files/excluded_loci_catalog.txt'
 PURE_CATALOG_OUTPUT = "intermediate_files/pure_repeat_catalog_not_final.txt"
+PURE_CATALOG_OUTPUT_JSON = "intermediate_files/pure_repeat_catalog_not_final.json"
 CATALOG_ONE_BED = "intermediate_files/catalog_with_flanks_one_motif_length.bed"
 CATALOG_TWO_BED = "intermediate_files/catalog_with_flanks_two_motif_length.bed"
 
@@ -27,28 +30,29 @@ excluded_dict = {}
 # (representing a compound repeat structure)
 manually_excluded_loci = {'chr8:49170487-49170547', 'chr8:49170544-49170552'}
 
-# region: read input file
+# region: read input file in 2 line chunks
 with open(INPUT_FILE) as handle:
-    for line in handle:
+    while True:
+        line_group = list(islice(handle, 2))
+        if not line_group:
+            break
 
-        # find an identifier line - use it to find the paired seq
-        if line.startswith('>'):
-            # remove the > and trailing whitespace
-            key = line.removeprefix('>').rstrip()
-            # pull out the next line, read both together
-            value = next(handle).rstrip()
+        # removeprefix won't fail if it removes nothing
+        key, value = [line.removeprefix('>').rstrip() for line in line_group]
 
-            # get the kmer value for this sequence
-            repeat_unit, repeat_count = find_repeat_unit_kmer(value)
+        # get the kmer value for this sequence
+        repeat_unit, repeat_count = find_repeat_unit_kmer(value)
 
-            # homopolymer
-            # impure repeat sequence
-            # motifs greater than 6bp (STR definition is 2-6bp motif)
-            # manually excluded sites
-            if ((repeat_count == 1) or (len(repeat_unit) == 1) or (len(repeat_unit) > 6)) or key in manually_excluded_loci:
-                excluded_dict[key] = (repeat_unit, repeat_count)
-            else:
-                catalog_dict[key] = (repeat_unit, repeat_count)
+        # homopolymer
+        # impure repeat sequence
+        # motifs greater than 6bp (STR definition is 2-6bp motif)
+        # manually excluded sites
+        if (
+            (repeat_count == 1) or (len(repeat_unit) == 1) or (len(repeat_unit) > 6)
+        ) or key in manually_excluded_loci:
+            excluded_dict[key] = (repeat_unit, repeat_count)
+        else:
+            catalog_dict[key] = (repeat_unit, repeat_count)
 # endregion
 
 # region: write out the excluded loci
@@ -57,12 +61,18 @@ with open(EXCLUDED_LOCUS_FILE, 'w') as handle:
         handle.write(f'{key} {motif} {repeat_count}\n')
 # endregion
 
-print(f'Number of pure repeats: {len(catalog_dict.keys())}')  # expected 164847 pure repeat loci
+print(
+    f'Number of pure repeats: {len(catalog_dict.keys())}'
+)  # expected 164847 pure repeat loci
 
 # region: write out the pure repeat loci to an output file
 with open(PURE_CATALOG_OUTPUT, 'w') as handle:
     for key, (motif, repeat_count) in catalog_dict.items():
         handle.write(f'{key} {motif} {repeat_count}\n')
+
+# write a JSON version - much easier to reingest
+with open(PURE_CATALOG_OUTPUT_JSON, 'w', encoding='utf-8') as json_handle:
+    json.dump(catalog_dict, json_handle, ensure_ascii=False, indent=4)
 # endregion
 
 
@@ -71,10 +81,10 @@ with open(PURE_CATALOG_OUTPUT, 'w') as handle:
 with open(CATALOG_ONE_BED, 'w') as one_handle:
     with open(CATALOG_TWO_BED, 'w') as two_handle:
         for key, (motif, repeat_count) in catalog_dict.items():
-            chrom, numerical = key.split(':')
 
-            # split the start and end coordinates, apply int() to both
-            (start, end) = map(int, numerical.split('-'))
+            # utils method
+            chrom, start, end = break_coordinate_string(key)
+
             motif_len = len(motif)
 
             # write out the original sequence region
