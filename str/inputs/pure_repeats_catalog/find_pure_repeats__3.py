@@ -6,7 +6,6 @@ are additional repeats in the flanks.
 
 Required packages: str_analysis
 python3 -m pip install --upgrade str_analysis
-# TODO this is best contained in a requirements.txt file at the project root
 """
 
 from itertools import islice
