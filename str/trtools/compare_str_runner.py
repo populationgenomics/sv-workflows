@@ -35,7 +35,6 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def main(
     file_path_1, file_path_2, caller_1, caller_2
 ):  # pylint: disable=missing-function-docstring
-
     # Initializing Batch
     b = get_batch()
 

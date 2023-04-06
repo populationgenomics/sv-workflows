@@ -1,5 +1,0 @@
-{
-  "ExpansionHunter.docker_file": "quay.io/biocontainers/expansionhunter:4.0.2--he785bd8_0",
-  "ExpansionHunter.reference_fasta": "gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta",
-  "ExpansionHunter.variant_catalog": "gs://cpg-common-main/references/hg38/v0/str/expansionhunter/variant_catalog_hg38_2021-08-18.json"
-}
