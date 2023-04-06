@@ -33,7 +33,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 )
 @click.command()
 def main(file_path, caller):  # pylint: disable=missing-function-docstring
-
     # Initializing Batch
     b = get_batch()
     vcf_input = b.read_input(file_path)
