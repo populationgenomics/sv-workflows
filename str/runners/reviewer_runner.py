@@ -29,7 +29,6 @@ REVIEWER_IMAGE = config['images']['reviewer']
 @click.argument('cpg-sample-ids', nargs=-1)
 @click.command()
 def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
-
     # Initializing Batch
     b = get_batch()
     ref = b.read_input_group(

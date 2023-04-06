@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code,broad-exception-raised
 """
 This script merges GangSTR or ExpansionHunter vcf.gz files into one combined VCF. 
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
@@ -43,7 +42,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 def main(
     caller, dataset, input_dir, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
-
     # Initializing Batch
     b = get_batch()
 
@@ -68,7 +66,7 @@ def main(
             )
             vcf_input.append(sample_vcf_file.vcf)
     else:
-        raise Exception('Invalid caller')
+        raise ValueError('Invalid caller')
     multi_vcf_file_path_string = ','.join(str(vcf_path) for vcf_path in vcf_input)
 
     trtools_job = b.new_job(name='mergeSTR')
