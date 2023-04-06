@@ -13,13 +13,9 @@ data = read.table("~/Downloads/joint-calling_v7_meta.tsv", sep = "\t", header = 
 # gs://cpg-tob-wgs-main-analysis/joint-calling/v7/meta.tsv
 ```
 
-```{r}
-data = data %>% select(s,sex_karyotype,external_id)
-data %>% distinct(sex_karyotype)
-```
 
 ```{r}
-data = data%>%select(s, sex_karyotype, external_id)
-data = data %>% filter(!(s %in% c("NA12878", "NA12891","NA12892","syndip")))
-write.csv(data, "karyotype_sex_mapping.csv")
+data = data%>%select(s, sex_karyotype, external_id) #select relevant columns for output writing 
+data = data %>% filter(!(s %in% c("NA12878", "NA12891","NA12892","syndip"))) #remove non TOB samples
+write.csv(data, "karyotype_sex_mapping.csv") # to be added to GCP 
 ```
