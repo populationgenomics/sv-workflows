@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 
-mport os
+import os
 import logging
 
 import click
