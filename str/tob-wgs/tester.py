@@ -5,6 +5,8 @@ import click
 import hailtop.batch as hb
 
 from cpg_utils.config import get_config
+from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
+
 
 config = get_config()
 
