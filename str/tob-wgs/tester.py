@@ -6,7 +6,7 @@ import logging
 
 import click
 import hailtop.batch as hb
-import AnyPath
+from cloudpathlib import AnyPath
 
 from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.model.analysis_query_model import AnalysisQueryModel
