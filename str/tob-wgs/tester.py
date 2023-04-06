@@ -6,6 +6,7 @@ import logging
 
 import click
 import hailtop.batch as hb
+import AnyPath
 
 from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.model.analysis_query_model import AnalysisQueryModel
@@ -36,8 +37,7 @@ def main(
 
 
     sample_id_file = "gs://cpg-tob-wgs-test/hoptan-str/karyotype_sex_mapping.csv"
-    pointer = b.read_input(sample_id_file)
-    with open (pointer) as f:
+    with AnyPath(sample_id_file).open() as f:
         for line in f: 
             print(line)
 if __name__ == '__main__':
