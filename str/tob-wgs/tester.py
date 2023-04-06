@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=import-error
 
+import click
 import hailtop.batch as hb
 
 from cpg_utils.config import get_config
