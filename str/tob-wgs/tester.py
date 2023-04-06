@@ -38,7 +38,8 @@ def main(
 
     sample_id_file = "gs://cpg-tob-wgs-test/hoptan-str/karyotype_sex_mapping.csv"
     with AnyPath(sample_id_file).open() as f:
-        for line in f: 
-            print(line)
+        for line in f:
+            index, s, sex, external_id = line.split(",") 
+            print(sex)
 if __name__ == '__main__':
     main()
