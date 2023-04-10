@@ -12,7 +12,6 @@ pip install sample-metadata hail click
 
 """
 import os
-import logging
 
 import click
 import hailtop.batch as hb
@@ -21,6 +20,8 @@ from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.model.analysis_query_model import AnalysisQueryModel
 from sample_metadata.apis import AnalysisApi
 from sample_metadata.models import AnalysisStatus
+from cloudpathlib import AnyPath
+
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
@@ -54,14 +55,15 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
 
         # Iterate over each sample to call Expansion Hunter
         for line in f:
-            cpg_id, sex, external_id = line.split(',')
+            cpg_id = line.split(',')[0]
+            sex = line.split(',')[1]
             if cpg_id == 's':  # header line
                 continue
             if sex == 'XY':
                 sex_param = 'male'
             else:
                 sex_param = 'female'
-                #'X' and 'ambiguous' karyotypic sex will be marked as female (ExpansionHunter defaults to female if no sex_parameter is provided)
+                # 'X' and 'ambiguous' karyotypic sex will be marked as female (ExpansionHunter defaults to female if no sex_parameter is provided)
 
             analysis_query_model = AnalysisQueryModel(
                 sample_ids=list([cpg_id]),
