@@ -88,10 +88,7 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
                 **dict(
                     base=ref_fasta,
                     fai=ref_fasta + '.fai',
-                    dict=ref_fasta.replace('.fasta', '')
-                    .replace('.fna', '')
-                    .replace('.fa', '')
-                    + '.dict',
+                    dict=ref_fasta.replace('.fasta', '.dict')
                 )
             )
 
