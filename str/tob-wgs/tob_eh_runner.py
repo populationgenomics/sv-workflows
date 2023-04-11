@@ -20,9 +20,8 @@ from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.model.analysis_query_model import AnalysisQueryModel
 from sample_metadata.apis import AnalysisApi
 from sample_metadata.models import AnalysisStatus
-from cloudpathlib import AnyPath
 
-
+from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
 
@@ -51,7 +50,7 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
     eh_regions = b.read_input(variant_catalog)
 
-    with AnyPath(sample_id_file).open() as f:
+    with to_path(sample_id_file).open() as f:
 
         # Iterate over each sample to call Expansion Hunter
         for line in f:
@@ -63,7 +62,9 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
                 sex_param = 'male'
             else:
                 sex_param = 'female'
-                # 'X' and 'ambiguous' karyotypic sex will be marked as female (ExpansionHunter defaults to female if no sex_parameter is provided)
+                # 'X' and 'ambiguous' karyotypic sex will be marked
+                # as female (ExpansionHunter defaults to female if
+                # no sex_parameter is provided)
 
             analysis_query_model = AnalysisQueryModel(
                 sample_ids=[cpg_id],
@@ -88,7 +89,7 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
                 **dict(
                     base=ref_fasta,
                     fai=ref_fasta + '.fai',
-                    dict=ref_fasta.replace('.fasta', '.dict')
+                    dict=ref_fasta.replace('.fasta', '.dict'),
                 )
             )
 
