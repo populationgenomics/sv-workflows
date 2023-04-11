@@ -51,7 +51,6 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
     eh_regions = b.read_input(variant_catalog)
 
     with to_path(sample_id_file).open() as f:
-
         # Iterate over each sample to call Expansion Hunter
         for line in f:
             cpg_id = line.split(',')[0]
