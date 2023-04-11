@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error, too-many-locals, broad-exception-raised, ungrouped-imports,
+# pylint: disable=import-error, too-many-locals
 
 """
-This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter) or .TSV (GangSTR) format that can be read into R. 
-analysis-runner --access-level test --dataset tob-wgs --description 'data frame creator' --output-dir 'hoptan-str/tob_test_crams/data_frames' data_frame_creator.py  --input-dir-eh=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/eh_0_based --input-dir-gangstr=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/gangstr_0_based --output-name-eh=eh.csv --output-name-gangstr=gangstr.tsv
-
+This script merges all the VCFs from one STR caller into a .CSV (ExpansionHunter)
+or .TSV (GangSTR) format that can be read into R.
+analysis-runner --access-level test --dataset tob-wgs --description \
+    'data frame creator' --output-dir 'hoptan-str/tob_test_crams/data_frames' \
+    data_frame_creator.py \
+    --input-dir-eh=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/eh_0_based \
+    --input-dir-gangstr=gs://cpg-tob-wgs-test/hoptan-str/tob_test_crams/output_calls/gangstr_0_based \
+    --output-name-eh=eh.csv --output-name-gangstr=gangstr.tsv
 """
-from cyvcf2 import VCFReader
+
 import click
+from cloudpathlib import GSPath
+from cyvcf2 import VCFReader
+import hailtop.batch as hb
+
+from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path
-import hailtop.batch as hb
-from cpg_utils import to_path
-from cloudpathlib import GSPath
+
 
 config = get_config()
 
