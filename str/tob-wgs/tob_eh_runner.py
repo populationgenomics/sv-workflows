@@ -66,7 +66,7 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
                 # 'X' and 'ambiguous' karyotypic sex will be marked as female (ExpansionHunter defaults to female if no sex_parameter is provided)
 
             analysis_query_model = AnalysisQueryModel(
-                sample_ids=list([cpg_id]),
+                sample_ids=[cpg_id],
                 projects=['tob-wgs'],
                 type=AnalysisType('cram'),
                 status=AnalysisStatus('completed'),
