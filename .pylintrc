@@ -18,7 +18,8 @@
 # 11. no-else-return
 # 12. redefined-builtin
 # 13. arguments-renamed
-# 14. duplicate-code
+# 14. import-error
+# 14. R0801: Similar lines in 2 files/duplicate-code
 #
 # The following require installing the python modules imported in the source code.
 #    Add these if you don't want to include all dependencies into the dev environment:

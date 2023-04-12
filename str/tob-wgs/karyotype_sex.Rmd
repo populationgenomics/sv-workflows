@@ -1,0 +1,21 @@
+---
+title: "Karyotype sex"
+author: "Hope"
+date: "03/04/2023"
+output: html_document
+---
+
+This script extracts the karyotype sex and corresponding CPG and TOB sample IDs for 1057 individuals, outputting a CSV file. 
+
+```{r}
+library(tidyverse)
+data = read.table("~/Downloads/joint-calling_v7_meta.tsv", sep = "\t", header = TRUE)
+# gs://cpg-tob-wgs-main-analysis/joint-calling/v7/meta.tsv
+```
+
+
+```{r}
+data = data%>%select(s, sex_karyotype, external_id) #select relevant columns for output writing 
+data = data %>% filter(!(s %in% c("NA12878", "NA12891","NA12892","syndip"))) #remove non TOB samples
+write.csv(data, "karyotype_sex_mapping.csv", quote = FALSE, row.names = FALSE) # to be added to GCP 
+```
