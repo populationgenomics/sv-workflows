@@ -38,8 +38,16 @@ EH_IMAGE = config['images']['expansionhunter']
 @click.option(
     '--sample-id-file', help='Full path to mapping of CPG id, TOB id, and sex'
 )
+@click.option(
+    '--max-parallel-jobs',
+    type=int,
+    default=50,
+    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
+)
 @click.command()
-def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-docstring
+def main(
+    variant_catalog, sample_id_file, max_parallel_jobs
+):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
@@ -49,6 +57,7 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
 
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
     eh_regions = b.read_input(variant_catalog)
+    jobs = []
 
     with to_path(sample_id_file).open() as f:
         # Iterate over each sample to call Expansion Hunter
@@ -94,6 +103,10 @@ def main(variant_catalog, sample_id_file):  # pylint: disable=missing-function-d
 
             # ExpansionHunter job initialisation
             eh_job = b.new_job(name=f'ExpansionHunter:{cpg_id}')
+            # limit parallelisation
+            if len(jobs) >= max_parallel_jobs:
+                eh_job.depends_on(jobs[-max_parallel_jobs])
+            jobs.append(eh_job)
             eh_job.image(EH_IMAGE)
             eh_job.storage('50G')
             eh_job.cpu(8)
