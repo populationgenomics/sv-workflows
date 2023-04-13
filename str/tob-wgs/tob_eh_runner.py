@@ -42,7 +42,7 @@ EH_IMAGE = config['images']['expansionhunter']
     '--max-parallel-jobs',
     type=int,
     default=50,
-    help=('To avoid GCP overload, set this concurrency as a limit.'),
+    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
 @click.command()
 def main(
