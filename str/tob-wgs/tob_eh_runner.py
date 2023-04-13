@@ -59,7 +59,6 @@ def main(
     eh_regions = b.read_input(variant_catalog)
     dependent_jobs = []
 
-
     with to_path(sample_id_file).open() as f:
         # Iterate over each sample to call Expansion Hunter
         for line in f:
@@ -104,7 +103,7 @@ def main(
 
             # ExpansionHunter job initialisation
             eh_job = b.new_job(name=f'ExpansionHunter:{cpg_id}')
-            #limit parallelisation
+            # limit parallelisation
             if len(dependent_jobs) >= max_parallel_jobs:
                 eh_job.depends_on(dependent_jobs[-max_parallel_jobs])
             dependent_jobs.append(eh_job)
