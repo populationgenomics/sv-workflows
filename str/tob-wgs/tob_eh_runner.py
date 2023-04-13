@@ -27,7 +27,6 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path
 
 config = get_config()
 
-dependent_jobs = []
 SAMTOOLS_IMAGE = config['images']['samtools']
 EH_IMAGE = config['images']['expansionhunter']
 
@@ -43,19 +42,9 @@ EH_IMAGE = config['images']['expansionhunter']
     '--max-parallel-jobs',
     type=int,
     default=50,
-    help=('To avoid GCP overload, set this concurrency as a limit. '),
+    help=('To avoid GCP overload, set this concurrency as a limit.'),
 )
 @click.command()
-# Setup MAX parallelisation by jobs
-def manage_concurrency_for_job(job, max_parallel_jobs):
-    """
-    To avoid having too many jobs running at once, we have to limit concurrency.
-    """
-    if len(dependent_jobs) >= max_parallel_jobs:
-        job.depends_on(dependent_jobs[-max_parallel_jobs])
-    dependent_jobs.append(job)
-
-
 def main(
     variant_catalog, sample_id_file, max_parallel_jobs
 ):  # pylint: disable=missing-function-docstring
@@ -68,6 +57,8 @@ def main(
 
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
     eh_regions = b.read_input(variant_catalog)
+    dependent_jobs = []
+
 
     with to_path(sample_id_file).open() as f:
         # Iterate over each sample to call Expansion Hunter
@@ -113,7 +104,10 @@ def main(
 
             # ExpansionHunter job initialisation
             eh_job = b.new_job(name=f'ExpansionHunter:{cpg_id}')
-            manage_concurrency_for_job(eh_job, max_parallel_jobs)
+            #limit parallelisation
+            if len(dependent_jobs) >= max_parallel_jobs:
+                eh_job.depends_on(dependent_jobs[-max_parallel_jobs])
+            dependent_jobs.append(eh_job)
             eh_job.image(EH_IMAGE)
             eh_job.storage('50G')
             eh_job.cpu(8)
