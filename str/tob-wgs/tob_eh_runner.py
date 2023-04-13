@@ -43,12 +43,9 @@ EH_IMAGE = config['images']['expansionhunter']
     '--max-parallel-jobs',
     type=int,
     default=50,
-    help=(
-        'To avoid GCP overload, set this concurrency as a limit. '
-    ),
+    help=('To avoid GCP overload, set this concurrency as a limit. '),
 )
 @click.command()
-
 # Setup MAX parallelisation by jobs
 def manage_concurrency_for_job(job, max_parallel_jobs):
     """
@@ -58,7 +55,10 @@ def manage_concurrency_for_job(job, max_parallel_jobs):
         job.depends_on(dependent_jobs[-max_parallel_jobs])
     dependent_jobs.append(job)
 
-def main(variant_catalog, sample_id_file,max_parallel_jobs):  # pylint: disable=missing-function-docstring
+
+def main(
+    variant_catalog, sample_id_file, max_parallel_jobs
+):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
