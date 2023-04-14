@@ -108,7 +108,7 @@ def main(
                 eh_job.depends_on(jobs[-max_parallel_jobs])
             jobs.append(eh_job)
             eh_job.image(EH_IMAGE)
-            if cpg_id == 'CPG5454':
+            if cpg_id == 'CPG5454': #46G WGS cram, requiring extra disk space
                 eh_job.storage('70G')
             else:
                 eh_job.storage('50G')
