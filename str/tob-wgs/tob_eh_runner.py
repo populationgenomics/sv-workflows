@@ -108,7 +108,7 @@ def main(
                 eh_job.depends_on(jobs[-max_parallel_jobs])
             jobs.append(eh_job)
             eh_job.image(EH_IMAGE)
-            eh_job.storage('50G')
+            eh_job.storage('70G')
             eh_job.cpu(8)
 
             eh_job.declare_resource_group(
