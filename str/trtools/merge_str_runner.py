@@ -58,7 +58,7 @@ def main(
     vcffuse_path = ','.join(vcffuse_path)  # string format for input into mergeSTR
 
     trtools_job.declare_resource_group(ofile={'vcf': '{root}.vcf'})
-    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh')
+    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh.vcf')
     output_path_vcf = output_path_vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
 
     trtools_job.command(
