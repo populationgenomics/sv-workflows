@@ -46,11 +46,11 @@ def main(
 
     trtools_job = b.new_job(name='mergeSTR')
     trtools_job.image(TRTOOLS_IMAGE)
-    trtools_job.storage('20G')
     trtools_job.cpu(8)
     trtools_job.cloudfuse(f'cpg-{dataset}-main', '/vcffuse')
 
     vcffuse_path = []
+    num_samples = len(vcffuse_path)
     for id in list(external_id_to_cpg_id.values()):
         vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
         suffix = vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
@@ -58,18 +58,16 @@ def main(
     vcffuse_path = ','.join(vcffuse_path)  # string format for input into mergeSTR
 
     trtools_job.declare_resource_group(ofile={'vcf': '{root}.vcf'})
+    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh')
+    output_path_vcf = output_path_vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
 
     trtools_job.command(
         f"""
      
-    mergeSTR --vcfs {vcffuse_path} --out {trtools_job.ofile} --vcftype eh
+    mergeSTR --vcfs {vcffuse_path} --out /vcffuse/{output_path_vcf} --vcftype eh
      
     """
     )
-    num_samples = len(vcffuse_path)
-
-    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh')
-    b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)
 
