@@ -50,9 +50,9 @@ def main(
     trtools_job.cpu(8)
     trtools_job.cloudfuse(f'cpg-{dataset}-main', '/vcffuse')
 
-    vcffuse_path=[]
+    vcffuse_path = []
     for id in list(external_id_to_cpg_id.values()):
-        vcf=os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
+        vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
         suffix = vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
         vcffuse_path.append(f'/vcffuse/{suffix}')
     vcffuse_path = ','.join(vcffuse_path)  # string format for input into mergeSTR
