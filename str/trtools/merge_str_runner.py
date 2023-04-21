@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-This script merges GangSTR or ExpansionHunter vcf.gz files into one combined VCF. 
+This script merges ExpansionHunter vcf.gz files into one combined VCF. 
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
 
 For example: 
-analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' mergeSTR.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs TOBXXXX TOBXXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs TOBXXXX TOBXXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -26,12 +26,7 @@ TRTOOLS_IMAGE = config['images']['trtools']
 
 
 # inputs:
-# caller
-@click.option(
-    '--caller',
-    help='gangstr or eh',
-    type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
-)
+
 # dataset
 @click.option('--dataset', help='dataset eg tob-wgs')
 # input directory
@@ -40,7 +35,7 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.argument('external-wgs-ids', nargs=-1)
 @click.command()
 def main(
-    caller, dataset, input_dir, external_wgs_ids: list[str]
+    dataset, input_dir, external_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -49,44 +44,29 @@ def main(
         dataset, list(external_wgs_ids)
     )
 
-    vcf_input = []
-    if caller == 'eh':
-        for id in list(external_id_to_cpg_id.values()):
-            sample_vcf_file = b.read_input_group(
-                vcf=os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz'),
-                tbi=os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz.tbi'),
-            )
-            vcf_input.append(sample_vcf_file.vcf)
-
-    elif caller == 'gangstr':
-        for id in list(external_id_to_cpg_id.values()):
-            sample_vcf_file = b.read_input_group(
-                vcf=os.path.join(input_dir, f'{id}_gangstr.vcf.gz'),
-                tbi=os.path.join(input_dir, f'{id}_gangstr.vcf.gz.tbi'),
-            )
-            vcf_input.append(sample_vcf_file.vcf)
-    else:
-        raise ValueError('Invalid caller')
-    multi_vcf_file_path_string = ','.join(str(vcf_path) for vcf_path in vcf_input)
-
     trtools_job = b.new_job(name='mergeSTR')
     trtools_job.image(TRTOOLS_IMAGE)
-    trtools_job.storage('20G')
     trtools_job.cpu(8)
+    trtools_job.cloudfuse(f'cpg-{dataset}-main', '/vcffuse')
 
-    trtools_job.declare_resource_group(ofile={'vcf': '{root}.vcf'})
+    vcffuse_path = []
+    for id in list(external_id_to_cpg_id.values()):
+        vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
+        suffix = vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
+        vcffuse_path.append(f'/vcffuse/{suffix}')
+    num_samples = len(vcffuse_path)
+    vcffuse_path = ','.join(vcffuse_path)  # string format for input into mergeSTR
+
+    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh.vcf')
+    output_path_vcf = output_path_vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
 
     trtools_job.command(
         f"""
      
-    mergeSTR --vcfs {multi_vcf_file_path_string} --out {trtools_job.ofile} --vcftype {caller}
+    mergeSTR --vcfs {vcffuse_path} --out /vcffuse/{output_path_vcf} --vcftype eh
      
     """
     )
-    num_samples = len(vcf_input)
-
-    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_{caller}')
-    b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)
 
