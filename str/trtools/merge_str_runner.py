@@ -27,6 +27,7 @@ TRTOOLS_IMAGE = config['images']['trtools']
 
 # inputs:
 
+
 # dataset
 @click.option('--dataset', help='dataset eg tob-wgs')
 # input directory
@@ -57,14 +58,14 @@ def main(
     num_samples = len(vcffuse_path)
     vcffuse_path = ','.join(vcffuse_path)  # string format for input into mergeSTR
 
-    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh.vcf')
+    output_path_vcf = output_path(f'mergeSTR_{num_samples}_samples_eh.vcf.bgz')
     output_path_vcf = output_path_vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
 
     trtools_job.command(
         f"""
-     
-    mergeSTR --vcfs {vcffuse_path} --out /vcffuse/{output_path_vcf} --vcftype eh
-     
+    mergeSTR --vcfs {vcffuse_path} --out temp.vcf --vcftype eh
+    bgzip -c temp.vcf > /vcffuse/{output_path_vcf}
+    tabix /vcffuse/{output_path_vcf}
     """
     )
 
