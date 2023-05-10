@@ -79,6 +79,7 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
         reviewer_job = b.new_job(name=f'Visualising {locus} for {cpg_id}')
         reviewer_job.image(REVIEWER_IMAGE)
         reviewer_job.depends_on(samtools_job)
+        reviewer_job.storage('30Gi')
 
         reviewer_job.declare_resource_group(
             ofile={
