@@ -8,7 +8,7 @@ analysis-runner --access-level standard --dataset tob-wgs --description \
     'EH Filter Extractor' --output-dir 'str/expansionhunter/v3-eh-filter-extractor' \
     eh_filter_extractor.py \
     --input-dir-eh=gs://cpg-tob-wgs-main/str/expansionhunter/v3
-    --output-name-eh=eh.csv 
+    --output-name-eh=eh.tsv 
 """
 
 
@@ -58,7 +58,7 @@ def eh_filter_extractor(input_dir):
 @click.option('--input-dir-eh', help='Input directory for ExpansionHunter VCFs')
 @click.option(
     '--output-name-eh',
-    help='Output file name for filter extractor output file eg eh.csv',
+    help='Output file name for filter extractor output file eg eh.tsv',
 )
 def main(
     input_dir_eh,
