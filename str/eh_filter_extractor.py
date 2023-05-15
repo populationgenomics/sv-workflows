@@ -75,9 +75,9 @@ def main(
     )
     j = b.new_python_job(name='EH filter status extractor')
 
-    eh_csv = j.call(eh_filter_extractor, input_dir_eh)
+    eh_tsv = j.call(eh_filter_extractor, input_dir_eh)
 
-    b.write_output(eh_csv.as_str(), output_path(output_name_eh, 'analysis'))
+    b.write_output(eh_tsv.as_str(), output_path(output_name_eh, 'analysis'))
 
     b.run(wait=False)
 
