@@ -64,7 +64,9 @@ def main(
     input_dir_eh,
     output_name_eh,
 ):
-    # pylint: disable=missing-function-docstring
+    """
+    some docstring
+    """
     # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
