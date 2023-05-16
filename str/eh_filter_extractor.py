@@ -28,16 +28,7 @@ config = get_config()
 def eh_filter_extractor(input_dir):
     """Creates a TSV file containing locus, sample_id, and binary filter status of EH VCFs"""
     files = to_path(input_dir).glob('*.vcf')
-    tsv = (
-        '\t'.join(
-            [
-                'sample_id',
-                'locus',
-                'e_qual',
-            ]
-        )
-        + '\n'
-    )
+    tsv = ['sample_id\tlocus\te_qual\n']
 
     for file in files:
         if isinstance(file, GSPath):
