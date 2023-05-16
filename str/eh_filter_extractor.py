@@ -39,7 +39,7 @@ def eh_filter_extractor(input_dir):
         for variant in reader:
             locus = f'{variant.CHROM}:{variant.POS}'
             e_qual = str(variant.FILTER)
-            tsv = tsv + ('\t'.join([sample_id, locus, e_qual]) + '\n')
+            tsv.append(f'{sample_id}\t{locus}\t{e_qual}\n')
     return tsv
 
 
