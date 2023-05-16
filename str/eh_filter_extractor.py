@@ -46,9 +46,7 @@ def eh_filter_extractor(input_dir):
         reader = VCFReader(file)
         sample_id = str(reader.samples[0])
         for variant in reader:
-            chr = str(variant.CHROM)
-            start = str(variant.POS)
-            locus = f'{chr}:{start}'
+            locus = f'{variant.CHROM}:{variant.POS}'
             e_qual = str(variant.FILTER)
             tsv = tsv + ('\t'.join([sample_id, locus, e_qual]) + '\n')
     return tsv
