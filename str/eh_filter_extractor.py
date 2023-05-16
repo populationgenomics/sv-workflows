@@ -42,9 +42,9 @@ def eh_filter_extractor(input_dir):
         for variant in reader:
             locus = f'{variant.CHROM}:{variant.POS}'
             e_qual = str(variant.FILTER)
-            if e_qual == 'LowDepth' and locus in low_depth_dict.keys():
+            if e_qual == 'LowDepth' and locus in low_depth_dict:
                 low_depth_dict[locus].append(sample_id)
-            elif e_qual == 'LowDepth' and locus not in low_depth_dict.keys():
+            elif e_qual == 'LowDepth' and locus not in low_depth_dict:
                 low_depth_dict[locus] = [sample_id]
     low_depth_json = json.dumps(low_depth_dict, indent=4)
     return low_depth_json
