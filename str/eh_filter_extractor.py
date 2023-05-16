@@ -7,7 +7,7 @@ This script extracts the EH binary filter (PASS/LowDepth) for all EH VCFs found 
 analysis-runner --access-level standard --dataset tob-wgs --description \
     'EH Filter Extractor' --output-dir 'str/expansionhunter/v3-eh-filter-extractor' \
     eh_filter_extractor.py \
-    --input-dir-eh=gs://cpg-tob-wgs-main/str/expansionhunter/v3
+    --input-dir-eh=gs://cpg-tob-wgs-main/str/expansionhunter/v3 \
     --output-name-eh=eh.tsv 
 """
 
