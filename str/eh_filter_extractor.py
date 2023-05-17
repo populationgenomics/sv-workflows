@@ -31,14 +31,14 @@ def eh_filter_extractor(input_dir):
 
     files = to_path(input_dir).glob('*.vcf')
     low_depth_dict = defaultdict(list)
+    local_file = 'local.vcf'
     for file in files:
-        if isinstance(file, GSPath):
-            file.copy(file.name)
-            file = file.name
-        else:
+        if not isinstance(file, GSPath):
             logging.warning(f'There is a file path that is not a GSPath: {file}')
+            continue
 
-        reader = VCFReader(file)
+        file.copy(local_file)
+        reader = VCFReader(local_file)
         sample_id = str(reader.samples[0])
         for variant in reader:
             locus = f'{variant.CHROM}:{variant.POS}'
@@ -71,6 +71,7 @@ def main(
         backend=backend, default_python_image=config['workflow']['driver_image']
     )
     j = b.new_python_job(name='EH filter status extractor')
+    j.storage('20Gi')
 
     eh_json = j.call(eh_filter_extractor, input_dir_eh)
 
