@@ -12,8 +12,8 @@ analysis-runner --access-level standard --dataset tob-wgs --description \
 
 import json
 import logging
-import click
 from collections import defaultdict
+import click
 from cloudpathlib import GSPath
 from cyvcf2 import VCFReader
 import hailtop.batch as hb
