@@ -36,7 +36,7 @@ def eh_filter_extractor(input_dir):
         if not isinstance(file, GSPath):
             logging.warning(f'There is a file path that is not a GSPath: {file}')
             continue
-            
+
         file.copy(local_file)
         reader = VCFReader(local_file)
         sample_id = str(reader.samples[0])
