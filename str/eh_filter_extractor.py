@@ -13,6 +13,7 @@ analysis-runner --access-level standard --dataset tob-wgs --description \
 import json
 import logging
 import click
+from collections import defaultdict
 from cloudpathlib import GSPath
 from cyvcf2 import VCFReader
 import hailtop.batch as hb
@@ -29,7 +30,7 @@ def eh_filter_extractor(input_dir):
     """Creates a JSON file keyed by locus with value being a list of sample_ids with binary filter status == "LowDepth" in EH VCFs"""
 
     files = to_path(input_dir).glob('*.vcf')
-    low_depth_dict = {}
+    low_depth_dict = defaultdict(list)
     for file in files:
         if isinstance(file, GSPath):
             file.copy(file.name)
@@ -42,10 +43,8 @@ def eh_filter_extractor(input_dir):
         for variant in reader:
             locus = f'{variant.CHROM}:{variant.POS}'
             e_qual = str(variant.FILTER)
-            if e_qual == 'LowDepth' and locus in low_depth_dict:
+            if e_qual == 'LowDepth':
                 low_depth_dict[locus].append(sample_id)
-            elif e_qual == 'LowDepth' and locus not in low_depth_dict:
-                low_depth_dict[locus] = [sample_id]
     low_depth_json = json.dumps(low_depth_dict, indent=4)
     return low_depth_json
 
