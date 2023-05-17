@@ -71,6 +71,7 @@ def main(
         backend=backend, default_python_image=config['workflow']['driver_image']
     )
     j = b.new_python_job(name='EH filter status extractor')
+    j.storage('50Gi')
 
     eh_json = j.call(eh_filter_extractor, input_dir_eh)
 
