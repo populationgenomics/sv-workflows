@@ -91,12 +91,11 @@ def main(
     eh_regions = b.read_input(variant_catalog)
 
     # Iterate over each sample to call Expansion Hunter
-    for cram_obj in crams_path:
+    for cpg_sample_id, cram_obj in crams_by_id.items():
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
         crams = b.read_input_group(
             **{'cram': cram_obj['output'], 'cram.crai': cram_obj['output'] + '.crai'}
         )
-        cpg_sample_id = cram_obj['id']
 
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
