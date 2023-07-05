@@ -3,9 +3,9 @@
 
 """
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
-Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
+Required input: --variant-catalog (file path to variant catalog), --dataset, and internal sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs TOB1XXXX TOB1XXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs CPG26 CPG18
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -17,10 +17,7 @@ import logging
 import click
 import hailtop.batch as hb
 
-from sample_metadata.model.analysis_type import AnalysisType
-from sample_metadata.model.analysis_query_model import AnalysisQueryModel
-from sample_metadata.apis import AnalysisApi, SampleApi
-from sample_metadata.models import AnalysisStatus
+from metamist.graphql import gql, query
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
@@ -37,10 +34,10 @@ EH_IMAGE = config['images']['expansionhunter']
 # input dataset
 @click.option('--dataset', help='dataset eg tob-wgs')
 # input sample ID
-@click.argument('external-wgs-ids', nargs=-1)
+@click.argument('input_cpg_sids', nargs=-1)
 @click.command()
 def main(
-    variant_catalog, dataset, external_wgs_ids: list[str]
+    variant_catalog, dataset, input_cpg_sids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -49,45 +46,53 @@ def main(
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
 
-    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        dataset, list(external_wgs_ids)
-    )
-    cpg_id_to_external_id = {
-        cpg_id: external_wgs_id
-        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
-    }
     if dataset in ['tob-wgs', 'hgdp']:
         ref_fasta = (
             'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
     else:
         ref_fasta = reference_path('broad/ref_fasta')
-    if dataset == 'tob-wgs':
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequencing_type': 'genome', 'source': 'nagim'},
-        )
-    else:
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequencing_type': 'genome'},
-        )
-    crams_path = AnalysisApi().query_analyses(analysis_query_model)
-    cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
-    cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
-    if cpg_sids_without_crams:
-        external_wgs_sids_without_crams = ', '.join(
-            cpg_id_to_external_id[sid] for sid in cpg_sids_without_crams
-        )
+
+    cram_retrieval_query = gql(
+        """
+        query MyQuery($input_cpg_sids: [String!]!) {
+    project(name: "tob-wgs") {
+        sequencingGroups(id: {in_: $input_cpg_sids}) {
+        id
+        sample {
+            externalId
+        }
+        analyses(type: {eq: "cram"}, active: {eq: true}) {
+            output
+            timestampCompleted
+        }
+        }
+    }
+    }
+        """
+    )
+    response = query(cram_retrieval_query, variables={'input_cpg_sids': input_cpg_sids})
+    valid_cpg_ids = []
+    crams_path = []
+    for i in response['project']['sequencingGroups']:
+        valid_cpg_ids.append(i['id'])
+        if (
+            len(i['analyses']) > 1
+        ):  # if there are multiple crams stored per CPG sample ID
+            for cram in i['analyses']:
+                if (
+                    "archive" not in cram['output']
+                ):  # select the cram that is not archived
+                    cram['id'] = i['id']  # ensures cpg id is stored in the dictionary
+                    crams_path.append(cram)
+                    break
+
+    if len(valid_cpg_ids) != len(input_cpg_sids):
+        cpg_sids_without_crams = set(input_cpg_sids) - set(valid_cpg_ids)
         logging.warning(
-            f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
+            f'There were some samples without CRAMs: {cpg_sids_without_crams}'
         )
+
     eh_regions = b.read_input(variant_catalog)
 
     # Iterate over each sample to call Expansion Hunter
@@ -96,7 +101,7 @@ def main(
         crams = b.read_input_group(
             **{'cram': cram_obj['output'], 'cram.crai': cram_obj['output'] + '.crai'}
         )
-        cpg_sample_id = cram_obj['sample_ids'][0]
+        cpg_sample_id = cram_obj['id']
 
         # Working with CRAM files requires the reference fasta
         ref = b.read_input_group(
