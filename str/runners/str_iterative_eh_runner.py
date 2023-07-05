@@ -58,15 +58,16 @@ def main(
         query MyQuery($dataset: String!,$input_cpg_sids: [String!]!) {
     project(name: $dataset) {
         sequencingGroups(id: {in_: $input_cpg_sids}) {
-            id
-            sample {
-                externalId
-            }
-            analyses(type: {eq: 'cram'}, active: {eq: true}) {
-                output
-                timestampCompleted
-            }
+        id
+        sample {
+            externalId
         }
+        analyses(type: {eq: "cram"}, active: {eq: true}) {
+            output
+            timestampCompleted
+        }
+        }
+    }
     }
         """
     )
