@@ -81,7 +81,7 @@ def main(
             # ignore archived CRAMs
             if 'archive' in cram['output']:
                 continue
-            crams_by_id['id'] = cram
+            crams_by_id[i['id']] = cram
 
     if len(crams_by_id) != len(input_cpg_sids):
         cpg_sids_without_crams = set(input_cpg_sids) - set(crams_by_id.keys())
