@@ -71,7 +71,10 @@ def main(
     }
         """
     )
-    response = query(cram_retrieval_query, variables={'dataset': dataset,'input_cpg_sids': input_cpg_sids})
+    response = query(
+        cram_retrieval_query,
+        variables={'dataset': dataset, 'input_cpg_sids': input_cpg_sids},
+    )
     valid_cpg_ids = []
     crams_path = []
     for i in response['project']['sequencingGroups']:
