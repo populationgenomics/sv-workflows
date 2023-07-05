@@ -74,18 +74,16 @@ def main(
         cram_retrieval_query,
         variables={'dataset': dataset, 'input_cpg_sids': input_cpg_sids},
     )
-    valid_cpg_ids = []
-    crams_path = []
+    crams_by_id = {}
     for i in response['project']['sequencingGroups']:
         for cram in i['analyses']:
-            if 'archive' not in cram['output']:  # select the cram that is not archived
-                cram['id'] = i['id']  # ensures cpg id is stored in the dictionary
-                crams_path.append(cram)
-                valid_cpg_ids.append(i['id'])
-                break
+            # ignore archived CRAMs
+            if 'archive' in cram['output']:
+                continue
+            crams_by_id['id'] = cram
 
-    if len(valid_cpg_ids) != len(input_cpg_sids):
-        cpg_sids_without_crams = set(input_cpg_sids) - set(valid_cpg_ids)
+    if len(crams_by_id) != len(input_cpg_sids):
+        cpg_sids_without_crams = set(input_cpg_sids) - set(crams_by_id.keys())
         logging.warning(
             f'There were some samples without CRAMs: {cpg_sids_without_crams}'
         )
