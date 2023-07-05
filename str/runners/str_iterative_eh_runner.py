@@ -77,17 +77,14 @@ def main(
     valid_cpg_ids = []
     crams_path = []
     for i in response['project']['sequencingGroups']:
-        valid_cpg_ids.append(i['id'])
-        if (
-            len(i['analyses']) > 1
-        ):  # if there are multiple crams stored per CPG sample ID
-            for cram in i['analyses']:
-                if (
-                    'archive' not in cram['output']
-                ):  # select the cram that is not archived
-                    cram['id'] = i['id']  # ensures cpg id is stored in the dictionary
-                    crams_path.append(cram)
-                    break
+        for cram in i['analyses']:
+            if (
+                'archive' not in cram['output']
+            ):  # select the cram that is not archived
+                cram['id'] = i['id']  # ensures cpg id is stored in the dictionary
+                crams_path.append(cram)
+                valid_cpg_ids.append(i['id'])
+                break
 
     if len(valid_cpg_ids) != len(input_cpg_sids):
         cpg_sids_without_crams = set(input_cpg_sids) - set(valid_cpg_ids)
