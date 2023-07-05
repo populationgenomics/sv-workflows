@@ -62,7 +62,7 @@ def main(
         sample {
             externalId
         }
-        analyses(type: {eq: "cram"}, active: {eq: true}) {
+        analyses(type: {eq: 'cram'}, active: {eq: true}) {
             output
             timestampCompleted
         }
