@@ -55,8 +55,8 @@ def main(
 
     cram_retrieval_query = gql(
         """
-        query MyQuery($input_cpg_sids: [String!]!) {
-    project(name: "tob-wgs") {
+        query MyQuery($dataset: String!,$input_cpg_sids: [String!]!) {
+    project(name: $dataset) {
         sequencingGroups(id: {in_: $input_cpg_sids}) {
         id
         sample {
@@ -71,7 +71,7 @@ def main(
     }
         """
     )
-    response = query(cram_retrieval_query, variables={'input_cpg_sids': input_cpg_sids})
+    response = query(cram_retrieval_query, variables={'dataset': dataset,'input_cpg_sids': input_cpg_sids})
     valid_cpg_ids = []
     crams_path = []
     for i in response['project']['sequencingGroups']:
@@ -81,7 +81,7 @@ def main(
         ):  # if there are multiple crams stored per CPG sample ID
             for cram in i['analyses']:
                 if (
-                    "archive" not in cram['output']
+                    'archive' not in cram['output']
                 ):  # select the cram that is not archived
                     cram['id'] = i['id']  # ensures cpg id is stored in the dictionary
                     crams_path.append(cram)
