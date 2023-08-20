@@ -4,7 +4,7 @@
 This script prepares GangSTR/EH VCF files for input into mergeSTR. 
 Required input: --caller, --input-dir, and external sample IDs
 For example: 
-analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' merge_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs TOBXXXX TOBXXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' merge_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs CPGXXXX CPGXXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -38,17 +38,13 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 # input directory
 @click.option('--input-dir', help='gs://...')
 # input sample ID
-@click.argument('external-wgs-ids', nargs=-1)
+@click.argument('internal-wgs-ids', nargs=-1)
 @click.command()
 def main(
-    dataset, caller, input_dir, external_wgs_ids: list[str]
+    dataset, caller, input_dir, internal_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-
-    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        dataset, list(external_wgs_ids)
-    )
 
     # Working with CRAM files requires the reference fasta
     ref = b.read_input_group(
@@ -62,7 +58,7 @@ def main(
 
     input_vcf_dict = {}
 
-    for id in list(external_id_to_cpg_id.values()):
+    for id in list(internal_wgs_ids):
         input_vcf_dict[id] = os.path.join(input_dir, f'{id}_{caller}.vcf')
 
     for id in list(input_vcf_dict.keys()):
@@ -93,7 +89,7 @@ def main(
                 """
             )
             # Output writing
-            output_path_eh = output_path(f'{id}_eh')
+            output_path_eh = output_path(f'{id}_eh', 'analysis')
             b.write_output(bcftools_job.vcf_sorted, output_path_eh)
 
         else:
@@ -113,7 +109,7 @@ def main(
                 """
             )
             # Output writing
-            output_path_gangstr = output_path(f'{id}_gangstr')
+            output_path_gangstr = output_path(f'{id}_gangstr', 'analysis')
             b.write_output(bcftools_job.vcf_sorted, output_path_gangstr)
 
     b.run(wait=False)
