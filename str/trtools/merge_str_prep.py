@@ -13,8 +13,6 @@ pip install sample-metadata hail click
 import os
 import click
 
-from sample_metadata.apis import SampleApi
-
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
 from cpg_workflows.batch import get_batch
@@ -33,15 +31,13 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
     help='gangstr or eh',
     type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
 )
-# dataset
-@click.option('--dataset', help='dataset eg tob-wgs')
 # input directory
 @click.option('--input-dir', help='gs://...')
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
 @click.command()
 def main(
-    dataset, caller, input_dir, internal_wgs_ids: list[str]
+    caller, input_dir, internal_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
