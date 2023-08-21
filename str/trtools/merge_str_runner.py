@@ -45,15 +45,8 @@ def main(
     trtools_job.cpu(8)
     # mount using cloudfuse for reading input files
     trtools_job.cloudfuse(f'cpg-{dataset}-main-analysis', '/vcffuse')
-    trtools_job.declare_resource_group(vcf_output={'vcf': '{root}.vcf'})
+    trtools_job.declare_resource_group(vcf_output={'vcf': '{root}.vcf','vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'})
 
-    # Initialise job to zip and index the mergeSTR VCF prior to writing to output
-    zip_job = b.new_job(name='Zip and index')
-    zip_job.image(TRTOOLS_IMAGE)
-    zip_job.cpu(8)
-    zip_job.declare_resource_group(
-        vcf_output={'vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
-    )
 
     # read in input file paths
     vcffuse_path = []
@@ -67,18 +60,13 @@ def main(
     trtools_job.command(
         f"""
     mergeSTR --vcfs {vcffuse_path} --out {trtools_job.vcf_output} --vcftype eh
-    """
-    )
-
-    zip_job.command(
-        f"""
-    bgzip -c {trtools_job.vcf_output['vcf']} > {zip_job.vcf_output['vcf.gz']}
-    tabix -p vcf {zip_job.vcf_output['vcf.gz']}
+    bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
+    tabix -p vcf {trtools_job.vcf_output['vcf.gz']}
     """
     )
 
     output_path_name = output_path(f'mergeSTR_{num_samples}_samples_eh', 'analysis')
-    b.write_output(zip_job.vcf_output, output_path_name)
+    b.write_output(trtools_job.vcf_output['vcf.gz'], output_path_name)
 
     b.run(wait=False)
 
