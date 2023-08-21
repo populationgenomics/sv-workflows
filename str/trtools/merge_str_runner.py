@@ -71,7 +71,8 @@ def main(
     )
 
     output_path_name = output_path(f'mergeSTR_{num_samples}_samples_eh', 'analysis')
-    b.write_output(trtools_job.vcf_output['vcf.gz'], output_path_name)
+    b.write_output(trtools_job.vcf_output['vcf.gz'], f'{output_path_name}.vcf.gz')
+    b.write_output(trtools_job.vcf_output['vcf.gz.tbi'], f'{output_path_name}.vcf.gz.tbi')
 
     b.run(wait=False)
 
