@@ -44,9 +44,14 @@ def main(
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.cpu(8)
     # mount using cloudfuse for reading input files
-    trtools_job.cloudfuse(f'cpg-{dataset}-main-analysis', '/vcffuse')
-    trtools_job.declare_resource_group(vcf_output={'vcf': '{root}.vcf','vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'})
-
+    trtools_job.cloudfuse(f'cpg-{dataset}-test-analysis', '/vcffuse')
+    trtools_job.declare_resource_group(
+        vcf_output={
+            'vcf': '{root}.vcf',
+            'vcf.gz': '{root}.vcf.gz',
+            'vcf.gz.tbi': '{root}.vcf.gz.tbi',
+        }
+    )
 
     # read in input file paths
     vcffuse_path = []
