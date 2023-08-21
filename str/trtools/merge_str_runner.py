@@ -66,7 +66,7 @@ def main(
         f"""
     mergeSTR --vcfs {vcffuse_path} --out {trtools_job.vcf_output} --vcftype eh
     bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
-    tabix -p vcf {trtools_job.vcf_output['vcf.gz']}
+    tabix -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
     """
     )
 
