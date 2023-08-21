@@ -54,8 +54,7 @@ def main(
 
     input_vcf_dict = {}
 
-    for id in list(internal_wgs_ids):
-        input_vcf_dict[id] = os.path.join(input_dir, f'{id}_{caller}.vcf')
+    input_vcf_dict = {id: os.path.join(input_dir, f'{id}_{caller}.vcf') for id in internal_wgs_ids}
 
     for id in list(input_vcf_dict.keys()):
         bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
