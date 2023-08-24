@@ -85,8 +85,13 @@ def main(
     crams_by_id = {}
     for i in response['project']['sequencingGroups']:
         for cram in i['analyses']:
-            # ignore archived CRAMs
-            if 'archive' in cram['output']:
+            # ignore archived CRAMs and ONT crams
+            try:
+                if 'archive' in cram['output']:
+                    continue
+                elif 'ont' in cram['output']:
+                    continue
+            except: 
                 continue
             crams_by_id[i['id']] = cram
 
