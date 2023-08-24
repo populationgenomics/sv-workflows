@@ -88,9 +88,9 @@ def main(
             # ignore archived CRAMs and ONT crams
             if cram['output'] is None:
                 continue
-            elif 'archive' in cram['output']:
+            if 'archive' in cram['output']:
                 continue
-            elif 'ont' in cram['output']:
+            if 'ont' in cram['output']:
                 continue
             crams_by_id[i['id']] = cram
 
