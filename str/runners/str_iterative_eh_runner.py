@@ -35,9 +35,15 @@ EH_IMAGE = config['images']['expansionhunter']
 @click.option('--dataset', help='dataset eg tob-wgs')
 # input sample ID
 @click.argument('input_cpg_sids', nargs=-1)
+@click.option(
+    '--max-parallel-jobs',
+    type=int,
+    default=50,
+    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
+)
 @click.command()
 def main(
-    variant_catalog, dataset, input_cpg_sids: list[str]
+    variant_catalog, dataset, max_parallel_jobs, input_cpg_sids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -91,7 +97,7 @@ def main(
         )
 
     eh_regions = b.read_input(variant_catalog)
-
+    jobs = []
     # Iterate over each sample to call Expansion Hunter
     for cpg_sample_id, cram_obj in crams_by_id.items():
         # Making sure Hail Batch would localize both CRAM and the correponding CRAI index
@@ -114,7 +120,11 @@ def main(
         # ExpansionHunter job initialisation
         eh_job = b.new_job(name=f'ExpansionHunter:{cpg_sample_id} running')
         eh_job.image(EH_IMAGE)
-        eh_job.storage('50G')
+        # limit parallelisation
+        if len(jobs) >= max_parallel_jobs:
+            eh_job.depends_on(jobs[-max_parallel_jobs])
+        jobs.append(eh_job)
+        eh_job.storage('70G')
         eh_job.cpu(8)
 
         eh_job.declare_resource_group(
