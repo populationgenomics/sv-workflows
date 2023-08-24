@@ -25,7 +25,7 @@ from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
-EH_IMAGE = config['images']['expansionhunter']
+EH_IMAGE = config['images']['expansionhunter_bw2']
 
 
 # inputs:
