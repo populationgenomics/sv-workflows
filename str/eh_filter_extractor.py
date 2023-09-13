@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This script extracts sample/locus combinations with EH binary filter set to "LowDepth" for all EH VCFs found within a directory into a .JSON format to be used as an annotation file in Hail query. 
+This script extracts sample/REPID combinations with EH binary filter set to "LowDepth" for all EH VCFs found within a directory into a .JSON format to be used as an annotation file in Hail query. 
 
 analysis-runner --access-level standard --dataset tob-wgs --description \
     'EH Filter Extractor' --output-dir 'str/expansionhunter/v3-eh-filter-extractor' \
@@ -27,7 +27,7 @@ config = get_config()
 
 
 def eh_filter_extractor(input_dir):
-    """Creates a JSON file keyed by locus with value being a list of sample_ids with binary filter status == "LowDepth" in EH VCFs"""
+    """Creates a JSON file keyed by REPID with value being a list of sample_ids with binary filter status == "LowDepth" in EH VCFs"""
 
     files = to_path(input_dir).glob('*.vcf')
     low_depth_dict = defaultdict(list)
@@ -41,10 +41,10 @@ def eh_filter_extractor(input_dir):
         reader = VCFReader(local_file)
         sample_id = str(reader.samples[0])
         for variant in reader:
-            locus = f'{variant.CHROM}:{variant.POS}'
+            repid = variant.INFO.get('REPID')
             e_qual = str(variant.FILTER)
             if e_qual == 'LowDepth':
-                low_depth_dict[locus].append(sample_id)
+                low_depth_dict[repid].append(sample_id)
     low_depth_json = json.dumps(low_depth_dict, indent=4)
     return low_depth_json
 
