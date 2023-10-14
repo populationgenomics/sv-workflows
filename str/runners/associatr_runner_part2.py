@@ -59,7 +59,7 @@ def get_gene_cis_file(chromosome:str, gene: str, window_size: int, ofile_path: s
         hl.get_reference('GRCh38').lengths[chrom]
     )
     data = {'chromosome': chrom, 'start': left_boundary, 'end': right_boundary}
-    pd.DataFrame(data, index=[gene]).to_csv(ofile_path, sep='\t', header=False)
+    pd.DataFrame(data).to_csv(ofile_path, sep='\t', header=False)
 
 
 # inputs:
