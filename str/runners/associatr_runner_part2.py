@@ -19,6 +19,7 @@ import hail as hl
 import hailtop.batch as hb
 import json
 
+from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
 
@@ -95,7 +96,7 @@ def main(
 
     for celltype in celltypes.split(','):
         for chromosome in chromosomes.split(','):
-            with open(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json'), 'r') as file:
+            with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json'), 'r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
                 # get gene cis-window file
