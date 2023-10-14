@@ -24,8 +24,6 @@ from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
 
-
-
 from cpg_utils.hail_batch import output_path, init_batch, dataset_path
 
 config = get_config()
@@ -76,44 +74,22 @@ def pseudobulk(celltype, chromosomes):
         pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
 
         # write genes array to GCS directly
-        with to_path(output_path(f'input_files/scRNA_gene_lists/{cell_type}/{chromosome}_{cell_type}_filtered_genes.json')).open('w') as write_handle:
-            json.dump(list(expression_adata.var_names), write_handle)
-
-
-
-
+        with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('w') as write_handle:
+            json.dump(list(pseudobulk_gene_names), write_handle)
 
 # inputs:
 @click.option('--celltypes')
 @click.option('--chromosomes', help=' eg chr22')
-@click.option(
-    '--max-parallel-jobs',
-    type=int,
-    default=50,
-    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
-)
-@click.option('--cis-window-size', type=int,default=100000)
 @click.command()
 def main(
-    celltypes, chromosomes, max_parallel_jobs, cis_window_size
+    celltypes, chromosomes
 ):
     """
-    Run associaTR processing pipeline
+    Run associatr_runner_part1.py
     """
     config = get_config()
     b = get_batch()
     init_batch()
-
-    # Setup MAX concurrency by genes
-    _dependent_jobs: list[hb.batch.job.Job] = []
-
-    def manage_concurrency_for_job(job: hb.batch.job.Job):
-        """
-        To avoid having too many jobs running at once, we have to limit concurrency.
-        """
-        if len(_dependent_jobs) >= max_parallel_jobs:
-            job.depends_on(_dependent_jobs[-max_parallel_jobs])
-        _dependent_jobs.append(job)
 
     for celltype in celltypes.split(','):
         pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
