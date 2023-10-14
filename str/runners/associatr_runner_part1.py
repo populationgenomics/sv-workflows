@@ -11,12 +11,13 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part1.py  --celltypes=Plasma --chromosomes=chr22 \
+     associatr_runner_part1.py  --celltypes=Plasma --chromosomes=chr22
 
 """
 import click
 import pandas as pd
 import hail as hl
+import hailtop.batch as hb
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
