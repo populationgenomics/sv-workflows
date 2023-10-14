@@ -93,7 +93,7 @@ def main(
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    for celltype in celltypes:
+    for celltype in celltypes.split(','):
         pheno_cov_sc_input = pd.read_csv(f'gs://cpg-tob-wgs-test/sc-input/{celltype}_sc_pheno_cov.tsv', sep='\t')
         pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
 
@@ -112,7 +112,7 @@ def main(
         gencode_genes = gencode[(gencode.feature == "gene")][['seqname', 'start', 'end', 'attribute']].copy().reset_index().drop('index', axis=1)
         gencode_genes["gene_name"],gencode_genes["ENSG"], gencode_genes["gene_level"] = zip(*gencode_genes.attribute.apply(lambda x: gene_info(x)))
 
-        for chromosome in chromosomes:
+        for chromosome in chromosomes.split(','):
             #subset gencode annotation file for relevant chromosome
             gencode_genes = gencode_genes[gencode_genes['seqname']=='chr22']
 
