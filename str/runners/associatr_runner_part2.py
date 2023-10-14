@@ -10,13 +10,14 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part1.py  --celltypes=Plasma --chromosomes=chr22
+     associatr_runner_part2.py  --celltypes=Plasma --chromosomes=chr22
 
 """
 import click
 import pandas as pd
 import hail as hl
 import hailtop.batch as hb
+import json
 
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
@@ -94,7 +95,8 @@ def main(
 
     for celltype in celltypes.split(','):
         for chromosome in chromosomes.split(','):
-            pseudobulk_gene_names = pd.read_json(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json'))
+            with open(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json'), 'r') as file:
+                pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
                 # get gene cis-window file
                 gene_cis_job = b.new_python_job(name=f'Build cis window files for {gene} [{celltype};{chromosome}]')
