@@ -96,7 +96,7 @@ def main(
 
     for celltype in celltypes.split(','):
         for chromosome in chromosomes.split(','):
-            with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json'), 'r') as file:
+            with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
                 # get gene cis-window file
