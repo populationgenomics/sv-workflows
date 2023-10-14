@@ -14,19 +14,16 @@ It aims to:
      associatr_runner_part1.py  --celltypes=Plasma --chromosomes=chr22
 
 """
-import json
 import click
 import pandas as pd
 import hail as hl
 import hailtop.batch as hb
-from cpg_utils import to_path
 
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
 
 
-
-from cpg_utils.hail_batch import output_path, init_batch, dataset_path
+from cpg_utils.hail_batch import output_path, init_batch
 
 config = get_config()
 
@@ -37,7 +34,7 @@ def gene_info(x):
     g_id = g_id.split('.')[0] #removes the version number from ENSG ids
     return (g_name,g_id)
 
-def pseudobulk(celltype, chromosomes):
+def pseudobulk(celltype):
     pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
     pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
@@ -57,30 +54,34 @@ def pseudobulk(celltype, chromosomes):
     gencode_genes = gencode[(gencode.feature == "gene")][['seqname', 'start', 'end', 'attribute']].copy().reset_index().drop('index', axis=1)
     gencode_genes["gene_name"],gencode_genes["ENSG"], = zip(*gencode_genes.attribute.apply(lambda x: gene_info(x)))
 
-    for chromosome in chromosomes.split(','):
-        #subset gencode annotation file for relevant chromosome
-        gencode_genes = gencode_genes[gencode_genes['seqname']==chromosome]
-
-        # Extract the gene names from the 'gene_name' column of 'gencode' DataFrame
-        gencode_gene_names = set(gencode_genes['gene_name'])
-
-        # Get the genes with scRNA data
-        gene_columns = [col for col in pseudobulk.columns if col != 'individual']
-
-        # Create a set of gene names (representing gens with scRNA data), by iterating through columns
-        pseudobulk_gene_names = set()
-        for col in gene_columns:
-            pseudobulk_gene_names.add(col)
-
-        # Find the intersection of gene names between genes with scRNA data and GENCODE gene names
-        pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
-
-        # write genes array to GCS directly
-        with to_path(output_path(f'input_files/scRNA_gene_lists/{cell_type}/{chromosome}_{cell_type}_filtered_genes.json')).open('w') as write_handle:
-            json.dump(list(expression_adata.var_names), write_handle)
+    return gencode_genes
 
 
+def get_gene_cis_file(chromosome:str, gene: str, window_size: int, ofile_path: str):
+    """Get gene cis window file"""
+    gencode = pd.read_table("gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/gene_location_files/gencode.v42.annotation.gff3.gz", comment="#", sep = "\t", names = ['seqname', 'source', 'feature', 'start' , 'end', 'score', 'strand', 'frame', 'attribute'])
+    gencode_genes = gencode[(gencode.feature == "gene")][['seqname', 'start', 'end', 'attribute']].copy().reset_index().drop('index', axis=1)
+    gencode_genes["gene_name"],gencode_genes["ENSG"] = zip(*gencode_genes.attribute.apply(gene_info))
 
+    #subset gencode annotation file for relevant chromosome
+    gencode_genes = gencode_genes[gencode_genes['seqname']==chromosome]
+
+    #subsets gencode annotation file for relevant gene
+    gene_info_gene = gencode_genes[gencode_genes['gene_name'] == gene]
+
+    init_batch()
+    # get chromosome, coordinates
+    chrom = gene_info_gene['seqname'].values[0]
+    start_coordinate = gene_info_gene['start'].values[0]
+    end_coordinate = gene_info_gene['end'].values[0]
+    # get gene body position (start and end) and add window
+    left_boundary = max(1, start_coordinate - window_size)
+    right_boundary = min(
+        end_coordinate + window_size,
+        hl.get_reference('GRCh38').lengths[chrom]
+    )
+    data = {'chromosome': chrom, 'start': left_boundary, 'end': right_boundary}
+    pd.DataFrame(data, index=[gene]).to_csv(ofile_path, sep='\t', header=False)
 
 
 # inputs:
@@ -118,8 +119,35 @@ def main(
     for celltype in celltypes.split(','):
         pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
         pseudobulk_job.image(config['workflow']['driver_image'])
-        pseudobulk_job.call(pseudobulk,celltype, chromosomes)
+        gencode_genes = pseudobulk_job.call(pseudobulk,celltype)
 
+        for chromosome in chromosomes.split(','):
+            #subset gencode annotation file for relevant chromosome
+            gencode_genes = gencode_genes[gencode_genes['seqname']=='chr22']
+
+            # Extract the gene names from the 'gene_name' column of 'gencode' DataFrame
+            gencode_gene_names = set(gencode_genes['gene_name'])
+
+            # Get the genes with scRNA data
+            gene_columns = [col for col in pseudobulk.columns if col != 'individual']
+
+            # Create a set of gene names (representing gens with scRNA data), by iterating through columns
+            pseudobulk_gene_names = set()
+            for col in gene_columns:
+                pseudobulk_gene_names.add(col)
+
+            # Find the intersection of gene names between genes with scRNA data and GENCODE gene names
+            pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
+
+            for gene in pseudobulk_gene_names:
+                # get gene cis-window file
+                gene_cis_job = b.new_python_job(name=f'Build cis window files for {gene} [{celltype};{chromosome}]')
+                gene_cis_job.image(config['workflow']['driver_image'])
+                gene_cis_job.call(
+                        get_gene_cis_file,chromosome,gene,cis_window_size,gene_cis_job.ofile
+                    )
+                b.write_output(gene_cis_job.ofile, output_path(f'input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'))
+                manage_concurrency_for_job(gene_cis_job)
     b.run(wait=False)
 
 if __name__ == '__main__':
