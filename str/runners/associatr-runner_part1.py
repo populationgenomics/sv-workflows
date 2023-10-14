@@ -92,7 +92,7 @@ def main(
         _dependent_jobs.append(job)
 
     for celltype in celltypes:
-        pheno_cov_sc_input = pd.read_csv(f'{celltype}_sc_pheno_cov.tsv', sep='\t')
+        pheno_cov_sc_input = pd.read_csv(f'gs://cpg-tob-wgs-test/sc-input/{celltype}_sc_pheno_cov.tsv', sep='\t')
         pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
 
         ## pseudo-bulk (mean gene counts, grouped by individual)
