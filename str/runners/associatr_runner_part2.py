@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script is step 1 of 2 for running associaTR.
+This script is step 2 of 3 for running associaTR.
 It aims to:
- - intersect genes found in the scRNA dataset (cell type + chr specific) with GENCODE v42 annotations.
- - output cis window files for each gene in the above intersection
+ - output cis window files for each gene with scRNA data (cell type + chr specific)
 
  analysis-runner --dataset "tob-wgs" \
     --description "prepare expression files for associatr" \
@@ -33,29 +32,6 @@ def gene_info(x):
     g_id = list(filter(lambda x: 'gene_id' in x,  x.split(";")))[0].split("=")[1]
     g_id = g_id.split('.')[0] #removes the version number from ENSG ids
     return (g_name,g_id)
-
-def pseudobulk(celltype):
-    pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
-    pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
-    pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
-
-    ## pseudo-bulk (mean gene counts, grouped by individual)
-    # Group by 'individuals' and 'genes', then calculate the mean
-    pseudobulk = pheno_sc_input.groupby('individual').mean()
-    pseudobulk.reset_index(inplace=True)
-
-    # Basic filter - remove genes where all entries are either 0 or NA in the pseudobulk data frame
-    mask = (pseudobulk == 0) | pseudobulk.isna()
-    mask = mask.all(axis=0)
-    pseudobulk = pseudobulk.loc[:, ~mask]
-
-    #intersect genes with gencode v42
-    gencode = pd.read_table("gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/gene_location_files/gencode.v42.annotation.gff3.gz", comment="#", sep = "\t", names = ['seqname', 'source', 'feature', 'start' , 'end', 'score', 'strand', 'frame', 'attribute'])
-    gencode_genes = gencode[(gencode.feature == "gene")][['seqname', 'start', 'end', 'attribute']].copy().reset_index().drop('index', axis=1)
-    gencode_genes["gene_name"],gencode_genes["ENSG"], = zip(*gencode_genes.attribute.apply(lambda x: gene_info(x)))
-
-    return gencode_genes
-
 
 def get_gene_cis_file(chromosome:str, gene: str, window_size: int, ofile_path: str):
     """Get gene cis window file"""
@@ -117,28 +93,8 @@ def main(
         _dependent_jobs.append(job)
 
     for celltype in celltypes.split(','):
-        pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
-        pseudobulk_job.image(config['workflow']['driver_image'])
-        gencode_genes = pseudobulk_job.call(pseudobulk,celltype)
-
         for chromosome in chromosomes.split(','):
-            #subset gencode annotation file for relevant chromosome
-            gencode_genes = gencode_genes[gencode_genes['seqname']=='chr22']
-
-            # Extract the gene names from the 'gene_name' column of 'gencode' DataFrame
-            gencode_gene_names = set(gencode_genes['gene_name'])
-
-            # Get the genes with scRNA data
-            gene_columns = [col for col in pseudobulk.columns if col != 'individual']
-
-            # Create a set of gene names (representing gens with scRNA data), by iterating through columns
-            pseudobulk_gene_names = set()
-            for col in gene_columns:
-                pseudobulk_gene_names.add(col)
-
-            # Find the intersection of gene names between genes with scRNA data and GENCODE gene names
-            pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
-
+            pseudobulk_gene_names = pd.read_json(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json'))
             for gene in pseudobulk_gene_names:
                 # get gene cis-window file
                 gene_cis_job = b.new_python_job(name=f'Build cis window files for {gene} [{celltype};{chromosome}]')

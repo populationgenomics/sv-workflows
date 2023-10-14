@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script is step 1 of 2 for running associaTR.
+This script is step 1 of 3 for running associaTR.
 It aims to:
  - intersect genes found in the scRNA dataset (cell type + chr specific) with GENCODE v42 annotations.
- - output cis window files for each gene in the above intersection
 
  analysis-runner --dataset "tob-wgs" \
     --description "prepare expression files for associatr" \
@@ -93,6 +92,8 @@ def main(
 
     for celltype in celltypes.split(','):
         pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
+        pseudobulk_job.storage('4G')
+        pseudobulk_job.cpu(4)
         pseudobulk_job.image(config['workflow']['driver_image'])
         pseudobulk_job.call(pseudobulk,celltype, chromosomes)
 
