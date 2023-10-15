@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script is step 3 of 3 for running associaTR.
+This script is step 3 of 4 for running associaTR.
 It aims to:
 - filter VCF to intersect with cis window of a gene
 - run associatr on the Gene + cell type with STR genotypes
@@ -70,12 +70,7 @@ def main(
             for gene in pseudobulk_gene_names:
                 # intersect VCF with cis window of the gene
                 cis_window_file = b.read_input(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/cis_window_files/{celltype}/{chromosome}/{gene}_100000bp.bed')
-                bedtools_job = b.new_job(name=f'Filter variant VCF for intersection with {gene} cis window [{celltype};{chromosome}]')
-                bedtools_job.image(get_config()['images']['bedtools'])
-                bedtools_job.storage('4G')
-                bedtools_job.command(
-                    f'bedtools intersect -a {variant_vcf} -b {cis_window_file} -header > {bedtools_job.ofile}'
-                )
+                #need to extract the gene start and end from the cis window file for input into 'region'
 
                 #run associaTR job on the gene
                 #associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
@@ -98,4 +93,4 @@ if __name__ == '__main__':
 
 
 
-
+#dumpSTR --vcf mergeSTR_1057_samples_eh.vcf.gz --out filtered_mergeSTR_results --vcftype eh --min-locus-callrate 0.9 --min-locus-het 0.1 --min-locus-hwep 0.0001 --filter-regions segDupRegions_hg38_sorted.bed.gz

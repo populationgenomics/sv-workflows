@@ -4,6 +4,7 @@
 This script is step 1 of 3 for running associaTR.
 It aims to:
  - intersect genes found in the scRNA dataset (cell type + chr specific) with GENCODE v42 annotations.
+ - prepares gene_pheno_cov numpy objects (input file for associatr)
 
  analysis-runner --dataset "tob-wgs" \
     --description "prepare expression files for associatr" \
@@ -19,6 +20,7 @@ import pandas as pd
 import hail as hl
 import hailtop.batch as hb
 from cpg_utils import to_path
+import numpy as np
 
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
@@ -37,7 +39,10 @@ def gene_info(x):
 def pseudobulk(celltype, chromosomes):
     pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
+    covariates = pheno_cov_sc_input[['individual','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2']]
+    covariates = covariates.dropna() #removes rows with NaN values (likely a data processing error)
     pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
+    sample_mapping_df = pd.read_csv('gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/OneK1K_CPG_IDs.tsv', delimiter='\t')
 
     ## pseudo-bulk (mean gene counts, grouped by individual)
     # Group by 'individuals' and 'genes', then calculate the mean
@@ -48,6 +53,11 @@ def pseudobulk(celltype, chromosomes):
     mask = (pseudobulk == 0) | pseudobulk.isna()
     mask = mask.all(axis=0)
     pseudobulk = pseudobulk.loc[:, ~mask]
+
+    #add CPG IDs to pseudobulk dataframe
+    pseudobulk = pseudobulk.merge(sample_mapping_df, left_on='individual', right_on = "OneK1K_ID", how='inner')
+    pseudobulk['InternalID']=pseudobulk['InternalID'].str[3:] #removes 'CPG' prefix because associaTR requires strictly numeric IDs
+    pseudobulk['InternalID'] = pseudobulk['InternalID'].astype(float)
 
     #intersect genes with gencode v42
     gencode = pd.read_table("gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/gene_location_files/gencode.v42.annotation.gff3.gz", comment="#", sep = "\t", names = ['seqname', 'source', 'feature', 'start' , 'end', 'score', 'strand', 'frame', 'attribute'])
@@ -75,6 +85,12 @@ def pseudobulk(celltype, chromosomes):
         # write genes array to GCS directly
         with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('w') as write_handle:
             json.dump(list(pseudobulk_gene_names), write_handle)
+
+        for gene in pseudobulk_gene_names:
+            gene_pheno = pseudobulk[['individual','InternalID',gene]]
+            gene_pheno_cov = gene_pheno.merge(covariates, on = "individual", how = 'inner').drop_duplicates().drop(columns=['individual']).to_numpy()
+            with to_path(output_path(f'input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy')).open('w') as numpy_handle:
+                np.save(numpy_handle, gene_pheno_cov)
 
 # inputs:
 @click.option('--celltypes')
