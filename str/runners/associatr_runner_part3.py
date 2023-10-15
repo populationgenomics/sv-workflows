@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script is step 3 of 3 for running associaTR.
+This script is step 3 of 4 for running associaTR.
 It aims to:
-- filter VCF to intersect with cis window of a gene
-- run associatr on the Gene + cell type with STR genotypes
+- apply locus filters to mergedSTR VCF
+- bgzip and tabix the filtered VCF for input into associatr
+- remove "CPG" prefix from CPG IDs in the VCF
 
  analysis-runner --dataset "tob-wgs" \
-    --description "prepare expression files for associatr" \
+    --description "Run dumpSTR" \
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part2.py  --celltypes=Plasma --chromosomes=chr22
+    associatr_runner_part3.py --file-path=gs://cpg-tob-wgs-main-analysis/str/expansionhunter/v4-mergeSTR/chr22/mergeSTR_1057_samples_eh.vcf.gz \
+    --filter-regions=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/segDupRegions/segDupRegions_hg38_sorted.bed.gz
+
 
 """
 import click
@@ -28,66 +31,69 @@ from cpg_workflows.batch import get_batch
 from cpg_utils.hail_batch import output_path, init_batch
 
 config = get_config()
-
+TRTOOLS_IMAGE = config['images']['trtools']
 
 
 # inputs:
-@click.option('--celltypes')
-@click.option('--chromosomes', help=' eg chr22')
+# file-path
+@click.option('--file-path', help='gs://... to the output of mergedSTR')
+# caller
 @click.option(
-    '--max-parallel-jobs',
-    type=int,
-    default=50,
-    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
+    '--vcftype',
+    help='gangstr or eh',
+    type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
+    default='eh',
+)
+# locus level filters
+@click.option(
+    '--min-locus-call-rate',
+    help=' Minimum locus call rate (provided as a proportion eg 0.9)',
+    default=0.9,
+    type=float,
+)
+@click.option(
+    '--min-locus-het',
+    help='Minimum locus heterozygosity (provided as a proportion eg 0.1)',
+    default=0.1,
+    type=float,
+)
+@click.option(
+    '--min-locus-hwep',
+    help='Minimum locus Hardy-Weinberg equilibrium p-value (provided as a proportion eg 0.0001)',
+    default=0.0001,
+    type=float,
+)
+@click.option(
+    '--filter-regions',
+    help='Regions to filter out of the VCF',
+    default=None,
+    type=str,
 )
 @click.command()
-def main(
-    celltypes, chromosomes, max_parallel_jobs, cis_window_size
-):
-    """
-    Run associaTR processing pipeline
-    """
-    config = get_config()
+def main(file_path, vcftype, min_locus_call_rate, min_locus_het, min_locus_hwep, filter_regions):
+
     b = get_batch()
-    init_batch()
+    merged_str_vcf = b.read_input(file_path)
+    merged_str_vcf_tbi = b.read_input(file_path + '.tbi')
+    trtools_job = b.new_job(name = f'Run dumpSTR locus level filters')
+    trtools_job.storage('20G')
+    trtools_job.cpu(4)
+    trtools_job.image(TRTOOLS_IMAGE)
+    trtools_job.declare_resource_group(ofile={'filtered_vcf': '{root}.vcf',
+                                              'loclog': '{root}.loclog.tab',
+                                              'samplog':'{root}.samplog.tab'
+                                              })
 
-    # Setup MAX concurrency by genes
-    _dependent_jobs: list[hb.batch.job.Job] = []
+    if filter_regions is not None:
+        filter_regions_input = b.read_input(filter_regions)
+        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --filter-regions {filter_regions_input}')
+    else:
+        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep}')
 
-    def manage_concurrency_for_job(job: hb.batch.job.Job):
-        """
-        To avoid having too many jobs running at once, we have to limit concurrency.
-        """
-        if len(_dependent_jobs) >= max_parallel_jobs:
-            job.depends_on(_dependent_jobs[-max_parallel_jobs])
-        _dependent_jobs.append(job)
+    b.write_output(trtools_job.ofile, output_path(f'input_files/dumpSTR/filtered_mergeSTR_results'))
 
-    for celltype in celltypes.split(','):
-        for chromosome in chromosomes.split(','):
-            variant_vcf = b.read_input("gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.vcf")
-            with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('r') as file:
-                pseudobulk_gene_names = json.load(file)
-            for gene in pseudobulk_gene_names:
-                # intersect VCF with cis window of the gene
-                cis_window_file = b.read_input(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/cis_window_files/{celltype}/{chromosome}/{gene}_100000bp.bed')
-                bedtools_job = b.new_job(name=f'Filter variant VCF for intersection with {gene} cis window [{celltype};{chromosome}]')
-                bedtools_job.image(get_config()['images']['bedtools'])
-                bedtools_job.storage('4G')
-                bedtools_job.command(
-                    f'bedtools intersect -a {variant_vcf} -b {cis_window_file} -header > {bedtools_job.ofile}'
-                )
+    #dumpSTR --vcf mergeSTR_1057_samples_eh.vcf.gz --out filtered_mergeSTR_results --vcftype eh --min-locus-callrate 0.9 --min-locus-het 0.1 --min-locus-hwep 0.0001 --filter-regions segDupRegions_hg38_sorted.bed.gz
 
-                #run associaTR job on the gene
-                #associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
-                #associatr_job.image(get_config()['images']['trtools'])
-                #associatr_job.storage('8G')
-                #associatr_job.depends_on(bedtools_job)
-                #associatr_job.command(
-                #    f' associaTR association_results.tsv {bedtools_job.ofile} {celltype}_{chromosome}_{gene}  '
-                #)
-
-                b.write_output(gene_cis_job.ofile, output_path(f'input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'))
-                manage_concurrency_for_job(gene_cis_job)
     b.run(wait=False)
 
 if __name__ == '__main__':
