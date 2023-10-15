@@ -12,7 +12,7 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-    associatr_runner_part3.py --file-path=gs://cpg-tob-wgs-main-analysis/str/expansionhunter/v4-mergeSTR/chr22/mergeSTR_1057_samples_eh.vcf.gz \
+    associatr_runner_part3.py --file-path=gs://cpg-tob-wgs-test/str/expansionhunter/v4-mergeSTR/chr22/mergeSTR_1057_samples_eh.vcf.gz \
     --filter-regions=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/segDupRegions/segDupRegions_hg38_sorted.bed.gz
 
 
@@ -86,6 +86,7 @@ def main(file_path, vcftype, min_locus_call_rate, min_locus_het, min_locus_hwep,
 
     if filter_regions is not None:
         filter_regions_input = b.read_input(filter_regions)
+        filter_regions_input_tbi = b.read_input(filter_regions + '.tbi')
         trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --filter-regions {filter_regions_input}')
     else:
         trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep}')
