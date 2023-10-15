@@ -85,9 +85,13 @@ def main(file_path, vcftype, min_locus_call_rate, min_locus_het, min_locus_hwep,
                                               })
 
     if filter_regions is not None:
-        filter_regions_input = b.read_input(filter_regions)
-        filter_regions_input_tbi = b.read_input(filter_regions + '.tbi')
-        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --filter-regions {filter_regions_input}')
+        filter_regions_input = b.read_input_group(
+            **dict(
+                base = filter_regions,
+                tbi = filter_regions + '.tbi',
+            )
+        )
+        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --filter-regions {filter_regions_input.base}')
     else:
         trtools_job.command(f' dumpSTR --vcf {merged_str_vcf} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep}')
 
