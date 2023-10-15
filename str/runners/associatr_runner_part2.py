@@ -117,13 +117,14 @@ def main(
                         get_gene_cis_file,chromosome,gene,cis_window_size,gene_cis_job.ofile
                     )
                 b.write_output(gene_cis_job.ofile, output_path(f'input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'))
-                manage_concurrency_for_job(gene_cis_job)
+
                 # get gene phenotype and covariate numpy objects
                 gene_pheno_cov_job = b.new_python_job(name=f'Build phenotype and covariate numpy objects for {gene} [{celltype};{chromosome}]')
                 gene_pheno_cov_job.image(config['workflow']['driver_image'])
                 gene_pheno_cov_job.call(
                         gene_pheno_cov,gene,celltype, gene_pheno_cov_job.ofile
                     )
+                gene_pheno_cov_job.ofile.add_extension('.npy')
                 b.write_output(gene_pheno_cov_job.ofile, output_path(f'input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy'))
                 manage_concurrency_for_job(gene_pheno_cov_job)
 
