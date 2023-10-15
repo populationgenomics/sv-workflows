@@ -4,7 +4,7 @@
 This script is step 1 of 3 for running associaTR.
 It aims to:
  - intersect genes found in the scRNA dataset (cell type + chr specific) with GENCODE v42 annotations.
- - prepares gene_pheno_cov numpy objects (input file for associatr)
+ - write out pseudobulk and covariates files for each cell type
 
  analysis-runner --dataset "tob-wgs" \
     --description "prepare expression files for associatr" \
@@ -59,6 +59,12 @@ def pseudobulk(celltype, chromosomes):
     pseudobulk['InternalID']=pseudobulk['InternalID'].str[3:] #removes 'CPG' prefix because associaTR requires strictly numeric IDs
     pseudobulk['InternalID'] = pseudobulk['InternalID'].astype(float)
 
+    ##write pseudobulk to GCS
+    pseudobulk.to_csv(output_path(f'input_files/pseudobulk/{celltype}_pseudobulk.tsv'), sep='\t', index=False)
+
+    ##write covariates to GCS
+    covariates.to_csv(output_path(f'input_files/covariates/{celltype}_covariates.tsv'), sep='\t', index=False)
+
     #intersect genes with gencode v42
     gencode = pd.read_table("gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/gene_location_files/gencode.v42.annotation.gff3.gz", comment="#", sep = "\t", names = ['seqname', 'source', 'feature', 'start' , 'end', 'score', 'strand', 'frame', 'attribute'])
     gencode_genes = gencode[(gencode.feature == "gene")][['seqname', 'start', 'end', 'attribute']].copy().reset_index().drop('index', axis=1)
@@ -85,12 +91,6 @@ def pseudobulk(celltype, chromosomes):
         # write genes array to GCS directly
         with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('w') as write_handle:
             json.dump(list(pseudobulk_gene_names), write_handle)
-
-        for gene in pseudobulk_gene_names:
-            gene_pheno = pseudobulk[['individual','InternalID',gene]]
-            gene_pheno_cov = gene_pheno.merge(covariates, on = "individual", how = 'inner').drop_duplicates().drop(columns=['individual']).to_numpy()
-            with to_path(output_path(f'input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy')).open('w') as numpy_handle:
-                np.save(numpy_handle, gene_pheno_cov)
 
 # inputs:
 @click.option('--celltypes')
