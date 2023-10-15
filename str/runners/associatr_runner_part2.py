@@ -4,6 +4,7 @@
 This script is step 2 of 3 for running associaTR.
 It aims to:
  - output cis window files for each gene with scRNA data (cell type + chr specific)
+ - output gene-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner --dataset "tob-wgs" \
     --description "prepare expression files for associatr" \
@@ -18,6 +19,7 @@ import pandas as pd
 import hail as hl
 import hailtop.batch as hb
 import json
+import numpy as np
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
@@ -29,7 +31,7 @@ from cpg_utils.hail_batch import output_path, init_batch
 config = get_config()
 
 def gene_info(x):
-    # Extract ENSG and gene_level of evidence
+    """ Helper function to extract ENSG IDs and gene names for a given gene from GENCODE file """
     g_name = list(filter(lambda x: 'gene_name' in x,  x.split(";")))[0].split("=")[1]
     g_id = list(filter(lambda x: 'gene_id' in x,  x.split(";")))[0].split("=")[1]
     g_id = g_id.split('.')[0] #removes the version number from ENSG ids
@@ -61,6 +63,15 @@ def get_gene_cis_file(chromosome:str, gene: str, window_size: int, ofile_path: s
     data = {'chromosome': chrom, 'start': left_boundary, 'end': right_boundary}
     pd.DataFrame(data, index=[gene]).to_csv(ofile_path, sep='\t', header=False, index = False)
 
+def gene_pheno_cov(gene,celltype,ofile_path):
+
+    """Get gene phenotype and covariate numpy objects"""
+
+    pseudobulk = pd.read_csv(output_path(f'input_files/pseudobulk/{celltype}_pseudobulk.tsv'), sep='\t')
+    covariates = pd.read_csv(output_path(f'input_files/covariates/{celltype}_covariates.tsv'), sep='\t')
+    gene_pheno = pseudobulk[['individual','InternalID',gene]]
+    gene_pheno_cov = gene_pheno.merge(covariates, on = "individual", how = 'inner').drop_duplicates().drop(columns=['individual']).to_numpy()
+    np.save(ofile_path, gene_pheno_cov)
 
 # inputs:
 @click.option('--celltypes')
@@ -107,6 +118,15 @@ def main(
                     )
                 b.write_output(gene_cis_job.ofile, output_path(f'input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'))
                 manage_concurrency_for_job(gene_cis_job)
+                # get gene phenotype and covariate numpy objects
+                gene_pheno_cov_job = b.new_python_job(name=f'Build phenotype and covariate numpy objects for {gene} [{celltype};{chromosome}]')
+                gene_pheno_cov_job.image(config['workflow']['driver_image'])
+                gene_pheno_cov_job.call(
+                        gene_pheno_cov,gene,celltype, gene_pheno_cov_job.ofile
+                    )
+                b.write_output(gene_pheno_cov_job.ofile, output_path(f'input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy'))
+                manage_concurrency_for_job(gene_pheno_cov_job)
+
     b.run(wait=False)
 
 if __name__ == '__main__':
