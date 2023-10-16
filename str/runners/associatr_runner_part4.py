@@ -77,7 +77,7 @@ def main(
             )
             with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
-            for gene in pseudobulk_gene_names:
+            for gene in ['MYH9', 'RTCB', 'TSPO', 'ADSL','PES1']:
                 gene_cis_window_file = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
                 gene_pheno_cov = b.read_input(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy')
