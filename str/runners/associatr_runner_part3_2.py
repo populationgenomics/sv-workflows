@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+# pylint: disable=missing-function-docstring,no-member
+"""
+This script is step 3 of 4 for running associaTR.
+It aims to:
+- apply locus filters to mergedSTR VCF
+- bgzip and tabix the filtered VCF for input into associatr
+- remove "CPG" prefix from CPG IDs in the VCF
+
+ analysis-runner --dataset "tob-wgs" \
+    --description "Run dumpSTR" \
+    --access-level "test" \
+    --output-dir "hoptan-str/associatr" \
+    --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
+    associatr_runner_part3_2.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.filtered_vcf \
+
+
+"""
+import click
+
+from cpg_utils.config import get_config
+from cpg_workflows.batch import get_batch
+
+from cpg_utils.hail_batch import output_path
+
+config = get_config()
+TRTOOLS_IMAGE = config['images']['trtools']
+BCFTOOLS_IMAGE = config['images']['bcftools']
+
+
+# inputs:
+# file-path
+@click.option('--file-path', help='gs://... to the output of mergedSTR')
+@click.command()
+def main(file_path):
+
+    b = get_batch()
+
+    bcftools_job = b.new_job(name = f'bgzip and tabix the dumpSTR output VCF')
+    bcftools_job.image(BCFTOOLS_IMAGE)
+    bcftools_job.storage('20G')
+    bcftools_job.cpu(4)
+
+    bcftools_job.declare_resource_group(
+        vcf_output={'renamed_ids_vcf':'{root}.vcf','vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
+    )
+    bcftools_job.command(
+        f"""
+    set -ex;
+    echo "replacing CPG prefix with empty string";
+    sed 's/CPG//' {file_path} > {bcftools_job.vcf_output['renamed_ids_vcf']};
+
+    echo "compressing {bcftools_job.vcf_output['renamed_ids_vcf']}";
+    bcftools sort {bcftools_job.vcf_output['renamed_ids_vcf']} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+
+    echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
+    tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
+"""
+    )
+    b.write_output(bcftools_job.vcf_output['vcf.gz'], output_path(f'input_files/dumpSTR/filtered_mergeSTR_results'))
+    b.write_output(bcftools_job.vcf_output['vcf.gz.tbi'], output_path(f'input_files/dumpSTR/filtered_mergeSTR_results'))
+    #dumpSTR --vcf mergeSTR_1057_samples_eh.vcf.gz --out filtered_mergeSTR_results --vcftype eh --min-locus-callrate 0.9 --min-locus-het 0.1 --min-locus-hwep 0.0001 --filter-regions segDupRegions_hg38_sorted.bed.gz
+
+
+    b.run(wait=False)
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
+
+
+
+
+
+
+
