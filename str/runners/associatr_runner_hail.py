@@ -24,14 +24,14 @@ from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
 from cpg_utils import to_path
 
-from cpg_utils.hail_batch import output_path
+from cpg_utils.hail_batch import output_path, init_batch
 
 config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 def call_level_filter(file_path, ofile_path):
-    hl.init()
+    init_batch()
     mt = hl.import_vcf(file_path,force_bgz = True)
 
     #wrangle CI (confidence interval columns)
