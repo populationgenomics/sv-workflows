@@ -126,7 +126,17 @@ def call_level_filter(file_path, gcs_path):
     #drop unneccessary columns prior to writing out
     mt = mt.drop(mt.mode)
     mt = mt.drop('allele_1_rep_length','allele_2_rep_length','allele_1_REPCI_over_CN','allele_2_REPCI_over_CN','allele_1_minus_mode','allele_2_minus_mode')
-    hl.export_vcf(mt, gcs_path)
+
+    # Define the new field order for 'info'
+    new_info_field_order = ['END', 'REF', 'REPID', 'RL', 'RU', 'VARID', 'HRUN', 'HET', 'HWEP', 'AC', 'REFAC']
+    new_info = hl.struct(**{field: mt.info[field] for field in new_info_field_order})
+    mt = mt.annotate_rows(info=new_info)
+
+    # Set the QUAL field to missing for all rows
+    mt = mt.annotate_entries(QUAL=hl.missing('float64'))
+
+    # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
+    hl.export_vcf(mt, gcs_path, append_to_header = "gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt")
 
 @click.option(
     '--file-path',
