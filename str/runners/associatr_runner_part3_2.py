@@ -34,6 +34,7 @@ def file_parser(file_path, ofile_path):
         for line in infile:
             modified_line = line.replace("CPG", "")
             outfile.write(modified_line)
+
 # inputs:
 # file-path
 @click.option('--file-path', help='gs://... to the output of mergedSTR')
