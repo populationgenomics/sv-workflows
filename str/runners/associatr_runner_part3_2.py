@@ -20,6 +20,7 @@ import click
 
 from cpg_utils.config import get_config
 from cpg_workflows.batch import get_batch
+from cpg_utils import to_path
 
 from cpg_utils.hail_batch import output_path
 
@@ -35,6 +36,11 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def main(file_path):
 
     b = get_batch()
+    relabelled_file = "relabeled_dumpSTR.vcf"
+    with to_path(file_path).open('r') as infile, open(relabelled_file, 'w') as outfile:
+        for line in infile:
+            modified_line = line.replace("CPG", "")
+            outfile.write(modified_line)
 
     bcftools_job = b.new_job(name = f'bgzip and tabix the dumpSTR output VCF')
     bcftools_job.image(BCFTOOLS_IMAGE)
@@ -47,8 +53,8 @@ def main(file_path):
     bcftools_job.command(
         f"""
     set -ex;
-    echo "replacing CPG prefix with empty string and compressing";
-    sed 's/CPG//' {file_path} | bcftools sort | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+    echo "Compressing";
+     bcftools sort {relabelled_file} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
