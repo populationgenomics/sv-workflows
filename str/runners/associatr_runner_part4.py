@@ -10,7 +10,8 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part2.py  --celltypes=Plasma --chromosomes=chr22
+     associatr_runner_part4.py  --celltypes=Plasma --chromosomes=chr22 \
+    --vcf-file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz
 
 """
 import click
@@ -36,6 +37,7 @@ def gene_cis_window_file_reader(file_path):
 # inputs:
 @click.option('--celltypes')
 @click.option('--chromosomes', help=' eg chr22')
+@click.option('--vcf-file-path', help='gs://... to the output of dumpSTR')
 @click.option(
     '--max-parallel-jobs',
     type=int,
@@ -45,7 +47,7 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--cis-window-size', type=int,default=100000)
 @click.command()
 def main(
-    celltypes, chromosomes, max_parallel_jobs, cis_window_size
+    celltypes, chromosomes, max_parallel_jobs, cis_window_size,vcf_file_path
 ):
     """
     Run associaTR processing pipeline
@@ -69,8 +71,8 @@ def main(
         for chromosome in chromosomes.split(','):
             variant_vcf =b.read_input_group(
             **dict(
-            base = "gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz",
-            tbi = "gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz" + '.tbi',
+            base = vcf_file_path,
+            tbi = vcf_file_path + '.tbi',
             )
             )
             with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('r') as file:
@@ -93,7 +95,7 @@ def main(
                     f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region}"
                 )
 
-                b.write_output(associatr_job.association_results, output_path(f'output-files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.tsv'))
+                b.write_output(associatr_job.association_results, output_path(f'output-files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp'))
                 manage_concurrency_for_job(associatr_job)
     b.run(wait=False)
 

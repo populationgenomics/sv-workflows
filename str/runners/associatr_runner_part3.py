@@ -96,9 +96,9 @@ def main(file_path, vcftype, min_locus_call_rate, min_locus_het, min_locus_hwep,
                 tbi = filter_regions + '.tbi',
             )
         )
-        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf.base} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --filter-regions {filter_regions_input.base} --use-length')
+        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf.base} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --filter-regions {filter_regions_input.base} --use-length --drop-filtered')
     else:
-        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf.base} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --use-length')
+        trtools_job.command(f' dumpSTR --vcf {merged_str_vcf.base} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --use-length --drop-filtered')
 
     b.write_output(trtools_job.ofile, output_path(f'input_files/dumpSTR/dumpSTR_filtered'))
 
