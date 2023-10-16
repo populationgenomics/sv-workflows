@@ -21,7 +21,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 def file_parser(file_path, ofile_path):
-    output_file = "relabelled.vcf"
     with to_path(file_path).open('r') as infile, open(ofile_path, 'w') as outfile:
         for line in infile:
             modified_line = line.replace("CPG", "")
