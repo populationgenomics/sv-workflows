@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script is step 3 of 4 for running associaTR.
+This script is step 4 of 4 for running associaTR.
 It aims to:
-- filter VCF to intersect with cis window of a gene
 - run associatr on the Gene + cell type with STR genotypes
 
  analysis-runner --dataset "tob-wgs" \
@@ -29,7 +28,10 @@ from cpg_utils.hail_batch import output_path, init_batch
 
 config = get_config()
 
-
+def gene_cis_window_file_reader(file_path):
+    cis_window = pd.read_csv(file_path, sep='\t', header=None)
+    cis_window.columns = ['chrom', 'start', 'end']
+    return f'{cis_window["chrom"][0]}:{cis_window["start"][0]}-{cis_window["end"][0]}'
 
 # inputs:
 @click.option('--celltypes')
@@ -40,6 +42,7 @@ config = get_config()
     default=50,
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
+@click.option('--cis-window-size', type=int,default=100000)
 @click.command()
 def main(
     celltypes, chromosomes, max_parallel_jobs, cis_window_size
@@ -64,25 +67,34 @@ def main(
 
     for celltype in celltypes.split(','):
         for chromosome in chromosomes.split(','):
-            variant_vcf = b.read_input("gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.vcf")
+            variant_vcf =b.read_input_group(
+            **dict(
+            base = "gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz",
+            tbi = "gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz" + '.tbi',
+            )
+            )
             with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
-                # intersect VCF with cis window of the gene
-                cis_window_file = b.read_input(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/cis_window_files/{celltype}/{chromosome}/{gene}_100000bp.bed')
+                gene_cis_window_file = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
+                cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
+                gene_pheno_cov = b.read_input(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy')
                 #need to extract the gene start and end from the cis window file for input into 'region'
 
                 #run associaTR job on the gene
-                #associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
-                #associatr_job.image(get_config()['images']['trtools'])
-                #associatr_job.storage('8G')
-                #associatr_job.depends_on(bedtools_job)
-                #associatr_job.command(
-                #    f' associaTR association_results.tsv {bedtools_job.ofile} {celltype}_{chromosome}_{gene}  '
-                #)
+                associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
+                associatr_job.image(get_config()['images']['trtools'])
+                associatr_job.storage('8G')
+                associatr_job.cpu(4)
+                associatr_job.declare_resource_group(
+                    association_results={'tsv': '{root}.tsv'}
+                )
+                associatr_job.command(
+                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region}"
+                )
 
-                b.write_output(gene_cis_job.ofile, output_path(f'input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'))
-                manage_concurrency_for_job(gene_cis_job)
+                b.write_output(associatr_job.association_results, output_path(f'output-files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.tsv'))
+                manage_concurrency_for_job(associatr_job)
     b.run(wait=False)
 
 if __name__ == '__main__':

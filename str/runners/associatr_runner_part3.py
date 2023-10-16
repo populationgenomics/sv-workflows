@@ -100,8 +100,7 @@ def main(file_path, vcftype, min_locus_call_rate, min_locus_het, min_locus_hwep,
     else:
         trtools_job.command(f' dumpSTR --vcf {merged_str_vcf.base} --out {trtools_job.ofile} --vcftype {vcftype} --min-locus-callrate {min_locus_call_rate} --min-locus-het {min_locus_het} --min-locus-hwep {min_locus_hwep} --use-length')
 
-    b.write_output(trtools_job.ofile['loclog.tab'], output_path(f'input_files/dumpSTR/dumpSTR_loclog.tab'))
-    b.write_output(trtools_job.ofile['samplog.tab'], output_path(f'input_files/dumpSTR/dumpSTR_samplog.tab'))
+    b.write_output(trtools_job.ofile, output_path(f'input_files/dumpSTR/dumpSTR_filtered'))
 
     file_parser_job = b.new_python_job(name = f'file_parser')
     file_parser_job.image(config['workflow']['driver_image'])
