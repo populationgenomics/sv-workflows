@@ -36,6 +36,7 @@ def file_parser(file_path, ofile_path):
             modified_line = line.replace("CPG", "")
             outfile.write(modified_line)
 
+
 # inputs:
 # file-path
 @click.option('--file-path', help='gs://... to the output of mergedSTR')
@@ -47,27 +48,6 @@ def main(file_path):
     file_parser_job.image(config['workflow']['driver_image'])
     file_parser_job.call(file_parser, file_path, file_parser_job.ofile)
 
-    bcftools_job = b.new_job(name = f'bgzip and tabix the dumpSTR output VCF')
-    bcftools_job.image(BCFTOOLS_IMAGE)
-    bcftools_job.storage('20G')
-    bcftools_job.cpu(4)
-
-    bcftools_job.declare_resource_group(
-        vcf_output={'vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
-    )
-    bcftools_job.command(
-        f"""
-    set -ex;
-    echo "Compressing";
-     bcftools sort {file_parser_job.ofile} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
-
-    echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
-    tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
-"""
-    )
-    b.write_output(bcftools_job.vcf_output, output_path(f'input_files/dumpSTR/dumpSTR_filtered'))
-    #b.write_output(bcftools_job.vcf_output['vcf.gz.tbi'], output_path(f'input_files/dumpSTR/dumpSTR_filtered.vcf.gz.tbi'))
-    #dumpSTR --vcf mergeSTR_1057_samples_eh.vcf.gz --out filtered_mergeSTR_results --vcftype eh --min-locus-callrate 0.9 --min-locus-het 0.1 --min-locus-hwep 0.0001 --filter-regions segDupRegions_hg38_sorted.bed.gz
 
 
     b.run(wait=False)
