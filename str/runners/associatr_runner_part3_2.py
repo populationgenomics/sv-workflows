@@ -36,6 +36,8 @@ def main(file_path):
     b = get_batch()
     file_parser_job = b.new_python_job(name = f'file_parser')
     file_parser_job.image(config['workflow']['driver_image'])
+    file_parser_job.storage('20G')
+    file_parser_job.cpu(4)
     file_parser_job.call(file_parser, file_path, file_parser_job.ofile)
 
     bcftools_job = b.new_job(name = f'bgzip and tabix the dumpSTR output VCF')
