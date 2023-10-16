@@ -12,7 +12,7 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-    associatr_runner_part3_2.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.filtered_vcf \
+    associatr_runner_part3_2.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.filtered_vcf
 
 
 """
@@ -42,23 +42,20 @@ def main(file_path):
     bcftools_job.cpu(4)
 
     bcftools_job.declare_resource_group(
-        vcf_output={'renamed_ids_vcf':'{root}.vcf','vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
+        vcf_output={'vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
     )
     bcftools_job.command(
         f"""
     set -ex;
-    echo "replacing CPG prefix with empty string";
-    sed 's/CPG//' {file_path} > {bcftools_job.vcf_output['renamed_ids_vcf']};
-
-    echo "compressing {bcftools_job.vcf_output['renamed_ids_vcf']}";
-    bcftools sort {bcftools_job.vcf_output['renamed_ids_vcf']} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+    echo "replacing CPG prefix with empty string and compressing";
+    sed 's/CPG//' {file_path} | bcftools sort | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
 """
     )
-    b.write_output(bcftools_job.vcf_output['vcf.gz'], output_path(f'input_files/dumpSTR/filtered_mergeSTR_results'))
-    b.write_output(bcftools_job.vcf_output['vcf.gz.tbi'], output_path(f'input_files/dumpSTR/filtered_mergeSTR_results'))
+    b.write_output(bcftools_job.vcf_output, output_path(f'input_files/dumpSTR/dumpSTR_filtered'))
+    #b.write_output(bcftools_job.vcf_output['vcf.gz.tbi'], output_path(f'input_files/dumpSTR/dumpSTR_filtered.vcf.gz.tbi'))
     #dumpSTR --vcf mergeSTR_1057_samples_eh.vcf.gz --out filtered_mergeSTR_results --vcftype eh --min-locus-callrate 0.9 --min-locus-het 0.1 --min-locus-hwep 0.0001 --filter-regions segDupRegions_hg38_sorted.bed.gz
 
 
