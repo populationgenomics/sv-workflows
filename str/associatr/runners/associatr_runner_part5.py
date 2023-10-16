@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script is step 4 of 4 for running associaTR.
+This script is step 5 of 5 for running associaTR.
 It aims to:
 - run associatr on the Gene + cell type with STR genotypes
 
@@ -10,7 +10,7 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part4.py  --celltypes=Plasma --chromosomes=chr22 \
+     associatr_runner_part5.py  --celltypes=Plasma --chromosomes=chr22 \
     --vcf-file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/hail_filtered.vcf.gz
 
 """
