@@ -34,6 +34,8 @@ def call_level_filter(file_path, ofile_path):
     init_batch()
     mt = hl.import_vcf(file_path,force_bgz = True)
 
+    #typically add in LowDepth filter, but the dumpSTR locus level filters seem to have removed them all
+
     #wrangle CI (confidence interval columns)
     mt = mt.annotate_entries(allele_1_rep_length=hl.int(mt.REPCN.split("/")[0]))
     mt = mt.annotate_entries(allele_2_rep_length = hl.if_else(hl.len(mt.REPCN.split("/")) ==2, hl.int(mt.REPCN.split("/")[1]), hl.missing('int32')))
@@ -123,7 +125,6 @@ def call_level_filter(file_path, ofile_path):
     )
     #drop unneccessary columns prior to writing out
     mt = mt.drop(mt.mode)
-    mt = mt.drop(mt.low_depth_quality)
     mt = mt.drop('allele_1_rep_length','allele_2_rep_length','allele_1_REPCI_over_CN','allele_2_REPCI_over_CN','allele_1_minus_mode_imputed','allele_2_minus_mode_imputed')
     hl.export_vcf(mt, ofile_path)
 
