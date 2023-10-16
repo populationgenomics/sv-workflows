@@ -6,11 +6,13 @@ It aims to:
 - apply locus filters to mergedSTR VCF
 - bgzip and tabix the filtered VCF for input into associatr
 - remove "CPG" prefix from CPG IDs in the VCF
+*only has to be run once per VCF file
 
  analysis-runner --dataset "tob-wgs" \
     --description "Run dumpSTR" \
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
+    --memory '20G' \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
     associatr_runner_part3_2.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.filtered_vcf
 
@@ -28,7 +30,11 @@ config = get_config()
 TRTOOLS_IMAGE = config['images']['trtools']
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
-
+def file_parser(file_path, ofile_path):
+    with to_path(file_path).open('r') as infile, open(ofile_path, 'w') as outfile:
+        for line in infile:
+            modified_line = line.replace("CPG", "")
+            outfile.write(modified_line)
 # inputs:
 # file-path
 @click.option('--file-path', help='gs://... to the output of mergedSTR')
@@ -36,11 +42,9 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def main(file_path):
 
     b = get_batch()
-    relabelled_file = "relabeled_dumpSTR.vcf"
-    with to_path(file_path).open('r') as infile, open(relabelled_file, 'w') as outfile:
-        for line in infile:
-            modified_line = line.replace("CPG", "")
-            outfile.write(modified_line)
+    file_parser_job = b.new_python_job(name = f'file_parser')
+    file_parser_job.image(config['workflow']['driver_image'])
+    file_parser_job.call(file_parser, file_path, file_parser_job.ofile)
 
     bcftools_job = b.new_job(name = f'bgzip and tabix the dumpSTR output VCF')
     bcftools_job.image(BCFTOOLS_IMAGE)
@@ -54,7 +58,7 @@ def main(file_path):
         f"""
     set -ex;
     echo "Compressing";
-     bcftools sort {relabelled_file} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+     bcftools sort {file_parser_job.ofile.as_str()} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
