@@ -3,9 +3,9 @@
 """
 This script is step 3 of 4 for running associaTR.
 It aims to:
-- apply locus filters to mergedSTR VCF
+- apply locus filters to mergedSTR VCF (using dumpSTR)
 - remove "CPG" prefix from CPG IDs in the VCF
-- bgzip and tabix the filtered VCF for input into associatr
+- bgzip and tabix the filtered VCF for input into Hail
 
  analysis-runner --dataset "tob-wgs" \
     --description "Run dumpSTR" \
