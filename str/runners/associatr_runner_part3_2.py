@@ -12,7 +12,6 @@ It aims to:
     --description "Run dumpSTR" \
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
-    --memory '20G' \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
     associatr_runner_part3_2.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/filtered_mergeSTR_results.filtered_vcf
 
@@ -58,7 +57,7 @@ def main(file_path):
         f"""
     set -ex;
     echo "Compressing";
-     bcftools sort {file_parser_job.ofile.as_str()} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+     bcftools sort {file_parser_job.ofile} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
