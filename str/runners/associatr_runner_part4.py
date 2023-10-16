@@ -11,7 +11,7 @@ It aims to:
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
      associatr_runner_part4.py  --celltypes=Plasma --chromosomes=chr22 \
-    --vcf-file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz
+    --vcf-file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/hail_filtered.vcf.gz
 
 """
 import click
@@ -92,7 +92,7 @@ def main(
                     association_results={'tsv': '{root}.tsv'}
                 )
                 associatr_job.command(
-                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region}"
+                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh"
                 )
 
                 b.write_output(associatr_job.association_results, output_path(f'output-files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp'))
