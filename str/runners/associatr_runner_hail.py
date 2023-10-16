@@ -125,7 +125,7 @@ def call_level_filter(file_path, ofile_path):
     )
     #drop unneccessary columns prior to writing out
     mt = mt.drop(mt.mode)
-    mt = mt.drop('allele_1_rep_length','allele_2_rep_length','allele_1_REPCI_over_CN','allele_2_REPCI_over_CN','allele_1_minus_mode_imputed','allele_2_minus_mode_imputed')
+    mt = mt.drop('allele_1_rep_length','allele_2_rep_length','allele_1_REPCI_over_CN','allele_2_REPCI_over_CN','allele_1_minus_mode','allele_2_minus_mode')
     hl.export_vcf(mt, ofile_path)
 
 @click.option(
