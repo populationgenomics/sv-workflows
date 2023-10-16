@@ -30,7 +30,7 @@ config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
-def call_level_filter(file_path, ofile_path):
+def call_level_filter(file_path):
     init_batch()
     mt = hl.import_vcf(file_path,force_bgz = True)
 
@@ -126,7 +126,7 @@ def call_level_filter(file_path, ofile_path):
     #drop unneccessary columns prior to writing out
     mt = mt.drop(mt.mode)
     mt = mt.drop('allele_1_rep_length','allele_2_rep_length','allele_1_REPCI_over_CN','allele_2_REPCI_over_CN','allele_1_minus_mode','allele_2_minus_mode')
-    hl.export_vcf(mt, ofile_path)
+    hl.export_vcf(mt, "output.vcf")
 
 @click.option(
     '--file-path',
@@ -141,7 +141,7 @@ def main(file_path):
     hail_job.image(config['workflow']['driver_image'])
     hail_job.storage('20G')
     hail_job.cpu(4)
-    hail_job.call(call_level_filter, file_path, hail_job.ofile)
+    hail_job.call(call_level_filter, file_path)
 
     bcftools_job = b.new_job(name = f'bgzip and tabix the Hail output VCF')
     bcftools_job.image(BCFTOOLS_IMAGE)
