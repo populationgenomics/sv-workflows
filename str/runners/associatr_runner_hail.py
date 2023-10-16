@@ -30,7 +30,7 @@ config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
-def call_level_filter(file_path):
+def call_level_filter(file_path, gcs_path):
     init_batch()
     mt = hl.import_vcf(file_path,force_bgz = True)
 
@@ -126,7 +126,7 @@ def call_level_filter(file_path):
     #drop unneccessary columns prior to writing out
     mt = mt.drop(mt.mode)
     mt = mt.drop('allele_1_rep_length','allele_2_rep_length','allele_1_REPCI_over_CN','allele_2_REPCI_over_CN','allele_1_minus_mode','allele_2_minus_mode')
-    hl.export_vcf(mt, "output.vcf")
+    hl.export_vcf(mt, gcs_path)
 
 @click.option(
     '--file-path',
@@ -141,12 +141,15 @@ def main(file_path):
     hail_job.image(config['workflow']['driver_image'])
     hail_job.storage('20G')
     hail_job.cpu(4)
-    hail_job.call(call_level_filter, file_path)
+    gcs_output_path = output_path(f'input_files/hail/hail_filtered.vcf')
+    hail_job.call(call_level_filter, file_path,gcs_output_path)
 
     bcftools_job = b.new_job(name = f'bgzip and tabix the Hail output VCF')
+    bcftools_job.depends_on(hail_job)
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.storage('20G')
     bcftools_job.cpu(4)
+    vcf = b.read_input(gcs_output_path)
 
     bcftools_job.declare_resource_group(
         vcf_output={'vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
@@ -155,7 +158,7 @@ def main(file_path):
         f"""
     set -ex;
     echo "Compressing";
-    bcftools sort {hail_job.ofile} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+    bcftools sort {vcf} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
