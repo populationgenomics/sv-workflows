@@ -49,10 +49,16 @@ def pseudobulk(celltype, chromosomes):
     pseudobulk = pheno_sc_input.groupby('individual').mean()
     pseudobulk.reset_index(inplace=True)
 
-    # Basic filter - remove genes where all entries are either 0 or NA in the pseudobulk data frame
-    mask = (pseudobulk == 0) | pseudobulk.isna()
-    mask = mask.all(axis=0)
-    pseudobulk = pseudobulk.loc[:, ~mask]
+    # Retain genes that are expressed in at least 10% of the individuals
+    threshold = len(pseudobulk) * 0.1
+    filtered_columns = [col for col in pseudobulk.columns if col != 'individual' and (pseudobulk[col] > 0).sum() >= threshold]
+    filtered_columns+= ['individual']
+    pseudobulk = pseudobulk[filtered_columns]
+
+    #apply ln(x+1) transformation to the pseudobulk mean gene counts of the remaining genes
+    individual_ids = pseudobulk['individual']
+    pseudobulk_log_transformed = pseudobulk[pseudobulk.columns.difference(['individual'])].apply(lambda x: np.log1p(x))
+    pseudobulk = pd.concat([individual_ids,pseudobulk_log_transformed], axis=1)
 
     #add CPG IDs to pseudobulk dataframe
     pseudobulk = pseudobulk.merge(sample_mapping_df, left_on='individual', right_on = "OneK1K_ID", how='inner')
