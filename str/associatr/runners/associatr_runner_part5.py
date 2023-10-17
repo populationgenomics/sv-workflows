@@ -77,7 +77,7 @@ def main(
             )
             with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
-            for gene in ['MYH9', 'RTCB', 'TSPO', 'ADSL','PES1']:
+            for gene in pseudobulk_gene_names:
                 gene_cis_window_file = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/cis_window_files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
                 gene_pheno_cov = b.read_input(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/gene_pheno_cov_numpy/{celltype}/{chromosome}_{celltype}_{gene}.npy')
@@ -95,7 +95,7 @@ def main(
                     f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh"
                 )
 
-                b.write_output(associatr_job.association_results, output_path(f'output-files/{celltype}/{chromosome}/{gene}_{cis_window_size}bp'))
+                b.write_output(associatr_job.association_results, output_path(f'output-files-v2/{celltype}/{chromosome}/{gene}_{cis_window_size}bp'))
                 manage_concurrency_for_job(associatr_job)
     b.run(wait=False)
 
