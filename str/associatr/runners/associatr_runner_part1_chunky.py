@@ -73,7 +73,7 @@ def build_pseudobulk(celltype, chromosomes):
     print('f pheno_cov_sc_input df memory: %s', pheno_cov_sc_input.memory_usage(deep=True).sum())
     covariates = pheno_cov_sc_input[['individual','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2']]
     covariates = covariates.dropna() #removes rows with NaN values (likely a data processing error)
-    pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
+    pheno_sc_input = pheno_cov_sc_input.drop(columns=['sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
     sample_mapping_df = pd.read_csv('gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/OneK1K_CPG_IDs.tsv', delimiter='\t')
 
 
