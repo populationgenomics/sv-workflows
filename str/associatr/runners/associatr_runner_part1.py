@@ -39,10 +39,11 @@ def gene_info(x):
     return (g_name,g_id)
 
 def pseudobulk(celltype, chromosomes):
+    print(f'starting..')
     pheno_cov_file_path = f'/cramfuse/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
-    logging.info(f'loaded in pheno_cov file for {celltype}')
-    logging.info('f pheno_cov_sc_input df memory: %s', pheno_cov_sc_input.memory_usage(deep=True).sum())
+    print(f'loaded in pheno_cov file for {celltype}')
+    print('f pheno_cov_sc_input df memory: %s', pheno_cov_sc_input.memory_usage(deep=True).sum())
     covariates = pheno_cov_sc_input[['individual','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2']]
     covariates = covariates.dropna() #removes rows with NaN values (likely a data processing error)
     pheno_sc_input = pheno_cov_sc_input.drop(columns=['barcode','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2'])
@@ -53,20 +54,20 @@ def pseudobulk(celltype, chromosomes):
     # Group by 'individuals' and 'genes', then calculate the mean
     pseudobulk = pheno_sc_input.groupby('individual').mean()
     pseudobulk.reset_index(inplace=True)
-    logging.info(f'pseudobulk df memory: %s', pseudobulk.memory_usage(deep=True).sum())
+    print(f'pseudobulk df memory: %s', pseudobulk.memory_usage(deep=True).sum())
 
     # Retain genes that are expressed in at least 10% of the individuals
     threshold = len(pseudobulk) * 0.1
     filtered_columns = [col for col in pseudobulk.columns if col != 'individual' and (pseudobulk[col] > 0).sum() >= threshold]
     filtered_columns+= ['individual']
     pseudobulk = pseudobulk[filtered_columns]
-    logging.info(f'pseudobulk df memory after filtering: %s', pseudobulk.memory_usage(deep=True).sum())
+    print(f'pseudobulk df memory after filtering: %s', pseudobulk.memory_usage(deep=True).sum())
 
     #apply ln(x+1) transformation to the pseudobulk mean gene counts of the remaining genes
     individual_ids = pseudobulk['individual']
     pseudobulk_log_transformed = pseudobulk[pseudobulk.columns.difference(['individual'])].apply(lambda x: np.log1p(x))
     pseudobulk = pd.concat([individual_ids,pseudobulk_log_transformed], axis=1)
-    logging.info(f'pseudo-bulk df memory after log transformation: %s', pseudobulk.memory_usage(deep=True).sum())
+    print(f'pseudo-bulk df memory after log transformation: %s', pseudobulk.memory_usage(deep=True).sum())
 
     #add CPG IDs to pseudobulk dataframe
     pseudobulk = pseudobulk.merge(sample_mapping_df, left_on='individual', right_on = "OneK1K_ID", how='inner')
@@ -81,11 +82,11 @@ def pseudobulk(celltype, chromosomes):
 
     #intersect genes with gencode v42
     gencode = pd.read_table("gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/gene_location_files/gencode.v42.annotation.gff3.gz", comment="#", sep = "\t", names = ['seqname', 'source', 'feature', 'start' , 'end', 'score', 'strand', 'frame', 'attribute'])
-    logging.info(f'gencode df memory: %s', gencode.memory_usage(deep=True).sum())
+    print(f'gencode df memory: %s', gencode.memory_usage(deep=True).sum())
 
     gencode_genes = gencode[(gencode.feature == "gene")][['seqname', 'start', 'end', 'attribute']].copy().reset_index().drop('index', axis=1)
     gencode_genes["gene_name"],gencode_genes["ENSG"], = zip(*gencode_genes.attribute.apply(lambda x: gene_info(x)))
-    logging.info(f'gencode_genes df memory: %s', gencode_genes.memory_usage(deep=True).sum())
+    print(f'gencode_genes df memory: %s', gencode_genes.memory_usage(deep=True).sum())
 
     for chromosome in chromosomes.split(','):
         #subset gencode annotation file for relevant chromosome
