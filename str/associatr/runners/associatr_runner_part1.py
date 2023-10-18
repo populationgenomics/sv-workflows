@@ -40,7 +40,7 @@ def gene_info(x):
 
 def build_pseudobulk(celltype, chromosomes):
     print(f'starting..')
-    pheno_cov_file_path = f'gs://cpg-tob-wgs-main-upload/sc-input/OneK1K/saige-eqtl/input/Sept23/SCT/{celltype}_sc_pheno_cov.tsv'
+    pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
     print(f'loaded in pheno_cov file for {celltype}')
     print('f pheno_cov_sc_input df memory: %s', pheno_cov_sc_input.memory_usage(deep=True).sum())
