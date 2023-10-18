@@ -37,7 +37,7 @@ def gene_info(x):
     return (g_name,g_id)
 
 def pseudobulk(celltype, chromosomes):
-    pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
+    pheno_cov_file_path = f'/cramfuse/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
     covariates = pheno_cov_sc_input[['individual','sex','pc1','pc2','pc3','pc4','pc5','pc6','age','pf1','pf2']]
     covariates = covariates.dropna() #removes rows with NaN values (likely a data processing error)
@@ -66,10 +66,10 @@ def pseudobulk(celltype, chromosomes):
     pseudobulk['InternalID'] = pseudobulk['InternalID'].astype(float)
 
     ##write pseudobulk to GCS
-    pseudobulk.to_csv(output_path(f'input_files/pseudobulk/{celltype}_pseudobulk.tsv'), sep='\t', index=False)
+    pseudobulk.to_csv(f'/cramfuse/hoptan-str/associatr/input_files/pseudobulk/{celltype}_pseudobulk.tsv', sep='\t', index=False)
 
     ##write covariates to GCS
-    covariates.to_csv(output_path(f'input_files/covariates/{celltype}_covariates.tsv'), sep='\t', index=False)
+    covariates.to_csv(f'/cramfuse/hoptan-str/associatr/input_files/covariates/{celltype}_covariates.tsv', sep='\t', index=False)
 
     #intersect genes with gencode v42
     gencode = pd.read_table("gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/gene_location_files/gencode.v42.annotation.gff3.gz", comment="#", sep = "\t", names = ['seqname', 'source', 'feature', 'start' , 'end', 'score', 'strand', 'frame', 'attribute'])
@@ -95,7 +95,7 @@ def pseudobulk(celltype, chromosomes):
         pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
 
         # write genes array to GCS directly
-        with to_path(output_path(f'input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json')).open('w') as write_handle:
+        with (f'/cramfuse/hoptan-str/associatr/input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json').open('w') as write_handle:
             json.dump(list(pseudobulk_gene_names), write_handle)
 
 # inputs:
@@ -118,6 +118,7 @@ def main(
         pseudobulk_job.storage('8G')
         pseudobulk_job.cpu(4)
         pseudobulk_job.image(config['workflow']['driver_image'])
+        pseudobulk_job.cloudfuse(f'cpg-tob-wgs-test','/cramfuse')
         pseudobulk_job.call(pseudobulk,celltype, chromosomes)
 
     b.run(wait=False)
