@@ -38,7 +38,7 @@ def gene_info(x):
     g_id = g_id.split('.')[0] #removes the version number from ENSG ids
     return (g_name,g_id)
 
-def pseudobulk(celltype, chromosomes):
+def build_pseudobulk(celltype, chromosomes):
     print(f'starting..')
     pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input = pd.read_csv(pheno_cov_file_path, sep='\t')
@@ -126,12 +126,12 @@ def main(
 
     for celltype in celltypes.split(','):
         pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
-        pseudobulk_job.memory('50G')
+        pseudobulk_job.memory('80G')
         pseudobulk_job.storage('8G')
         pseudobulk_job.cpu(4)
         pseudobulk_job.image(config['workflow']['driver_image'])
         pseudobulk_job.cloudfuse(f'cpg-tob-wgs-test','/cramfuse')
-        pseudobulk_job.call(pseudobulk,celltype, chromosomes)
+        pseudobulk_job.call(build_pseudobulk,celltype, chromosomes)
 
     b.run(wait=False)
 
