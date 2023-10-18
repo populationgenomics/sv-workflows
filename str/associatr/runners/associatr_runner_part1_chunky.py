@@ -142,7 +142,7 @@ def main(
 
     for celltype in celltypes.split(','):
         pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
-        pseudobulk_job.memory('100G')
+        pseudobulk_job.memory('64G')
         #pseudobulk_job.storage('8G')
         pseudobulk_job.cpu(4)
         pseudobulk_job.image(config['workflow']['driver_image'])
