@@ -45,7 +45,7 @@ def build_pseudobulk(celltype, chromosomes):
     pheno_cov_file_path = f'gs://cpg-tob-wgs-test/hoptan-str/associatr/sc-input/{celltype}_sc_pheno_cov.tsv'
     pheno_cov_sc_input_chunks = pd.read_csv(pheno_cov_file_path, sep='\t',chunksize=1000000)
     print(f'loaded in pheno_cov file for {celltype}')
-    print('f pheno_cov_sc_input df memory: %s', pheno_cov_sc_input_chunks.memory_usage(deep=True).sum())
+    #print('f pheno_cov_sc_input df memory: %s', pheno_cov_sc_input_chunks.memory_usage(deep=True).sum())
     sample_mapping_df = pd.read_csv('gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/OneK1K_CPG_IDs.tsv', delimiter='\t')
 
     pseudobulk_chunks_df =  pd.DataFrame()
@@ -75,7 +75,7 @@ def build_pseudobulk(celltype, chromosomes):
         individual_ids = pseudobulk['individual']
         pseudobulk_log_transformed = pseudobulk[pseudobulk.columns.difference(['individual'])].apply(lambda x: np.log1p(x))
         pseudobulk = pd.concat([individual_ids,pseudobulk_log_transformed], axis=1)
-        print(f'pseudo-bulk df memory after log transformation: %s', pseudobulk.memory_usage(deep=True).sum())
+        #print(f'pseudo-bulk df memory after log transformation: %s', pseudobulk.memory_usage(deep=True).sum())
 
         if first_iteration:
             pseudobulk_chunks_df = pseudobulk
