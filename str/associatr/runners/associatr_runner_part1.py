@@ -90,10 +90,10 @@ def build_pseudobulk(celltype, chromosomes):
 
     for chromosome in chromosomes.split(','):
         #subset gencode annotation file for relevant chromosome
-        gencode_genes = gencode_genes[gencode_genes['seqname']==chromosome]
+        gencode_genes_chr = gencode_genes[gencode_genes['seqname']==chromosome]
 
         # Extract the gene names from the 'gene_name' column of 'gencode' DataFrame
-        gencode_gene_names = set(gencode_genes['gene_name'])
+        gencode_gene_names = set(gencode_genes_chr['gene_name'])
 
         # Get the genes with scRNA data
         gene_columns = [col for col in pseudobulk.columns if col != 'individual']
