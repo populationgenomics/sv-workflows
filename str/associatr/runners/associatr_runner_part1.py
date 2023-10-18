@@ -11,7 +11,7 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part1.py  --celltypes=B_IN --chromosomes=chr22
+     associatr_runner_part1.py  --celltypes=Plasma --chromosomes=chr22
 
 """
 import json
@@ -107,7 +107,7 @@ def build_pseudobulk(celltype, chromosomes):
         pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
 
         # write genes array to GCS directly
-        with (f'gs://cpg-tob-wgs-test//hoptan-str/associatr/input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json').open('w') as write_handle:
+        with to_path(f'gs://cpg-tob-wgs-test//hoptan-str/associatr/input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json').open('w') as write_handle:
             json.dump(list(pseudobulk_gene_names), write_handle)
 
 # inputs:
@@ -126,7 +126,7 @@ def main(
 
     for celltype in celltypes.split(','):
         pseudobulk_job = b.new_python_job(name=f'Build pseudobulk and filter for {celltype}')
-        pseudobulk_job.memory('80G')
+        pseudobulk_job.memory('10G')
         pseudobulk_job.storage('8G')
         pseudobulk_job.cpu(4)
         pseudobulk_job.image(config['workflow']['driver_image'])
