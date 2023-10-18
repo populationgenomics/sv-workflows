@@ -78,16 +78,17 @@ def build_pseudobulk(celltype, chromosomes):
         print(f'pseudo-bulk df memory after log transformation: %s', pseudobulk.memory_usage(deep=True).sum())
 
         if first_iteration:
-            #add CPG IDs to pseudobulk dataframe
-            pseudobulk = pseudobulk.merge(sample_mapping_df, left_on='individual', right_on = "OneK1K_ID", how='inner')
-            pseudobulk['InternalID']=pseudobulk['InternalID'].str[3:] #removes 'CPG' prefix because associaTR requires strictly numeric IDs
-            pseudobulk['InternalID'] = pseudobulk['InternalID'].astype(float)
             pseudobulk_chunks_df = pseudobulk
             first_iteration = False
 
         else:
             pseudobulk_chunks_df = pd.concat([pseudobulk_chunks_df, pseudobulk.set_index('individual')], axis=1, join='outer')
         covariates_chunks_df = pd.concat([covariates_chunks_df, covariates])
+
+    #add CPG IDs to pseudobulk dataframe
+    pseudobulk_chunks_df = pseudobulk_chunks_df.merge(sample_mapping_df, left_on='individual', right_on = "OneK1K_ID", how='inner')
+    pseudobulk_chunks_df['InternalID']=pseudobulk_chunks_df['InternalID'].str[3:] #removes 'CPG' prefix because associaTR requires strictly numeric IDs
+    pseudobulk_chunks_df['InternalID'] = pseudobulk_chunks_df['InternalID'].astype(float)
 
     ##write pseudobulk to GCS
     pseudobulk_chunks_df.to_csv(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/pseudobulk/{celltype}_pseudobulk.tsv', sep='\t', index=False)
