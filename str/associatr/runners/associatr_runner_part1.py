@@ -107,7 +107,7 @@ def build_pseudobulk(celltype, chromosomes):
         pseudobulk_gene_names = gencode_gene_names.intersection(pseudobulk_gene_names)
 
         # write genes array to GCS directly
-        with to_path(f'gs://cpg-tob-wgs-test//hoptan-str/associatr/input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json').open('w') as write_handle:
+        with to_path(f'gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/scRNA_gene_lists/{celltype}/{chromosome}_{celltype}_filtered_genes.json').open('w') as write_handle:
             json.dump(list(pseudobulk_gene_names), write_handle)
 
 # inputs:
