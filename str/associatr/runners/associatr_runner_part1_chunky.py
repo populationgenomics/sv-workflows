@@ -13,7 +13,7 @@ It aims to:
     --access-level "test" \
     --output-dir "hoptan-str/associatr" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:587e9cf9dc23fe70deb56283d132e37299244209 \
-     associatr_runner_part1_chunky.py  --celltypes=CD4_NC_part2 --chromosomes=chr22
+     associatr_runner_part1_chunky.py  --celltypes=CD4_NC_part2,CD8_ET,CD8_NC,NK --chromosomes=chr22
 
 """
 import json
