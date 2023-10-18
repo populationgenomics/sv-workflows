@@ -130,7 +130,6 @@ def main(
         pseudobulk_job.storage('8G')
         pseudobulk_job.cpu(4)
         pseudobulk_job.image(config['workflow']['driver_image'])
-        pseudobulk_job.cloudfuse(f'cpg-tob-wgs-test','/cramfuse')
         pseudobulk_job.call(build_pseudobulk,celltype, chromosomes)
 
     b.run(wait=False)
