@@ -29,12 +29,6 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 
 def get_cloudfuse_paths(dataset, input_cpg_sids):
     """Retrieves cloud fuse paths and outputs as a comma-separated string for crams associated with the external-wgs-ids"""
-    if dataset in ['tob-wgs', 'hgdp']:
-        ref_fasta = (
-            'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
-        )
-    else:
-        ref_fasta = reference_path('broad/ref_fasta')
 
     cram_retrieval_query = gql(
         """
@@ -79,21 +73,24 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 
     # Create string containing paths based on /cramfuse
     cramfuse_path = []
-    for cram_obj in crams_by_id:
-        suffix = crams_by_id[cram_obj]['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
+    for cram_obj in crams_by_id.values():
+        suffix = cram_obj['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
         cramfuse_path.append(f'/cramfuse/{suffix}')
     cramfuse_path = ','.join(cramfuse_path)  # string format for input into hipstr
     return cramfuse_path
 
+
 # inputs:
-@click.option('--job-storage', help ='Memory of the Hail batch job eg 375G', default = '375G')
+@click.option(
+    '--job-storage', help='Memory of the Hail batch job eg 375G', default='375G'
+)
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('external-wgs-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def main(
-    job_storage,variant_catalog, dataset, external_wgs_ids, output_file_name
+    job_storage, variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     # Create HipSTR job
