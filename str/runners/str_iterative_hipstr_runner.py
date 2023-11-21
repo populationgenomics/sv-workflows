@@ -2,7 +2,7 @@
 
 
 """
-This script uses HipSTR to call STRs on WGS cram files, using the joint calling option. 
+This script uses HipSTR to call STRs on WGS cram files, using the joint calling option.
 For example:
 analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp HGDP00511
 
@@ -14,13 +14,11 @@ import logging
 
 import click
 
-from sample_metadata.apis import AnalysisApi, SampleApi
-from sample_metadata.model.analysis_type import AnalysisType
-from sample_metadata.model.analysis_query_model import AnalysisQueryModel
-from sample_metadata.models import AnalysisStatus
+from metamist.graphql import gql, query
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
+from cpg_utils.hail_batch import output_path, reference_path
 from cpg_workflows.batch import get_batch
+
 
 config = get_config()
 
@@ -29,50 +27,63 @@ HIPSTR_IMAGE = config['images']['hipstr']
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-def get_cloudfuse_paths(dataset, external_wgs_ids):
+def get_cloudfuse_paths(dataset, input_cpg_sids):
     """Retrieves cloud fuse paths and outputs as a comma-separated string for crams associated with the external-wgs-ids"""
-    # Extract CPG IDs from external sample IDs
-    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        dataset, list(external_wgs_ids)
-    )
-    if dataset == 'tob-wgs':
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequencing_type': 'genome', 'source': 'nagim'},
+    if dataset in ['tob-wgs', 'hgdp']:
+        ref_fasta = (
+            'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
         )
     else:
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequencing_type': 'genome'},
-        )
-    crams_path = AnalysisApi().query_analyses(analysis_query_model)
-    cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
-    cpg_id_to_external_id = {
-        cpg_id: external_wgs_id
-        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
+        ref_fasta = reference_path('broad/ref_fasta')
+
+    cram_retrieval_query = gql(
+        """
+        query MyQuery($dataset: String!,$input_cpg_sids: [String!]!) {
+    project(name: $dataset) {
+        sequencingGroups(id: {in_: $input_cpg_sids}) {
+        id
+        sample {
+            externalId
+        }
+        analyses(type: {eq: "cram"}, active: {eq: true}) {
+            output
+            timestampCompleted
+        }
+        }
     }
-    cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
-    if cpg_sids_without_crams:
-        external_wgs_sids_without_crams = ', '.join(
-            cpg_id_to_external_id[sid] for sid in cpg_sids_without_crams
-        )
+
+    }
+        """
+    )
+    response = query(
+        cram_retrieval_query,
+        variables={'dataset': dataset, 'input_cpg_sids': input_cpg_sids},
+    )
+    crams_by_id = {}
+    for i in response['project']['sequencingGroups']:
+        for cram in i['analyses']:
+            # ignore archived CRAMs and ONT crams
+            if cram['output'] is None:
+                continue
+            if 'archive' in cram['output']:
+                continue
+            if 'ont' in cram['output']:
+                continue
+            crams_by_id[i['id']] = cram
+
+    if len(crams_by_id) != len(input_cpg_sids):
+        cpg_sids_without_crams = set(input_cpg_sids) - set(crams_by_id.keys())
         logging.warning(
-            f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
+            f'There were some samples without CRAMs: {cpg_sids_without_crams}'
         )
+
     # Create string containing paths based on /cramfuse
     cramfuse_path = []
-    for cram_obj in crams_path:
+    for cram_obj in crams_by_id:
         suffix = cram_obj['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
         cramfuse_path.append(f'/cramfuse/{suffix}')
     cramfuse_path = ','.join(cramfuse_path)  # string format for input into hipstr
     return cramfuse_path
-
 
 # inputs:
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
