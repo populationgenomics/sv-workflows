@@ -80,25 +80,26 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
     # Create string containing paths based on /cramfuse
     cramfuse_path = []
     for cram_obj in crams_by_id:
-        suffix = cram_obj['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
+        suffix = crams_by_id[cram_obj]['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
         cramfuse_path.append(f'/cramfuse/{suffix}')
     cramfuse_path = ','.join(cramfuse_path)  # string format for input into hipstr
     return cramfuse_path
 
 # inputs:
+@click.option('--job-storage', help ='Memory of the Hail batch job eg 375G', default = '375G')
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('external-wgs-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def main(
-    variant_catalog, dataset, external_wgs_ids, output_file_name
+    job_storage,variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     # Create HipSTR job
     hipstr_job = b.new_job(name=f'HipSTR running')
     hipstr_job.image(HIPSTR_IMAGE)
-    hipstr_job.storage('375G')
+    hipstr_job.storage(job_storage)
     hipstr_job.cpu(4)
     hipstr_job.memory('highmem')
 
