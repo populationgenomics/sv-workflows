@@ -82,7 +82,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 
 # inputs:
 @click.option(
-    '--job-storage', help='Memory of the Hail batch job eg 375G', default='375G'
+    '--job-storage', help='Storage of the Hail batch job eg 375G', default='375G'
 )
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
 @click.option('--dataset', help='dataset eg tob-wgs')
