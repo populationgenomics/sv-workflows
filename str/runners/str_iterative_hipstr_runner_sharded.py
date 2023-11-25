@@ -135,7 +135,7 @@ def main(
         hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
 
         # Read in HipSTR variant catalog
-        variant_catalog_input = f"{variant_catalog}_shard_{i+1}.bed"
+        variant_catalog_input = f'{variant_catalog}_shard_{i+1}.bed'
         hipstr_regions = b.read_input(variant_catalog_input)
 
         hipstr_job.command(
