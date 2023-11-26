@@ -118,7 +118,7 @@ def main(
     )
 
     if num_shards!=1:
-        catalog_files = to_path(variant_catalog).glob("*.bed")
+        catalog_files = list(to_path(variant_catalog).glob("*.bed"))
 
     cramfuse_path = get_cloudfuse_paths(dataset, internal_cpg_ids)
 
