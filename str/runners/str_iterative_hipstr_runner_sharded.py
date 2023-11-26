@@ -152,20 +152,10 @@ def main(
         """
         )
         # HipSTR output writing
-        hipstr_output_path_vcf = output_path(
-            f'{output_file_name}_shard{i+1}.vcf.gz', 'analysis'
+        hipstr_output_path_name = output_path(
+            f'{output_file_name}_shard{i+1}', 'analysis'
         )
-        b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
-
-        hipstr_output_path_viz = output_path(
-            f'{output_file_name}_shard{i+1}.viz.gz', 'analysis'
-        )
-        b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
-
-        hipstr_output_path_log = output_path(
-            f'{output_file_name}_shard{i+1}.log.txt', 'analysis'
-        )
-        b.write_output(hipstr_job.hipstr_output['log.txt'], hipstr_output_path_log)
+        b.write_output(hipstr_job.hipstr_output, hipstr_output_path_name)
 
     b.run(wait=False)
 
