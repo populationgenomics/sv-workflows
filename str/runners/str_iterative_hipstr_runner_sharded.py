@@ -18,6 +18,8 @@ from metamist.graphql import gql, query
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path
 from cpg_utils.hail_batch import get_batch
+from cpg_utils import to_path
+
 
 
 config = get_config()
@@ -87,7 +89,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 @click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.option(
     '--variant-catalog',
-    help='Full path to HipSTR Variants sharded catalog directory, and file prefix',
+    help='Full path to HipSTR Variants sharded catalog directory or file path to unsharded catalog',
 )
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.option('--num-shards', help='Number of catalog shards', default=1)
@@ -115,6 +117,9 @@ def main(
         )
     )
 
+    if num_shards!=1:
+        catalog_files = to_path(variant_catalog).glob("*.bed")
+
     cramfuse_path = get_cloudfuse_paths(dataset, internal_cpg_ids)
 
     for i in range(int(num_shards)):
@@ -135,7 +140,10 @@ def main(
         hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
 
         # Read in HipSTR variant catalog
-        variant_catalog_input = f'{variant_catalog}_shard_{i+1}.bed'
+        if num_shards ==1: #unsharded catalog
+            variant_catalog_input= variant_catalog
+        else:
+            variant_catalog_input = catalog_files[i]
         hipstr_regions = b.read_input(variant_catalog_input)
 
         hipstr_job.command(
