@@ -114,13 +114,13 @@ def main(
         )
     )
 
-    catalog_files = list(to_path(variant_catalog).glob("*.bed"))
+    catalog_files = list(to_path(variant_catalog).glob('*.bed'))
 
     cramfuse_path = get_cloudfuse_paths(dataset, internal_cpg_ids)
 
-    for i in range(len(catalog_files)):
+    for index, subcatalog in enumerate(catalog_files):
         # Create HipSTR job
-        hipstr_job = b.new_job(name=f'HipSTR shard {i+1} running')
+        hipstr_job = b.new_job(name=f'HipSTR shard {index+1} running')
         hipstr_job.image(HIPSTR_IMAGE)
         hipstr_job.storage(job_storage)
         hipstr_job.cpu(4)
@@ -137,8 +137,7 @@ def main(
 
         # Read in HipSTR variant catalog
 
-        variant_catalog_input = catalog_files[i]
-        hipstr_regions = b.read_input(variant_catalog_input)
+        hipstr_regions = b.read_input(subcatalog)
 
         hipstr_job.command(
             f"""
@@ -153,7 +152,7 @@ def main(
         )
         # HipSTR output writing
         hipstr_output_path_name = output_path(
-            f'{output_file_name}_shard{i+1}', 'analysis'
+            f'{output_file_name}_shard{index+1}', 'analysis'
         )
         b.write_output(hipstr_job.hipstr_output, hipstr_output_path_name)
 
