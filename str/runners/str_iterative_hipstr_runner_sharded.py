@@ -21,7 +21,6 @@ from cpg_utils.hail_batch import get_batch
 from cpg_utils import to_path
 
 
-
 config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
@@ -92,14 +91,12 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
     help='Full path to HipSTR Variants sharded catalog directory or file path to unsharded catalog',
 )
 @click.option('--dataset', help='dataset eg tob-wgs')
-@click.option('--num-shards', help='Number of catalog shards', default=1)
 @click.argument('internal-cpg-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def main(
     job_storage,
     job_memory,
-    num_shards,
     variant_catalog,
     dataset,
     internal_cpg_ids,
@@ -117,12 +114,11 @@ def main(
         )
     )
 
-    if num_shards!=1:
-        catalog_files = list(to_path(variant_catalog).glob("*.bed"))
+    catalog_files = list(to_path(variant_catalog).glob("*.bed"))
 
     cramfuse_path = get_cloudfuse_paths(dataset, internal_cpg_ids)
 
-    for i in range(int(num_shards)):
+    for i in range(len(catalog_files)):
         # Create HipSTR job
         hipstr_job = b.new_job(name=f'HipSTR shard {i+1} running')
         hipstr_job.image(HIPSTR_IMAGE)
@@ -140,10 +136,8 @@ def main(
         hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
 
         # Read in HipSTR variant catalog
-        if num_shards ==1: #unsharded catalog
-            variant_catalog_input= variant_catalog
-        else:
-            variant_catalog_input = catalog_files[i]
+
+        variant_catalog_input = catalog_files[i]
         hipstr_regions = b.read_input(variant_catalog_input)
 
         hipstr_job.command(
