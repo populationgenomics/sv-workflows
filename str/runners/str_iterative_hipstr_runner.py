@@ -84,13 +84,16 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 @click.option(
     '--job-storage', help='Storage of the Hail batch job eg 375G', default='375G'
 )
+@click.option(
+    '--job-memory' help= 'Memory of the Hail batch job', default = 'highmem'
+)
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('external-wgs-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def main(
-    job_storage, variant_catalog, dataset, external_wgs_ids, output_file_name
+    job_storage, job_memory, variant_catalog, dataset, external_wgs_ids, output_file_name
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     # Create HipSTR job
@@ -98,7 +101,7 @@ def main(
     hipstr_job.image(HIPSTR_IMAGE)
     hipstr_job.storage(job_storage)
     hipstr_job.cpu(4)
-    hipstr_job.memory('highmem')
+    hipstr_job.memory(job_memory)
 
     hipstr_job.declare_resource_group(
         hipstr_output={
