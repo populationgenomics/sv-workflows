@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script pulls out the locus coordinates of every indel recorded in an existing Hail Matrix Table
+This script pulls out the locus coordinates of every indel recorded in an existing Hail Matrix Table.
 
  analysis-runner --dataset "tob-wgs" \
     --description "indel coordinates extractor" \
