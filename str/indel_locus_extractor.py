@@ -15,10 +15,9 @@ import hail as hl
 import click
 
 from cpg_utils.config import get_config
-from cpg_workflows.batch import get_batch
-from cpg_utils import to_path
-
 from cpg_utils.hail_batch import output_path, init_batch
+from cpg_workflows.batch import get_batch
+
 
 config = get_config()
 
@@ -51,7 +50,7 @@ def main(file_path):
     hail_job.image(config['workflow']['driver_image'])
     hail_job.storage('20G')
     hail_job.cpu(4)
-    gcs_output_path = output_path(f'indels.tsv')
+    gcs_output_path = output_path(f'indels.tsv', 'analysis')
     hail_job.call(indel_coordinate_extractor, file_path, gcs_output_path)
 
     b.run(wait=False)
