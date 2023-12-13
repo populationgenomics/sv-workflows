@@ -5,9 +5,9 @@ This script pulls out the locus coordinates of every indel recorded in an existi
 
  analysis-runner --dataset "tob-wgs" \
     --description "indel coordinates extractor" \
-    --access-level "main" \
-    --output-dir "str-analysis" \
-    indel_locus_extractor --file-path=gs://cpg-tob-wgs-test/mt/v7.mt
+    --access-level "test" \
+    --output-dir "hoptan-str/indel-experiment/" \
+    indel_locus_extractor.py --file-path=gs://cpg-tob-wgs-test/mt/v7.mt
 
 """
 
