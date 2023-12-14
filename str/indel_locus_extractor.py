@@ -45,15 +45,8 @@ def indel_coordinate_extractor(file_path, gcs_path):
 @click.command()
 def main(file_path):
 
-    b = get_batch()
-    hail_job = b.new_python_job(name=f'Hail query filter for indels')
-    hail_job.image(config['workflow']['driver_image'])
-    hail_job.storage('20G')
-    hail_job.cpu(4)
     gcs_output_path = output_path(f'indels.tsv', 'analysis')
-    hail_job.call(indel_coordinate_extractor, file_path, gcs_output_path)
-
-    b.run(wait=False)
+    indel_coordinate_extractor(file_path, gcs_output_path)
 
 
 if __name__ == '__main__':
