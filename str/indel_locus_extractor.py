@@ -18,7 +18,6 @@ from cpg_utils.hail_batch import output_path, init_batch
 from cpg_workflows.batch import get_batch
 
 
-
 def indel_coordinate_extractor(file_path, gcs_path):
     init_batch()
     mt = hl.read_matrix_table(file_path)
