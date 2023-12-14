@@ -39,7 +39,6 @@ def indel_coordinate_extractor(file_path, gcs_path):
 )
 @click.command()
 def main(file_path):
-
     gcs_output_path = output_path(f'indels.tsv', 'analysis')
     indel_coordinate_extractor(file_path, gcs_output_path)
 
