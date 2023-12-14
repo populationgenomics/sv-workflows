@@ -14,12 +14,9 @@ This script pulls out the locus coordinates of every indel recorded in an existi
 import hail as hl
 import click
 
-from cpg_utils.config import get_config
 from cpg_utils.hail_batch import output_path, init_batch
 from cpg_workflows.batch import get_batch
 
-
-config = get_config()
 
 
 def indel_coordinate_extractor(file_path, gcs_path):
