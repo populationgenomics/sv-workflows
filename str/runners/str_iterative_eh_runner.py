@@ -83,8 +83,9 @@ def main(
     with to_path(sample_id_file).open() as f:
         # Iterate over each sample to call Expansion Hunter
         for line in f:
-            cpg_id = line.split(',')[0]
-            sex = line.split(',')[1]
+            split_line = line.split(',')
+            cpg_id = split_line[0]
+            sex = split_line[1]
             if cpg_id == 's':  # header line
                 continue
             if sex == 'XY':
