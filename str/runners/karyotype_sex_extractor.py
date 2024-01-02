@@ -27,7 +27,7 @@ def karyotype_sex_extractor(file_path, gcs_path):
     )
 
     # output writing
-    karyotype_sex_table.export(gcs_path, delimiter=",")
+    karyotype_sex_table.export(gcs_path, delimiter=',')
 
 
 @click.option(
