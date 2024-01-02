@@ -50,7 +50,7 @@ EH_IMAGE = config['images']['expansionhunter_bw2']
 @click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.command()
 def main(
-    variant_catalog, dataset, max_parallel_jobs, sample_id_file, job_storage, job_memory
+    variant_catalog: str, dataset: str, max_parallel_jobs: int, sample_id_file: str, job_storage: str, job_memory: str
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
