@@ -12,10 +12,7 @@ analysis-runner --access-level test --dataset tob-wgs --description 'tester' --o
 Required packages: str_iterative_eh_runner_requirements.txt
 
 """
-import os
-
 import click
-import hailtop.batch as hb
 
 from metamist.graphql import gql, query
 
@@ -57,10 +54,6 @@ def main(
     job_memory: str,
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
-    backend = hb.ServiceBackend(
-        billing_project=get_config()['hail']['billing_project'],
-        remote_tmpdir=remote_tmpdir(),
-    )
     b = get_batch()
 
     # Reference fasta
