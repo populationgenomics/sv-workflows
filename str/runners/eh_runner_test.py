@@ -66,7 +66,7 @@ def main(
             + '.dict',
         )
     )
-    catalog_files = list(to_path(variant_catalog).glob('*.bed'))
+    catalog_files = list(to_path(variant_catalog).glob('*.json'))
     jobs = []
 
     with to_path(sample_id_file).open() as f:
