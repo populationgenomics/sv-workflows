@@ -67,6 +67,7 @@ def main(
         )
     )
     catalog_files = list(to_path(variant_catalog).glob('*.json'))
+    catalog_files = [str(gs_path) for gs_path in catalog_files] # coverts into a string type
     jobs = []
 
     with to_path(sample_id_file).open() as f:
