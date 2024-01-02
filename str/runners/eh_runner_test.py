@@ -104,7 +104,7 @@ def main(
                     eh_job.depends_on(jobs[-max_parallel_jobs])
                 jobs.append(eh_job)
                 eh_job.storage('70G')
-                eh_job.memory('64G')
+                eh_job.memory('102G')
                 eh_job.cpu(16)
                 eh_regions = b.read_input(subcatalog)
 
