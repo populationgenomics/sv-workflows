@@ -3,7 +3,7 @@
 """
 This script outputs a CSV file containing the CPG ID, external ID, and karyotypic sex from the SampleQC Hail Table.
 
- analysis-runner --dataset "tob-wgs" \
+ analysis-runner --dataset "bioheart" \
     --description "karyotypic sex extractor" \
     --access-level "test" \
     --output-dir "hoptan-str/sample-sex-mapping/" \
