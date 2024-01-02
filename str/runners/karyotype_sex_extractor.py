@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script outputs a CSV file containing the CPG ID, external ID, and karyotypic sex from the SampleQC Hail Table.
+This Hail Query script outputs a CSV file containing the CPG ID, external ID, and karyotypic sex from the SampleQC Hail Table.
 
  analysis-runner --dataset "bioheart" \
     --description "karyotypic sex extractor" \
