@@ -1,0 +1,2 @@
+click>=8
+metamist==6.5.0
