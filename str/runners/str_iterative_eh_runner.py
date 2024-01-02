@@ -41,9 +41,10 @@ EH_IMAGE = config['images']['expansionhunter_bw2']
 # sample id and sex mapping file
 @click.option('--sample-id-file', help='Full path to mapping of CPG id and sex')
 @click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='70G'
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
 )
-@click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
+@click.option('--job-memory', help='Memory of the Hail batch job', default='32G')
+@click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=8)
 @click.command()
 def main(
     variant_catalog: str,
@@ -52,6 +53,7 @@ def main(
     sample_id_file: str,
     job_storage: str,
     job_memory: str,
+    job_ncpu: int
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -143,7 +145,7 @@ def main(
                 jobs.append(eh_job)
                 eh_job.storage(job_storage)
                 eh_job.memory(job_memory)
-                eh_job.cpu(16)
+                eh_job.cpu(job_ncpu)
                 eh_regions = b.read_input(subcatalog)
 
                 eh_job.declare_resource_group(
