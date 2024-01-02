@@ -3,7 +3,7 @@
 
 """
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
-Required input: --variant-catalog (file path to variant catalog, can be sharded or unsharded), --dataset, and sample mapping file [TSV] (CPG sample id (first column) and sex (second column))
+Required input: --variant-catalog (file path to variant catalog, can be sharded or unsharded), --dataset, and sample mapping file [CSV] (CPG sample id (first column) and sex (second column))
 EH will run on every sample listed inthe sample mapping file.
 
 For example:
@@ -31,9 +31,10 @@ EH_IMAGE = config['images']['expansionhunter_bw2']
 
 
 # inputs:
-# variant catalog
-@click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
-# input dataset
+@click.option(
+    '--variant-catalog',
+    help='Full path to Illumina Variants catalog (sharded/unsharded)',
+)
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.option(
     '--max-parallel-jobs',
@@ -42,12 +43,14 @@ EH_IMAGE = config['images']['expansionhunter_bw2']
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
 # sample id and sex mapping file
+@click.option('--sample-id-file', help='Full path to mapping of CPG id and sex')
 @click.option(
-    '--sample-id-file', help='Full path to mapping of CPG id, TOB id, and sex'
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='70G'
 )
+@click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.command()
 def main(
-    variant_catalog, dataset, max_parallel_jobs, sample_id_file
+    variant_catalog, dataset, max_parallel_jobs, sample_id_file, job_storage, job_memory
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
@@ -55,9 +58,9 @@ def main(
         remote_tmpdir=remote_tmpdir(),
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
-    ref_fasta = reference_path('broad/ref_fasta')
 
-    # Working with CRAM files requires the reference fasta
+    # Reference fasta
+    ref_fasta = str(reference_path('broad/ref_fasta'))
     ref = b.read_input_group(
         **dict(
             base=ref_fasta,
@@ -66,9 +69,17 @@ def main(
             + '.dict',
         )
     )
-    catalog_files = list(to_path(variant_catalog).glob('*.bed'))
+
+    # list of catalog files (multiple, if catalog is sharded)
+    catalog_files = list(to_path(variant_catalog).glob('*.json'))
+    catalog_files = [
+        str(gs_path) for gs_path in catalog_files
+    ]  # coverts into a string type
+
+    # track number of jobs running
     jobs = []
 
+    # open sample-sex mapping file
     with to_path(sample_id_file).open() as f:
         # Iterate over each sample to call Expansion Hunter
         for line in f:
@@ -84,6 +95,7 @@ def main(
                 # as female (ExpansionHunter defaults to female if
                 # no sex_parameter is provided)
 
+            # retrieve corresponding cram path
             cram_retrieval_query = gql(
                 """
                 query MyQuery($dataset: String!,$cpg_id: [String!]) {
@@ -120,7 +132,7 @@ def main(
                     + '.crai',
                 }
             )
-
+            # per sample, run parallel jobs on each shard of the catalog
             for index, subcatalog in enumerate(catalog_files):
                 # ExpansionHunter job initialisation
                 eh_job = b.new_job(
@@ -131,8 +143,8 @@ def main(
                 if len(jobs) >= max_parallel_jobs:
                     eh_job.depends_on(jobs[-max_parallel_jobs])
                 jobs.append(eh_job)
-                eh_job.storage('70G')
-                eh_job.memory('120G')
+                eh_job.storage(job_storage)
+                eh_job.memory(job_memory)
                 eh_job.cpu(16)
                 eh_regions = b.read_input(subcatalog)
 
