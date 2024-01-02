@@ -105,7 +105,7 @@ def main(
                 jobs.append(eh_job)
                 eh_job.storage('30G')
                 eh_job.memory('16G')
-                eh_job.cpu(8)
+                eh_job.cpu(4)
                 eh_regions = b.read_input(subcatalog)
 
                 eh_job.declare_resource_group(
