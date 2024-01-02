@@ -55,7 +55,7 @@ def main(
         remote_tmpdir=remote_tmpdir(),
     )
     b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
-    ref_fasta = reference_path('broad/ref_fasta')
+    ref_fasta = str(reference_path('broad/ref_fasta'))
 
     # Working with CRAM files requires the reference fasta
     ref = b.read_input_group(
