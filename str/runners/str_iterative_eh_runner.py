@@ -99,7 +99,7 @@ def main(
             # retrieve corresponding cram path
             cram_retrieval_query = gql(
                 """
-                query MyQuery($dataset: String!,$cpg_id: [String!]) {
+                query MyQuery($dataset: String!,$cpg_id: [String!]!) {
             project(name: $dataset) {
                 sequencingGroups(id: {in_: $cpg_id}) {
                 id
