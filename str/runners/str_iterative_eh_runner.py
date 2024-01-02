@@ -14,13 +14,13 @@ pip install sample-metadata hail click
 
 """
 import os
-from cpg_utils import to_path
 
 import click
 import hailtop.batch as hb
 
 from metamist.graphql import gql, query
 
+from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import remote_tmpdir, output_path, reference_path
 
@@ -134,7 +134,7 @@ def main(
                 eh_job.storage('70G')
                 eh_job.memory('120G')
                 eh_job.cpu(16)
-                eh_regions = b.read_input(variant_catalog)
+                eh_regions = b.read_input(subcatalog)
 
                 eh_job.declare_resource_group(
                     eh_output={
