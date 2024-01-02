@@ -7,7 +7,7 @@ Required input: --variant-catalog (file path to variant catalog, can be sharded 
 EH will run on every sample listed inthe sample mapping file.
 
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' eh_runner_test.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/5M_sharded/ --dataset=tob-wgs --sample-id-file=gs://cpg-tob-wgs-test/hoptan-str/CPG308239.csv
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' eh_runner_test.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/5M_sharded_100k/ --dataset=tob-wgs --sample-id-file=gs://cpg-tob-wgs-test/hoptan-str/CPG308239.csv
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -104,7 +104,7 @@ def main(
                     eh_job.depends_on(jobs[-max_parallel_jobs])
                 jobs.append(eh_job)
                 eh_job.storage('50G')
-                eh_job.memory('64G')
+                eh_job.memory('32G')
                 eh_job.cpu(8)
                 eh_regions = b.read_input(subcatalog)
 
