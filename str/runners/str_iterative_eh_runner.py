@@ -57,7 +57,7 @@ def main(
         billing_project=get_config()['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
-    b = hb.Batch(backend=backend, default_image=os.getenv('DRIVER_IMAGE'))
+    b = get_batch()
 
     # Reference fasta
     ref_fasta = str(reference_path('broad/ref_fasta'))
