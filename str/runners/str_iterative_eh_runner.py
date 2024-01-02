@@ -9,7 +9,7 @@ EH will run on every sample listed inthe sample mapping file.
 For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs --sample-id-file=gs://...
 
-Required packages: requirements.txt
+Required packages: str_iterative_eh_runner_requirements.txt
 
 """
 import os
