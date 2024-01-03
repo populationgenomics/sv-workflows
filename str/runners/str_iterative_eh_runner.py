@@ -53,7 +53,7 @@ def main(
     sample_id_file: str,
     job_storage: str,
     job_memory: str,
-    job_ncpu: int
+    job_ncpu: int,
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -167,7 +167,9 @@ def main(
                 """
                 )
                 # ExpansionHunter output writing
-                eh_output_path = output_path(f'{cpg_id}/{cpg_id}_eh_shard{index+1}', 'analysis')
+                eh_output_path = output_path(
+                    f'{cpg_id}/{cpg_id}_eh_shard{index+1}', 'analysis'
+                )
                 b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
