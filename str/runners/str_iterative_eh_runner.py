@@ -3,11 +3,11 @@
 
 """
 This script uses ExpansionHunterv5 to call STRs on WGS cram files.
-Required input: --variant-catalog (file path to variant catalog, can be sharded or unsharded), --dataset, and sample mapping file [CSV] (CPG sample id (first column) and sex (second column))
+Required input: --variant-catalog (file path to variant catalog, can be sharded or unsharded), --dataset, and sample mapping file [CSV] (CPG sample id (first column) and sex (third column))
 EH will run on every sample listed inthe sample mapping file.
 
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs --sample-id-file=gs://...
+analysis-runner --access-level full --dataset tob-wgs --description 'n100 5M run' --output-dir 'str/5M_run' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/5M_run/5M_sharded_100k/ --dataset=tob-wgs --sample-id-file=gs://cpg-tob-wgs-test/hoptan-str/5M_run/sampled_tob_n100_subset.csv
 
 Required packages: str_iterative_eh_runner_requirements.txt
 
@@ -84,7 +84,7 @@ def main(
         for line in f:
             split_line = line.split(',')
             cpg_id = split_line[0]
-            sex = split_line[1]
+            sex = split_line[2]
             if cpg_id == 's':  # header line
                 continue
             if sex == 'XY':
@@ -167,7 +167,7 @@ def main(
                 """
                 )
                 # ExpansionHunter output writing
-                eh_output_path = output_path(f'{cpg_id}_eh_shard{index+1}', 'analysis')
+                eh_output_path = output_path(f'{cpg_id}/{cpg_id}_eh_shard{index+1}', 'analysis')
                 b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
