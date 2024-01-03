@@ -7,7 +7,7 @@ This script combines sharded VCFs (from one sample and one caller) into one VCF.
 analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
     vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run/CPG308288 \
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/sharded_tester
 """
 import click
 
@@ -78,7 +78,7 @@ def main(input_dir):
 
     combiner_job = b.new_python_job(name=f'VCF Combiner job: {cpg_id}')
 
-    out_path = output_path(f'{cpg_id}_combined.vcf')
+    out_path = output_path(f'{cpg_id}_combined.vcf', 'analysis')
     combiner_job.call(combine_vcf_files, input_dir, out_path)
 
     b.run(wait=False)
