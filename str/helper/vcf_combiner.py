@@ -10,7 +10,6 @@ analysis-runner --access-level test --dataset tob-wgs --description \
     --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run/CPG308288 \
 """
 import click
-import sys
 
 from cpg_utils.config import get_config
 from cpg_utils import to_path
@@ -18,14 +17,16 @@ from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
+
 def combine_vcf_files(input_dir, gcs_out_path):
-    input_files  = to_path(input_dir).glob('*.vcf')
+    """Combines sharded VCFs in input_dir into one combined VCF, writing it to a GCS output path"""
+    input_files = to_path(input_dir).glob('*.vcf')
 
     # Initialize variables to store information
-    fileformat_line = ""
+    fileformat_line = ''
     info_lines = []
     alt_lines = set()
-    chrom_line = ""
+    chrom_line = ''
     gt_lines = []
 
     # Process each input file
@@ -35,7 +36,11 @@ def combine_vcf_files(input_dir, gcs_out_path):
                 # Collect information from the header lines
                 if line.startswith('##fileformat') and file_index == 0:
                     fileformat_line = line
-                elif (line.startswith('##INFO') or line.startswith('##FILTER') or line.startswith('##FORMAT')) and file_index == 0:
+                elif (
+                    line.startswith('##INFO')
+                    or line.startswith('##FILTER')
+                    or line.startswith('##FORMAT')
+                ) and file_index == 0:
                     info_lines.append(line)
                 elif line.startswith('##ALT'):
                     # Collect ALT lines from all files into a set to remove duplicates
@@ -64,11 +69,8 @@ def combine_vcf_files(input_dir, gcs_out_path):
 
 
 @click.command()
-@click.option('--input-dir',help='Input directory for sharded VCFs')
-
-def main(
-    input_dir
-):
+@click.option('--input-dir', help='Input directory for sharded VCFs')
+def main(input_dir):
     # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
