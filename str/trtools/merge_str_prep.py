@@ -71,17 +71,17 @@ def main(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
                     'reheader.vcf.gz': '{root}.reheader.vcf.gz',
-                    'reheader.vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
+                    'vcf.gz.tbi': '{root}.vcf.gz.tbi',
                 }
             )
             bcftools_job.command(
                 f"""
 
-                bcftools sort {vcf_input} | bgzip -c > {bcftools_job.vcf_sorted['vcf.gz']}
+                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {vcf_input}
 
-                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']}
+                bcftools sort {bcftools_job.vcf_sorted['reheader.vcf.gz']}  > {bcftools_job.vcf_sorted['vcf.gz']}
 
-                tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']}
+                tabix -f -p vcf {bcftools_job.vcf_sorted['vcf.gz']}
 
                 """
             )
