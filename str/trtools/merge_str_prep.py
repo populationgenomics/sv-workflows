@@ -70,16 +70,18 @@ def main(
             bcftools_job.declare_resource_group(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
-                    'reheader.vcf.gz': '{root}.reheader.vcf.gz',
+                    'reheader.vcf': '{root}.reheader.vcf',
                     'vcf.gz.tbi': '{root}.vcf.gz.tbi',
                 }
             )
             bcftools_job.command(
                 f"""
 
-                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {vcf_input}
+                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf']} {vcf_input}
 
-                bcftools sort {bcftools_job.vcf_sorted['reheader.vcf.gz']} | bgzip -c  > {bcftools_job.vcf_sorted['vcf.gz']}
+                tabix -p vcf {bcftools_job.vcf_sorted['reheader.vcf']}
+
+                bcftools sort {bcftools_job.vcf_sorted['reheader.vcf']} | bgzip -c  > {bcftools_job.vcf_sorted['vcf.gz']}
 
                 tabix -p vcf {bcftools_job.vcf_sorted['vcf.gz']}
 
