@@ -29,10 +29,10 @@ def combine_vcf_files(input_dir, gcs_out_path):
     chrom_line = ''
     gt_lines = []
 
-    shard_counter =0
+    shard_counter = 0
     # Process each input file
     for file_index, input_file in enumerate(input_files):
-        shard_counter= shard_counter+1
+        shard_counter = shard_counter + 1
         with to_path(input_file).open() as f:
             for line in f:
                 # Collect information from the header lines
