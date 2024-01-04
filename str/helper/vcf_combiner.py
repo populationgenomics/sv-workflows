@@ -7,8 +7,8 @@ Possible to specify multiple samples and create a combined VCF for each sample.
 analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
     vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/sharded_tester \
-    CPGXXXX CPGXXX
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str \
+    sharded_tester
 """
 import click
 
@@ -37,7 +37,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     input_files = {str(gs_path) for gs_path in input_files}
 
     # sort input_files by shard number numerically eg shard_1, shard_2,....shard_50
-    input_files = -sorted(input_files, key=custom_sort_key)
+    input_files = sorted(input_files, key=custom_sort_key)
 
     # Initialize variables to store information
     fileformat_line = ''
