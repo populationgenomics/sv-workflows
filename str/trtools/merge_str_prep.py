@@ -79,10 +79,6 @@ def main(
 
                 bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {vcf_input}
 
-                bcftools sort {bcftools_job.vcf_sorted['reheader.vcf.gz']}  > {bcftools_job.vcf_sorted['vcf.gz']}
-
-                tabix -f -p vcf {bcftools_job.vcf_sorted['vcf.gz']}
-
                 """
             )
             # Output writing
