@@ -29,9 +29,10 @@ def combine_vcf_files(input_dir, gcs_out_path):
     chrom_line = ''
     gt_lines = []
 
+    shard_counter =0
     # Process each input file
     for file_index, input_file in enumerate(input_files):
-        print(f'Parsing {input_file}')
+        shard_counter= shard_counter+1
         with to_path(input_file).open() as f:
             for line in f:
                 # Collect information from the header lines
@@ -52,6 +53,7 @@ def combine_vcf_files(input_dir, gcs_out_path):
                     # Collect calls after #CHROM
                     gt_lines.append(line)
 
+    print(f'Parsed {shard_counter} sharded VCFs')
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
 
