@@ -3,11 +3,13 @@
 
 """
 This script combines sharded ExpansionHunter VCFs (from one sample and one caller) into one VCF.
+Possible to specify multiple samples and create a combined VCF for each sample.
 
 analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
     vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/sharded_tester
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/sharded_tester \
+    CPGXXXX  CPGXXX
 """
 import click
 
@@ -18,9 +20,10 @@ from cpg_utils.hail_batch import get_batch, output_path
 config = get_config()
 
 
-def combine_vcf_files(input_dir, gcs_out_path):
+def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     """Combines sharded ExpansionHunter VCFs in input_dir into one combined VCF, writing it to a GCS output path"""
-    input_files = to_path(input_dir).glob('*.vcf')
+
+    input_files = to_path(f'{input_dir}/{cpg_id}').glob('*.vcf')
 
     # Initialize variables to store information
     fileformat_line = ''
@@ -72,17 +75,21 @@ def combine_vcf_files(input_dir, gcs_out_path):
 
 
 @click.command()
-@click.option('--input-dir', help='Input directory for sharded VCFs')
-def main(input_dir):
+@click.option(
+    '--input-dir',
+    help='Parent input directory for sharded VCFs (subfolders should be labelled with CPG ID)',
+)
+@click.argument('cpg-ids', nargs=-1)
+def main(input_dir, cpg_ids: list[str]):
     # pylint: disable=missing-function-docstring
+
     # Initializing Batch
     b = get_batch()
-    cpg_id = input_dir.split('/')[-1]
 
-    combiner_job = b.new_python_job(name=f'VCF Combiner job: {cpg_id}')
-
-    out_path = output_path(f'{cpg_id}_combined.vcf', 'analysis')
-    combiner_job.call(combine_vcf_files, input_dir, out_path)
+    for cpg_id in cpg_ids:
+        combiner_job = b.new_python_job(name=f'VCF Combiner job: {cpg_id}')
+        out_path = output_path(f'{cpg_id}_combined.vcf', 'analysis')
+        combiner_job.call(combine_vcf_files, cpg_id, input_dir, out_path)
 
     b.run(wait=False)
 
