@@ -69,7 +69,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
                     chrom_line = line
                 else:
                     # Collect calls after #CHROM
-                    gt_lines.add(line)
+                    gt_lines.append(line)
 
     print(f'Parsed {shard_counter} sharded VCFs')
     # Sort ALT lines alphabetically and convert to a list
