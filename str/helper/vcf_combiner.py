@@ -19,17 +19,32 @@ from cpg_utils.hail_batch import get_batch, output_path
 config = get_config()
 
 
+def custom_sort_key(item):
+    """Sort key for list of shards to be ordered numerically"""
+    # Extract numeric part from the item
+    numeric_part = ''.join(c for c in item if c.isdigit())
+    # Convert numeric part to an integer
+    numeric_value = int(numeric_part) if numeric_part else float('inf')
+    return (numeric_value, item)
+
+
 def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     """Combines sharded ExpansionHunter VCFs in input_dir into one combined VCF, writing it to a GCS output path"""
 
     input_files = to_path(f'{input_dir}/{cpg_id}').glob('*.vcf')
+
+    # make input_files GSPath elements into a string type object
+    input_files = {str(gs_path) for gs_path in input_files}
+
+    # sort input_files by shard number numerically eg shard_1, shard_2,....shard_50
+    input_files = -sorted(input_files, key=custom_sort_key)
 
     # Initialize variables to store information
     fileformat_line = ''
     info_lines = []
     alt_lines = set()
     chrom_line = ''
-    gt_lines = []
+    gt_lines = set()
 
     shard_counter = 0
     # Process each input file
@@ -53,11 +68,13 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
                     chrom_line = line
                 else:
                     # Collect calls after #CHROM
-                    gt_lines.append(line)
+                    gt_lines.add(line)
 
     print(f'Parsed {shard_counter} sharded VCFs')
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
+
+    # Sort GT lines
 
     # Write the combined information to the output file
     with to_path(gcs_out_path).open('w') as out_file:
