@@ -44,7 +44,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     info_lines = []
     alt_lines = set()
     chrom_line = ''
-    gt_lines = set()
+    gt_lines = []
 
     shard_counter = 0
     # Process each input file
@@ -74,8 +74,6 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     print(f'Parsed {shard_counter} sharded VCFs')
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
-
-    # Sort GT lines
 
     # Write the combined information to the output file
     with to_path(gcs_out_path).open('w') as out_file:
