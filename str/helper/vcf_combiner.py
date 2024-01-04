@@ -80,7 +80,10 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
 )
 @click.argument('cpg-ids', nargs=-1)
 def main(input_dir, cpg_ids: list[str]):
-    # pylint: disable=missing-function-docstring
+    """
+    Takes an input directory containing vcf shards
+    Aggregates all sharded data into a single output file
+    """
 
     # Initializing Batch
     b = get_batch()
