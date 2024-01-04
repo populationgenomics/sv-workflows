@@ -52,7 +52,7 @@ def combine_vcf_files(input_dir, gcs_out_path):
                     gt_lines.append(line)
 
     # Sort ALT lines alphabetically and convert to a list
-    sorted_alt_lines = sorted(list(alt_lines))
+    sorted_alt_lines = sorted(alt_lines)
 
     # Write the combined information to the output file
     with to_path(gcs_out_path).open('w') as out_file:
