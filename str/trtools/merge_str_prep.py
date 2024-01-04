@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=duplicate-code
 """
-This script prepares GangSTR/EH VCF files for input into mergeSTR. 
+This script prepares GangSTR/EH VCF files for input into mergeSTR.
 Required input: --caller, --input-dir, and external sample IDs
-For example: 
+For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' merge_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs CPGXXXX CPGXXXX
 
 Required packages: sample-metadata, hail, click, os
@@ -77,12 +77,12 @@ def main(
             bcftools_job.command(
                 f"""
 
-                bgzip -c {vcf_input} > {bcftools_job.vcf_sorted['vcf.gz']}
-            
-                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']} 
+                bcftools sort {vcf_input} | bgzip -c > {bcftools_job.vcf_sorted['vcf.gz']}
 
-                tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']} 
-            
+                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']}
+
+                tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']}
+
                 """
             )
             # Output writing
@@ -100,9 +100,9 @@ def main(
                 f"""
 
                 bcftools sort {vcf_input} | bgzip -c  > {bcftools_job.vcf_sorted['vcf.gz']}
-            
+
                 tabix -p vcf {bcftools_job.vcf_sorted['vcf.gz']}
-            
+
                 """
             )
             # Output writing
