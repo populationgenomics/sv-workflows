@@ -4,7 +4,7 @@
 This script prepares GangSTR/EH VCF files for input into mergeSTR.
 Required input: --caller, --input-dir, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs CPGtestersorted
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcf/shard1 CPGtester
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -61,8 +61,7 @@ def main(
     for id in list(input_vcf_dict.keys()):
         bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
         bcftools_job.image(BCFTOOLS_IMAGE)
-        bcftools_job.storage('20G')
-        bcftools_job.cpu(8)
+        bcftools_job.cpu(4)
 
         vcf_input = b.read_input(input_vcf_dict[id])
 
