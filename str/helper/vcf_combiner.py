@@ -108,7 +108,7 @@ def main(input_dir, cpg_ids: list[str]):
 
     for cpg_id in cpg_ids:
         combiner_job = b.new_python_job(name=f'VCF Combiner job: {cpg_id}')
-        out_path = output_path(f'{cpg_id}_eh.vcf', 'analysis')
+        out_path = output_path(f'{cpg_id}_eh.vcf')
         combiner_job.call(combine_vcf_files, cpg_id, input_dir, out_path)
 
     b.run(wait=False)
