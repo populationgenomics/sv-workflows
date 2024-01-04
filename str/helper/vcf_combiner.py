@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=import-error, too-many-locals
 
 """
 This script combines sharded ExpansionHunter VCFs (from one sample and one caller) into one VCF.
@@ -9,7 +8,7 @@ analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
     vcf_combiner.py \
     --input-dir=gs://cpg-tob-wgs-test/hoptan-str/sharded_tester \
-    CPGXXXX  CPGXXX
+    CPGXXXX CPGXXX
 """
 import click
 
