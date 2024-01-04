@@ -2,7 +2,7 @@
 # pylint: disable=import-error, too-many-locals
 
 """
-This script combines sharded VCFs (from one sample and one caller) into one VCF.
+This script combines sharded ExpansionHunter VCFs (from one sample and one caller) into one VCF.
 
 analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
@@ -19,7 +19,7 @@ config = get_config()
 
 
 def combine_vcf_files(input_dir, gcs_out_path):
-    """Combines sharded VCFs in input_dir into one combined VCF, writing it to a GCS output path"""
+    """Combines sharded ExpansionHunter VCFs in input_dir into one combined VCF, writing it to a GCS output path"""
     input_files = to_path(input_dir).glob('*.vcf')
 
     # Initialize variables to store information
