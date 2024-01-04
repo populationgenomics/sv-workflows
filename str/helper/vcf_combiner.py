@@ -31,6 +31,7 @@ def combine_vcf_files(input_dir, gcs_out_path):
 
     # Process each input file
     for file_index, input_file in enumerate(input_files):
+        print(f'Parsing {input_file}')
         with to_path(input_file).open() as f:
             for line in f:
                 # Collect information from the header lines
