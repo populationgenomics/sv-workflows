@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # pylint: disable=duplicate-code
 """
-This script prepares GangSTR/EH VCF files for input into mergeSTR. 
+This script prepares GangSTR/EH VCF files for input into mergeSTR.
 Required input: --caller, --input-dir, and external sample IDs
-For example: 
-analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' merge_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs CPGXXXX CPGXXXX
+For example:
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_run_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs CPGtestersorted2
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -14,13 +14,11 @@ import os
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
-
+from cpg_utils.hail_batch import get_batch, output_path, reference_path
 
 config = get_config()
 
-REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
+REF_FASTA = str(reference_path('broad/ref_fasta'))
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
@@ -61,15 +59,14 @@ def main(
     for id in list(input_vcf_dict.keys()):
         bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
         bcftools_job.image(BCFTOOLS_IMAGE)
-        bcftools_job.storage('20G')
-        bcftools_job.cpu(8)
+        bcftools_job.cpu(4)
+        bcftools_job.storage('15G')
 
         vcf_input = b.read_input(input_vcf_dict[id])
 
         if caller == 'eh':
             bcftools_job.declare_resource_group(
                 vcf_sorted={
-                    'vcf.gz': '{root}.vcf.gz',
                     'reheader.vcf.gz': '{root}.reheader.vcf.gz',
                     'reheader.vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
                 }
@@ -77,12 +74,10 @@ def main(
             bcftools_job.command(
                 f"""
 
-                bgzip -c {vcf_input} > {bcftools_job.vcf_sorted['vcf.gz']}
-            
-                bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']} 
+                bcftools reheader -f {ref.fai} {vcf_input} | bcftools sort --temp-dir $BATCH_TMPDIR/ | bgzip -c >  {bcftools_job.vcf_sorted['reheader.vcf.gz']}
 
-                tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']} 
-            
+                tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']}
+
                 """
             )
             # Output writing
@@ -100,9 +95,9 @@ def main(
                 f"""
 
                 bcftools sort {vcf_input} | bgzip -c  > {bcftools_job.vcf_sorted['vcf.gz']}
-            
+
                 tabix -p vcf {bcftools_job.vcf_sorted['vcf.gz']}
-            
+
                 """
             )
             # Output writing
