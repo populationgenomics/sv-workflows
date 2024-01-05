@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-This script merges ExpansionHunter vcf.gz files into one combined VCF. 
+This script merges ExpansionHunter vcf.gz files into one combined VCF.
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
 
-For example: 
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/expansionhunter/test_chr_22/mergeSTR' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-test-analysis/str/expansionhunter/test_chr_22/mergeSTRprep --dataset=tob-wgs CPG199760 CPG199778
+For example:
+analysis-runner --access-level standard --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/v4' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v4-2 --dataset=tob-wgs CPG199760 CPG199778
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -14,8 +14,7 @@ import os
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 config = get_config()
@@ -42,7 +41,7 @@ def main(
     # Initialise TRTools job to run mergeSTR
     trtools_job = b.new_job(name='mergeSTR')
     trtools_job.image(TRTOOLS_IMAGE)
-    trtools_job.cpu(8)
+    trtools_job.cpu(16)
     # mount using cloudfuse for reading input files
     trtools_job.cloudfuse(f'cpg-{dataset}-main-analysis', '/vcffuse')
     trtools_job.declare_resource_group(
