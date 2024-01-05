@@ -73,7 +73,7 @@ def main(
             bcftools_job.command(
                 f"""
 
-                bcftools reheader -f {ref.fai} {vcf_input} | bcftools sort --temp-dir $BATCH_TMPDIR | bgzip -c >  {bcftools_job.vcf_sorted['reheader.vcf.gz']}
+                bcftools reheader -f {ref.fai} {vcf_input} | bcftools sort --temp-dir $BATCH_TMPDIR/ | bgzip -c >  {bcftools_job.vcf_sorted['reheader.vcf.gz']}
 
                 tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']}
 
