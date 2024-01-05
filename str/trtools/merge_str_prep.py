@@ -4,7 +4,7 @@
 This script prepares GangSTR/EH VCF files for input into mergeSTR.
 Required input: --caller, --input-dir, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_run_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test-analysis/str/5M_run_combined_vcfs CPGtestersorted2
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_run_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs CPGtestersorted2
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -68,7 +68,9 @@ def main(
                 vcf_sorted={
                     'vcf.gz': '{root}.vcf.gz',
                     'reheader.vcf.gz': '{root}.reheader.vcf.gz',
-                    'reheader.vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
+                    'sorted.reheader.vcf.gz': '{root}.sorted.reheader.vcf.gz',
+                    'sorted.reheader.vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
+
                 }
             )
             bcftools_job.command(
@@ -78,7 +80,9 @@ def main(
 
                 bcftools reheader -f {ref.fai} -o {bcftools_job.vcf_sorted['reheader.vcf.gz']} {bcftools_job.vcf_sorted['vcf.gz']}
 
-                tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']}
+                bcftools sort -o {bcftools_job.vcf_sorted['sorted.reheader.vcf.gz']} {bcftools_job.vcf_sorted['reheader.vcf.gz']}
+
+                tabix -f -p vcf {bcftools_job.vcf_sorted['sorted.reheader.vcf.gz']}
 
                 """
             )
