@@ -54,20 +54,23 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
         with to_path(input_file).open() as f:
             for line in f:
                 # Collect information from the header lines
-                if line.startswith('##fileformat') and file_index == 0:
-                    fileformat_line = line
+                if line.startswith('##fileformat'):
+                    if file_index == 0:
+                        fileformat_line = line
                 elif (
                     line.startswith('##INFO')
                     or line.startswith('##FILTER')
                     or line.startswith('##FORMAT')
-                ) and file_index == 0:
-                    info_lines.append(line)
+                ):
+                    if file_index == 0:
+                        info_lines.append(line)
                 elif line.startswith('##ALT'):
                     # Collect ALT lines from all files into a set to remove duplicates
                     alt_lines.add(line)
-                elif line.startswith('#CHROM') and file_index == 0:
-                    chrom_line = line
-                else:
+                elif line.startswith('#CHROM'):
+                    if file_index == 0:
+                        chrom_line = line
+                elif not line.startswith('#'):
                     # Collect calls after #CHROM
                     gt_lines.append(line)
 
