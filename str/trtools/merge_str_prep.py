@@ -4,7 +4,7 @@
 This script prepares GangSTR/EH VCF files for input into mergeSTR.
 Required input: --caller, --input-dir, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester --output-dir 'tester' merge_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-main/str/expansionhunter/pure_repeats --dataset=tob-wgs CPGXXXX CPGXXXX
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_run_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test-analysis/str/5M_run_combined_vcfs CPGtestersorted2
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
