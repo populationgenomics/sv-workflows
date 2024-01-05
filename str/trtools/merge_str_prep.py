@@ -59,8 +59,7 @@ def main(
     for id in list(input_vcf_dict.keys()):
         bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
         bcftools_job.image(BCFTOOLS_IMAGE)
-        bcftools_job.storage('20G')
-        bcftools_job.cpu(8)
+        bcftools_job.cpu(4)
 
         vcf_input = b.read_input(input_vcf_dict[id])
 
