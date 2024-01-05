@@ -60,6 +60,7 @@ def main(
         bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
         bcftools_job.image(BCFTOOLS_IMAGE)
         bcftools_job.cpu(4)
+        bcftools_job.storage('15G')
 
         vcf_input = b.read_input(input_vcf_dict[id])
 
