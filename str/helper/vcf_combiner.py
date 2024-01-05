@@ -7,8 +7,8 @@ Possible to specify multiple samples and create a combined VCF for each sample.
 analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
     vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/sharded_tester \
-    CPGXXXX CPGXXX
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str \
+    sharded_tester
 """
 import click
 
@@ -24,6 +24,9 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
 
     input_files = to_path(f'{input_dir}/{cpg_id}').glob('*.vcf')
 
+    # make input_files GSPath elements into a string type object
+    input_files = {str(gs_path) for gs_path in input_files}
+
     # Initialize variables to store information
     fileformat_line = ''
     info_lines = []
@@ -34,24 +37,28 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     shard_counter = 0
     # Process each input file
     for file_index, input_file in enumerate(input_files):
+        print(f'Parsing {input_file}')
         shard_counter = shard_counter + 1
         with to_path(input_file).open() as f:
             for line in f:
                 # Collect information from the header lines
-                if line.startswith('##fileformat') and file_index == 0:
-                    fileformat_line = line
+                if line.startswith('##fileformat'):
+                    if file_index == 0:
+                        fileformat_line = line
                 elif (
                     line.startswith('##INFO')
                     or line.startswith('##FILTER')
                     or line.startswith('##FORMAT')
-                ) and file_index == 0:
-                    info_lines.append(line)
+                ):
+                    if file_index == 0:
+                        info_lines.append(line)
                 elif line.startswith('##ALT'):
                     # Collect ALT lines from all files into a set to remove duplicates
                     alt_lines.add(line)
-                elif line.startswith('#CHROM') and file_index == 0:
-                    chrom_line = line
-                else:
+                elif line.startswith('#CHROM'):
+                    if file_index == 0:
+                        chrom_line = line
+                elif not line.startswith('#'):
                     # Collect calls after #CHROM
                     gt_lines.append(line)
 
