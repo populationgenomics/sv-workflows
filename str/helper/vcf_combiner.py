@@ -49,7 +49,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     shard_counter = 0
     # Process each input file
     for file_index, input_file in enumerate(input_files):
-        print (f'Parsing {input_file}')
+        print(f'Parsing {input_file}')
         shard_counter = shard_counter + 1
         with to_path(input_file).open() as f:
             for line in f:
