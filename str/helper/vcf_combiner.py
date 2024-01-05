@@ -19,13 +19,12 @@ from cpg_utils.hail_batch import get_batch, output_path
 config = get_config()
 
 
-def custom_sort_key(item):
-    """Sort key for list of shards to be ordered numerically"""
-    # Extract numeric part from the item
-    numeric_part = ''.join(c for c in item if c.isdigit())
-    # Convert numeric part to an integer
-    numeric_value = int(numeric_part) if numeric_part else float('inf')
-    return (numeric_value, item)
+# Custom function to extract chromosome and position information
+def sorting_key(coord):
+    parts = coord.split('\t')
+    chromosome = parts[0]
+    start_position = int(parts[1])
+    return chromosome, start_position
 
 
 def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
@@ -35,9 +34,6 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
 
     # make input_files GSPath elements into a string type object
     input_files = {str(gs_path) for gs_path in input_files}
-
-    # sort input_files by shard number numerically eg shard_1, shard_2,....shard_50
-    input_files = sorted(input_files, key=custom_sort_key)
 
     # Initialize variables to store information
     fileformat_line = ''
@@ -78,6 +74,9 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
 
+    #Sort GT lines by chr position
+    sorted_gt_lines = sorted(gt_lines, key = sorting_key)
+
     # Write the combined information to the output file
     with to_path(gcs_out_path).open('w') as out_file:
         # Write fileformat line
@@ -89,7 +88,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
         # Write CHROM line
         out_file.write(chrom_line)
         # Write GT or lines containing the calls
-        out_file.writelines(gt_lines)
+        out_file.writelines(sorted_gt_lines)
 
 
 @click.command()
