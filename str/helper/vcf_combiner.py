@@ -19,14 +19,6 @@ from cpg_utils.hail_batch import get_batch, output_path
 config = get_config()
 
 
-# Custom function to extract chromosome and position information
-def sorting_key(coord):
-    parts = coord.split('\t')
-    chromosome = parts[0]
-    start_position = int(parts[1])
-    return chromosome, start_position
-
-
 def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     """Combines sharded ExpansionHunter VCFs in input_dir into one combined VCF, writing it to a GCS output path"""
 
@@ -74,9 +66,6 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
 
-    #Sort GT lines by chr position
-    sorted_gt_lines = sorted(gt_lines, key = sorting_key)
-
     # Write the combined information to the output file
     with to_path(gcs_out_path).open('w') as out_file:
         # Write fileformat line
@@ -88,7 +77,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
         # Write CHROM line
         out_file.write(chrom_line)
         # Write GT or lines containing the calls
-        out_file.writelines(sorted_gt_lines)
+        out_file.writelines(gt_lines)
 
 
 @click.command()
