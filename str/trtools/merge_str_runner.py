@@ -4,7 +4,7 @@ This script merges ExpansionHunter vcf.gz files into one combined VCF.
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
 
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/v4' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v4-2 --dataset=tob-wgs CPG199760 CPG199778
+analysis-runner --access-level test --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/tester' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs --dataset=tob-wgs CPGtestersorted1 CPGtestersorted2
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -43,7 +43,7 @@ def main(
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.cpu(16)
     # mount using cloudfuse for reading input files
-    trtools_job.cloudfuse(f'cpg-{dataset}-main-analysis', '/vcffuse')
+    trtools_job.cloudfuse(f'cpg-{dataset}-test-analysis', '/vcffuse')
     trtools_job.declare_resource_group(
         vcf_output={
             'vcf': '{root}.vcf',
