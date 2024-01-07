@@ -3,7 +3,7 @@
 """
 This script runs statSTR() from TRTools package on a single/merged STR vcf file and outputs various statistics
 
-For example: 
+For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' statSTR_runner.py --caller=eh --file-path=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
 
 Required packages: sample-metadata, hail, click, os
@@ -13,8 +13,7 @@ pip install sample-metadata hail click
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 config = get_config()
@@ -39,7 +38,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
     trtools_job = b.new_job(name=f'statSTR {caller}')
 
     trtools_job.image(TRTOOLS_IMAGE)
-    trtools_job.storage('20G')
+    trtools_job.storage('30G')
     trtools_job.cpu(8)
 
     trtools_job.declare_resource_group(ofile={'tab': '{root}.tab'})
@@ -48,7 +47,7 @@ def main(file_path, caller):  # pylint: disable=missing-function-docstring
         f"""
         set -ex;
         statSTR --vcf {vcf_input} --vcftype {caller} --out {trtools_job.ofile} --thresh --afreq --acount --hwep --het --entropy --mean --mode --var --numcalled
-    
+
         """
     )
 

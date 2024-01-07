@@ -3,7 +3,7 @@
 """
 This script runs compareSTR() from TRTools package to compare calls between 2 STR VCFs.
 
-For example: 
+For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' compareSTR_runner.py --file-path-1=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
 --file-path-2=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_eh.vcf --caller-1=gangstr --caller-2=eh
 
@@ -13,8 +13,7 @@ pip install sample-metadata hail click
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
@@ -58,16 +57,16 @@ def main(
     bcftools_job.command(
         f"""
     set -ex;
-    
+
     echo "compressing {vcf_input_1}";
     bcftools sort {vcf_input_1} | bgzip -c >{bcftools_job.vcf_1['vcf.gz']};
-    
+
     echo "indexing {bcftools_job.vcf_1['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_1['vcf.gz']};
-    
-    echo "compressing {vcf_input_2}"; 
+
+    echo "compressing {vcf_input_2}";
     bcftools sort {vcf_input_2} | bgzip -c >{bcftools_job.vcf_2['vcf.gz']};
-    
+
     echo "indexing {bcftools_job.vcf_2['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_2['vcf.gz']};
     """
@@ -94,7 +93,7 @@ def main(
         f"""
     set -ex;
     compareSTR --vcf1 {bcftools_job.vcf_1['vcf.gz']} --vcf2 {bcftools_job.vcf_2['vcf.gz']} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
-    
+
     """
     )
     output_path_vcf = output_path(
