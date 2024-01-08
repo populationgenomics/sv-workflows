@@ -4,7 +4,7 @@ This script merges ExpansionHunter vcf.gz files into one combined VCF.
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
 
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/v4' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v4-2 --dataset=tob-wgs --num-shards=50 CPG199760 CPG199778
+analysis-runner --access-level standard --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/v4' merge_str_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v4-2 --num-shards=50 CPG199760 CPG199778
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -24,9 +24,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 
 # inputs:
 
-
-# dataset
-@click.option('--dataset', help='dataset eg tob-wgs')
 # input directory
 @click.option('--input-dir', help='gs://...')
 # input num shards
@@ -40,7 +37,7 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.argument('internal-wgs-ids', nargs=-1)
 @click.command()
 def main(
-    dataset, input_dir, internal_wgs_ids: list[str], num_shards
+    input_dir, internal_wgs_ids: list[str], num_shards
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
