@@ -66,14 +66,14 @@ def main(
         }
 
     for id in list(input_vcf_dict.keys()):
-        bcftools_job = b.new_job(name=f'{id} {caller} Files prep')
-        bcftools_job.image(BCFTOOLS_IMAGE)
-        bcftools_job.cpu(4)
-        bcftools_job.storage('15G')
 
         for vcf_file in input_vcf_dict[id]:
 
             vcf_input = b.read_input(vcf_file)
+            bcftools_job = b.new_job(name=f'{vcf_file} Files prep')
+            bcftools_job.image(BCFTOOLS_IMAGE)
+            bcftools_job.cpu(4)
+            bcftools_job.storage('15G')
 
             if caller == 'eh':
                 bcftools_job.declare_resource_group(
