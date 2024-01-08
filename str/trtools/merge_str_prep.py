@@ -56,7 +56,7 @@ def main(
 
     if sharded:
         input_vcf_dict = {
-            id: [str(gspath) for gspath in to_path(f'{input_dir}/{id}').glob('*.vcf') for id in internal_wgs_ids]
+            id: [str(gspath) for gspath in to_path(f'{input_dir}/{id}').glob('*.vcf')] for id in internal_wgs_ids
         }
 
     else:
