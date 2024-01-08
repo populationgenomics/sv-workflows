@@ -31,10 +31,11 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 )
 # input directory
 @click.option('--input-dir', help='gs://...')
-# input sample ID
-@click.argument('internal-wgs-ids', nargs=-1)
 # sharded flag
 @click.option('--sharded', is_flag= True, help = 'Assume a sharded catalog was used' )
+# input sample ID
+@click.argument('internal-wgs-ids', nargs=-1)
+
 @click.command()
 def main(
     caller, input_dir, internal_wgs_ids: list[str], sharded
