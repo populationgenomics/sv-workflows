@@ -4,7 +4,7 @@
 This script prepares GangSTR/EH VCF files for input into mergeSTR.
 Required input: --caller, --input-dir, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_run_combined_vcfs/merge_str_prep' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs CPGtestersorted2
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'str/5M_run_combined_vcfs/merge_str_prep/v2' merge_str_prep.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/hoptan-str sharded_tester --sharded
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -34,7 +34,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
 # sharded flag
-@click.option('--sharded', is_flag=True, help='Assume a sharded catalog was used')
+@click.option('--sharded', is_flag= True, help = 'Assume a sharded catalog was used' )
 @click.command()
 def main(
     caller, input_dir, internal_wgs_ids: list[str], sharded
@@ -56,14 +56,12 @@ def main(
 
     if sharded:
         input_vcf_dict = {
-            id: [str(gspath) for gspath in to_path(f'{input_dir}/{id}').glob('*.vcf')]
-            for id in internal_wgs_ids
+            id: [str(gspath) for gspath in to_path(f'{input_dir}/{id}').glob('*.vcf')] for id in internal_wgs_ids
         }
 
     else:
         input_vcf_dict = {
-            id: [os.path.join(input_dir, f'{id}_{caller}.vcf')]
-            for id in internal_wgs_ids
+            id: [os.path.join(input_dir, f'{id}_{caller}.vcf')] for id in internal_wgs_ids
         }
 
     for id in list(input_vcf_dict.keys()):
@@ -73,6 +71,7 @@ def main(
         bcftools_job.storage('15G')
 
         for vcf_file in input_vcf_dict[id]:
+
             vcf_input = b.read_input(vcf_file)
 
             if caller == 'eh':
