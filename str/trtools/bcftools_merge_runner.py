@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code,unsubscriptable-object
 """
 This script merges ExpansionHunter VCFs together into one VCF using `bcftools merge`
 Required input: --input-dir and external sample IDs
@@ -14,7 +14,7 @@ import os
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, output_path, reference_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
