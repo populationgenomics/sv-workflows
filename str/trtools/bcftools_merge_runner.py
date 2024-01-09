@@ -39,12 +39,12 @@ def main(
             'vcf.gz': each_vcf,
             'vcf.gz.tbi': f'{each_vcf}.tbi',
         })['vcf.gz'])
-
+    num_samples = len(internal_wgs_ids)
 
     bcftools_job = b.new_job(name=f'Bcftools merge job')
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.cpu(4)
-    bcftools_job.storage('15G')
+    bcftools_job.storage('20G')
 
     bcftools_job.declare_resource_group(vcf_out={'vcf.gz': '{root}.vcf.gz'})
     bcftools_job.command(
@@ -62,4 +62,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter,unsubscriptable-object
