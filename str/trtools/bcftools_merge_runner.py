@@ -18,7 +18,6 @@ from cpg_utils.hail_batch import get_batch, output_path, reference_path
 
 config = get_config()
 
-REF_FASTA = str(reference_path('broad/ref_fasta'))
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
@@ -34,16 +33,6 @@ def main(
     # Initializing Batch
     b = get_batch()
 
-    # Working with CRAM files requires the reference fasta
-    ref = b.read_input_group(
-        **dict(
-            base=REF_FASTA,
-            fai=REF_FASTA + '.fai',
-            dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-            + '.dict',
-        )
-    )
-
     # read in input file paths
     vcffuse_path = []
     for id in list(internal_wgs_ids):
@@ -53,18 +42,12 @@ def main(
     num_samples = len(vcffuse_path)
     vcffuse_path = ' '.join(vcffuse_path)  # string format for input into bcftools merge
 
-
     bcftools_job = b.new_job(name=f'Bcftools merge job')
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.cpu(4)
     bcftools_job.storage('15G')
 
-
-    bcftools_job.declare_resource_group(
-        vcf_out={
-            'vcf.gz': '{root}.vcf.gz'
-                            }
-    )
+    bcftools_job.declare_resource_group(vcf_out={'vcf.gz': '{root}.vcf.gz'})
     bcftools_job.command(
         f"""
 
@@ -73,7 +56,7 @@ def main(
         """
     )
     # Output writing
-    output_path_eh = output_path(f'{id}_eh', 'analysis')
+    output_path_eh = output_path(f'merged_{num_samples}_eh', 'analysis')
     b.write_output(bcftools_job.vcf_sorted, output_path_eh)
 
     b.run(wait=False)
