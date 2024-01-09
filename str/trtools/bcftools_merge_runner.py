@@ -4,7 +4,7 @@
 This script merges ExpansionHunter VCFs together into one VCF using `bcftools merge`
 Required input: --input-dir and internal sample CPG IDs
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description 'bcftools merge test' --output-dir 'str/5M_run_combined_vcfs/bcftools_merge/v4-3' bcftools_merge_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/v4 CPGX CPGY
+analysis-runner --access-level test --dataset tob-wgs --description 'bcftools merge test' --output-dir 'str/5M_run_combined_vcfs/bcftools_merge/v4-2' bcftools_merge_runner.py --input-dir=gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs/merge_str_prep/v4-2 CPG308486 CPG308288
 
 """
 import os
@@ -59,7 +59,7 @@ def main(input_dir, internal_wgs_ids: list[str]):
     )
     # Output writing
     output_path_eh = output_path(f'merged_{num_samples}_eh', 'analysis')
-    b.write_output(bcftools_job.vcf_sorted, output_path_eh)
+    b.write_output(bcftools_job.vcf_out, output_path_eh)
 
     b.run(wait=False)
 
