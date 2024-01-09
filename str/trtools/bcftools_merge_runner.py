@@ -17,16 +17,15 @@ config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
+
 # inputs:
 # input directory
 @click.option('--input-dir', help='gs://...')
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
 @click.command()
-def main(
-    input_dir, internal_wgs_ids: list[str]
-):
-    """ Merge sample VCFs using bcftools merge """
+def main(input_dir, internal_wgs_ids: list[str]):
+    """Merge sample VCFs using bcftools merge"""
 
     # Initializing Batch
     b = get_batch()
@@ -35,10 +34,14 @@ def main(
     batch_vcfs = []
     for id in list(internal_wgs_ids):
         each_vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
-        batch_vcfs.append(b.read_input_group(**{
-            'vcf.gz': each_vcf,
-            'vcf.gz.tbi': f'{each_vcf}.tbi',
-        })['vcf.gz'])
+        batch_vcfs.append(
+            b.read_input_group(
+                **{
+                    'vcf.gz': each_vcf,
+                    'vcf.gz.tbi': f'{each_vcf}.tbi',
+                }
+            )['vcf.gz']
+        )
     num_samples = len(internal_wgs_ids)
 
     bcftools_job = b.new_job(name=f'Bcftools merge job')
