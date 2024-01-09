@@ -23,8 +23,11 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option('--input-dir', help='gs://...')
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
+@click.option(
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
+)
 @click.command()
-def main(input_dir, internal_wgs_ids: list[str]):
+def main(input_dir, job_storage, internal_wgs_ids: list[str]):
     """Merge sample VCFs using bcftools merge"""
 
     # Initializing Batch
@@ -47,7 +50,7 @@ def main(input_dir, internal_wgs_ids: list[str]):
     bcftools_job = b.new_job(name=f'Bcftools merge job')
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.cpu(4)
-    bcftools_job.storage('20G')
+    bcftools_job.storage(job_storage)
 
     bcftools_job.declare_resource_group(vcf_out={'vcf.gz': '{root}.vcf.gz'})
     bcftools_job.command(
