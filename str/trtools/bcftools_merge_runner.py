@@ -32,13 +32,14 @@ def main(
     b = get_batch()
 
     # read in input file paths
-    vcffuse_path = []
+    batch_vcfs = []
     for id in list(internal_wgs_ids):
-        vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
-        suffix = vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
-        vcffuse_path.append(f'/vcffuse/{suffix}')
-    num_samples = len(vcffuse_path)
-    vcffuse_path = ' '.join(vcffuse_path)  # string format for input into bcftools merge
+        each_vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
+        batch_vcfs.append(b.read_input_group(**{
+            'vcf.gz': each_vcf,
+            'vcf.gz.tbi': f'{each_vcf}.tbi',
+        })['vcf.gz'])
+
 
     bcftools_job = b.new_job(name=f'Bcftools merge job')
     bcftools_job.image(BCFTOOLS_IMAGE)
@@ -49,7 +50,7 @@ def main(
     bcftools_job.command(
         f"""
 
-        bcftools merge -m both -o {bcftools_job.vcf_out} -O z --threads 4 {vcffuse_path}
+        bcftools merge -m both -o {bcftools_job.vcf_out['vcf.gz']} -O z --threads 4 {" ".join(batch_vcfs)}
 
         """
     )
