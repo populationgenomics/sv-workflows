@@ -2,12 +2,9 @@
 # pylint: disable=duplicate-code,unsubscriptable-object
 """
 This script merges ExpansionHunter VCFs together into one VCF using `bcftools merge`
-Required input: --input-dir and external sample IDs
+Required input: --input-dir and internal sample CPG IDs
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description 'bcftools merge test' --output-dir 'str/5M_run_combined_vcfs/bcftools_merge/v4-3' bcftools_merge_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/v4 CPGtestersorted2
-
-Required packages: sample-metadata, hail, click, os
-pip install sample-metadata hail click
+analysis-runner --access-level standard --dataset tob-wgs --description 'bcftools merge test' --output-dir 'str/5M_run_combined_vcfs/bcftools_merge/v4-3' bcftools_merge_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/v4 CPGX CPGY
 
 """
 import os
@@ -20,7 +17,6 @@ config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
-
 # inputs:
 # input directory
 @click.option('--input-dir', help='gs://...')
@@ -29,7 +25,9 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.command()
 def main(
     input_dir, internal_wgs_ids: list[str]
-):  # pylint: disable=missing-function-docstring
+):
+    """ Merge sample VCFs using bcftools merge """
+
     # Initializing Batch
     b = get_batch()
 
