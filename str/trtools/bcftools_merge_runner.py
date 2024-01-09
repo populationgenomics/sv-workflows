@@ -4,7 +4,7 @@
 This script merges ExpansionHunter VCFs together into one VCF using `bcftools merge`
 Required input: --input-dir and external sample IDs
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description 'bcftools merge test ' --output-dir 'str/5M_run_combined_vcfs/bcftools_merge/v4-3' bcftools_merge_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/v4 CPGtestersorted2
+analysis-runner --access-level standard --dataset tob-wgs --description 'bcftools merge test' --output-dir 'str/5M_run_combined_vcfs/bcftools_merge/v4-3' bcftools_merge_runner.py --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/v4 CPGtestersorted2
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
