@@ -27,14 +27,15 @@ TRTOOLS_IMAGE = config['images']['trtools']
 
 # inputs:
 
+
 # input directory 1
 @click.option('--input-dir-1', help='gs://...')
 # input directory 2
-@click.option('--input-dir-2', help='gs://...', default = None)
+@click.option('--input-dir-2', help='gs://...', default=None)
 # sample list 1 (CPG sample IDs separated by \n)
 @click.option('--sample-list-1', help='gs://...')
 # sample list 2 (CPG sample IDs separated by \n)
-@click.option('--sample-list-2', help='gs://...', default = None)
+@click.option('--sample-list-2', help='gs://...', default=None)
 # input num shards
 @click.option(
     '--num-shards',
@@ -46,7 +47,9 @@ TRTOOLS_IMAGE = config['images']['trtools']
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
 )
 @click.command()
-def main(job_storage, input_dir_1, input_dir_2, sample_list_1,sample_list_2, num_shards):  # pylint: disable=missing-function-docstring
+def main(
+    job_storage, input_dir_1, input_dir_2, sample_list_1, sample_list_2, num_shards
+):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
     for index in range(num_shards):
