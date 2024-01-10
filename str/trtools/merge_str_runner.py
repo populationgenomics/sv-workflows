@@ -74,7 +74,7 @@ def main(
         with to_path(sample_list_1).open() as f_1:
             ids_1 = [line.strip() for line in f_1]
             for id in ids_1:
-                each_vcf = os.path.join(input_dir_1, f'{id}_eh.reheader.vcf.gz')
+                each_vcf = os.path.join(input_dir_1, f'{id}_eh_shard{shard_index}.reheader.vcf.gz')
                 batch_vcfs.append(
                     b.read_input_group(
                         **{
@@ -90,7 +90,7 @@ def main(
             with to_path(sample_list_2).open() as f_2:
                 ids_2 = [line.strip() for line in f_2]
                 for id in ids_2:
-                    each_vcf = os.path.join(input_dir_2, f'{id}_eh.reheader.vcf.gz')
+                    each_vcf = os.path.join(input_dir_2, f'{id}_eh_shard{shard_index}.reheader.vcf.gz')
                     batch_vcfs.append(
                         b.read_input_group(
                             **{
