@@ -23,17 +23,16 @@ TRTOOLS_IMAGE = config['images']['trtools']
 
 
 # inputs:
-
-
-# dataset
-@click.option('--dataset', help='dataset eg tob-wgs')
 # input directory
 @click.option('--input-dir', help='gs://...')
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
+@click.option(
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
+)
 @click.command()
 def main(
-    dataset, input_dir, internal_wgs_ids: list[str]
+    job_storage, input_dir, internal_wgs_ids: list[str]
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -42,8 +41,7 @@ def main(
     trtools_job = b.new_job(name='mergeSTR')
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.cpu(16)
-    # mount using cloudfuse for reading input files
-    trtools_job.cloudfuse(f'cpg-{dataset}-main-analysis', '/vcffuse')
+    trtools_job.storage(job_storage)
     trtools_job.declare_resource_group(
         vcf_output={
             'vcf': '{root}.vcf',
@@ -53,17 +51,22 @@ def main(
     )
 
     # read in input file paths
-    vcffuse_path = []
+    batch_vcfs = []
     for id in list(internal_wgs_ids):
-        vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
-        suffix = vcf.removeprefix('gs://').split('/', maxsplit=1)[1]
-        vcffuse_path.append(f'/vcffuse/{suffix}')
-    num_samples = len(vcffuse_path)
-    vcffuse_path = ','.join(vcffuse_path)  # string format for input into mergeSTR
+        each_vcf = os.path.join(input_dir, f'{id}_eh.reheader.vcf.gz')
+        batch_vcfs.append(
+            b.read_input_group(
+                **{
+                    'vcf.gz': each_vcf,
+                    'vcf.gz.tbi': f'{each_vcf}.tbi',
+                }
+            )['vcf.gz']
+        )
+    num_samples = len(internal_wgs_ids)
 
     trtools_job.command(
         f"""
-    mergeSTR --vcfs {vcffuse_path} --out {trtools_job.vcf_output} --vcftype eh
+    mergeSTR --vcfs {",".join(batch_vcfs)} --out {trtools_job.vcf_output} --vcftype eh
     bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
     tabix -f -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
     """
