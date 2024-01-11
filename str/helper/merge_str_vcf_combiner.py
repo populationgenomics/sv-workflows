@@ -94,7 +94,7 @@ def combine_vcf_files(input_dir, gcs_out_path):
     gt_lines = []
 
     # Process each input file
-    for shard_counter, key in enumerate(sorted_key_order):
+    for key in sorted_key_order:
         input_file = to_path(input_files_dict[key])
         print(f'Parsing {input_file}')
 
