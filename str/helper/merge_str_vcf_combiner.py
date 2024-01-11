@@ -8,13 +8,12 @@ analysis-runner --access-level test --dataset tob-wgs --description \
     merge_str_vcf_combiner.py \
     --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str \
 """
+import gzip
 import click
 
 from cpg_utils.config import get_config
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
-
-import gzip
 
 config = get_config()
 
