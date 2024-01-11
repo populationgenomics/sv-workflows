@@ -93,7 +93,6 @@ def combine_vcf_files(input_dir, gcs_out_path):
     chrom_line = ''
     gt_lines = []
 
-    shard_counter = 0
     # Process each input file
     for shard_counter, key in enumerate(sorted_key_order):
         input_file = to_path(input_files_dict[key])
