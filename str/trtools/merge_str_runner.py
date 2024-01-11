@@ -52,8 +52,7 @@ def main(
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-    for index in range(num_shards):
-        shard_index = index + 1  # indices start from 1
+    for shard_index in enumerate(num_shards, 1):
 
         # Initialise TRTools job to run mergeSTR
         trtools_job = b.new_job(name=f'mergeSTR shard {shard_index}')
