@@ -53,7 +53,6 @@ def main(
     # Initializing Batch
     b = get_batch()
     for shard_index in enumerate(num_shards, 1):
-
         # Initialise TRTools job to run mergeSTR
         trtools_job = b.new_job(name=f'mergeSTR shard {shard_index}')
         trtools_job.image(TRTOOLS_IMAGE)
