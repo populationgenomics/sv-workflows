@@ -98,7 +98,6 @@ def combine_vcf_files(input_dir, gcs_out_path):
     for shard_counter, key in enumerate(sorted_key_order):
         input_file = to_path(input_files_dict[key])
         print(f'Parsing {input_file}')
-        shard_counter = shard_counter + 1
 
         with gzip.open(input_file, 'rt') as f:
             for line in f:
