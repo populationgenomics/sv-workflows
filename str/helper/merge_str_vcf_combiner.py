@@ -27,20 +27,65 @@ def combine_vcf_files(input_dir, gcs_out_path):
     # make input_files GSPath elements into a string type object
     input_file_paths = {str(gs_path) for gs_path in input_file_paths}
 
-    #create a dictionary where key is the shard number and value is the path to the shard
+    # create a dictionary where key is the shard number and value is the path to the shard
     input_files_dict = {}
     for file_path in input_file_paths:
         key = int(file_path.split('eh_shard')[1].split('.')[0])
         input_files_dict[key] = file_path
 
-    #custom sorted order of shards - PLEASE UPDATE FOR LATER USE
-    sorted_key_order  = [
-    1, 12, 23, 34, 45, 47, 48, 49, 50,
-    2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13,
-    14, 15, 16, 17, 18, 19, 20, 21, 22, 24,
-    25, 26, 27, 28, 29, 30, 31, 32, 33, 35,
-    36, 37, 38, 39, 40, 41, 42, 43, 44, 46
-]
+    # custom sorted order of shards - PLEASE UPDATE FOR LATER USE
+    sorted_key_order = [
+        1,
+        12,
+        23,
+        34,
+        45,
+        47,
+        48,
+        49,
+        50,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        46,
+    ]
 
     # Initialize variables to store information
     fileformat_line = ''
@@ -60,7 +105,7 @@ def combine_vcf_files(input_dir, gcs_out_path):
             for line in f:
                 # Collect information from the header lines
                 if line.startswith('##fileformat'):
-                    if key == 1: # first file processed is shard_1
+                    if key == 1:  # first file processed is shard_1
                         fileformat_line = line
                 elif (
                     line.startswith('##INFO')
@@ -113,9 +158,10 @@ def main(input_dir):
     # Initializing Batch
     b = get_batch()
 
-
     combiner_job = b.new_python_job(name=f'VCF Combiner job')
-    out_path = output_path(f'combined_eh.vcf') #enable analysis mode again later for PR
+    out_path = output_path(
+        f'combined_eh.vcf'
+    )  # enable analysis mode again later for PR
     combiner_job.call(combine_vcf_files, input_dir, out_path)
 
     b.run(wait=False)
