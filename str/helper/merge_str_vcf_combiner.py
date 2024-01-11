@@ -6,7 +6,7 @@ This script combines sharded output VCFs from mergeSTR into one VCF, and assumes
 analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF combiner' --output-dir 'hoptan-str/shard_workflow_test/merge_str_vcf_combiner' \
     merge_str_vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str \
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str
 """
 import gzip
 import click
@@ -158,9 +158,7 @@ def main(input_dir):
     b = get_batch()
 
     combiner_job = b.new_python_job(name=f'VCF Combiner job')
-    out_path = output_path(
-        f'combined_eh.vcf'
-    )  # enable analysis mode again later for PR
+    out_path = output_path(f'combined_eh.vcf', 'analysis')
     combiner_job.call(combine_vcf_files, input_dir, out_path)
 
     b.run(wait=False)
