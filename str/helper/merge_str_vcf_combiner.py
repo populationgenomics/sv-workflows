@@ -153,14 +153,8 @@ def main(input_dir):
     Aggregates all sharded data into a single output file
     """
 
-    # Initializing Batch
-    b = get_batch()
-
-    combiner_job = b.new_python_job(name=f'VCF Combiner job')
     out_path = output_path(f'combined_eh.vcf', 'analysis')
-    combiner_job.call(combine_vcf_files, input_dir, out_path)
-
-    b.run(wait=False)
+    combine_vcf_files(input_dir, out_path)
 
 
 if __name__ == '__main__':
