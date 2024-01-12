@@ -46,7 +46,7 @@ def sex_ploidy_plotter(file_path):
 def main(file_path):
 
     b = get_batch()
-    j = b.new_python_job()
+    j = b.new_python_job(name=f'Sex ploidy plotter job')
     gcs_output_path = output_path(f'sex_ploidy_plot.html', 'analysis')
     result = j.call(sex_ploidy_plotter, file_path)
     b.write_output(result.as_str(), gcs_output_path)
