@@ -43,10 +43,20 @@ def sex_ploidy_plotter(file_path, gcs_path):
     help='GCS file path to SampleQC Hail Table',
     type=str,
 )
+@click.option(
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
+)
+@click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='8G')
 @click.command()
-def main(file_path):
+def main(file_path, job_storage, job_memory):
+    # Initialise batch
     b = get_batch()
+
+    # Initialise job
     j = b.new_python_job(name=f'Sex ploidy plotter job')
+    j.memory(job_memory)
+    j.storage(job_storage)
+
     gcs_output_path = output_path(f'sex_ploidy_plot.html', 'analysis')
     j.call(sex_ploidy_plotter, file_path, gcs_output_path)
 
