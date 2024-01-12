@@ -35,7 +35,7 @@ def sex_ploidy_plotter(file_path, gcs_path):
     # Save the plot to a local file, then hadoop_copy to copy to GCS bucket
     output_file('local_plot.html')
     save(p)
-    hl.hadoop_copy('local_plot.html', gcs_path)
+    hl.hadoop_copy('local_plot.html', "gs://cpg-tob-wgs-test/hoptan-str/sex_ploidy_plot/sex_ploidy_plot.html")
 
 
 @click.option(
@@ -45,7 +45,7 @@ def sex_ploidy_plotter(file_path, gcs_path):
 )
 @click.command()
 def main(file_path):
-    gcs_output_path = output_path(f'sex_ploidy_plot.png', 'analysis')
+    gcs_output_path = output_path(f'sex_ploidy_plot.html', 'analysis')
     sex_ploidy_plotter(file_path, gcs_output_path)
 
 
