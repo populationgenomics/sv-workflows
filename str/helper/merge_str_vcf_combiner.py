@@ -145,7 +145,9 @@ def combine_vcf_files(input_dir, gcs_out_path):
 @click.option(
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
 )
-@click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='highmem')
+@click.option(
+    '--job-memory', help='Memory of the Hail batch job eg 64G', default='highmem'
+)
 @click.option(
     '--input-dir',
     help='Parent input directory for sharded VCFs',
