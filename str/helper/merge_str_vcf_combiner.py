@@ -3,17 +3,17 @@
 """
 This script combines sharded output VCFs from mergeSTR into one VCF, and assumes the genotyper used was ExpansionHunter.
 
-analysis-runner --access-level test --dataset tob-wgs --description \
-    'VCF combiner' --output-dir 'hoptan-str/shard_workflow_test/merge_str_vcf_combiner' \
+analysis-runner --access-level standard --dataset tob-wgs --description  \
+    'VCF combiner' --memory highmem --cpu 16 --output-dir 'str/5M_run_combined_vcfs/vcf_combiner_output/v5' \
     merge_str_vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str
+    --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str/v5
 """
 import gzip
 import click
 
 from cpg_utils.config import get_config
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
@@ -143,17 +143,33 @@ def combine_vcf_files(input_dir, gcs_out_path):
 
 @click.command()
 @click.option(
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
+)
+@click.option(
+    '--job-memory', help='Memory of the Hail batch job eg 64G', default='highmem'
+)
+@click.option('--job-cpu', help='CPU of the Hail batch job eg 16', default=8)
+@click.option(
     '--input-dir',
     help='Parent input directory for sharded VCFs',
 )
-def main(input_dir):
+def main(input_dir, job_memory, job_storage, job_cpu):
     """
     Takes an input directory containing vcf shards
     Aggregates all sharded data into a single output file
     """
 
+    # Initializing Batch
+    b = get_batch()
+
+    combiner_job = b.new_python_job(name=f'VCF Combiner job')
+    combiner_job.memory(job_memory)
+    combiner_job.storage(job_storage)
+    combiner_job.cpu(job_cpu)
     out_path = output_path(f'combined_eh.vcf', 'analysis')
-    combine_vcf_files(input_dir, out_path)
+    combiner_job.call(combine_vcf_files, input_dir, out_path)
+
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
