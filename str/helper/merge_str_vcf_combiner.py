@@ -145,12 +145,12 @@ def combine_vcf_files(input_dir, gcs_out_path):
 @click.option(
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
 )
-@click.option('--job-cpu', help='CPUs of the Hail batch job eg 8', default=8)
+@click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='highmem')
 @click.option(
     '--input-dir',
     help='Parent input directory for sharded VCFs',
 )
-def main(input_dir, job_cpu, job_storage):
+def main(input_dir, job_memory, job_storage):
     """
     Takes an input directory containing vcf shards
     Aggregates all sharded data into a single output file
@@ -160,7 +160,7 @@ def main(input_dir, job_cpu, job_storage):
     b = get_batch()
 
     combiner_job = b.new_python_job(name=f'VCF Combiner job')
-    combiner_job.cpu(job_cpu)
+    combiner_job.memory(job_memory)
     combiner_job.storage(job_storage)
     out_path = output_path(f'combined_eh.vcf', 'analysis')
     combiner_job.call(combine_vcf_files, input_dir, out_path)
