@@ -23,9 +23,9 @@ def sex_ploidy_plotter(file_path, gcs_path):
 
     # Create a scatterplot matrix using Hail's plotting functions
     p = hl.plot.scatter(
-        x=mt.chrY_ploidy,
-        y=mt.chrX_ploidy,
-        label=mt.sex_karyotype,
+        x=sample_qc_table.chrY_ploidy,
+        y=sample_qc_table.chrX_ploidy,
+        label=sample_qc_table.sex_karyotype,
         title='Scatterplot of chrY_ploidy vs chrX_ploidy',
         xlabel='chrY_ploidy',
         ylabel='chrX_ploidy'
