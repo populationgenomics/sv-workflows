@@ -15,10 +15,11 @@ import hail as hl
 import click
 
 from cpg_utils.hail_batch import output_path, init_batch, get_batch
-from bokeh.plotting import figure, output_file, save
+from bokeh.plotting import output_file, save
 
 
 def sex_ploidy_plotter(file_path,gcs_path):
+
     init_batch()
     sample_qc_table = hl.read_table(file_path)
 
