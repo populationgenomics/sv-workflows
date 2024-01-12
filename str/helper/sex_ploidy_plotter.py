@@ -15,6 +15,7 @@ import hail as hl
 import click
 
 from cpg_utils.hail_batch import output_path, init_batch
+from bokeh.plotting import figure, output_file, save
 
 
 def sex_ploidy_plotter(file_path, gcs_path):
@@ -31,8 +32,10 @@ def sex_ploidy_plotter(file_path, gcs_path):
         ylabel='chrX_ploidy'
     )
 
-    # Save the plot to a file (replace 'output_path' with the desired file path and format)
-    p.save(gcs_path)
+    # Save the plot to a local file, then hadoop_copy to copy to GCS bucket
+    output_file('local_plot.html')
+    save(p)
+    hl.hadoop_copy('local_plot.html', gcs_path)
 
 
 @click.option(
