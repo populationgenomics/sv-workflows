@@ -24,12 +24,12 @@ def sex_ploidy_plotter(file_path,gcs_path):
 
     # Create a scatterplot matrix using Hail's plotting functions
     p = hl.plot.scatter(
-        x=sample_qc_table.chrY_ploidy,
-        y=sample_qc_table.chrX_ploidy,
+        x=sample_qc_table.chrX_ploidy,
+        y=sample_qc_table.chrY_ploidy,
         label=sample_qc_table.sex_karyotype,
         title='Scatterplot of chrY_ploidy vs chrX_ploidy',
-        xlabel='chrY_ploidy',
-        ylabel='chrX_ploidy'
+        xlabel='chrX_ploidy',
+        ylabel='chrY_ploidy'
     )
 
     # Save the plot to a local file, then hadoop_copy to copy to GCS bucket
