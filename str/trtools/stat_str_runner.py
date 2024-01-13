@@ -30,16 +30,22 @@ TRTOOLS_IMAGE = config['images']['trtools']
     help='gangstr or eh',
     type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
 )
+@click.option(
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
+)
+@click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='32G')
 @click.command()
-def main(file_path, caller):  # pylint: disable=missing-function-docstring
+def main(
+    file_path, caller, job_storage, job_memory
+):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
     vcf_input = b.read_input(file_path)
     trtools_job = b.new_job(name=f'statSTR {caller}')
 
     trtools_job.image(TRTOOLS_IMAGE)
-    trtools_job.storage('30G')
-    trtools_job.cpu(8)
+    trtools_job.storage(job_storage)
+    trtools_job.memory(job_memory)
 
     trtools_job.declare_resource_group(ofile={'tab': '{root}.tab'})
 
