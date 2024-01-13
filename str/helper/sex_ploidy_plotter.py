@@ -20,7 +20,7 @@ from cpg_utils.hail_batch import output_path, init_batch, get_batch
 from bokeh.plotting import output_file, save
 
 
-def sex_ploidy_plotter(file_path, gcs_path,label):
+def sex_ploidy_plotter(file_path, gcs_path, label):
     init_batch()
     sample_qc_table = hl.read_table(file_path)
 
@@ -50,11 +50,10 @@ def sex_ploidy_plotter(file_path, gcs_path,label):
 )
 @click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='8G')
 @click.option(
-    '--label',
-    help='Column field in SampleQC table eg dataset or sex_karyotype'
+    '--label', help='Column field in SampleQC table eg dataset or sex_karyotype'
 )
 @click.command()
-def main(file_path, job_storage, job_memory,label):
+def main(file_path, job_storage, job_memory, label):
     # Initialise batch
     b = get_batch()
 
@@ -64,7 +63,7 @@ def main(file_path, job_storage, job_memory,label):
     j.storage(job_storage)
 
     gcs_output_path = output_path(f'sex_ploidy_plot.html', 'analysis')
-    j.call(sex_ploidy_plotter, file_path, gcs_output_path,label)
+    j.call(sex_ploidy_plotter, file_path, gcs_output_path, label)
 
     b.run(wait=False)
 
