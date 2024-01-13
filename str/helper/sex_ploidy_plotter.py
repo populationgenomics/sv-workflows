@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This Hail Query script outputs a scatterplot plotting chrX and chrY ploidy, and labelling the points by inferred karyotypic sex from the SampleQC Hail Table.
+This Hail Query script outputs a scatterplot plotting chrX and chrY ploidy, and labelling the points by a column in the
+Sample QC Table (eg: inferred karyotypic sex, or dataset) from the SampleQC Hail Table.
 
  analysis-runner --dataset "bioheart" \
     --description "sex ploidy plotter" \
     --access-level "test" \
-    --output-dir "hoptan-str/sex_ploidy_plot" \
+    --output-dir "hoptan-str/sex_ploidy_plot/dataset" \
     sex_ploidy_plotter.py --file-path=gs://cpg-bioheart-test/large_cohort/1-0/sample_qc.ht/ \
     --label=dataset
 
