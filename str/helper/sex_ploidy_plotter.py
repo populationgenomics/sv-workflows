@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This Hail Query script outputs a scatterplot plotting chrX and chrY ploidy, and labelling the points by inferred karyotypic sex from the SampleQC Hail Table.
+This Hail Query script outputs a scatterplot plotting chrX and chrY ploidy, and labelling the points by a column in the
+Sample QC Table (eg: inferred karyotypic sex, or dataset) from the SampleQC Hail Table.
 
  analysis-runner --dataset "bioheart" \
-    --description "karyotypic sex extractor" \
+    --description "sex ploidy plotter" \
     --access-level "test" \
-    --output-dir "hoptan-str/sex_ploidy_plot" \
-    sex_ploidy_plotter.py --file-path=gs://cpg-bioheart-test/large_cohort/1-0/sample_qc.ht/
+    --output-dir "hoptan-str/sex_ploidy_plot/dataset" \
+    sex_ploidy_plotter.py --file-path=gs://cpg-bioheart-test/large_cohort/1-0/sample_qc.ht/ \
+    --label=dataset
 
 """
 
@@ -18,7 +20,7 @@ from cpg_utils.hail_batch import output_path, init_batch, get_batch
 from bokeh.plotting import output_file, save
 
 
-def sex_ploidy_plotter(file_path, gcs_path):
+def sex_ploidy_plotter(file_path, gcs_path, label):
     init_batch()
     sample_qc_table = hl.read_table(file_path)
 
@@ -26,7 +28,7 @@ def sex_ploidy_plotter(file_path, gcs_path):
     p = hl.plot.scatter(
         x=sample_qc_table.chrX_ploidy,
         y=sample_qc_table.chrY_ploidy,
-        label=sample_qc_table.sex_karyotype,
+        label=getattr(sample_qc_table, label),
         title='Scatterplot of chrY_ploidy vs chrX_ploidy',
         xlabel='chrX_ploidy',
         ylabel='chrY_ploidy',
@@ -47,8 +49,11 @@ def sex_ploidy_plotter(file_path, gcs_path):
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
 )
 @click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='8G')
+@click.option(
+    '--label', help='Column field in SampleQC table eg dataset or sex_karyotype'
+)
 @click.command()
-def main(file_path, job_storage, job_memory):
+def main(file_path, job_storage, job_memory, label):
     # Initialise batch
     b = get_batch()
 
@@ -58,7 +63,7 @@ def main(file_path, job_storage, job_memory):
     j.storage(job_storage)
 
     gcs_output_path = output_path(f'sex_ploidy_plot.html', 'analysis')
-    j.call(sex_ploidy_plotter, file_path, gcs_output_path)
+    j.call(sex_ploidy_plotter, file_path, gcs_output_path, label)
 
     b.run(wait=False)
 
