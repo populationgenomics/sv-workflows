@@ -157,12 +157,12 @@ def main(
                     )
                 else:
                     eh_job.declare_resource_group(
-                    eh_output={
-                        'vcf': '{root}.vcf',
-                        'json': '{root}.json',
-                        'realigned.bam': '{root}_realigned.bam',
-                    }
-                )
+                        eh_output={
+                            'vcf': '{root}.vcf',
+                            'json': '{root}.json',
+                            'realigned.bam': '{root}_realigned.bam',
+                        }
+                    )
 
                 eh_job.command(
                     f"""
