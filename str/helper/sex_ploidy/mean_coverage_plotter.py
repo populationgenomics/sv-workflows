@@ -138,7 +138,7 @@ def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromo
     j.storage(job_storage)
 
     mt_dim = j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim)
-    print(f'Number of variants in entire VDS: {mt_dim}')
+    print(f'Number of variants in entire VDS: {mt_dim.as_str()}')
 
     b.run(wait=False)
 
