@@ -7,10 +7,10 @@ the specified chromosome (VDS file). Plots are stratified by inferred karyotype 
 Input: VDS file path, sex-sample-mapping file path, and chromosome (default chrY)
 
  analysis-runner --dataset "bioheart" \
-    --description "mean chromsome coverageplotter" \
+    --description "mean chromsome coverage plotter" \
     --access-level "test" \
     --output-dir "hoptan-str/mean_coverage_plot" \
-    mean_coverage_plotter.py --vds-file-path=gs://cpg-bioheart-test/vds/5-0.vds --sex-sample-mapping-path=gs:// \
+    mean_coverage_plotter.py --vds-file-path=gs://cpg-bioheart-test/vds/5-0.vds --sex-sample-mapping-path=gs://cpg-bioheart-test/str/tester_sex_mapper.csv \
     --chromosome=chrY
 """
 import csv
@@ -69,7 +69,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     p_xx = hl.plot.histogram(
         filtered_mt_xx.dp_mean_cols,
         range=(0, 100),
-        legend='Mean coverage per individual (XX)',
+        legend=f'Mean coverage per individual (XX) for {chromosome}',
     )
     output_file('local_plot_xx.html')
     save(p_xx)
@@ -86,7 +86,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     p_xy = hl.plot.histogram(
         filtered_mt_xy.dp_mean_cols,
         range=(0, 100),
-        legend='Mean coverage per individual (XY)',
+        legend=f'Mean coverage per individual (XY) for {chromosome}',
     )
     output_file('local_plot_xy.html')
     save(p_xy)
@@ -103,7 +103,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     p_x = hl.plot.histogram(
         filtered_mt_x.dp_mean_cols,
         range=(0, 100),
-        legend='Mean coverage per individual (X)',
+        legend=f'Mean coverage per individual (X) for {chromosome}',
     )
     output_file('local_plot_x.html')
     save(p_x)
