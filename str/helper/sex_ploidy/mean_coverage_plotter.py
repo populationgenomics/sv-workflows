@@ -22,7 +22,7 @@ from cpg_utils.hail_batch import output_path, init_batch, get_batch
 from bokeh.plotting import output_file, save
 
 
-def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
+def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     init_batch()
     vds = hl.vds.read_vds(vds_path)
 
@@ -84,6 +84,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
     p_xy = hl.plot.histogram(
         filtered_mt_xy.dp_mean_cols,
+        range=(0, xy_ylim),
         legend=f'Mean coverage per individual (XY) for {chromosome}',
     )
     output_file('local_plot_xy.html')
@@ -109,6 +110,8 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
         output_path(f'mean_coverage_x_{chromosome}.html', 'analysis'),
     )
 
+    return mt_variant.count()
+
 
 @click.option(
     '--vds-file-path',
@@ -123,8 +126,9 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     '--sex-sample-mapping-path', help='GCS file path to sex sample mapping file'
 )
 @click.option('--chromosome', help='Chromosome to plot mean coverage for')
+@click.option('--xy-ylim', help='Y-axis limit for XY plot', default=100)
 @click.command()
-def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome):
+def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome, xy_ylim):
     # Initialise batch
     b = get_batch()
 
@@ -133,7 +137,8 @@ def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromo
     j.memory(job_memory)
     j.storage(job_storage)
 
-    j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome)
+    mt_dim = j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim)
+    print(f'Number of variants in entire VDS: {mt_dim}')
 
     b.run(wait=False)
 
