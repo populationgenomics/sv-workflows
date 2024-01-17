@@ -71,7 +71,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     # Create a histogram using Hail's plotting functions
     p_xx = hl.plot.histogram(
         filtered_mt_xx.dp_mean_cols,
-        legend=f'Mean coverage per individual (XX) for {chromosome}',
+        legend=f'Mean DP per individual (XX) for {chromosome}',
     )
     output_file('local_plot_xx.html')
     save(p_xx)
@@ -88,7 +88,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     p_xy = hl.plot.histogram(
         filtered_mt_xy.dp_mean_cols,
         range=(0, xy_ylim),
-        legend=f'Mean coverage per individual (XY) for {chromosome}',
+        legend=f'Mean DP per individual (XY) for {chromosome}',
     )
     output_file('local_plot_xy.html')
     save(p_xy)
@@ -104,7 +104,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     )
     p_x = hl.plot.histogram(
         filtered_mt_x.dp_mean_cols,
-        legend=f'Mean coverage per individual (X) for {chromosome}',
+        legend=f'Mean DP per individual (X) for {chromosome}',
     )
     output_file('local_plot_x.html')
     save(p_x)
@@ -129,7 +129,9 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
 @click.option('--chromosome', help='Chromosome to plot mean coverage for')
 @click.option('--xy-ylim', help='Y-axis limit for XY plot', default=100)
 @click.command()
-def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome, xy_ylim):
+def main(
+    vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome, xy_ylim
+):
     # Initialise batch
     b = get_batch()
 
@@ -138,8 +140,9 @@ def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromo
     j.memory(job_memory)
     j.storage(job_storage)
 
-    j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim)
-
+    j.call(
+        coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim
+    )
 
     b.run(wait=False)
 
