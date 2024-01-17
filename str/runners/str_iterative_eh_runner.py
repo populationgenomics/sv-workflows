@@ -45,7 +45,7 @@ EH_IMAGE = config['images']['expansionhunter_bw2']
 )
 @click.option('--job-memory', help='Memory of the Hail batch job', default='32G')
 @click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=8)
-@click.option('--vcf-only', is_flag=True, help='Omits realigned bam and JSON output')
+@click.option('--output-bam-json', is_flag=True, help='Outputs realigned bam and JSON files (False = VCF only)')
 @click.command()
 def main(
     variant_catalog: str,
@@ -55,7 +55,7 @@ def main(
     job_storage: str,
     job_memory: str,
     job_ncpu: int,
-    vcf_only: bool,
+    output_bam_json: bool,
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -149,13 +149,7 @@ def main(
                 eh_job.memory(job_memory)
                 eh_job.cpu(job_ncpu)
                 eh_regions = b.read_input(subcatalog)
-                if vcf_only:
-                    eh_job.declare_resource_group(
-                        eh_output={
-                            'vcf': '{root}.vcf',
-                        }
-                    )
-                else:
+                if output_bam_json:
                     eh_job.declare_resource_group(
                         eh_output={
                             'vcf': '{root}.vcf',
@@ -163,6 +157,13 @@ def main(
                             'realigned.bam': '{root}_realigned.bam',
                         }
                     )
+                else:
+                    eh_job.declare_resource_group(
+                        eh_output={
+                            'vcf': '{root}.vcf',
+                        }
+                    )
+
 
                 eh_job.command(
                     f"""
