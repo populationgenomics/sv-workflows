@@ -22,12 +22,15 @@ from cpg_utils.hail_batch import output_path, init_batch, get_batch
 from bokeh.plotting import output_file, save
 
 
-def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
+def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     init_batch()
     vds = hl.vds.read_vds(vds_path)
 
     # extract variant matrix table from VDS
     mt_variant = vds.variant_data
+
+    # print number of variants in VDS
+    print(f'Dimensions of entire VDS: {mt_variant.count()}')
 
     # filter for chromosome:
     filtered_mt = mt_variant.filter_rows(mt_variant.locus.contig == chromosome)
@@ -68,7 +71,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     # Create a histogram using Hail's plotting functions
     p_xx = hl.plot.histogram(
         filtered_mt_xx.dp_mean_cols,
-        legend=f'Mean coverage per individual (XX) for {chromosome}',
+        legend=f'Mean DP per individual (XX) for {chromosome} loci',
     )
     output_file('local_plot_xx.html')
     save(p_xx)
@@ -84,7 +87,8 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
     p_xy = hl.plot.histogram(
         filtered_mt_xy.dp_mean_cols,
-        legend=f'Mean coverage per individual (XY) for {chromosome}',
+        range=(0, xy_ylim),
+        legend=f'Mean DP per individual (XY) for {chromosome} loci',
     )
     output_file('local_plot_xy.html')
     save(p_xy)
@@ -100,7 +104,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
     p_x = hl.plot.histogram(
         filtered_mt_x.dp_mean_cols,
-        legend=f'Mean coverage per individual (X) for {chromosome}',
+        legend=f'Mean DP per individual (X) for {chromosome} loci',
     )
     output_file('local_plot_x.html')
     save(p_x)
@@ -123,8 +127,11 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     '--sex-sample-mapping-path', help='GCS file path to sex sample mapping file'
 )
 @click.option('--chromosome', help='Chromosome to plot mean coverage for')
+@click.option('--xy-ylim', help='Y-axis limit for XY plot', default=100)
 @click.command()
-def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome):
+def main(
+    vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome, xy_ylim
+):
     # Initialise batch
     b = get_batch()
 
@@ -133,7 +140,9 @@ def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromo
     j.memory(job_memory)
     j.storage(job_storage)
 
-    j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome)
+    j.call(
+        coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim
+    )
 
     b.run(wait=False)
 
