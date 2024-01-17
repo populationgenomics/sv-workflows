@@ -29,6 +29,9 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     # extract variant matrix table from VDS
     mt_variant = vds.variant_data
 
+    # print number of variants in VDS
+    print(f'Dimensions of entire VDS: {mt_variant.count()}')
+
     # filter for chromosome:
     filtered_mt = mt_variant.filter_rows(mt_variant.locus.contig == chromosome)
 
@@ -110,8 +113,6 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
         output_path(f'mean_coverage_x_{chromosome}.html', 'analysis'),
     )
 
-    return mt_variant.count()
-
 
 @click.option(
     '--vds-file-path',
@@ -137,8 +138,8 @@ def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromo
     j.memory(job_memory)
     j.storage(job_storage)
 
-    mt_dim = j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim)
-    print(f'Number of variants in entire VDS: {mt_dim.as_str()}')
+    j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim)
+
 
     b.run(wait=False)
 
