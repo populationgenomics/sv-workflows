@@ -68,7 +68,6 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     # Create a histogram using Hail's plotting functions
     p_xx = hl.plot.histogram(
         filtered_mt_xx.dp_mean_cols,
-        range=(0, 100),
         legend=f'Mean coverage per individual (XX) for {chromosome}',
     )
     output_file('local_plot_xx.html')
@@ -85,7 +84,6 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
     p_xy = hl.plot.histogram(
         filtered_mt_xy.dp_mean_cols,
-        range=(0, 100),
         legend=f'Mean coverage per individual (XY) for {chromosome}',
     )
     output_file('local_plot_xy.html')
@@ -102,7 +100,6 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
     p_x = hl.plot.histogram(
         filtered_mt_x.dp_mean_cols,
-        range=(0, 100),
         legend=f'Mean coverage per individual (X) for {chromosome}',
     )
     output_file('local_plot_x.html')
