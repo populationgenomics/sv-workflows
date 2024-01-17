@@ -13,10 +13,9 @@ Input: VDS file path, sex-sample-mapping file path, and chromosome (default chrY
     mean_coverage_plotter.py --vds-file-path=gs://cpg-bioheart-test/vds/5-0.vds --sex-sample-mapping-path=gs:// \
     --chromosome=chrY
 """
-
+import csv
 import hail as hl
 import click
-import csv
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path, init_batch, get_batch
@@ -59,18 +58,18 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     x_samples = hl.literal(set(x_samples))
 
     # filter for samples of interest
-    filtered_mt_XX = filtered_mt.filter_cols(xx_samples.contains(filtered_mt.s))
+    filtered_mt_xx = filtered_mt.filter_cols(xx_samples.contains(filtered_mt.s))
 
     # calculate mean coverage per sample
-    filtered_mt_XX = filtered_mt_XX.annotate_cols(
-        dp_mean_cols=hl.agg.sum(filtered_mt_XX.DP) / filtered_mt_XX.count_rows()
+    filtered_mt_xx = filtered_mt_xx.annotate_cols(
+        dp_mean_cols=hl.agg.sum(filtered_mt_xx.DP) / filtered_mt_xx.count_rows()
     )
 
     # Create a histogram using Hail's plotting functions
     p_xx = hl.plot.histogram(
-        filtered_mt_XX.dp_mean_cols,
+        filtered_mt_xx.dp_mean_cols,
         range=(0, 100),
-        legend="Mean coverage per individual (XX)",
+        legend='Mean coverage per individual (XX)',
     )
     output_file('local_plot_xx.html')
     save(p_xx)
@@ -80,14 +79,14 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
 
     # repeat for XY:
-    filtered_mt_XY = filtered_mt.filter_cols(xy_samples.contains(filtered_mt.s))
-    filtered_mt_XY = filtered_mt_XY.annotate_cols(
-        dp_mean_cols=hl.agg.sum(filtered_mt_XY.DP) / filtered_mt_XY.count_rows()
+    filtered_mt_xy = filtered_mt.filter_cols(xy_samples.contains(filtered_mt.s))
+    filtered_mt_xy = filtered_mt_xy.annotate_cols(
+        dp_mean_cols=hl.agg.sum(filtered_mt_xy.DP) / filtered_mt_xy.count_rows()
     )
     p_xy = hl.plot.histogram(
-        filtered_mt_XY.dp_mean_cols,
+        filtered_mt_xy.dp_mean_cols,
         range=(0, 100),
-        legend="Mean coverage per individual (XY)",
+        legend='Mean coverage per individual (XY)',
     )
     output_file('local_plot_xy.html')
     save(p_xy)
@@ -97,14 +96,14 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     )
 
     # repeat for X:
-    filtered_mt_X = filtered_mt.filter_cols(x_samples.contains(filtered_mt.s))
-    filtered_mt_X = filtered_mt_X.annotate_cols(
-        dp_mean_cols=hl.agg.sum(filtered_mt_X.DP) / filtered_mt_X.count_rows()
+    filtered_mt_x = filtered_mt.filter_cols(x_samples.contains(filtered_mt.s))
+    filtered_mt_x = filtered_mt_x.annotate_cols(
+        dp_mean_cols=hl.agg.sum(filtered_mt_x.DP) / filtered_mt_x.count_rows()
     )
     p_x = hl.plot.histogram(
-        filtered_mt_X.dp_mean_cols,
+        filtered_mt_x.dp_mean_cols,
         range=(0, 100),
-        legend="Mean coverage per individual (X)",
+        legend='Mean coverage per individual (X)',
     )
     output_file('local_plot_x.html')
     save(p_x)
