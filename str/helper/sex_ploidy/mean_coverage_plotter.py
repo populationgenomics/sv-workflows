@@ -27,13 +27,13 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     init_batch()
     vds = hl.vds.read_vds(vds_path)
 
-    #extract variant matrix table from VDS
+    # extract variant matrix table from VDS
     mt_variant = vds.variant_data
 
-    #filter for chromosome:
+    # filter for chromosome:
     filtered_mt = mt_variant.filter_rows(mt_variant.locus.contig == chromosome)
 
-    #separate samples by inferred karyotypic sex
+    # separate samples by inferred karyotypic sex
     xx_samples = []
     xy_samples = []
     x_samples = []
@@ -62,29 +62,56 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     filtered_mt_XX = filtered_mt.filter_cols(xx_samples.contains(filtered_mt.s))
 
     # calculate mean coverage per sample
-    filtered_mt_XX = filtered_mt_XX.annotate_cols(dp_mean_cols = hl.agg.sum(filtered_mt_XX.DP)/filtered_mt_XX.count_rows())
+    filtered_mt_XX = filtered_mt_XX.annotate_cols(
+        dp_mean_cols=hl.agg.sum(filtered_mt_XX.DP) / filtered_mt_XX.count_rows()
+    )
 
     # Create a histogram using Hail's plotting functions
-    p_xx = hl.plot.histogram(filtered_mt_XX.dp_mean_cols, range=(0,100), legend = "Mean coverage per individual (XX)")
+    p_xx = hl.plot.histogram(
+        filtered_mt_XX.dp_mean_cols,
+        range=(0, 100),
+        legend="Mean coverage per individual (XX)",
+    )
     output_file('local_plot_xx.html')
     save(p_xx)
-    hl.hadoop_copy('local_plot_xx.html', output_path(f'mean_coverage_xx_{chromosome}.html', 'analysis'))
+    hl.hadoop_copy(
+        'local_plot_xx.html',
+        output_path(f'mean_coverage_xx_{chromosome}.html', 'analysis'),
+    )
 
-    #repeat for XY:
+    # repeat for XY:
     filtered_mt_XY = filtered_mt.filter_cols(xy_samples.contains(filtered_mt.s))
-    filtered_mt_XY = filtered_mt_XY.annotate_cols(dp_mean_cols = hl.agg.sum(filtered_mt_XY.DP)/filtered_mt_XY.count_rows())
-    p_xy = hl.plot.histogram(filtered_mt_XY.dp_mean_cols, range=(0,100), legend = "Mean coverage per individual (XY)")
+    filtered_mt_XY = filtered_mt_XY.annotate_cols(
+        dp_mean_cols=hl.agg.sum(filtered_mt_XY.DP) / filtered_mt_XY.count_rows()
+    )
+    p_xy = hl.plot.histogram(
+        filtered_mt_XY.dp_mean_cols,
+        range=(0, 100),
+        legend="Mean coverage per individual (XY)",
+    )
     output_file('local_plot_xy.html')
     save(p_xy)
-    hl.hadoop_copy('local_plot_xy.html', output_path(f'mean_coverage_xy_{chromosome}.html', 'analysis'))
+    hl.hadoop_copy(
+        'local_plot_xy.html',
+        output_path(f'mean_coverage_xy_{chromosome}.html', 'analysis'),
+    )
 
-    #repeat for X:
+    # repeat for X:
     filtered_mt_X = filtered_mt.filter_cols(x_samples.contains(filtered_mt.s))
-    filtered_mt_X = filtered_mt_X.annotate_cols(dp_mean_cols = hl.agg.sum(filtered_mt_X.DP)/filtered_mt_X.count_rows())
-    p_x = hl.plot.histogram(filtered_mt_X.dp_mean_cols, range=(0,100), legend = "Mean coverage per individual (X)")
+    filtered_mt_X = filtered_mt_X.annotate_cols(
+        dp_mean_cols=hl.agg.sum(filtered_mt_X.DP) / filtered_mt_X.count_rows()
+    )
+    p_x = hl.plot.histogram(
+        filtered_mt_X.dp_mean_cols,
+        range=(0, 100),
+        legend="Mean coverage per individual (X)",
+    )
     output_file('local_plot_x.html')
     save(p_x)
-    hl.hadoop_copy('local_plot_x.html', output_path(f'mean_coverage_x_{chromosome}.html', 'analysis'))
+    hl.hadoop_copy(
+        'local_plot_x.html',
+        output_path(f'mean_coverage_x_{chromosome}.html', 'analysis'),
+    )
 
 
 @click.option(
@@ -96,12 +123,12 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome):
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
 )
 @click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='8G')
-
-@click.option('--sex-sample-mapping-path', help = 'GCS file path to sex sample mapping file')
-@click.option('--chromosome', help = 'Chromosome to plot mean coverage for')
+@click.option(
+    '--sex-sample-mapping-path', help='GCS file path to sex sample mapping file'
+)
+@click.option('--chromosome', help='Chromosome to plot mean coverage for')
 @click.command()
 def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome):
-
     # Initialise batch
     b = get_batch()
 
