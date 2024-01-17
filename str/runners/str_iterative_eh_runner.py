@@ -45,7 +45,11 @@ EH_IMAGE = config['images']['expansionhunter_bw2']
 )
 @click.option('--job-memory', help='Memory of the Hail batch job', default='32G')
 @click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=8)
-@click.option('--output-bam-json', is_flag=True, help='Outputs realigned bam and JSON files (False = VCF only)')
+@click.option(
+    '--output-bam-json',
+    is_flag=True,
+    help='Outputs realigned bam and JSON files (False = VCF only)',
+)
 @click.command()
 def main(
     variant_catalog: str,
@@ -163,7 +167,6 @@ def main(
                             'vcf': '{root}.vcf',
                         }
                     )
-
 
                 eh_job.command(
                     f"""
