@@ -6,8 +6,10 @@ Please ensure merge_prep.py has been run on the vcf files prior to running merge
 Optional ability to add in VCFs from another file directory (but must be sharded in the same way as the input-dir-1)
 
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/v4' merge_str_runner.py --input-dir-1=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v4-2 --num-shards=50 --sample-list-1=gs://
-
+analysis-runner --access-level full --dataset bioheart --description '5M merge TOB100 and BioHEART100' --output-dir 'str/5M_run_combined_vcfs/merge_str/bioheart_tob/v1' merge_str_runner.py \
+--input-dir-1=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v5 --num-shards=50 --sample-list-1=gs://cpg-tob-wgs-test/hoptan-str/5M_run/tob_n100_cpg_mergeSTR_input.txt \
+--input-dir-2=gs://cpg-bioheart-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v1 --sample-list-2=gs://cpg-bioheart-test/str/5M_run/bioheart_n100_cpg_mergeSTR_input.txt \
+--job-storage=50G
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
 """
