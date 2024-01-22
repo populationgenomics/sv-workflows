@@ -2,6 +2,7 @@
 # pylint: disable=duplicate-code
 """
 This script runs statSTR() from TRTools package on a single/merged STR vcf file and outputs various statistics
+FYI there is a bug in statSTR preventing it from aggregating stats for chrY loci so please filter out chrY loci prior.
 
 For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'hoptan-str/shard_workflow_test/sharded_stat_str' stat_str_runner.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str --sharded
@@ -47,14 +48,14 @@ def main(
     b = get_batch()
 
     if sharded:
-        input_vcf_dict = [
+        input_vcf_list = [
             str(gspath) for gspath in to_path(f'{input_dir}').glob('*.vcf.gz')
         ]
 
     else:
-        input_vcf_dict = [input_dir]
+        input_vcf_list = [input_dir]
 
-    for vcf_file in input_vcf_dict:
+    for vcf_file in input_vcf_list:
         vcf_input = b.read_input(vcf_file)
         if sharded:
             shard_num = (
