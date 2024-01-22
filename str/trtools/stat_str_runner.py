@@ -4,7 +4,7 @@
 This script runs statSTR() from TRTools package on a single/merged STR vcf file and outputs various statistics
 
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' stat_str_runner.py --caller=eh --file-path=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'hoptan-str/shard_workflow_test/sharded_stat_str' stat_str_runner.py --caller=eh --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str --sharded
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -34,11 +34,11 @@ TRTOOLS_IMAGE = config['images']['trtools']
     type=click.Choice(['eh', 'gangstr'], case_sensitive=True),
 )
 @click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='16G'
 )
 # sharded flag
 @click.option('--sharded', is_flag=True, help='Assume a sharded catalog was used')
-@click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='32G')
+@click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='16G')
 @click.command()
 def main(
     input_dir, caller, job_storage, job_memory, sharded
