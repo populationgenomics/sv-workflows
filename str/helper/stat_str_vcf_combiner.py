@@ -90,6 +90,7 @@ def main(input_dir, output):
         int(file_path.split('_shard_shard')[1].split('_eh')[0]): file_path
         for file_path in input_file_paths
     }
+    print(input_files_dict.keys())
 
     # Initialize variables to store information
     chrom_line = ''
