@@ -29,7 +29,7 @@ def main(input_dir, output):
     """
 
     # make input_files GSPath elements into a string type object
-    input_file_paths = map(str, to_path(input_dir).glob('*.tab'))
+    input_file_paths = [str(gspath) for gspath in to_path(input_dir).glob('*.tab')]
 
     # Initialize variables to store information
     chrom_line = ''
