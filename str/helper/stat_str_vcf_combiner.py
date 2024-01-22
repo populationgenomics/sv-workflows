@@ -6,9 +6,8 @@ This script combines sharded statSTR outputs into one output file, and assumes t
 analysis-runner --access-level test --dataset tob-wgs --description  \
     'stat STR combiner' --output-dir 'hoptan-str/shard_workflow_test/stat_str_vcf_combiner/v1' \
     stat_str_vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/sharded_stat_str
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/sharded_stat_str/sharded_stat_str
 """
-import gzip
 import click
 
 from cpg_utils import to_path
@@ -41,7 +40,7 @@ def main(input_dir, output):
             input_file = to_path(input_file)
             print(f'Parsing {input_file}')
 
-            with gzip.open(input_file, 'rt') as f:
+            with open(input_file, 'rt') as f:
                 for line in f:
                     # Collect information from the header lines
                     if line.startswith('chrom'):
