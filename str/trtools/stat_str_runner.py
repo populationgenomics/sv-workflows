@@ -13,6 +13,7 @@ pip install sample-metadata hail click
 import click
 
 from cpg_utils.config import get_config
+from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
 
 
@@ -23,7 +24,9 @@ TRTOOLS_IMAGE = config['images']['trtools']
 
 # inputs:
 # file-path
-@click.option('--input-dir', help='gs://...file path if unsharded, input directory if sharded')
+@click.option(
+    '--input-dir', help='gs://...file path if unsharded, input directory if sharded'
+)
 # caller
 @click.option(
     '--caller',
@@ -38,14 +41,15 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='32G')
 @click.command()
 def main(
-    input_dir, caller, job_storage, job_memory,sharded
+    input_dir, caller, job_storage, job_memory, sharded
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
 
     if sharded:
-        input_vcf_dict = [str(gspath) for gspath in to_path(f'{input_dir}').glob('*.vcf.gz')]
-
+        input_vcf_dict = [
+            str(gspath) for gspath in to_path(f'{input_dir}').glob('*.vcf.gz')
+        ]
 
     else:
         input_vcf_dict = [input_dir]
@@ -53,7 +57,9 @@ def main(
     for vcf_file in input_vcf_dict:
         vcf_input = b.read_input(vcf_file)
         if sharded:
-            shard_num = vcf_file.split('/')[-1].split('.')[0].split('_')[-1] #extracts shard number from file name
+            shard_num = (
+                vcf_file.split('/')[-1].split('.')[0].split('_')[-1]
+            )  # extracts shard number from file name
         else:
             shard_num = ''
         trtools_job = b.new_job(name=f'statSTR {caller} {shard_num}')
@@ -71,7 +77,9 @@ def main(
             """
         )
         if sharded:
-            output_path_vcf = output_path(f'statSTR_shard_{shard_num}_{caller}', 'analysis')
+            output_path_vcf = output_path(
+                f'statSTR_shard_{shard_num}_{caller}', 'analysis'
+            )
         else:
             output_path_vcf = output_path(f'statSTR_samples_{caller}', 'analysis')
         b.write_output(trtools_job.ofile, output_path_vcf)
