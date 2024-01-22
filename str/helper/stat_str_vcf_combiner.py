@@ -4,9 +4,9 @@
 This script combines sharded statSTR outputs into one output file, and assumes the genotyper used was ExpansionHunter.
 
 analysis-runner --access-level test --dataset tob-wgs --description  \
-    'stat STR combiner' --memory highmem --cpu 16 --output-dir 'hoptan-str/shard_workflow_test/stat_str_vcf_combiner/v1' \
+    'stat STR combiner' --output-dir 'hoptan-str/shard_workflow_test/stat_str_vcf_combiner/v1' \
     stat_str_vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test-analysis/hoptan-str/shard_workflow_test/sharded_stat_str
+    --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/sharded_stat_str
 """
 import gzip
 import click
