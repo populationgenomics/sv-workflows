@@ -40,7 +40,7 @@ def main(input_dir, output):
             input_file = to_path(input_file)
             print(f'Parsing {input_file}')
 
-            with open(input_file, 'rt',encoding='utf-8') as f:
+            with open(input_file, 'rt', encoding='utf-8') as f:
                 for line in f:
                     # Collect information from the header lines
                     if line.startswith('chrom'):
