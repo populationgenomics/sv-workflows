@@ -55,7 +55,7 @@ def main(input_dir, output):
 
     # Write the combined information to the output file
     output_file_path = to_path(output_path(output, 'analysis'))
-    with gzip.open(output_file_path, 'wb') as out_file:
+    with gzip.open(output_file_path, 'wt') as out_file:
         # Write CHROM line
         out_file.write(chrom_line)
 
