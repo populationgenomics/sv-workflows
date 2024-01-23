@@ -52,7 +52,6 @@ def main(input_dir, output):
 
     print(f'Parsed {len(input_file_paths)} sharded VCFs')
 
-
     # Write the combined information to the output file
     with to_path(output_path(output, 'analysis')).open('w') as out_file:
         # Write CHROM line
