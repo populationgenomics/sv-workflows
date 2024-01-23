@@ -8,7 +8,6 @@ analysis-runner --access-level test --dataset tob-wgs --description  \
     stat_str_vcf_combiner.py \
     --input-dir=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/sharded_stat_str/sharded_stat_str
 """
-import gzip
 import click
 
 from cpg_utils import to_path
@@ -17,7 +16,7 @@ from cpg_utils.hail_batch import output_path
 
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded statSTR outputs')
-@click.option('--output', help='Name of output VCF', default='statSTR_combined.tab.gz')
+@click.option('--output', help='Name of output VCF', default='statSTR_combined.tab')
 def main(input_dir, output):
     """
     Combines sharded statSTR output tabs in input_dir into one combined statSTR tab file,
@@ -53,9 +52,9 @@ def main(input_dir, output):
 
     print(f'Parsed {len(input_file_paths)} sharded VCFs')
 
+
     # Write the combined information to the output file
-    output_file_path = to_path(output_path(output, 'analysis'))
-    with gzip.open(output_file_path, 'wt') as out_file:
+    with to_path(output_path(output, 'analysis')).open('w') as out_file:
         # Write CHROM line
         out_file.write(chrom_line)
 
