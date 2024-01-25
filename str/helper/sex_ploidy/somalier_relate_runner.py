@@ -57,10 +57,10 @@ def main(
 
     somalier_job.declare_resource_group(
         somalier_output={
-            'samples.tsv': '{root}.somalier_output.samples.tsv',
-            'pairs.tsv': '{root}.somalier_output.pairs.tsv',
-            'groups.tsv': '{root}.somalier_output.groups.tsv',
-            '.html': '{root}.somalier_output.html',
+            'samples.tsv': '{root}.samples.tsv',
+            'pairs.tsv': '{root}.pairs.tsv',
+            'groups.tsv': '{root}.groups.tsv',
+            '.html': '{root}.html',
         }
     )
 
@@ -69,7 +69,7 @@ def main(
                 somalier relate  \\
                 {" ".join(batch_input_files)} \\
                 --infer \\
-                -o somalier_output
+                -o {somalier_job.somalier_output}
                 """
     )
     # ExpansionHunter output writing
