@@ -14,11 +14,9 @@ This script runs somalier relate
 
 import click
 
-from metamist.graphql import gql, query
-
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, output_path, reference_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
@@ -34,10 +32,10 @@ SOMALIER_IMAGE = config['images']['somalier']
     help='dataset',
 )
 @click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
+    '--job-storage', help='Storage of the Hail batch job eg 30G', default='10G'
 )
-@click.option('--job-memory', help='Memory of the Hail batch job', default='32G')
-@click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=8)
+@click.option('--job-memory', help='Memory of the Hail batch job', default='8G')
+@click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=4)
 @click.command()
 def main(
     input_dir,
@@ -76,7 +74,7 @@ def main(
         f"""
                 somalier relate  \\
                 {" ".join(batch_input_files)} \\
-                --infer \\
+                --infer
                 """
     )
     # ExpansionHunter output writing
