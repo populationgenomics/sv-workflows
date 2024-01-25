@@ -7,8 +7,7 @@ This script runs somalier relate
     --description "Somalier relate runner" \
     --access-level "test" \
     --output-dir "hoptan-str/somalier" \
-    somalier_relate_runner.py --input-dir=gs://cpg-bioheart-test/cram \
-    --dataset=bioheart
+    somalier_relate_runner.py --input-dir=gs://cpg-bioheart-test/cram
 
 """
 
@@ -28,10 +27,6 @@ SOMALIER_IMAGE = config['images']['somalier']
     help='Input directory to cram.somalier files',
 )
 @click.option(
-    '--dataset',
-    help='dataset',
-)
-@click.option(
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='10G'
 )
 @click.option('--job-memory', help='Memory of the Hail batch job', default='8G')
@@ -42,7 +37,6 @@ def main(
     job_memory,
     job_ncpu,
     job_storage,
-    dataset,
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -65,7 +59,7 @@ def main(
         somalier_output={
             'samples.tsv': '{root}.samples.tsv',
             'pairs.tsv': '{root}.pairs.tsv',
-            'groups.tsv': '{root}.groups.tsv',
+           # 'groups.tsv': '{root}.groups.tsv',
             '.html': '{root}.html',
         }
     )
@@ -79,7 +73,7 @@ def main(
                 """
     )
     # ExpansionHunter output writing
-    somalier_output_path = output_path(f'{dataset}-somalier', 'analysis')
+    somalier_output_path = output_path(f'somalier', 'analysis')
     b.write_output(somalier_job.somalier_output, somalier_output_path)
 
     b.run(wait=False)
