@@ -69,12 +69,19 @@ def main(
                 somalier relate  \\
                 {" ".join(batch_input_files)} \\
                 --infer \\
-                -o {somalier_job.somalier_output}
+                -o related
+
+                mv related.pairs.tsv {somalier_job.output_pairs}
+                mv related.samples.tsv {somalier_job.output_samples}
+                mv related.html {somalier_job.output_html}
                 """
     )
-    # ExpansionHunter output writing
+    #Output writing
     somalier_output_path = output_path(f'somalier', 'analysis')
-    b.write_output(somalier_job.somalier_output, somalier_output_path)
+    b.write_output(somalier_job.output_samples, str(output_path(f'somalier.samples.tsv', 'analysis')))
+    b.write_output(somalier_job.output_pairs, str(output_path(f'somalier.pairs.tsv', 'analysis')))
+    b.write_output(somalier_job.output_html, str(output_path(f'somalier.html', 'analysis')))
+    #b.write_output(somalier_job.somalier_output, somalier_output_path)
 
     b.run(wait=False)
 
