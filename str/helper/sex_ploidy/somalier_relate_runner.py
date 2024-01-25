@@ -8,7 +8,7 @@ This script runs somalier relate
     --access-level "test" \
     --output-dir "hoptan-str/somalier" \
     somalier_relate_runner.py --input-dir=gs://cpg-bioheart-test/cram
-
+t
 """
 
 import click
@@ -57,10 +57,10 @@ def main(
 
     somalier_job.declare_resource_group(
         somalier_output={
-            'samples.tsv': '{root}.samples.tsv',
-            'pairs.tsv': '{root}.pairs.tsv',
-           # 'groups.tsv': '{root}.groups.tsv',
-            '.html': '{root}.html',
+            'samples.tsv': '{root}.somalier_output.samples.tsv',
+            'pairs.tsv': '{root}.somalier_output.pairs.tsv',
+            'groups.tsv': '{root}.somalier_output.groups.tsv',
+            '.html': '{root}.somalier_output.html',
         }
     )
 
