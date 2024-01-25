@@ -5,9 +5,9 @@ This script runs somalier relate on a set of cram.somalier files provided as inp
 
  analysis-runner --dataset "bioheart" \
     --description "Somalier relate runner" \
-    --access-level "test" \
-    --output-dir "hoptan-str/somalier" \
-    somalier_relate_runner.py --input-dir=gs://cpg-bioheart-test/cram
+    --access-level "standard" \
+    --output-dir "qc-stand-alone/somalier" \
+    somalier_relate_runner.py --input-dir=gs://cpg-bioheart-main/cram
 
 """
 
@@ -63,7 +63,6 @@ def main(
                 -o related
 
                 mv related.pairs.tsv {somalier_job.output_pairs}
-                mv related.groups.tsv {somalier_job.output_groups}
                 mv related.samples.tsv {somalier_job.output_samples}
                 mv related.html {somalier_job.output_html}
                 """
@@ -73,10 +72,7 @@ def main(
         somalier_job.output_samples,
         str(output_path(f'{num_samples}_samples_somalier.samples.tsv', 'analysis')),
     )
-    b.write_output(
-        somalier_job.output_groups,
-        str(output_path(f'{num_samples}_samples_somalier.groups.tsv', 'analysis')),
-    )
+
     b.write_output(
         somalier_job.output_pairs,
         str(output_path(f'{num_samples}_samples_somalier.pairs.tsv', 'analysis')),
