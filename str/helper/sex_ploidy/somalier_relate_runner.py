@@ -74,7 +74,8 @@ def main(
         f"""
                 somalier relate  \\
                 {" ".join(batch_input_files)} \\
-                --infer
+                --infer \\
+                -o somalier_output
                 """
     )
     # ExpansionHunter output writing
