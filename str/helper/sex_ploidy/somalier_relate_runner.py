@@ -48,7 +48,7 @@ def main(
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-    input_files = list(to_path(input_dir).glob('*.json'))
+    input_files = list(to_path(input_dir).glob('*.cram.somalier'))
     input_files = [
         str(gs_path) for gs_path in input_files
     ]  # coverts into a string type
