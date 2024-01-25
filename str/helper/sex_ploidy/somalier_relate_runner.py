@@ -52,6 +52,10 @@ def main(
     input_files = [
         str(gs_path) for gs_path in input_files
     ]  # coverts into a string type
+    batch_input_files =[]
+    for each_file in input_files:
+        batch_input_files.append(
+                        b.read_input(each_file))
 
     somalier_job = b.new_job(name=f'Somalier relate')
     somalier_job.image(SOMALIER_IMAGE)
@@ -71,7 +75,7 @@ def main(
     somalier_job.command(
         f"""
                 somalier relate  \\
-                {" ".join(input_files)} \\
+                {" ".join(batch_input_files)} \\
                 --infer \\
                 """
     )
