@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script runs somalier relate
+This script runs somalier relate on a set of cram.somalier files provided as input directory file path.
 
  analysis-runner --dataset "bioheart" \
     --description "Somalier relate runner" \
     --access-level "test" \
     --output-dir "hoptan-str/somalier" \
     somalier_relate_runner.py --input-dir=gs://cpg-bioheart-test/cram
-t
+
 """
 
 import click
@@ -44,12 +44,12 @@ def main(
     input_files = [
         str(gs_path) for gs_path in input_files
     ]  # coverts into a string type
-    batch_input_files =[]
+    num_samples = len(input_files)
+    batch_input_files = []
     for each_file in input_files:
-        batch_input_files.append(
-                        b.read_input(each_file))
+        batch_input_files.append(b.read_input(each_file))
 
-    somalier_job = b.new_job(name=f'Somalier relate')
+    somalier_job = b.new_job(name=f'Somalier relate: {num_samples} samples')
     somalier_job.image(SOMALIER_IMAGE)
     somalier_job.storage(job_storage)
     somalier_job.memory(job_memory)
@@ -76,12 +76,19 @@ def main(
                 mv related.html {somalier_job.output_html}
                 """
     )
-    #Output writing
-    somalier_output_path = output_path(f'somalier', 'analysis')
-    b.write_output(somalier_job.output_samples, str(output_path(f'somalier.samples.tsv', 'analysis')))
-    b.write_output(somalier_job.output_pairs, str(output_path(f'somalier.pairs.tsv', 'analysis')))
-    b.write_output(somalier_job.output_html, str(output_path(f'somalier.html', 'analysis')))
-    #b.write_output(somalier_job.somalier_output, somalier_output_path)
+    # Output writing
+    b.write_output(
+        somalier_job.output_samples,
+        str(output_path(f'{num_samples}_samples_somalier.samples.tsv', 'analysis')),
+    )
+    b.write_output(
+        somalier_job.output_pairs,
+        str(output_path(f'{num_samples}_samples_somalier.pairs.tsv', 'analysis')),
+    )
+    b.write_output(
+        somalier_job.output_html,
+        str(output_path(f'{num_samples}_samples_somalier.html', 'analysis')),
+    )
 
     b.run(wait=False)
 
