@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This Hail Query script outputs a CSV file containing REPIDs (RepeatIDs) of sites that are polymorphic in a given VCF.
+This Hail Query script parses a given VCF for polymorphic sites and then filters a given catalog JSON file to only include those sites.
 Polymorphic sites are those that have at least two distinct alleles occuring in the VCF.
 Note this script also removes chrY and chrM sites.
-
 
  analysis-runner --dataset "bioheart" \
     --description "polymorphic-site-extractor" \
     --access-level "test" \
     --output-dir "hoptan-str/catalog-design/" \
     polymorphic_site_extractor.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str_vcf_combiner/combined_eh.vcf
+    --catalog-path=gs://cpg-tob-wgs-test/hoptan-str/5M_run/combined_catalog.trf_at_least_9bp.with_adjacent_loci.annotated_and_filtered.json
 
 """
+import json
 import csv
 import hail as hl
 import click
@@ -22,7 +23,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path, init_batch
 
 
-def polymorphic_site_extractor(file_path, gcs_path):
+def polymorphic_site_extractor(file_path):
     init_batch()
     # read in VCF into mt format
     mt = hl.import_vcf(file_path)
@@ -50,10 +51,33 @@ def polymorphic_site_extractor(file_path, gcs_path):
     # collect the REPIDs into one list
     rep_id_list = filtered_mt.info.REPID.collect()
 
+    return rep_id_list
+
+
+def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
+    with to_path(catalog_path).open('r') as json_file:
+        # Load the JSON content
+        catalog = json.load(json_file)
+
+    # Filter the JSON entries based on the VariantID
+    filtered_data = []
+
+    # Make the rep_id_list into a set
+    polymorphic_rep_id_set = set(rep_id_list)
+
+    for entry in catalog:
+        # Check if 'VariantId' exists, use 'LocusId' otherwise
+        entry_variant_ids = (
+            set(entry['VariantId']) if 'VariantId' in entry else {entry['LocusId']}
+        )
+
+        # Check if there is an intersection with polymorphic_rep_id_set
+        if entry_variant_ids & polymorphic_rep_id_set:
+            filtered_data.append(entry)
+
     # Write the combined information to the output file
-    with to_path(gcs_path).open('w') as out_file:
-        writer = csv.writer(out_file)
-        writer.writerow(rep_id_list)
+    with to_path(gcs_output_path).open('w') as out_file:
+        json.dump(filtered_data, out_file, indent=2)
 
 
 @click.option(
@@ -61,10 +85,16 @@ def polymorphic_site_extractor(file_path, gcs_path):
     help='GCS file path VCF',
     type=str,
 )
+@click.option(
+    '--catalog-path',
+    help='GCS file path to catalog JSON',
+    type=str,
+)
 @click.command()
-def main(file_path):
-    gcs_output_path = output_path(f'polymorphic_sites_rep_id.csv', 'analysis')
-    polymorphic_site_extractor(file_path, gcs_output_path)
+def main(file_path, catalog_path):
+    gcs_output_path = output_path(f'filtered_polymorphic_catalog.json', 'analysis')
+    rep_id_list = polymorphic_site_extractor(file_path)
+    catalog_filter(rep_id_list, catalog_path, gcs_output_path)
 
 
 if __name__ == '__main__':
