@@ -13,10 +13,10 @@ Note this script also removes chrY and chrM sites.
     polymorphic_site_extractor.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str_vcf_combiner/combined_eh.vcf
 
 """
-
+import csv
 import hail as hl
 import click
-import csv
+
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path, init_batch
@@ -31,10 +31,10 @@ def polymorphic_site_extractor(file_path, gcs_path):
     mt = hl.sample_qc(mt)
     mt = hl.variant_qc(mt)
 
-    ## remove chrY and chrM
-    filtered_mt = mt.filter_rows(~hl.str(mt.locus.contig).startswith("chrY"))
+    # remove chrY and chrM
+    filtered_mt = mt.filter_rows(~hl.str(mt.locus.contig).startswith('chrY'))
     filtered_mt = filtered_mt.filter_rows(
-        ~hl.str(filtered_mt.locus.contig).startswith("chrM")
+        ~hl.str(filtered_mt.locus.contig).startswith('chrM')
     )
 
     # remove loci that are monomorphic for the REF allele
