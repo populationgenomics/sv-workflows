@@ -6,7 +6,7 @@ This script filters an ExpansionHunter JSON catalog file to only include loci wi
  analysis-runner --dataset "tob-wgs" \
     --description "catalog-filter" \
     --access-level "test" \
-    --output-dir "hoptan-str/catalog-design/" \
+    --output-dir "hoptan-str/5M_run/polymorphic-catalog-design/" \
     --memory=32G --storage=20G \
     catalog_filter.py --catalog-path=gs://cpg-tob-wgs-test/hoptan-str/5M_run/combined_catalog.trf_at_least_9bp.with_adjacent_loci.annotated_and_filtered.json \
     --filter-id-path=gs://cpg-tob-wgs-test/hoptan-str/5M_run/polymorphic_rep_id_n200.csv
@@ -66,7 +66,7 @@ def catalog_filter(catalog_path, filter_id_path, gcs_path):
 )
 @click.command()
 def main(filter_id_path, catalog_path):
-    gcs_output_path = output_path(f'filtered_catalog_json', 'analysis')
+    gcs_output_path = output_path(f'filtered_catalog_json')
     catalog_filter(catalog_path, filter_id_path, gcs_output_path)
 
 
