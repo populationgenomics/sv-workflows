@@ -24,7 +24,9 @@ from cpg_utils.hail_batch import output_path, init_batch
 
 
 def polymorphic_site_extractor(file_path):
-    """Extracts polymorphic sites from a VCF file and returns a list of REPIDs (similar to rsids) representing those sites"""
+    """Extracts polymorphic sites from a VCF file and returns a list of REPIDs (similar to rsids) representing those sites
+    The output has been benchmarked with Gymrek's statSTR and agrees with the number of polymorphic sites found
+    """
     init_batch()
     # read in VCF into mt format
     mt = hl.import_vcf(file_path)
@@ -56,7 +58,7 @@ def polymorphic_site_extractor(file_path):
 
 
 def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
-    """Retains loci in a JSON file that intersect with a list of REPIDs (rsids) and writes the filtered catalog to a new JSON file"""
+    """Retains loci in a JSON file that intersect with a list of REPIDs (STR equiv. of rsids) and writes the filtered catalog to a new JSON file"""
     with to_path(catalog_path).open('r') as json_file:
         # Load the JSON content
         catalog = json.load(json_file)
