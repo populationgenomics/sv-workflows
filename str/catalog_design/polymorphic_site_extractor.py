@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This Hail Query script parses a given VCF for polymorphic sites and then filters a given catalog JSON file to only include those sites.
+This script:
+(1) parses a given VCF for polymorphic sites
+(2) filters a given catalog JSON file to only include those sites, outputting the filtered catalog to a new JSON file.
+(3) shards the filtered catalog into chunks, writing out each chunk as a separate JSON file.
+
 Polymorphic sites are those that have at least two distinct alleles occuring in the VCF.
-Note this script also removes chrY and chrM sites.
+Note this script filters out chrY and chrM sites by default.
 
  analysis-runner --dataset "tob-wgs" \
     --description "polymorphic-site-extractor" \
@@ -12,6 +16,7 @@ Note this script also removes chrY and chrM sites.
     --memory=32G --storage=20G \
     polymorphic_site_extractor.py --vcf-path=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str_vcf_combiner/combined_eh.vcf \
     --catalog-path=gs://cpg-tob-wgs-test/hoptan-str/5M_run/5M_sharded_100k/chunk_1.json
+    --folder_name=sharded_polymorphic_catalog
 
 """
 import json
@@ -82,6 +87,36 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
     # Write the combined information to the output file
     with to_path(gcs_output_path).open('w') as out_file:
         json.dump(filtered_data, out_file, indent=2)
+    return filtered_data
+
+
+def catalog_sharder(filtered_data, chunk_size, folder_name):
+    """Shards a filtered catalog JSON file into chunks of size chunk_size"""
+    if not isinstance(filtered_data, list):
+        print("Invalid JSON format. The file should contain a list.")
+        return
+
+    total_entries = len(filtered_data)
+    num_chunks = total_entries // chunk_size
+    remainder = total_entries % chunk_size
+
+    if remainder > 0:
+        num_chunks += 1
+
+    for i in range(num_chunks):
+        start_idx = i * chunk_size
+        end_idx = (i + 1) * chunk_size
+        chunk_data = filtered_data[start_idx:end_idx]
+
+        output_file_path = output_path(f'{folder_name}/chunk_{i + 1}.json', 'analysis')
+
+        with to_path(output_file_path).open('w') as output_file:
+            json.dump(chunk_data, output_file, indent=2)
+
+        print(f"Chunk {i + 1} created: {output_file_path}")
+
+    print(f"Total entries: {total_entries}")
+    print(f"{num_chunks} chunks written successfully!")
 
 
 @click.option(
@@ -94,11 +129,29 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
     help='GCS file path to catalog JSON',
     type=str,
 )
+@click.option(
+    '--chunk-size',
+    help='Number of entries per shard',
+    type=int,
+    default=100000,
+)
+@click.option(
+    '--folder-name',
+    help='Name of output folder to store shards',
+    type=str,
+    default='sharded_polymorphic_catalog',
+)
 @click.command()
-def main(vcf_path, catalog_path):
-    gcs_output_path = output_path(f'filtered_polymorphic_catalog.json', 'analysis')
+def main(vcf_path, catalog_path, chunk_size, folder_name):
+    # Extract polymorphic sites from VCF
     rep_id_list = polymorphic_site_extractor(vcf_path)
-    catalog_filter(rep_id_list, catalog_path, gcs_output_path)
+
+    # Filter catalog JSON file for polymorphic sites
+    catalog_output_path = output_path(f'filtered_polymorphic_catalog.json', 'analysis')
+    filtered_catalog = catalog_filter(rep_id_list, catalog_path, catalog_output_path)
+
+    # Shard the filtered catalog
+    catalog_sharder(filtered_catalog, chunk_size, folder_name)
 
 
 if __name__ == '__main__':
