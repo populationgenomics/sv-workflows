@@ -14,6 +14,7 @@ import click
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
 
+
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
 @click.option('--output', help='Name of output VCF', default='combined_eh.vcf')
@@ -74,7 +75,7 @@ def main(input_dir, output):
                         # Collect calls after #CHROM in a temp file
                         handle.write(line)
 
-    print(f'Parsed {len(SORTED_KEY_ORDER)} sharded VCFs')
+    print(f'Parsed {len(list(input_files_dict.keys()))} sharded VCFs')
 
     # Write the combined information to the output file
     with to_path(output_path(output, 'analysis')).open('w') as out_file:
