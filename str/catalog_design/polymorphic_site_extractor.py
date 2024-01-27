@@ -93,7 +93,7 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
 def catalog_sharder(filtered_data, chunk_size, folder_name):
     """Shards a filtered catalog JSON file into chunks of size chunk_size"""
     if not isinstance(filtered_data, list):
-        print("Invalid JSON format. The file should contain a list.")
+        print('Invalid JSON format. The file should contain a list.')
         return
 
     total_entries = len(filtered_data)
@@ -113,10 +113,10 @@ def catalog_sharder(filtered_data, chunk_size, folder_name):
         with to_path(output_file_path).open('w') as output_file:
             json.dump(chunk_data, output_file, indent=2)
 
-        print(f"Chunk {i + 1} created: {output_file_path}")
+        print(f'Chunk {i + 1} created: {output_file_path}')
 
-    print(f"Total entries: {total_entries}")
-    print(f"{num_chunks} chunks written successfully!")
+    print(f'Total entries: {total_entries}')
+    print(f'{num_chunks} chunks written successfully!')
 
 
 @click.option(
