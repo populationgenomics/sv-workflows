@@ -15,7 +15,6 @@ Note this script also removes chrY and chrM sites.
 
 """
 import json
-import csv
 import hail as hl
 import click
 
