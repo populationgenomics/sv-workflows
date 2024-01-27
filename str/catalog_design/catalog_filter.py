@@ -28,7 +28,7 @@ def catalog_filter(catalog_path, filter_id_path, gcs_path):
     # Read the CSV file and append each row to the list
     with to_path(filter_id_path).open('r') as file:
         reader = csv.reader(file)
-        polymorphic_rep_id = map(list, zip(*reader))
+        polymorphic_rep_id = list(map(list, zip(*reader)))
     print(f'Parsed {len(polymorphic_rep_id)} polymorphic REPIDs')
 
     flattened_polymorphic_rep_id = list(chain.from_iterable(polymorphic_rep_id))
