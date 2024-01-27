@@ -7,13 +7,13 @@ Required input: --variant-catalog (file path to variant catalog, can be sharded 
 EH will run on every sample listed inthe sample mapping file.
 
 For example:
-analysis-runner --access-level full --dataset tob-wgs --description 'n100 5M run' --output-dir 'str/5M_run' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/5M_run/5M_sharded_100k/ --dataset=tob-wgs --sample-id-file=gs://cpg-tob-wgs-test/hoptan-str/5M_run/sampled_tob_n100_subset.csv
+analysis-runner --access-level test --dataset tob-wgs --description 'n100 5M run' --output-dir 'str/5M_run' str_iterative_eh_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/5M_run/5M_sharded_100k/ --dataset=tob-wgs-test --sample-id-file=gs://cpg-tob-wgs-test/hoptan-str/5M_run/n1_test_file.csv
 
 Required packages: str_iterative_eh_runner_requirements.txt
 
 """
-import click
 import re
+import click
 
 from metamist.graphql import gql, query
 
