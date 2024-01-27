@@ -25,8 +25,7 @@ from cpg_utils.hail_batch import output_path, init_batch
 def polymorphic_site_extractor(file_path, gcs_path):
     init_batch()
     # read in VCF into mt format
-    hl.import_vcf(file_path).write('5M_n200.mt', overwrite=True)
-    mt = hl.read_matrix_table('5M_n200.mt')
+    mt = hl.import_vcf(file_path)
 
     mt = hl.sample_qc(mt)
     mt = hl.variant_qc(mt)
