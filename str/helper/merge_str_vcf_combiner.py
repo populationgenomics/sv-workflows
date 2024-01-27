@@ -14,61 +14,6 @@ import click
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
 
-# custom sorted order of shards - PLEASE UPDATE FOR LATER USE
-SORTED_KEY_ORDER = [
-    1,
-    12,
-    23,
-    34,
-    45,
-    47,
-    48,
-    49,
-    50,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    13,
-    14,
-    15,
-    16,
-    17,
-    18,
-    19,
-    20,
-    21,
-    22,
-    24,
-    25,
-    26,
-    27,
-    28,
-    29,
-    30,
-    31,
-    32,
-    33,
-    35,
-    36,
-    37,
-    38,
-    39,
-    40,
-    41,
-    42,
-    43,
-    44,
-    46,
-]
-
-
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
 @click.option('--output', help='Name of output VCF', default='combined_eh.vcf')
@@ -100,7 +45,7 @@ def main(input_dir, output):
     temporary_gt_file = 'temporary_gt_file.txt'
     with open(temporary_gt_file, 'w', encoding='utf-8') as handle:
         # Process each input file
-        for key in SORTED_KEY_ORDER:
+        for key in sorted(list(input_files_dict.keys())):
             input_file = to_path(input_files_dict[key])
             print(f'Parsing {input_file}')
 
