@@ -13,6 +13,7 @@ Required packages: str_iterative_eh_runner_requirements.txt
 
 """
 import click
+import re
 
 from metamist.graphql import gql, query
 
@@ -24,6 +25,12 @@ config = get_config()
 
 SAMTOOLS_IMAGE = config['images']['samtools']
 EH_IMAGE = config['images']['expansionhunter_bw2']
+
+
+def extract_number(file_name):
+    """Extracts the number from a file name. Used to sort a list of files by the chunk number"""
+    file_name = file_name.split('/')[-1]
+    return int(re.search(r'\d+', file_name).group())
 
 
 # inputs:
@@ -80,6 +87,9 @@ def main(
     catalog_files = [
         str(gs_path) for gs_path in catalog_files
     ]  # coverts into a string type
+
+    # sort catalog files list by chunk number
+    catalog_files = sorted(catalog_files, key=extract_number)
 
     # track number of jobs running
     jobs = []
@@ -139,10 +149,10 @@ def main(
                 }
             )
             # per sample, run parallel jobs on each shard of the catalog
-            for index, subcatalog in enumerate(catalog_files):
+            for index, subcatalog in enumerate(catalog_files, start=1):
                 # ExpansionHunter job initialisation
                 eh_job = b.new_job(
-                    name=f'ExpansionHunter:{cpg_id} running  shard {index+1}/{len(catalog_files)}'
+                    name=f'ExpansionHunter:{cpg_id} running  shard {index}/{len(catalog_files)}'
                 )
                 eh_job.image(EH_IMAGE)
                 # limit parallelisation
@@ -180,7 +190,7 @@ def main(
                 )
                 # ExpansionHunter output writing
                 eh_output_path = output_path(
-                    f'{cpg_id}/{cpg_id}_eh_shard{index+1}', 'analysis'
+                    f'{cpg_id}/{cpg_id}_eh_shard{index}', 'analysis'
                 )
                 b.write_output(eh_job.eh_output, eh_output_path)
 
