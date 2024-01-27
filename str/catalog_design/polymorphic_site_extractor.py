@@ -68,7 +68,6 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
         # Load the JSON content
         catalog = json.load(json_file)
 
-    # Filter the JSON entries based on the VariantID
     filtered_data = []
 
     # Make the rep_id_list into a set
@@ -80,11 +79,11 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
             set(entry['VariantId']) if 'VariantId' in entry else {entry['LocusId']}
         )
 
-        # Check if there is an intersection with polymorphic_rep_id_set
+        # Append to filtered_data if the entry Variant Id intersects with polymorphic_rep_id_set
         if entry_variant_ids & polymorphic_rep_id_set:
             filtered_data.append(entry)
 
-    # Write the combined information to the output file
+    # Write to output
     with to_path(gcs_output_path).open('w') as out_file:
         json.dump(filtered_data, out_file, indent=2)
     return filtered_data
@@ -126,7 +125,7 @@ def catalog_sharder(filtered_data, chunk_size, folder_name):
 )
 @click.option(
     '--catalog-path',
-    help='GCS file path to catalog JSON',
+    help='GCS file path to catalog JSON to be filtered',
     type=str,
 )
 @click.option(
