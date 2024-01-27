@@ -5,11 +5,12 @@ This Hail Query script parses a given VCF for polymorphic sites and then filters
 Polymorphic sites are those that have at least two distinct alleles occuring in the VCF.
 Note this script also removes chrY and chrM sites.
 
- analysis-runner --dataset "bioheart" \
+ analysis-runner --dataset "tob-wgs" \
     --description "polymorphic-site-extractor" \
     --access-level "test" \
     --output-dir "hoptan-str/catalog-design/" \
-    polymorphic_site_extractor.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str_vcf_combiner/combined_eh.vcf
+    --memory=32G --storage=20G \
+    polymorphic_site_extractor.py --vcf-path=gs://cpg-tob-wgs-test/hoptan-str/shard_workflow_test/merge_str_vcf_combiner/combined_eh.vcf \
     --catalog-path=gs://cpg-tob-wgs-test/hoptan-str/5M_run/combined_catalog.trf_at_least_9bp.with_adjacent_loci.annotated_and_filtered.json
 
 """
@@ -24,6 +25,7 @@ from cpg_utils.hail_batch import output_path, init_batch
 
 
 def polymorphic_site_extractor(file_path):
+    """ Extracts polymorphic sites from a VCF file and returns a list of REPIDs (similar to rsids) representing those sites """
     init_batch()
     # read in VCF into mt format
     mt = hl.import_vcf(file_path)
@@ -55,6 +57,7 @@ def polymorphic_site_extractor(file_path):
 
 
 def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
+    """ Retains loci in a JSON file that intersect with a list of REPIDs (rsids) and writes the filtered catalog to a new JSON file"""
     with to_path(catalog_path).open('r') as json_file:
         # Load the JSON content
         catalog = json.load(json_file)
@@ -81,7 +84,7 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
 
 
 @click.option(
-    '--file-path',
+    '--vcf-path',
     help='GCS file path VCF',
     type=str,
 )
@@ -91,9 +94,9 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
     type=str,
 )
 @click.command()
-def main(file_path, catalog_path):
+def main(vcf_path, catalog_path):
     gcs_output_path = output_path(f'filtered_polymorphic_catalog.json', 'analysis')
-    rep_id_list = polymorphic_site_extractor(file_path)
+    rep_id_list = polymorphic_site_extractor(vcf_path)
     catalog_filter(rep_id_list, catalog_path, gcs_output_path)
 
 
