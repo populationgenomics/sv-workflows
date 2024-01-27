@@ -26,7 +26,7 @@ def catalog_filter(catalog_path, filter_id_path, gcs_path):
     polymorphic_rep_id =[]
 
     # Read the CSV file and append each row to the list
-    with open(filter_id_path, mode='r') as file:
+    with to_path(filter_id_path).open('r') as file:
         reader = csv.reader(file)
         polymorphic_rep_id = map(list, zip(*reader))
     print(f'Parsed {len(polymorphic_rep_id)} polymorphic REPIDs')
@@ -34,7 +34,7 @@ def catalog_filter(catalog_path, filter_id_path, gcs_path):
     flattened_polymorphic_rep_id = list(chain.from_iterable(polymorphic_rep_id))
     polymorphic_rep_id_set =set(flattened_polymorphic_rep_id)
 
-    with open(catalog_path, 'r') as json_file:
+    with to_path(catalog_path).open('r') as json_file:
         # Load the JSON content
         catalog = json.load(json_file)
 
