@@ -139,7 +139,6 @@ def impute_sex(
         str(calling_intervals_path), reference_genome=genome_build()
     )
 
-
     logging.info('Calling intervals table:')
     calling_intervals_ht.describe()
 
