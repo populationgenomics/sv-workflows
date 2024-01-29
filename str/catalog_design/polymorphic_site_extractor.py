@@ -86,8 +86,7 @@ def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
 def catalog_sharder(filtered_data, chunk_size, folder_name):
     """Shards a filtered catalog JSON file into chunks of size chunk_size"""
     if not isinstance(filtered_data, list):
-        print('Invalid JSON format. The file should contain a list.')
-        return
+        raise ValueError('Invalid JSON format. The file should contain a list.')
 
     total_entries = len(filtered_data)
     num_chunks = total_entries // chunk_size
