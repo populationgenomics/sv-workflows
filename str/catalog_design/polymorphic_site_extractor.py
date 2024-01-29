@@ -56,16 +56,13 @@ def polymorphic_site_extractor(file_path):
     return rep_id_list
 
 
-def catalog_filter(rep_id_list, catalog_path, gcs_output_path):
+def catalog_filter(polymorphic_rep_id_set: set[str], catalog_path: str, gcs_output_path: str):
     """Retains loci in a JSON file that intersect with a list of REPIDs (STR equiv. of rsids) and writes the filtered catalog to a new JSON file"""
     with to_path(catalog_path).open('r') as json_file:
         # Load the JSON content
         catalog = json.load(json_file)
 
     filtered_data = []
-
-    # Make the rep_id_list into a set
-    polymorphic_rep_id_set = set(rep_id_list)
 
     for entry in catalog:
         # Check if 'VariantId' exists, use 'LocusId' otherwise
