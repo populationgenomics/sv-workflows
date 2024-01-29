@@ -58,7 +58,7 @@ def impute_sex(
             )
             vds = VariantDataset(
                 reference_data=vds.reference_data, variant_data=tmp_variant_data
-            ).checkpoint(str(f'{name}_checkpoint.vds'))
+            )
             logging.info(f'count post {name} filter:{vds.variant_data.count()}')
 
     # Infer sex (adds row fields: is_female, var_data_chr20_mean_dp, sex_karyotype)
