@@ -38,7 +38,7 @@ SOMALIER_IMAGE = config['images']['somalier']
 @click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=4)
 @click.command()
 def main(
-    input_dir, job_memory, job_ncpu, job_storage, input_dir_1, input_dir_2
+    job_memory, job_ncpu, job_storage, input_dir_1, input_dir_2
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
