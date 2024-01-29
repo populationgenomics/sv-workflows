@@ -118,6 +118,7 @@ def generate_sex_coverage_mt(
 
 def impute_sex(
     vds_path: str,
+    use_coverage: bool,
 ) -> hl.Table:
     """
     Impute sex based on coverage.
@@ -156,8 +157,11 @@ def impute_sex(
             ).checkpoint(output_path(f'{name}.vds', 'tmp'))
             logging.info(f'count post {name} filter:{vds.variant_data.count()}')
 
-    # generate sex coverage mt, checkpointed
-    coverage_mt = generate_sex_coverage_mt(vds, calling_intervals_ht)
+    if use_coverage:
+        # generate sex coverage mt, checkpointed
+        coverage_mt = generate_sex_coverage_mt(vds, calling_intervals_ht)
+    else:
+        coverage_mt = None
 
     # Infer sex (adds row fields: is_female, var_data_chr20_mean_dp, sex_karyotype)
     sex_ht = annotate_sex(
@@ -191,9 +195,12 @@ def impute_sex(
     help='GCS file path to VDS',
     type=str,
 )
+@click.option(
+    '--use-coverage', help='Precompute coverage mt ', type=bool, default=False
+)
 @click.command()
-def main(vds_path):
-    impute_sex(vds_path)
+def main(vds_path, use_coverage):
+    impute_sex(vds_path, use_coverage)
 
 
 if __name__ == '__main__':
