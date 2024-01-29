@@ -7,7 +7,8 @@ This script runs annotate_sex()
     --description "standalone annotate-sex method" \
     --access-level "test" \
     --output-dir "qc-stand-alone/annotate-sex" \
-    sex_inference_stand_alone.py --input-dir=gs://cpg-bioheart-test/vds/5-0.vds
+    --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:latest \
+    sex_inference_stand_alone.py --vds-path=gs://cpg-bioheart-test/vds/5-0.vds
 
 """
 
@@ -15,11 +16,11 @@ import logging
 
 import hail as hl
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import reference_path, genome_build
+from cpg_utils.hail_batch import reference_path, genome_build, output_path, init_batch
 from gnomad.sample_qc.pipeline import annotate_sex
 from hail.vds.variant_dataset import VariantDataset
-from cpg_utils.hail_batch import output_path, init_batch
 import click
+
 
 def impute_sex(
     vds_path: str,
@@ -37,7 +38,6 @@ def impute_sex(
     tel_cent_ht = hl.read_table(str(reference_path('gnomad/tel_and_cent_ht')))
     if tel_cent_ht.count() > 0:
         vds = hl.vds.filter_intervals(vds, tel_cent_ht, keep=False)
-
 
     # Load calling intervals
     calling_intervals_path = reference_path(f'broad/genome_calling_interval_lists')
@@ -85,7 +85,7 @@ def impute_sex(
         )
     )
 
-    #output writing
+    # output writing
     sex_ht.write(output_path(f'sex.ht', 'analysis'))
 
 
