@@ -120,11 +120,11 @@ def catalog_sharder(filtered_data, chunk_size, folder_name):
 @click.command()
 def main(vcf_path, catalog_path, chunk_size, folder_name):
     # Extract polymorphic sites from VCF
-    rep_id_list = polymorphic_site_extractor(vcf_path)
+    rep_id_set = polymorphic_site_extractor(vcf_path)
 
     # Filter catalog JSON file for polymorphic sites
     catalog_output_path = output_path(f'filtered_polymorphic_catalog.json', 'analysis')
-    filtered_catalog = catalog_filter(rep_id_list, catalog_path, catalog_output_path)
+    filtered_catalog = catalog_filter(rep_id_set, catalog_path, catalog_output_path)
 
     # Shard the filtered catalog
     catalog_sharder(filtered_catalog, chunk_size, folder_name)
