@@ -40,20 +40,14 @@ def polymorphic_site_extractor(file_path):
     mt = hl.variant_qc(mt)
 
     # remove chrY and chrM
-    filtered_mt = mt.filter_rows(~hl.str(mt.locus.contig).startswith('chrY'))
-    filtered_mt = filtered_mt.filter_rows(
-        ~hl.str(filtered_mt.locus.contig).startswith('chrM')
-    )
-
-    # remove loci that are monomorphic for the REF allele
-    filtered_mt = filtered_mt.filter_rows(hl.len(filtered_mt.alleles) > 1)
-
-    # at a biallelic locus, remove loci that are monomorphic for 1 ALT allele
-    filtered_mt = filtered_mt.filter_rows(
-        ~(
+    filtered_mt = mt.filter_rows(
+        (hl.str(mt.locus.contig).startswith('chrY'))) |
+        (hl.str(filtered_mt.locus.contig).startswith('chrM')) | 
+        (hl.len(filtered_mt.alleles) == 1)) |
+        (
             (hl.len(filtered_mt.variant_qc.AC) == 2)
             & (filtered_mt.variant_qc.AC[0] == 0)
-        )
+        ), keep=False
     )
 
     # collect the REPIDs into one list
