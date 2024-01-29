@@ -14,12 +14,11 @@ This script runs annotate_sex()
 import logging
 
 import hail as hl
-from cpg_utils import Path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import reference_path, genome_build
+from cpg_utils.hail_batch import reference_path, genome_build,output_path, init_batch
 from gnomad.sample_qc.pipeline import annotate_sex
 from hail.vds.variant_dataset import VariantDataset
-from cpg_utils.hail_batch import output_path, init_batch
+
 import click
 
 def impute_sex(
@@ -31,7 +30,7 @@ def impute_sex(
 
     init_batch()
 
-    ##run()
+    # run()
     vds = hl.vds.read_vds(str(vds_path))
 
     # Remove centromeres and telomeres:
@@ -59,13 +58,13 @@ def impute_sex(
             )
             vds = VariantDataset(
                 reference_data=vds.reference_data, variant_data=tmp_variant_data
-            ).checkpoint(str(tmp_prefix / f'{name}_checkpoint.vds'))
+            ).checkpoint(str(f'{name}_checkpoint.vds'))
             logging.info(f'count post {name} filter:{vds.variant_data.count()}')
 
     # Infer sex (adds row fields: is_female, var_data_chr20_mean_dp, sex_karyotype)
     sex_ht = annotate_sex(
         vds,
-        tmp_prefix=str(tmp_prefix / 'annotate_sex'),
+        tmp_prefix=str('annotate_sex'),
         overwrite=not get_config()['workflow'].get('check_intermediates'),
         included_intervals=calling_intervals_ht,
         gt_expr='LGT',
