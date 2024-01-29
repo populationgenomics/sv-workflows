@@ -15,7 +15,6 @@ This script runs annotate_sex()
 import logging
 
 import hail as hl
-from cpg_utils.config import get_config
 from cpg_utils.hail_batch import reference_path, genome_build, output_path, init_batch
 from gnomad.sample_qc.pipeline import annotate_sex
 from hail.vds.variant_dataset import VariantDataset
