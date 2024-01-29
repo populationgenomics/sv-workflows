@@ -8,7 +8,8 @@ This script runs annotate_sex()
     --access-level "test" \
     --output-dir "qc-stand-alone/annotate-sex" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images/cpg_workflows:latest \
-    sex_inference_stand_alone.py --vds-path=gs://cpg-bioheart-test/vds/5-0.vds
+    sex_inference_stand_alone.py --vds-path=gs://cpg-bioheart-test/vds/5-0.vds \
+    --variants_only_x_ploidy=False --variants_only_y_ploidy=False
 
 """
 
@@ -119,6 +120,8 @@ def generate_sex_coverage_mt(
 def impute_sex(
     vds_path: str,
     use_coverage: bool,
+    variants_only_x_ploidy: bool = False,
+    variants_only_y_ploidy: bool = False,
 ) -> hl.Table:
     """
     Impute sex based on coverage.
@@ -168,8 +171,8 @@ def impute_sex(
         vds,
         included_intervals=calling_intervals_ht,
         gt_expr='LGT',
-        variants_only_x_ploidy=True,
-        variants_only_y_ploidy=False,
+        variants_only_x_ploidy=variants_only_x_ploidy,
+        variants_only_y_ploidy=variants_only_y_ploidy,
         coverage_mt=coverage_mt,
         variants_filter_lcr=False,  # already filtered above
         variants_filter_segdup=False,  # already filtered above
@@ -198,9 +201,21 @@ def impute_sex(
 @click.option(
     '--use-coverage', help='Precompute coverage mt ', type=bool, default=False
 )
+@click.option(
+    '--variants-only-x-ploidy',
+    help='Only use variants for X ploidy',
+    type=bool,
+    default=False,
+)
+@click.option(
+    '--variants-only-y-ploidy',
+    help='Only use variants for Y ploidy',
+    type=bool,
+    default=False,
+)
 @click.command()
-def main(vds_path, use_coverage):
-    impute_sex(vds_path, use_coverage)
+def main(vds_path, use_coverage, variants_only_x_ploidy, variants_only_y_ploidy):
+    impute_sex(vds_path, use_coverage, variants_only_x_ploidy, variants_only_y_ploidy)
 
 
 if __name__ == '__main__':
