@@ -46,7 +46,7 @@ def main(input_dir, output):
     temporary_gt_file = 'temporary_gt_file.txt'
     with open(temporary_gt_file, 'w', encoding='utf-8') as handle:
         # Process each input file
-        for key in sorted(list(input_files_dict.keys())):
+        for key in sorted(input_files_dict.keys()):
             input_file = to_path(input_files_dict[key])
             print(f'Parsing {input_file}')
 
