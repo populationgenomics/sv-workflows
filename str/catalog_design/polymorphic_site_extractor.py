@@ -111,28 +111,15 @@ def catalog_sharder(filtered_data, chunk_size, folder_name):
     print(f'{num_chunks} chunks written successfully!')
 
 
-@click.option(
-    '--vcf-path',
-    help='GCS file path VCF',
-    type=str,
-)
-@click.option(
-    '--catalog-path',
-    help='GCS file path to catalog JSON to be filtered',
-    type=str,
-)
+@click.option('--vcf-path', help='GCS file path VCF')
+@click.option('--catalog-path', help='GCS file path to catalog JSON to be filtered')
 @click.option(
     '--chunk-size',
     help='Number of entries per shard',
     type=int,
     default=100000,
 )
-@click.option(
-    '--folder-name',
-    help='Name of output folder to store shards',
-    type=str,
-    default='sharded_polymorphic_catalog',
-)
+@click.option('--folder-name', help='Name of output folder to store shards', default='sharded_polymorphic_catalog')
 @click.command()
 def main(vcf_path, catalog_path, chunk_size, folder_name):
     # Extract polymorphic sites from VCF
