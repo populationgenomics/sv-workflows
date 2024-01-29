@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script runs annotate_sex()
+This script runs annotate_sex() as a stand-alone step, mainly for debugging using Hail Query on Batch.
 
  analysis-runner --dataset "bioheart" \
     --description "standalone annotate-sex method" \
