@@ -18,6 +18,7 @@ import hail as hl
 from cpg_utils.hail_batch import reference_path, genome_build, output_path, init_batch
 from gnomad.sample_qc.pipeline import annotate_sex
 from hail.vds.variant_dataset import VariantDataset
+from cpg_workflows.utils import can_reuse
 
 
 import click
@@ -127,9 +128,6 @@ def impute_sex(
     # run()
     vds = hl.vds.read_vds(str(vds_path))
 
-    # generate sex coverage mt, checkpointed
-    coverage_mt = generate_sex_coverage_mt(vds, calling_intervals_ht)
-
     # Remove centromeres and telomeres:
     tel_cent_ht = hl.read_table(str(reference_path('gnomad/tel_and_cent_ht')))
     if tel_cent_ht.count() > 0:
@@ -140,6 +138,8 @@ def impute_sex(
     calling_intervals_ht = hl.import_locus_intervals(
         str(calling_intervals_path), reference_genome=genome_build()
     )
+
+
     logging.info('Calling intervals table:')
     calling_intervals_ht.describe()
 
@@ -156,6 +156,9 @@ def impute_sex(
                 reference_data=vds.reference_data, variant_data=tmp_variant_data
             ).checkpoint(output_path(f'{name}.vds', 'tmp'))
             logging.info(f'count post {name} filter:{vds.variant_data.count()}')
+
+    # generate sex coverage mt, checkpointed
+    coverage_mt = generate_sex_coverage_mt(vds, calling_intervals_ht)
 
     # Infer sex (adds row fields: is_female, var_data_chr20_mean_dp, sex_karyotype)
     sex_ht = annotate_sex(
