@@ -41,9 +41,9 @@ def polymorphic_site_extractor(file_path):
 
     # remove chrY and chrM
     filtered_mt = mt.filter_rows(
-        (hl.str(mt.locus.contig).startswith('chrY'))) |
-        (hl.str(filtered_mt.locus.contig).startswith('chrM')) | 
-        (hl.len(filtered_mt.alleles) == 1)) |
+        (hl.str(mt.locus.contig).startswith('chrY')) |
+        (hl.str(filtered_mt.locus.contig).startswith('chrM')) |
+        (hl.len(filtered_mt.alleles) == 1) |
         (
             (hl.len(filtered_mt.variant_qc.AC) == 2)
             & (filtered_mt.variant_qc.AC[0] == 0)
