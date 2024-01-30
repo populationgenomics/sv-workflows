@@ -41,13 +41,11 @@ def polymorphic_site_extractor(file_path):
 
     # remove chrY and chrM, monomorphic REF sites, monomorphic ALT at bialellic loci
     filtered_mt = mt.filter_rows(
-        (hl.str(mt.locus.contig).startswith('chrY')) |
-        (hl.str(mt.locus.contig).startswith('chrM')) |
-        (hl.len(mt.alleles) == 1) |
-        (
-            (hl.len(mt.variant_qc.AC) == 2)
-            & (mt.variant_qc.AC[0] == 0)
-        ), keep=False
+        (hl.str(mt.locus.contig).startswith('chrY'))
+        | (hl.str(mt.locus.contig).startswith('chrM'))
+        | (hl.len(mt.alleles) == 1)
+        | ((hl.len(mt.variant_qc.AC) == 2) & (mt.variant_qc.AC[0] == 0)),
+        keep=False,
     )
 
     # collect the REPIDs into one list
@@ -56,7 +54,9 @@ def polymorphic_site_extractor(file_path):
     return rep_id_list
 
 
-def catalog_filter(polymorphic_rep_id_set: set[str], catalog_path: str, gcs_output_path: str):
+def catalog_filter(
+    polymorphic_rep_id_set: set[str], catalog_path: str, gcs_output_path: str
+):
     """Retains loci in a JSON file that intersect with a list of REPIDs (STR equiv. of rsids) and writes the filtered catalog to a new JSON file"""
     with to_path(catalog_path).open('r') as json_file:
         # Load the JSON content
@@ -116,7 +116,11 @@ def catalog_sharder(filtered_data, chunk_size, folder_name):
     type=int,
     default=100000,
 )
-@click.option('--folder-name', help='Name of output folder to store shards', default='sharded_polymorphic_catalog')
+@click.option(
+    '--folder-name',
+    help='Name of output folder to store shards',
+    default='sharded_polymorphic_catalog',
+)
 @click.command()
 def main(vcf_path, catalog_path, chunk_size, folder_name):
     # Extract polymorphic sites from VCF
