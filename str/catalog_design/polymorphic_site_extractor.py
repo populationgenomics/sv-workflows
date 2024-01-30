@@ -49,9 +49,10 @@ def polymorphic_site_extractor(file_path):
     )
 
     # collect the REPIDs into one list
-    rep_id_list = filtered_mt.info.REPID.collect_as_set()
+    rep_id_list = filtered_mt.info.REPID.collect()
+    rep_id_set = set(rep_id_list)
 
-    return rep_id_list
+    return rep_id_set
 
 
 def catalog_filter(
