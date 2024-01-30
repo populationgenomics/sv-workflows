@@ -39,14 +39,14 @@ def polymorphic_site_extractor(file_path):
     mt = hl.sample_qc(mt)
     mt = hl.variant_qc(mt)
 
-    # remove chrY and chrM
+    # remove chrY and chrM, monomorphic REF sites, monomorphic ALT at bialellic loci
     filtered_mt = mt.filter_rows(
         (hl.str(mt.locus.contig).startswith('chrY')) |
-        (hl.str(filtered_mt.locus.contig).startswith('chrM')) |
-        (hl.len(filtered_mt.alleles) == 1) |
+        (hl.str(mt.locus.contig).startswith('chrM')) |
+        (hl.len(mt.alleles) == 1) |
         (
-            (hl.len(filtered_mt.variant_qc.AC) == 2)
-            & (filtered_mt.variant_qc.AC[0] == 0)
+            (hl.len(mt.variant_qc.AC) == 2)
+            & (mt.variant_qc.AC[0] == 0)
         ), keep=False
     )
 
