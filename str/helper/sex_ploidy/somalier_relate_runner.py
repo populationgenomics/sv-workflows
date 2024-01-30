@@ -42,12 +42,12 @@ def main(
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-    input_files = list(to_path(input_dir_1).glob('*.cram.somalier'))
+    input_files = list(to_path(input_dir_1).glob('*.somalier'))
     input_files = [
         str(gs_path) for gs_path in input_files
     ]  # coverts into a string type
     if input_dir_2 is not None:
-        input_files_2 = list(to_path(input_dir_2).glob('*.cram.somalier'))
+        input_files_2 = list(to_path(input_dir_2).glob('*.somalier'))
         input_files_2 = [str(gs_path) for gs_path in input_files_2]
         input_files.extend(input_files_2)
 
