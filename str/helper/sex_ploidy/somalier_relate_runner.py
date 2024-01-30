@@ -6,8 +6,8 @@ This script runs somalier relate on a set of cram.somalier files provided as inp
  analysis-runner --dataset "bioheart" \
     --description "Somalier relate runner" \
     --access-level "standard" \
-    --output-dir "qc-stand-alone/somalier" \
-    somalier_relate_runner.py --input-dir=gs://cpg-bioheart-main/cram
+    --output-dir "qc-stand-alone/tob_bioheart/somalier" \
+    somalier_relate_runner.py --input-dir-1=gs://cpg-bioheart-main/cram --input-dir-2=gs://cpg-tob-wgs-main/cram
 
 """
 
@@ -23,8 +23,13 @@ SOMALIER_IMAGE = config['images']['somalier']
 
 
 @click.option(
-    '--input-dir',
+    '--input-dir-1',
     help='Input directory to cram.somalier files',
+)
+@click.option(
+    '--input-dir-2',
+    help='2nd (optional)input directory to cram.somalier files',
+    default=None,
 )
 @click.option(
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='10G'
@@ -33,17 +38,19 @@ SOMALIER_IMAGE = config['images']['somalier']
 @click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=4)
 @click.command()
 def main(
-    input_dir,
-    job_memory,
-    job_ncpu,
-    job_storage,
+    job_memory, job_ncpu, job_storage, input_dir_1, input_dir_2
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-    input_files = list(to_path(input_dir).glob('*.cram.somalier'))
+    input_files = list(to_path(input_dir_1).glob('*.cram.somalier'))
     input_files = [
         str(gs_path) for gs_path in input_files
     ]  # coverts into a string type
+    if input_dir_2 is not None:
+        input_files_2 = list(to_path(input_dir_2).glob('*.cram.somalier'))
+        input_files_2 = [str(gs_path) for gs_path in input_files_2]
+        input_files.extend(input_files_2)
+
     num_samples = len(input_files)
     batch_input_files = []
     for each_file in input_files:
