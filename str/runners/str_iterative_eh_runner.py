@@ -57,6 +57,7 @@ def extract_number(file_name):
     is_flag=True,
     help='Outputs realigned bam and JSON files (False = VCF only)',
 )
+@click.option('--output-file-name', help='Name of output file', default=None)
 @click.command()
 def main(
     variant_catalog: str,
@@ -67,6 +68,7 @@ def main(
     job_memory: str,
     job_ncpu: int,
     output_bam_json: bool,
+    output_file_name: str,
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -188,10 +190,13 @@ def main(
                 --sex {sex_param}
                 """
                 )
-                # ExpansionHunter output writing
-                eh_output_path = output_path(
-                    f'{cpg_id}/{cpg_id}_eh_shard{index}', 'analysis'
-                )
+                if output_file_name is None:
+                    # ExpansionHunter output writing
+                    eh_output_path = output_path(
+                        f'{cpg_id}/{cpg_id}_eh_shard{index}', 'analysis'
+                    )
+                else:
+                    eh_output_path = output_path(output_file_name, 'analysis')
                 b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
