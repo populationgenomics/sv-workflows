@@ -196,7 +196,7 @@ def main(
                         f'{cpg_id}/{cpg_id}_eh_shard{index}', 'analysis'
                     )
                 else:
-                    eh_output_path = output_path(f'output_path_file_name', 'analysis')
+                    eh_output_path = output_path(output_file_name, 'analysis')
                 b.write_output(eh_job.eh_output, eh_output_path)
 
     b.run(wait=False)
