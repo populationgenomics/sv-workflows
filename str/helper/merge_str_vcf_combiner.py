@@ -61,7 +61,7 @@ def main(input_dir, output):
                             handle.write(line)
                     elif line.startswith('#CHROM'):
                         if key == 1:
-                            chrom_line = line
+                            handle.write(line)
                     elif not line.startswith('#'):
                         handle.write(line)
 
