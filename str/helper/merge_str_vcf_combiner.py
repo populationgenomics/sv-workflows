@@ -8,13 +8,13 @@ analysis-runner --access-level standard --dataset tob-wgs --description  \
     merge_str_vcf_combiner.py \
     --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str/v5
 """
-import click
 import gzip
-
+import click
 
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
+
 
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
