@@ -14,11 +14,12 @@ import click
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
+import gzip
 
 
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
-@click.option('--output', help='Name of output VCF', default='combined_eh.vcf')
+@click.option('--output', help='Name of output VCF', default='combined_eh.vcf.gz')
 def main(input_dir, output):
     """
     Combines sharded mergeSTR output VCFs in input_dir into one combined VCF,
@@ -38,7 +39,7 @@ def main(input_dir, output):
         for file_path in input_file_paths
     }
 
-    with to_path(output_path(output, 'analysis')).open('w') as handle:
+    with gzip.open(to_path(output_path(output, 'analysis'), 'wt')) as handle:
         # Process each input file
         for key in sorted(input_files_dict.keys()):
             input_file = to_path(input_files_dict[key])
