@@ -41,7 +41,6 @@ def main(input_dir, output):
     # Initialize variables to store information
     fileformat_line = ''
     info_lines = []
-    alt_lines = set()
     chrom_line = ''
 
     temporary_gt_file = 'temporary_gt_file.txt'
@@ -88,7 +87,6 @@ def main(input_dir, output):
         with open(temporary_gt_file, 'r', encoding='utf-8') as handle:
             for line in handle:
                 out_file.write(line)
-
 
 
 if __name__ == '__main__':
