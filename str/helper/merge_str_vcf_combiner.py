@@ -11,6 +11,7 @@ analysis-runner --access-level standard --dataset tob-wgs --description  \
 import gzip
 import click
 
+
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
 
@@ -37,14 +38,7 @@ def main(input_dir, output):
         for file_path in input_file_paths
     }
 
-    # Initialize variables to store information
-    fileformat_line = ''
-    info_lines = []
-    alt_lines = set()
-    chrom_line = ''
-
-    temporary_gt_file = 'temporary_gt_file.txt'
-    with open(temporary_gt_file, 'w', encoding='utf-8') as handle:
+    with to_path(output_path(output, 'analysis')).open('w') as handle:
         # Process each input file
         for key in sorted(input_files_dict.keys()):
             input_file = to_path(input_files_dict[key])
@@ -55,7 +49,7 @@ def main(input_dir, output):
                     # Collect information from the header lines
                     if line.startswith('##fileformat'):
                         if key == 1:  # first file processed is shard_1
-                            fileformat_line = line
+                            handle.write(line)
                     elif (
                         line.startswith('##INFO')
                         or line.startswith('##FILTER')
@@ -64,34 +58,14 @@ def main(input_dir, output):
                         or line.startswith('##command')
                     ):
                         if key == 1:
-                            info_lines.append(line)
-                    elif line.startswith('##ALT'):
-                        # Collect ALT lines from all files into a set to remove duplicates
-                        alt_lines.add(line)
+                            handle.write(line)
                     elif line.startswith('#CHROM'):
                         if key == 1:
-                            chrom_line = line
+                            handle.write(line)
                     elif not line.startswith('#'):
-                        # Collect calls after #CHROM in a temp file
                         handle.write(line)
 
     print(f'Parsed {len(list(input_files_dict.keys()))} sharded VCFs')
-
-    # Write the combined information to the output file
-    with to_path(output_path(output, 'analysis')).open('w') as out_file:
-        # Write fileformat line
-        out_file.write(fileformat_line)
-        # Write INFO, FILTER, and FORMAT lines
-        out_file.writelines(info_lines)
-        # Write ALT lines, sorted
-        out_file.writelines(sorted(alt_lines))
-        # Write CHROM line
-        out_file.write(chrom_line)
-
-        # read-write all GT lines from temporary file
-        with open(temporary_gt_file, 'r', encoding='utf-8') as handle:
-            for line in handle:
-                out_file.write(line)
 
 
 if __name__ == '__main__':
