@@ -18,7 +18,7 @@ from cpg_utils.hail_batch import output_path
 
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
-@click.option('--output', help='Name of output VCF', default='combined_eh.vcf')
+@click.option('--output', help='Name of output VCF', default='combined_eh.vcf.gz')
 def main(input_dir, output):
     """
     Combines sharded mergeSTR output VCFs in input_dir into one combined VCF,
@@ -38,7 +38,13 @@ def main(input_dir, output):
         for file_path in input_file_paths
     }
 
-    with to_path(output_path(output, 'analysis')).open('w') as handle:
+    # Initialize variables to store information
+    fileformat_line = ''
+    info_lines = []
+    chrom_line = ''
+
+    temporary_gt_file = 'temporary_gt_file.txt'
+    with gzip.open(temporary_gt_file, 'wt', encoding='utf-8') as handle:
         # Process each input file
         for key in sorted(input_files_dict.keys()):
             input_file = to_path(input_files_dict[key])
@@ -49,7 +55,7 @@ def main(input_dir, output):
                     # Collect information from the header lines
                     if line.startswith('##fileformat'):
                         if key == 1:  # first file processed is shard_1
-                            handle.write(line)
+                            fileformat_line = line
                     elif (
                         line.startswith('##INFO')
                         or line.startswith('##FILTER')
@@ -58,14 +64,34 @@ def main(input_dir, output):
                         or line.startswith('##command')
                     ):
                         if key == 1:
-                            handle.write(line)
+                            info_lines.append(line)
+
                     elif line.startswith('#CHROM'):
                         if key == 1:
-                            handle.write(line)
+                            chrom_line = line
                     elif not line.startswith('#'):
+                        # Collect calls after #CHROM in a temp file
                         handle.write(line)
+            input_file.clear_cache()
 
     print(f'Parsed {len(list(input_files_dict.keys()))} sharded VCFs')
+
+    # Write the combined information to the output file
+    temporary_out_file = 'temporary_out_file.txt'
+    with gzip.open(temporary_out_file, 'wt', encoding='utf-8') as out_file:
+        # Write fileformat line
+        out_file.write(fileformat_line)
+        # Write INFO, FILTER, and FORMAT lines
+        out_file.writelines(info_lines)
+        # Write CHROM line
+        out_file.write(chrom_line)
+
+        # read-write all GT lines from temporary file
+        with gzip.open(temporary_gt_file, 'rt') as handle:
+            for line in handle:
+                out_file.write(line)
+
+    to_path(output_path(output, 'analysis')).upload_from(temporary_out_file)
 
 
 if __name__ == '__main__':
