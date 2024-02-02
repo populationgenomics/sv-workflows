@@ -15,6 +15,7 @@ import click
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
 
+
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
 @click.option('--output', help='Name of output VCF', default='combined_eh.vcf.gz')
