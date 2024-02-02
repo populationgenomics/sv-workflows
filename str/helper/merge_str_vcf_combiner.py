@@ -73,11 +73,13 @@ def main(input_dir, output):
                     elif not line.startswith('#'):
                         # Collect calls after #CHROM in a temp file
                         handle.write(line)
+            input_file.clear_cache()
 
     print(f'Parsed {len(list(input_files_dict.keys()))} sharded VCFs')
 
     # Write the combined information to the output file
-    with to_path(output_path(output, 'analysis')).open('w') as out_file:
+    temporary_out_file = 'temporary_out_file.txt'
+    with open(temporary_out_file, 'w', encoding='utf-8') as out_file:
         # Write fileformat line
         out_file.write(fileformat_line)
         # Write INFO, FILTER, and FORMAT lines
@@ -89,6 +91,8 @@ def main(input_dir, output):
         with open(temporary_gt_file, 'r', encoding='utf-8') as handle:
             for line in handle:
                 out_file.write(line)
+
+    to_path(output_path(output, 'analysis')).upload_from(out_file)
 
 
 if __name__ == '__main__':
