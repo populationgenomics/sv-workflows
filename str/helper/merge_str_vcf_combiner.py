@@ -91,7 +91,7 @@ def main(input_dir, output):
             for line in handle:
                 out_file.write(line)
 
-    to_path(output_path(output, 'analysis')).upload_from(out_file)
+    to_path(output_path(output, 'analysis')).upload_from(temporary_out_file)
 
 
 if __name__ == '__main__':
