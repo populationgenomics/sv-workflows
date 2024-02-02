@@ -19,7 +19,7 @@ import gzip
 
 @click.command()
 @click.option('--input-dir', help='Parent input directory for sharded VCFs')
-@click.option('--output', help='Name of output VCF', default='combined_eh.vcf.gz')
+@click.option('--output', help='Name of output VCF', default='combined_eh.vcf')
 def main(input_dir, output):
     """
     Combines sharded mergeSTR output VCFs in input_dir into one combined VCF,
