@@ -86,7 +86,7 @@ def main(input_dir, output):
         out_file.write(chrom_line)
 
         # read-write all GT lines from temporary file
-        with gzip.open(temporary_gt_file, 'r', encoding='utf-8') as handle:
+        with gzip.open(temporary_gt_file, 'rt') as handle:
             for line in handle:
                 out_file.write(line)
 
