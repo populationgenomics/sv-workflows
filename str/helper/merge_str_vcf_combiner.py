@@ -11,6 +11,7 @@ analysis-runner --access-level standard --dataset tob-wgs --description  \
 import gzip
 import click
 
+
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
 
@@ -65,9 +66,6 @@ def main(input_dir, output):
                     ):
                         if key == 1:
                             info_lines.append(line)
-                    elif line.startswith('##ALT'):
-                        # Collect ALT lines from all files into a set to remove duplicates
-                        alt_lines.add(line)
                     elif line.startswith('#CHROM'):
                         if key == 1:
                             chrom_line = line
@@ -83,8 +81,6 @@ def main(input_dir, output):
         out_file.write(fileformat_line)
         # Write INFO, FILTER, and FORMAT lines
         out_file.writelines(info_lines)
-        # Write ALT lines, sorted
-        out_file.writelines(sorted(alt_lines))
         # Write CHROM line
         out_file.write(chrom_line)
 
@@ -92,6 +88,7 @@ def main(input_dir, output):
         with open(temporary_gt_file, 'r', encoding='utf-8') as handle:
             for line in handle:
                 out_file.write(line)
+
 
 
 if __name__ == '__main__':
