@@ -39,24 +39,24 @@ def main(input_file, job_memory, job_storage):
     bcftools_job.storage(job_storage)
 
     bcftools_job.declare_resource_group(
-        vcf_sorted={
-            'reheader.vcf.bgz': '{root}vcf.bgz',
-            'reheader.vcf.bgz.tbi': '{root}.reheader.vcf.bgz.tbi',
+        vcf_output={
+            'vcf.bgz': '{root}.vcf.bgz',
+            'vcf.bgz.tbi': '{root}.vcf.bgz.tbi',
         }
     )
 
     bcftools_job.command(
         f"""
 
-        bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_sorted['reheader.vcf.bgz']}
+        bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_output['vcf.bgz']}
 
-        tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.bgz']}
+        tabix -f -p vcf {bcftools_job.vcf_output['vcf.bgz']}
 
         """
     )
 
     init_batch()
     mt_output_path = to_path(output_path('str.mt', 'analysis'))
-    hl.import_vcf(bcftools_job.vcf_sorted['reheader.vcf.bgz'], force_bgz=True).write(
+    hl.import_vcf(bcftools_job.vcf_sorted['vcf.bgz'], force_bgz=True).write(
         mt_output_path, overwrite=True
     )
