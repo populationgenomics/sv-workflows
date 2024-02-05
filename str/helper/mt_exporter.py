@@ -25,7 +25,8 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def mt_writer(file_path, gcs_path):
     """ writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket """
     init_batch()
-    hl.import_vcf((file_path), force_bgz=True).write(gcs_path, overwrite=True)
+    input_file = b.read_input(file_path)
+    hl.import_vcf(input_file, force_bgz=True).write(gcs_path, overwrite=True)
 
 
 @click.command()
