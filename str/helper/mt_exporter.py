@@ -13,11 +13,8 @@ import click
 
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, output_path,init_batch
-
-
+from cpg_utils.hail_batch import get_batch, output_path, init_batch
 
 
 config = get_config()
@@ -25,13 +22,13 @@ config = get_config()
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-
 @click.command()
 @click.option('--input-file', help='Parent input file path for gzipped VCF')
 @click.option('--job-memory', default='32G', help='Job memory')
 @click.option('--job-storage', default='15G', help='Job storage')
-def main(input_file,job_memory,job_storage):
+def main(input_file, job_memory, job_storage):
     """
+    BGZIPs a GZIPPED VCF input file and writes it to a GCS bucket as a Hail Matrix Table.
 
     """
     b = get_batch()
@@ -60,5 +57,6 @@ def main(input_file,job_memory,job_storage):
 
     init_batch()
     mt_output_path = to_path(output_path('str.mt', 'analysis'))
-    hl.import_vcf(bcftools_job.vcf_sorted['reheader.vcf.bgz'], force_bgz = True).write(mt_output_path, overwrite = True)
-
+    hl.import_vcf(bcftools_job.vcf_sorted['reheader.vcf.bgz'], force_bgz=True).write(
+        mt_output_path, overwrite=True
+    )
