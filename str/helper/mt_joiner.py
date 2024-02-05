@@ -33,8 +33,19 @@ def main(mt_path_1, mt_path_2):
 
     init_batch()
     mt_1 = hl.read_matrix_table(mt_path_1)
+
+    #rekey by REPID
+    mt_1 = mt_1.annotate_rows(REPID = mt_1.info.REPID)
+    mt_1 = mt_1.key_rows_by(REPID = mt_1['REPID'], alleles = mt_1['alleles'])
+
     print(f'{mt_path_1} dimensions: {mt_1.count()}')
+
     mt_2 = hl.read_matrix_table(mt_path_2)
+
+    #rekey by REPID
+    mt_2 = mt_2.annotate_rows(REPID = mt_2.info.REPID)
+    mt_2 = mt_2.key_rows_by(REPID = mt_2['REPID'], alleles = mt_2['alleles'])
+
     print(f'{mt_path_2} dimensions: {mt_2.count()}')
 
     mt_joined = mt_1.union_cols(mt_2)
