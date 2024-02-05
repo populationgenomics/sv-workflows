@@ -25,7 +25,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 def mt_writer(file_path, gcs_path):
     """ writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket """
     init_batch()
-    hl.import_vcf(file_path, force_bgz=True).write(gcs_path, overwrite=True)
+    hl.import_vcf((file_path), force_bgz=True).write(gcs_path, overwrite=True)
 
 
 @click.command()
@@ -54,14 +54,16 @@ def main(input_file, job_memory, job_storage):
     bcftools_job.command(
         f"""
 
-        bcftools view {vcf_input} | bgzip -c >  $BATCH_TMPDIR/vcf.bgz
+        bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_output['vcf.bgz']}
+
+        tabix -f -p vcf {bcftools_job.vcf_output['vcf.bgz']}
 
         """
     )
 
     mt_output_path = to_path(output_path('str.mt', 'analysis'))
     mt_writer_job = b.new_python_job(name='mt_writer job')
-    mt_writer_job.call(mt_writer, f'$BATCH_TMPDIR/vcf.bgz', mt_output_path)
+    mt_writer_job.call(mt_writer, bcftools_job.vcf_output['vcf.bgz'], mt_output_path)
 
     b.run(wait=False)
 
