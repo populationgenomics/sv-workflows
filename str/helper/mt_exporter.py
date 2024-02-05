@@ -31,8 +31,8 @@ def mt_writer(file_path, gcs_path):
 
 @click.command()
 @click.option('--input-file', help='Parent input file path for gzipped VCF')
-@click.option('--job-memory', default='32G', help='Job memory')
-@click.option('--job-storage', default='15G', help='Job storage')
+@click.option('--job-memory', default='8G', help='Job memory')
+@click.option('--job-storage', default='8G', help='Job storage')
 def main(input_file, job_memory, job_storage):
     """
     BGZIPs a GZIPPED VCF input file and writes it to a GCS bucket as a Hail Matrix Table.
