@@ -60,3 +60,8 @@ def main(input_file, job_memory, job_storage):
     hl.import_vcf(bcftools_job.vcf_sorted['vcf.bgz'], force_bgz=True).write(
         mt_output_path, overwrite=True
     )
+
+    b.run(wait=False)
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
