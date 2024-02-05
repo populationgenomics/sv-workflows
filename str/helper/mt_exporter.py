@@ -63,8 +63,8 @@ def main(input_file, job_memory, job_storage):
         """
     )
     input_file_name = (input_file.split('/')[-1]).split('.')[0]
-    b.write_output(bcftools_job.vcf_output['vcf.bgz'], to_path(output_path(f'{input_file_name}.vcf.bgz', 'analysis')))
-    b.write_output(bcftools_job.vcf_output['vcf.bgz.tbi'], to_path(output_path(f'{input_file_name}.vcf.bgz.tbi', 'analysis')))
+    b.write_output(bcftools_job.vcf_output['vcf.bgz'], (output_path(f'{input_file_name}.vcf.bgz', 'analysis')))
+    b.write_output(bcftools_job.vcf_output['vcf.bgz.tbi'], (output_path(f'{input_file_name}.vcf.bgz.tbi', 'analysis')))
 
 
     b.run(wait=False)
