@@ -54,16 +54,14 @@ def main(input_file, job_memory, job_storage):
     bcftools_job.command(
         f"""
 
-        bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_output['vcf.bgz']}
-
-        tabix -f -p vcf {bcftools_job.vcf_output['vcf.bgz']}
+        bcftools view {vcf_input} | bgzip -c >  ${BATCH_TMPDIR}/vcf.bgz
 
         """
     )
 
     mt_output_path = to_path(output_path('str.mt', 'analysis'))
     mt_writer_job = b.new_python_job(name='mt_writer job')
-    mt_writer_job.call(mt_writer, bcftools_job.vcf_output['vcf.bgz'], mt_output_path)
+    mt_writer_job.call(mt_writer, f'${BATCH_TMPDIR}/vcf.bgz', mt_output_path)
 
     b.run(wait=False)
 
