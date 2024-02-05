@@ -36,7 +36,7 @@ def main(mt_path_1, mt_path_2):
 
     # rekey by REPID
     mt_1 = mt_1.annotate_rows(REPID=mt_1.info.REPID)
-    mt_1 = mt_1.key_rows_by(REPID=mt_1['REPID'])
+    mt_1 = mt_1.key_rows_by('REPID')
 
     print(f'{mt_path_1} dimensions: {mt_1.count()}')
 
