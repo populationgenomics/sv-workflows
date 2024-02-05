@@ -25,7 +25,8 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option('--input-file', help='Parent input file path for gzipped VCF')
 @click.option('--job-memory', default='8G', help='Job memory')
 @click.option('--job-storage', default='8G', help='Job storage')
-def main(input_file, job_memory, job_storage):
+@click.option('--job-cpu', default=4, help='Job CPU')
+def main(input_file, job_memory, job_storage, job_cpu):
     """
     BGZIPs a GZIPPED VCF input file and writes it to a GCS bucket as a Hail Matrix Table.
 
@@ -38,6 +39,7 @@ def main(input_file, job_memory, job_storage):
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.memory(job_memory)
     bcftools_job.storage(job_storage)
+    bcftools_job.cpu(job_cpu)
 
     bcftools_job.declare_resource_group(
         vcf_output={
