@@ -16,6 +16,7 @@ import click
 
 from cpg_utils.hail_batch import output_path, init_batch
 
+
 @click.option(
     '--file-path',
     help='GCS file path to BGZIP VCF file.',
@@ -23,11 +24,12 @@ from cpg_utils.hail_batch import output_path, init_batch
 )
 @click.command()
 def main(file_path):
-    """ writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket """
+    """writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket"""
 
     init_batch()
     gcs_path = output_path('str.mt', 'analysis')
     hl.import_vcf(file_path, force_bgz=True).write(gcs_path, overwrite=True)
+
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
