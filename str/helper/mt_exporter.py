@@ -6,7 +6,7 @@ This script receives a gzipped VCF file and creates a Hail Matrix table, written
 analysis-runner --access-level test --dataset bioheart --description  \
     'VCF combiner' --memory 32G --storage 50G --output-dir 'str/polymorphic_run/mt/bioheart/v1' \
     mt_exporter.py \
-    --input-dir=gs://cpg-bioheart-test/str/polymorphic_run/merge_str/tester_file.gz
+    --input-file=gs://cpg-bioheart-test/str/polymorphic_run/merge_str/tester_file.gz
 """
 import hail as hl
 import click
