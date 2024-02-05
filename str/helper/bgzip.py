@@ -1,33 +1,24 @@
 #!/usr/bin/env python3
 
 """
-This script receives a gzipped VCF file and creates a Hail Matrix table, written to a GCS bucket.
+This script receives a gzipped VCF file and performs BGZIP, writing files to output (prep files for Hail Query).
 
 analysis-runner --access-level test --dataset bioheart --description  \
     'VCF combiner' --memory 32G --storage 50G --output-dir 'str/polymorphic_run/mt/bioheart/v1' \
-    mt_exporter.py \
+    bzip.py \
     --input-file=gs://cpg-bioheart-test/str/polymorphic_run/merge_str/tester_file.gz
 """
 import hail as hl
 import click
 
 
-from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, output_path, init_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
-
-
-def mt_writer(file_path, gcs_path):
-    """ writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket """
-    init_batch()
-    b = get_batch()
-    input_file = b.read_input(file_path)
-    hl.import_vcf(input_file, force_bgz=True).write(gcs_path, overwrite=True)
 
 
 @click.command()
@@ -41,7 +32,9 @@ def main(input_file, job_memory, job_storage):
     """
     b = get_batch()
     vcf_input = b.read_input(input_file)
-    bcftools_job = b.new_job(name=f'{input_file} Files prep')
+    input_file_name = (input_file.split('/')[-1]).split('.')[0]
+
+    bcftools_job = b.new_job(name=f'{input_file_name} BGZIPPING')
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.memory(job_memory)
     bcftools_job.storage(job_storage)
@@ -62,9 +55,9 @@ def main(input_file, job_memory, job_storage):
 
         """
     )
-    input_file_name = (input_file.split('/')[-1]).split('.')[0]
-    b.write_output(bcftools_job.vcf_output, (output_path(f'{input_file_name}', 'analysis')))
-
+    b.write_output(
+        bcftools_job.vcf_output, (output_path(f'{input_file_name}', 'analysis'))
+    )
 
     b.run(wait=False)
 
