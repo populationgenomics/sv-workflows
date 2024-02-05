@@ -4,7 +4,7 @@
 This Hail Query script outputs a CSV file containing the CPG ID, external ID, and karyotypic sex from the SampleQC Hail Table.
 
  analysis-runner --dataset "bioheart" \
-    --description " mt_extractor" \
+    --description "mt_extractor" \
     --access-level "test" \
     --output-dir "str/polymorphic_run/mt/v1" \
     mt_extractor.py --file-path=gs://cpg-bioheart-test/str/polymorphic_run/bzip/v1/tester_file.vcf.bgz

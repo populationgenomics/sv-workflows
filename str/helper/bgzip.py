@@ -8,7 +8,7 @@ analysis-runner --access-level test --dataset bioheart --description  \
     bzip.py \
     --input-file=gs://cpg-bioheart-test/str/polymorphic_run/merge_str/tester_file.gz
 """
-import hail as hl
+
 import click
 
 
