@@ -62,11 +62,10 @@ def main(input_file, job_memory, job_storage):
 
         """
     )
-    b.write_output(bcftools_job.vcf_output['vcf.bgz'], to_path(output_path('str.vcf.bgz', 'analysis')))
+    input_file_name = (input_file.split('/')[-1]).split('.')[0]
+    b.write_output(bcftools_job.vcf_output['vcf.bgz'], to_path(output_path(f'{input_file_name}.vcf.bgz', 'analysis')))
+    b.write_output(bcftools_job.vcf_output['vcf.bgz.tbi'], to_path(output_path(f'{input_file_name}.vcf.bgz.tbi', 'analysis')))
 
-    mt_output_path = to_path(output_path('str.mt', 'analysis'))
-    mt_writer_job = b.new_python_job(name='mt_writer job')
-    mt_writer_job.call(mt_writer, bcftools_job.vcf_output['vcf.bgz'], mt_output_path)
 
     b.run(wait=False)
 
