@@ -21,6 +21,13 @@ config = get_config()
 
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
+def mt_writer(file_path, gcs_path):
+    init_batch()
+    hl.import_vcf(file_path, force_bgz=True).write(
+        gcs_path, overwrite=True
+    )
+
+
 
 @click.command()
 @click.option('--input-file', help='Parent input file path for gzipped VCF')
@@ -55,11 +62,9 @@ def main(input_file, job_memory, job_storage):
         """
     )
 
-    init_batch()
     mt_output_path = to_path(output_path('str.mt', 'analysis'))
-    hl.import_vcf(bcftools_job.vcf_sorted['vcf.bgz'], force_bgz=True).write(
-        mt_output_path, overwrite=True
-    )
+    mt_writer_job = b.new_python_job()
+    mt_writer_job.call(mt_writer, bcftools_job.vcf_output['vcf.bgz'], mt_output_path)
 
     b.run(wait=False)
 
