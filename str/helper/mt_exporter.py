@@ -62,7 +62,7 @@ def main(input_file, job_memory, job_storage):
 
         """
     )
-    b.write_output(bcftools_job.vcf_output, to_path(output_path('bgzip', 'analysis')))
+    b.write_output(bcftools_job.vcf_output['vcf.bgz'], to_path(output_path('str.vcf.bgz', 'analysis')))
 
     mt_output_path = to_path(output_path('str.mt', 'analysis'))
     mt_writer_job = b.new_python_job(name='mt_writer job')
