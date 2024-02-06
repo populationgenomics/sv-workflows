@@ -44,7 +44,6 @@ def main(input_file, job_memory, job_storage, job_cpu):
     bcftools_job.declare_resource_group(
         vcf_output={
             'vcf.bgz': '{root}.vcf.bgz',
-            'vcf.bgz.tbi': '{root}.vcf.bgz.tbi',
         }
     )
 
