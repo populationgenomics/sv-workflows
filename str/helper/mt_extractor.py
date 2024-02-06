@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-function-docstring,no-member
 """
 This Hail Query script outputs a Hail matrix table  from a BGZIPPED VCF file.
  analysis-runner --dataset "bioheart" \
