@@ -24,7 +24,7 @@ def main(file_path):
     """writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket"""
 
     init_batch()
-    gcs_path = output_path('str.mt', 'analysis')
+    gcs_path = output_path('str.mt')
     hl.import_vcf(file_path, force_bgz=True).write(gcs_path, overwrite=True)
 
 
