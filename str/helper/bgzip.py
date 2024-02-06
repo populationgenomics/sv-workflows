@@ -52,7 +52,6 @@ def main(input_file, job_memory, job_storage, job_cpu):
 
         bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_output['vcf.bgz']}
 
-        tabix -f -p vcf {bcftools_job.vcf_output['vcf.bgz']}
 
         """
     )
