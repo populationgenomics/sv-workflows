@@ -18,7 +18,6 @@ from cpg_utils.hail_batch import output_path, init_batch
 @click.option(
     '--file-path',
     help='GCS file path to BGZIP VCF file.',
-    type=str,
 )
 @click.command()
 def main(file_path):
