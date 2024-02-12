@@ -4,21 +4,23 @@
 This script prunes a VCF file, removing all variants that are not present in a provided sharded catalog.
 The output is a pruned VCF file, sharded in the same way as the input catalog, output to a GCS bucket.
 
-analysis-runner --access-level test --dataset tob-wgs --description \
-    'VCF combiner' --output-dir 'str/5M_run_combined_vcfs' \
-    vcf_combiner.py \
-    --input-dir=gs://cpg-tob-wgs-test/hoptan-str \
-    sharded_tester
-"""
+Option to provide multiple samples and create pruned sharded VCFs for each sample.
 
-import click
+analysis-runner --access-level test --dataset tob-wgs --description \
+    'VCF pruner' --output-dir 'str/5M_run_combined_vcfs_pruned' \
+    vcf_pruner.py \
+    --json-file-dir=gs://cpg-common-main/references/str/tob_bioheart_polymorphic_catalog/sharded_polymorphic_catalog \
+    --vcf-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment CPG308288
+"""
 import json
+import click
 
 from cpg_utils.config import get_config
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import output_path
 
 config = get_config()
+
 
 @click.command()
 @click.option(
@@ -30,16 +32,15 @@ config = get_config()
     help='GCS path to folder containg the VCF file(s) to be pruned',
 )
 @click.argument('cpg-ids', nargs=-1)
-
 def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
-
+    """Prunes a VCF file, removing all variants that are not present in a provided sharded catalog."""
     # list of catalog files (multiple, if catalog is sharded)
     catalog_files = list(to_path(json_file_dir).glob('*.json'))
     catalog_files = [
         str(gs_path) for gs_path in catalog_files
     ]  # coverts into a string type
     for catalog_file in catalog_files:
-        variant_ids= []
+        variant_ids = []
 
         with to_path(catalog_file).open('r') as json_file:
             # Load the JSON content
@@ -52,7 +53,6 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
                 )
                 variant_ids.extend(entry_variant_ids)
         variant_ids = set(variant_ids)
-
 
         # Initialize variables to store information
         fileformat_line = ''
