@@ -7,9 +7,9 @@ The output is a pruned VCF file, sharded in the same way as the input catalog, o
 Option to provide multiple samples and create pruned sharded VCFs for each sample.
 
 analysis-runner --access-level test --dataset tob-wgs --description \
-    'VCF pruner' --output-dir 'str/5M_run_combined_vcfs_pruned' \
+    'VCF pruner' --output-dir 'str/5M_run_combined_vcfs_pruned/v2' \
     vcf_pruner.py \
-    --json-file-dir=gs://cpg-common-main/references/str/tob_bioheart_polymorphic_catalog/sharded_polymorphic_catalog \
+    --json-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment/3M/CPG308296 \
     --vcf-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment CPG308288
 """
 import json
@@ -27,18 +27,14 @@ def variant_id_collector(catalog_file):
 
     variant_ids = []
 
-    with to_path(catalog_file).open('r') as json_file:
-        # Load the JSON content
-        catalog = json.load(json_file)
+    with to_path(catalog_file).open() as f:
+        for line in f:
+            if not line.startswith('#'):
+                row_info = line.split('\t')[7]
+                var_id = {(row_info.split(';')[4])[6:]}
+                variant_ids.append(var_id)
 
-        for entry in catalog:
-            # Check if 'VariantId' exists, use 'LocusId' otherwise
-            entry_variant_ids = (
-                entry['VariantId'] if 'VariantId' in entry else [entry['LocusId']]
-            )
-            variant_ids.extend(entry_variant_ids)
     return set(variant_ids)
-
 
 def pruner(vcf_file_path, cpg_id, chunk_number, variant_ids):
     """Prunes a VCF file, removing all variants that are not present in the list of provided variant IDs.
@@ -104,12 +100,12 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_ids):
 )
 @click.argument('cpg-ids', nargs=-1)
 def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
-    """Prunes a VCF file, removing all variants that are not present in a provided sharded catalog."""
+    """Prunes a VCF file, removing all variants that are not present in a provided sharded VCF."""
     # Initializing Batch
     b = get_batch()
 
     # list of catalog files (multiple, if catalog is sharded)
-    catalog_files = list(to_path(json_file_dir).glob('*.json'))
+    catalog_files = list(to_path(json_file_dir).glob('*.vcf'))
     catalog_files = [
         str(gs_path) for gs_path in catalog_files
     ]  # coverts into a string type
