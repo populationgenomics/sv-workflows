@@ -12,7 +12,6 @@ analysis-runner --access-level test --dataset tob-wgs --description \
     --json-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment/3M/CPG308296 \
     --vcf-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment CPG308288
 """
-import json
 import click
 
 from cpg_utils.config import get_config
@@ -35,6 +34,7 @@ def variant_id_collector(catalog_file):
                 variant_ids.append(var_id)
 
     return set(variant_ids), variant_ids
+
 
 def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order):
     """Prunes a VCF file, removing all variants that are not present in the list of provided variant IDs.
@@ -69,14 +69,13 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
                 row_info = line.split('\t')[7]
                 var_id = {(row_info.split(';')[4])[6:]}
                 if var_id & variant_id_set:
-                    gt_lines[var_id]= line
+                    gt_lines[var_id] = line
 
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
 
-    #sort gt_lines by variant ID
+    # sort gt_lines by variant ID
     sorted_gt = {key: gt_lines[key] for key in variant_id_order}
-
 
     # Write the combined information to the output file
     gcs_out_path = output_path(f'{cpg_id}/{cpg_id}_eh_shard{chunk_number}.vcf')
@@ -119,7 +118,9 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         )
         variant_id_collector_job.memory('16G')
         variant_id_collector_job.storage('20G')
-        variant_id_set, variant_id_order = variant_id_collector_job.call(variant_id_collector, catalog_file)
+        variant_id_set, variant_id_order = variant_id_collector_job.call(
+            variant_id_collector, catalog_file
+        )
 
         for cpg_id in cpg_ids:
             # make input_files GSPath elements into a string type object
@@ -131,7 +132,12 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
             vcf_pruner_job.memory('16G')
             vcf_pruner_job.storage('20G')
             vcf_pruner_job.call(
-                pruner, vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
+                pruner,
+                vcf_file_path,
+                cpg_id,
+                chunk_number,
+                variant_id_set,
+                variant_id_order,
             )
 
     b.run(wait=False)
