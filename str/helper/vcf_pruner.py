@@ -31,7 +31,7 @@ def variant_id_collector(catalog_file):
         for line in f:
             if not line.startswith('#'):
                 row_info = line.split('\t')[7]
-                var_id = {(row_info.split(';')[4])[6:]}
+                var_id = (row_info.split(';')[4])[6:]
                 variant_ids.append(var_id)
 
     return set(variant_ids)
