@@ -108,5 +108,6 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
                 # Write GT or lines containing the calls
                 out_file.writelines(gt_lines)
 
+
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
