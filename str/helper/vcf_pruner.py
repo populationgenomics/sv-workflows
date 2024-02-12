@@ -33,7 +33,7 @@ def variant_id_collector(catalog_file):
                 var_id = (row_info.split(';')[4])[6:]
                 variant_ids.append(var_id)
 
-    return set(variant_ids), variant_ids
+    return variant_ids
 
 
 def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order):
@@ -118,9 +118,10 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         )
         variant_id_collector_job.memory('16G')
         variant_id_collector_job.storage('20G')
-        variant_id_set, variant_id_order = variant_id_collector_job.call(
+        variant_id_order = variant_id_collector_job.call(
             variant_id_collector, catalog_file
         )
+        variant_id_set = set(variant_id_order)
 
         for cpg_id in cpg_ids:
             # make input_files GSPath elements into a string type object
