@@ -36,7 +36,7 @@ def variant_id_collector(catalog_file):
     return variant_ids
 
 
-def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order):
+def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_order):
     """Prunes a VCF file, removing all variants that are not present in the list of provided variant IDs.
     Writes output to GCS bucket.
     """
@@ -46,6 +46,7 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
     alt_lines = set()
     chrom_line = ''
     gt_lines = {}
+    variant_id_set = set(variant_id_order)
 
     with to_path(vcf_file_path).open() as f:
         for line in f:
@@ -132,7 +133,6 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         variant_id_order = variant_id_collector_job.call(
             variant_id_collector, catalog_file
         )
-        variant_id_set = set(variant_id_order)
 
         for cpg_id in cpg_ids:
             # make input_files GSPath elements into a string type object
@@ -148,7 +148,6 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
                 vcf_file_path,
                 cpg_id,
                 chunk_number,
-                variant_id_set,
                 variant_id_order,
             )
 
