@@ -68,6 +68,7 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
                 # Collect calls after #CHROM
                 row_info = line.split('\t')[7]
                 var_id = {(row_info.split(';')[4])[6:]}
+                print(f'var_id to intersect: {var_id}')
                 if var_id & variant_id_set:
                     var_id = ''.join(map(str, var_id))
                     gt_lines[var_id] = line
@@ -76,6 +77,7 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
     sorted_alt_lines = sorted(alt_lines)
 
     #debug
+    print(f'variant_id_set:    {variant_id_set}')
     print(f'gt_lines length: {len(gt_lines)}')
 
     # sort gt_lines by variant ID
