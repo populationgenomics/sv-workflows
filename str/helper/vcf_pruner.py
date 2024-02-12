@@ -120,7 +120,7 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         for cpg_id in cpg_ids:
             # make input_files GSPath elements into a string type object
             vcf_file_path = f'{vcf_file_dir}/{cpg_id}_combined.vcf'
-            chunk_number = catalog_file.split('/')[-1].split('_')[1].split('.')[0]
+            chunk_number = catalog_file.split('/')[-1].split('shard')[1].split('.')[0]
             vcf_pruner_job = b.new_python_job(
                 name=f'VCF Combiner job: {cpg_id} chunk {chunk_number}'
             )
