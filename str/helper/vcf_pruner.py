@@ -69,7 +69,6 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_order):
                 # Collect calls after #CHROM
                 row_info = line.split('\t')[7]
                 var_id = {(row_info.split(';')[4])[6:]}
-                #print(f'var_id to intersect: {var_id}')
                 if var_id & variant_id_set:
                     var_id = ''.join(map(str, var_id))
                     gt_lines[var_id] = line
@@ -77,17 +76,11 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_order):
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
 
-    #debug
-    print(f'variant_id_set:    {variant_id_set}')
-    print(f'gt_lines length: {len(gt_lines)}')
 
     # sort gt_lines by variant ID
     sorted_gt = {key: gt_lines[key] for key in variant_id_order if key in gt_lines}
     print (f'Parsed {len(sorted_gt)} variants from {cpg_id} shard {chunk_number}')
 
-    #debug
-    print(f'sorted_gt: {sorted_gt}')
-    print(f'variant_id_order: {variant_id_order}')
 
     # Write the combined information to the output file
     gcs_out_path = output_path(f'{cpg_id}/{cpg_id}_eh_shard{chunk_number}.vcf')
