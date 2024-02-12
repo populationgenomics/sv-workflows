@@ -21,6 +21,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
+
 def variant_id_collector(catalog_file):
     """Collects all variant IDs from a sharded catalog file and returns a set of unique variant IDs."""
 
@@ -92,7 +93,6 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_ids):
         out_file.writelines(gt_lines)
 
 
-
 @click.command()
 @click.option(
     '--json-file-dir',
@@ -114,22 +114,28 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         str(gs_path) for gs_path in catalog_files
     ]  # coverts into a string type
     for catalog_file in catalog_files:
-        variant_id_collector_job = b.new_python_job(name=f'Variant ID collector job: {catalog_file}')
+        variant_id_collector_job = b.new_python_job(
+            name=f'Variant ID collector job: {catalog_file}'
+        )
         vcf_pruner_job.memory('16G')
         vcf_pruner_job.storage('20G')
         variant_ids = variant_id_collector_job.call(variant_id_collector, catalog_file)
-
 
         for cpg_id in cpg_ids:
             # make input_files GSPath elements into a string type object
             vcf_file_path = f'{vcf_file_dir}/{cpg_id}_combined.vcf'
             chunk_number = catalog_file.split('/')[-1].split('_')[1].split('.')[0]
-            vcf_pruner_job = b.new_python_job(name=f'VCF Combiner job: {cpg_id} chunk {chunk_number}')
+            vcf_pruner_job = b.new_python_job(
+                name=f'VCF Combiner job: {cpg_id} chunk {chunk_number}'
+            )
             vcf_pruner_job.memory('16G')
             vcf_pruner_job.storage('20G')
-            vcf_pruner_job.call(pruner, vcf_file_path, cpg_id, chunk_number, variant_ids)
+            vcf_pruner_job.call(
+                pruner, vcf_file_path, cpg_id, chunk_number, variant_ids
+            )
 
     b.run(wait=False)
+
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
