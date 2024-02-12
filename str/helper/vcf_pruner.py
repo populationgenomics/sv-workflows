@@ -79,7 +79,7 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
     print(f'gt_lines length: {len(gt_lines)}')
 
     # sort gt_lines by variant ID
-    sorted_gt = {key: gt_lines[key] for key in variant_id_order}
+    sorted_gt = {key: gt_lines[key] for key in variant_id_order if key in gt_lines}
     print (f'Parsed {len(sorted_gt)} variants from {cpg_id} shard {chunk_number}')
 
     #debug
