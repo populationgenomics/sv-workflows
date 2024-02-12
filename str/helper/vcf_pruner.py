@@ -26,11 +26,28 @@ def variant_id_collector(catalog_file):
     """Collects all variant IDs from a sharded catalog file and returns a set of unique variant IDs."""
 
     variant_ids = []
-    fileformat_line = ''
-    info_lines = []
 
     with to_path(catalog_file).open() as f:
+        for line in f:
+            if not line.startswith('#'):
+                row_info = line.split('\t')[7]
+                var_id = (row_info.split(';')[4])[6:]
+                variant_ids.append(var_id)
 
+    return set(variant_ids), variant_ids
+
+def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order):
+    """Prunes a VCF file, removing all variants that are not present in the list of provided variant IDs.
+    Writes output to GCS bucket.
+    """
+    # Initialize variables to store information
+    fileformat_line = ''
+    info_lines = []
+    alt_lines = set()
+    chrom_line = ''
+    gt_lines = {}
+
+    with to_path(vcf_file_path).open() as f:
         for line in f:
             # Collect information from the header lines
             if line.startswith('##fileformat'):
@@ -42,26 +59,7 @@ def variant_id_collector(catalog_file):
             ):
 
                 info_lines.append(line)
-            elif not line.startswith('#'):
-                row_info = line.split('\t')[7]
-                var_id = (row_info.split(';')[4])[6:]
-                variant_ids.append(var_id)
-
-    return set(variant_ids), fileformat_line, info_lines
-
-def pruner(vcf_file_path, cpg_id, chunk_number, variant_ids, fileformat_line, info_lines):
-    """Prunes a VCF file, removing all variants that are not present in the list of provided variant IDs.
-    Writes output to GCS bucket.
-    """
-    # Initialize variables to store information
-    alt_lines = set()
-    chrom_line = ''
-    gt_lines = []
-
-    with to_path(vcf_file_path).open() as f:
-        for line in f:
-
-            if line.startswith('##ALT'):
+            elif line.startswith('##ALT'):
                 # Collect ALT lines from all files into a set to remove duplicates
                 alt_lines.add(line)
             elif line.startswith('#CHROM'):
@@ -70,11 +68,15 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_ids, fileformat_line, in
                 # Collect calls after #CHROM
                 row_info = line.split('\t')[7]
                 var_id = {(row_info.split(';')[4])[6:]}
-                if var_id & variant_ids:
-                    gt_lines.append(line)
+                if var_id & variant_id_set:
+                    gt_lines[var_id]= line
 
     # Sort ALT lines alphabetically and convert to a list
     sorted_alt_lines = sorted(alt_lines)
+
+    #sort gt_lines by variant ID
+    sorted_gt = {key: gt_lines[key] for key in variant_id_order}
+
 
     # Write the combined information to the output file
     gcs_out_path = output_path(f'{cpg_id}/{cpg_id}_eh_shard{chunk_number}.vcf')
@@ -88,7 +90,7 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_ids, fileformat_line, in
         # Write CHROM line
         out_file.write(chrom_line)
         # Write GT or lines containing the calls
-        out_file.writelines(gt_lines)
+        out_file.writelines(sorted_gt.values())
 
 
 @click.command()
@@ -117,7 +119,7 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         )
         variant_id_collector_job.memory('16G')
         variant_id_collector_job.storage('20G')
-        variant_ids,fileformat_line, info_lines = variant_id_collector_job.call(variant_id_collector, catalog_file)
+        variant_id_set, variant_id_order = variant_id_collector_job.call(variant_id_collector, catalog_file)
 
         for cpg_id in cpg_ids:
             # make input_files GSPath elements into a string type object
@@ -129,7 +131,7 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
             vcf_pruner_job.memory('16G')
             vcf_pruner_job.storage('20G')
             vcf_pruner_job.call(
-                pruner, vcf_file_path, cpg_id, chunk_number, variant_ids, fileformat_line, info_lines
+                pruner, vcf_file_path, cpg_id, chunk_number, variant_id_set, variant_id_order
             )
 
     b.run(wait=False)
