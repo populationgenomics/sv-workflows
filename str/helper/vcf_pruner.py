@@ -117,8 +117,8 @@ def main(json_file_dir, vcf_file_dir, cpg_ids: list[str]):
         variant_id_collector_job = b.new_python_job(
             name=f'Variant ID collector job: {catalog_file}'
         )
-        vcf_pruner_job.memory('16G')
-        vcf_pruner_job.storage('20G')
+        variant_id_collector_job.memory('16G')
+        variant_id_collector_job.storage('20G')
         variant_ids = variant_id_collector_job.call(variant_id_collector, catalog_file)
 
         for cpg_id in cpg_ids:
