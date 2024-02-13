@@ -72,8 +72,10 @@ def main(
         # read in input file paths
         batch_vcfs = []
         num_samples = 0
-        cpg_ids =[]
-        for input_dir, sample_list in zip(input_file_paths[::2], input_file_paths[1::2]):
+        cpg_ids = []
+        for input_dir, sample_list in zip(
+            input_file_paths[::2], input_file_paths[1::2]
+        ):
             with to_path(sample_list).open() as f:
                 ids = [line.strip() for line in f]
                 cpg_ids.extend(ids)
