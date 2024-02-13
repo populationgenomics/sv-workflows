@@ -6,7 +6,8 @@ Please ensure merge_prep.py has been run on the vcf files prior to running merge
 Optional ability to add in VCFs from another file directory (but must be sharded in the same way as the input-dir-1)
 
 For example:
-analysis-runner --access-level standard --dataset tob-wgs --description '5M merge TOB100' --output-dir 'str/5M_run_combined_vcfs/merge_str/v4' merge_str_runner.py --input-dir-1=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str_prep/v4-2 --num-shards=50 --sample-list-1=gs://
+analysis-runner --access-level full --dataset tob-wgs --description '5M-3M mergeSTR tester' --output-dir 'str/5M-3M experiment/merge_str/v1' merge_str_runner.py --input-dir-1=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4 --num-shards=27 \
+--sample-list-1=gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt --input-dir-2=gs://cpg-tob-wgs-main-analysis/str/polymorphic_run/merge_str_prep/v1 --sample-list-2=gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-3M.txt
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -28,14 +29,26 @@ TRTOOLS_IMAGE = config['images']['trtools']
 # inputs:
 
 
+# required:
 # input directory 1
 @click.option('--input-dir-1', help='gs://...')
-# input directory 2
-@click.option('--input-dir-2', help='gs://...', default=None)
 # sample list 1 (CPG sample IDs separated by \n)
 @click.option('--sample-list-1', help='gs://...')
+
+# optional:
+# input directory 2
+@click.option('--input-dir-2', help='gs://...', default=None)
 # sample list 2 (CPG sample IDs separated by \n)
 @click.option('--sample-list-2', help='gs://...', default=None)
+# input directory 3
+@click.option('--input-dir-3', help='gs://...', default=None)
+# sample list 3 (CPG sample IDs separated by \n)
+@click.option('--sample-list-3', help='gs://...', default=None)
+# input directory 4
+@click.option('--input-dir-4', help='gs://...', default=None)
+# sample list 4 (CPG sample IDs separated by \n)
+@click.option('--sample-list-4', help='gs://...', default=None)
+
 # input num shards
 @click.option(
     '--num-shards',
@@ -46,9 +59,22 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option(
     '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
 )
+@click.option('--job-memory', help='Memory of the Hail batch job', default='standard')
+@click.option('--job-cpu', help='Number of CPUs of the Hail batch job', default=8)
 @click.command()
 def main(
-    job_storage, input_dir_1, input_dir_2, sample_list_1, sample_list_2, num_shards
+    job_storage,
+    job_memory,
+    job_cpu,
+    input_dir_1,
+    input_dir_2,
+    input_dir_3,
+    input_dir_4,
+    sample_list_1,
+    sample_list_2,
+    sample_list_3,
+    sample_list_4,
+    num_shards,
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
@@ -56,7 +82,8 @@ def main(
         # Initialise TRTools job to run mergeSTR
         trtools_job = b.new_job(name=f'mergeSTR shard {shard_index}')
         trtools_job.image(TRTOOLS_IMAGE)
-        trtools_job.cpu(8)
+        trtools_job.cpu(job_cpu)
+        trtools_job.memory(job_memory)
         trtools_job.storage(job_storage)
         trtools_job.declare_resource_group(
             vcf_output={
@@ -102,6 +129,39 @@ def main(
                         )['vcf.gz']
                     )
                 num_samples = num_samples + len(ids_2)
+        # similarly, if third and fourth file directories are specified - read in input file paths:
+        if input_dir_3 is not None:
+            with to_path(sample_list_3).open() as f_3:
+                ids_3 = [line.strip() for line in f_3]
+                for id in ids_3:
+                    each_vcf = os.path.join(
+                        input_dir_3, f'{id}_eh_shard{shard_index}.reheader.vcf.gz'
+                    )
+                    batch_vcfs.append(
+                        b.read_input_group(
+                            **{
+                                'vcf.gz': each_vcf,
+                                'vcf.gz.tbi': f'{each_vcf}.tbi',
+                            }
+                        )['vcf.gz']
+                    )
+                num_samples = num_samples + len(ids_3)
+        if input_dir_4 is not None:
+            with to_path(sample_list_4).open() as f_4:
+                ids_4 = [line.strip() for line in f_4]
+                for id in ids_4:
+                    each_vcf = os.path.join(
+                        input_dir_4, f'{id}_eh_shard{shard_index}.reheader.vcf.gz'
+                    )
+                    batch_vcfs.append(
+                        b.read_input_group(
+                            **{
+                                'vcf.gz': each_vcf,
+                                'vcf.gz.tbi': f'{each_vcf}.tbi',
+                            }
+                        )['vcf.gz']
+                    )
+                num_samples = num_samples + len(ids_4)
 
         trtools_job.command(
             f"""
