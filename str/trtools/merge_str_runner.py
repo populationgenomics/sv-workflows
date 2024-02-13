@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=too-many-arguments,too-many-locals
 """
 This script merges ExpansionHunter vcf.gz files into one combined VCF.
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
@@ -34,7 +35,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--input-dir-1', help='gs://...')
 # sample list 1 (CPG sample IDs separated by \n)
 @click.option('--sample-list-1', help='gs://...')
-
 # optional:
 # input directory 2
 @click.option('--input-dir-2', help='gs://...', default=None)
@@ -48,7 +48,6 @@ TRTOOLS_IMAGE = config['images']['trtools']
 @click.option('--input-dir-4', help='gs://...', default=None)
 # sample list 4 (CPG sample IDs separated by \n)
 @click.option('--sample-list-4', help='gs://...', default=None)
-
 # input num shards
 @click.option(
     '--num-shards',
