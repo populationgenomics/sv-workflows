@@ -5,11 +5,11 @@ This script merges ExpansionHunter vcf.gz files into one combined VCF.
 Please ensure merge_prep.py has been run on the vcf files prior to running mergeSTR.py
 
 Optional ability to add in VCFs from another file directory (but must be sharded in the same way)
-Specify VCFs from each distinct file directory as a comma separated list of the input directory and the sample list file (in that order)
+Specify VCFs from each distinct file directory as a comma separated list of the input directory and the sample list file (in that order) eg: input-dir-1,sample-1 input-dir-2,sample-2
 
 For example:
 analysis-runner --access-level full --dataset tob-wgs --description '5M-3M mergeSTR tester' --output-dir 'str/5M-3M experiment/merge_str/v1' merge_str_runner.py --num-shards=27 \
-gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt,\
+gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt \
 gs://cpg-tob-wgs-main-analysis/str/polymorphic_run/merge_str_prep/v1,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-3M.txt
 
 Required packages: sample-metadata, hail, click, os
@@ -73,9 +73,8 @@ def main(
         batch_vcfs = []
         num_samples = 0
         cpg_ids = []
-        for input_dir, sample_list in zip(
-            input_file_paths[::2], input_file_paths[1::2]
-        ):
+        for pair in input_file_paths:
+            input_dir, sample_list = pair.split(',')
             with to_path(sample_list).open() as f:
                 ids = [line.strip() for line in f]
                 cpg_ids.extend(ids)
