@@ -31,7 +31,7 @@ from cpg_utils.hail_batch import output_path, init_batch
 def main(mt_path_1, mt_path_2):
     """joins two Hail matrix tables together and writes combined mt to GCS"""
 
-    init_batch()
+    init_batch(worker_memory='highmem')
     mt_1 = hl.read_matrix_table(mt_path_1)
 
     # rekey by REPID
