@@ -16,11 +16,8 @@ analysis-runner --access-level test --dataset tob-wgs --description \
 """
 import click
 
-from cpg_utils.config import get_config
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
-
-config = get_config()
 
 
 def variant_id_collector(catalog_file):
@@ -63,7 +60,6 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_order):
                 or line.startswith('##FILTER')
                 or line.startswith('##FORMAT')
             ):
-
                 info_lines.append(line)
             elif line.startswith('##ALT'):
                 # Collect ALT lines from all files into a set to remove duplicates
@@ -136,7 +132,6 @@ def main(vcf_catalog_dir, vcf_file_dir, cpg_ids: list[str]):
         )
 
         for cpg_id in cpg_ids:
-
             vcf_file_path = f'{vcf_file_dir}/{cpg_id}_eh.vcf'
             # extract shard number from the VCF file name
             chunk_number = catalog_file.split('/')[-1].split('shard')[1].split('.')[0]
