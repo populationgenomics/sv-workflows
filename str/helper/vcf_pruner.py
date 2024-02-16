@@ -69,14 +69,10 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_order):
             elif not line.startswith('#'):
                 # Collect calls after #CHROM
                 row_info = line.split('\t')[7]
-                var_id = {(row_info.split(';')[4])[6:]}
+                var_id = row_info.split(';')[4].removeprefix('VARID=')
 
-                if (
-                    var_id & variant_id_set
-                ):  # if the variant ID is in the set of target variant IDs
-                    var_id = ''.join(
-                        map(str, var_id)
-                    )  # converts var_id from set to string
+                # if the variant ID is in the set of target variant IDs
+                if var_id in variant_id_set:
                     gt_lines[var_id] = line
 
     # Sort ALT lines alphabetically and convert to a list
