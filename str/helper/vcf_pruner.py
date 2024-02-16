@@ -12,7 +12,7 @@ analysis-runner --access-level test --dataset tob-wgs --description \
     'VCF pruner' --output-dir 'str/5M_run_combined_vcfs_pruned/v2' \
     vcf_pruner.py \
     --vcf-catalog-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment/3M/CPGXXX \
-    --vcf-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment CPGXXXXX
+    --vcf-file-dir=gs://cpg-tob-wgs-test/str/5M_3M_merge_experiment CPGXX
 """
 import click
 
@@ -132,7 +132,7 @@ def main(vcf_catalog_dir, vcf_file_dir, cpg_ids: list[str]):
             # extract shard number from the VCF file name
             chunk_number = catalog_file.split('/')[-1].split('shard')[1].split('.')[0]
             vcf_pruner_job = b.new_python_job(
-                name=f'VCF Combiner job: {cpg_id} chunk {chunk_number}'
+                name=f'VCF pruner job: {cpg_id} chunk {chunk_number}'
             )
             vcf_pruner_job.memory('8G')
             vcf_pruner_job.storage('10G')
