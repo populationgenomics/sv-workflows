@@ -23,7 +23,7 @@ from cpg_utils.hail_batch import output_path, init_batch
 def main(file_path):
     """writes a BGZIP VCF as a Hail Matrix Table to a GCS bucket"""
 
-    init_batch()
+    init_batch(worker_memory='highmem')
     gcs_path = output_path('str.mt')
     hl.import_vcf(file_path, force_bgz=True).write(gcs_path, overwrite=True)
 
