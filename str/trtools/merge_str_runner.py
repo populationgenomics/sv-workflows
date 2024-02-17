@@ -8,9 +8,9 @@ Optional ability to add in VCFs from another file directory (but must be sharded
 Specify VCFs from each distinct file directory as a comma separated list of the input directory and the sample list file (in that order) eg: input-dir-1,sample-1 input-dir-2,sample-2
 
 For example:
-analysis-runner --access-level full --dataset tob-wgs --description '5M-3M mergeSTR tester' --output-dir 'str/5M-3M experiment/merge_str/v1' merge_str_runner.py --num-shards=27 \
-gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt \
-gs://cpg-tob-wgs-main-analysis/str/polymorphic_run/merge_str_prep/v1,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-3M.txt
+analysis-runner --access-level test --dataset tob-wgs --description '5M-3M mergeSTR tester' --output-dir 'str/5M-3M experiment/merge_str/v1' merge_str_runner.py --num-shards=27 \
+gs://cpg-tob-wgs-test/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt \
+gs://cpg-tob-wgs-test/str/polymorphic_run/merge_str_prep/v1,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-3M.txt
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -66,6 +66,7 @@ def main(
                 'vcf': '{root}.vcf',
                 'vcf.gz': '{root}.vcf.gz',
                 'vcf.gz.tbi': '{root}.vcf.gz.tbi',
+                'txt': '{root}.txt',
             }
         )
 
@@ -92,12 +93,15 @@ def main(
                     )
                 num_samples = num_samples + len(ids)
 
+        with open(trtools_job.vcf_output['txt'], 'w') as file:
+            file.write('\n'.join(batch_vcfs))
+
         if len(cpg_ids) != len(set(cpg_ids)):
             raise ValueError('Duplicate CPG IDs detected in sample list')
 
         trtools_job.command(
             f"""
-        mergeSTR --vcfs {",".join(batch_vcfs)} --out {trtools_job.vcf_output} --vcftype eh
+        mergeSTR --vcfs-list {trtools_job.vcf_output['txt']} --out {trtools_job.vcf_output} --vcftype eh
         bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
         tabix -f -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
         """
