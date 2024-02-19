@@ -95,9 +95,11 @@ def main(
         if len(cpg_ids) != len(set(cpg_ids)):
             raise ValueError('Duplicate CPG IDs detected in sample list')
 
+        # TODO Convert to use mergeSTR --vcfs-list when that option is available
         trtools_job.command(
             f"""
-        mergeSTR --vcfs {",".join(batch_vcfs)} --out {trtools_job.vcf_output} --vcftype eh
+        cd ${{BATCH_TMPDIR}}
+        mergeSTR --vcfs `(echo {";echo ,".join(batch_vcfs)}) | sed 's|'${{BATCH_TMPDIR}}'/*||' | tr -d '\\n'` --out {trtools_job.vcf_output} --vcftype eh
         bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
         tabix -f -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
         """
