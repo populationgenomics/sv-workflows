@@ -83,8 +83,8 @@ def main():
     mt = mt.drop("sum_allele_2_is_not_mode")
     mt = mt.annotate_rows(prop_alleles_is_not_mode = mt.sum_alleles_is_not_mode/hl.sum(mt.aggregated_info.allele_array_counts.values()))
 
-    #write out mt
-    mt.write('gs://cpg-bioheart-test/str/polymorphic_run/mt_joiner/n_2045_annotated.mt')
+    #checkpoint
+    mt.checkpoint('gs://cpg-bioheart-test/str/polymorphic_run/mt_joiner/checkpoint/n_2045_annotated.mt')
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
