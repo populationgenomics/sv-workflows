@@ -3,7 +3,7 @@
 """
 This script makes QC plots
 
-analysis-runner access-level "test" dataset "bioheart" description "QC plotter" output-dir "str/polymorphic_run/QC_plots" qc_plotter.py
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run/QC_plots" qc_plotter.py
 
 """
 import hail as hl
@@ -29,9 +29,20 @@ def main():
 
     output_file('local_plot.html')
     save(p)
-    gcs_path = output_path('allele_size_range.html', 'analysis')
+    gcs_path = output_path('allele_size_range/allele_size_range_50_to_100.html', 'analysis')
     hl.hadoop_copy('local_plot.html', gcs_path)
 
+    q = hl.plot.histogram(non_mode_alleles_mt.alleles_minus_mode,legend= "Allele sizes minus mode")
+    output_file('local_plot_1.html')
+    save(q)
+    gcs_path_1 = output_path('allele_size_range/allele_size_range.html', 'analysis')
+    hl.hadoop_copy('local_plot_1.html', gcs_path_1)
+
+    r = hl.plot.histogram(non_mode_alleles_mt.alleles_minus_mode,legend= "Allele sizes minus mode", range=(-20, 20))
+    output_file('local_plot_2.html')
+    save(r)
+    gcs_path_2 = output_path('allele_size_range/allele_size_range_20_20.html', 'analysis')
+    hl.hadoop_copy('local_plot_2.html', gcs_path_2)
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
