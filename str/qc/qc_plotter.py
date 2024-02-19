@@ -47,7 +47,6 @@ def main():
     mt = mt.annotate_entries(allele_2_rep_length = hl.if_else(hl.len(mt.REPCN.split("/")) ==2, hl.int(mt.REPCN.split("/")[1]), hl.missing('int32')))
     mt = mt.annotate_entries(allele_1_bp_length= mt.allele_1_rep_length*mt.motif_length)
     mt = mt.annotate_entries(allele_2_bp_length= mt.allele_2_rep_length*mt.motif_length)
-    mt = mt.annotate_rows(REPID = mt.info.REPID)
 
     #annotate rows with counts of alleles that appear in each VARID
     ht = mt.select_rows(
