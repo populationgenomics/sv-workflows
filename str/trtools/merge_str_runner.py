@@ -95,7 +95,7 @@ def main(
         if len(cpg_ids) != len(set(cpg_ids)):
             raise ValueError('Duplicate CPG IDs detected in sample list')
 
-        #make batch_vcfs relative to BATCH_TMP/inputs
+        # make batch_vcfs relative to BATCH_TMP/inputs
         batch_vcfs = [vcf.split('inputs/')[1] for vcf in batch_vcfs]
 
         trtools_job.command(
