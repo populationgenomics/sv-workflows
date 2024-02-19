@@ -1,7 +1,20 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script generates plots from the Hail Matrix Table
+This script annotates the MT with the following annotations:
+- rep_length_alleles: repeat length of each allele
+- motif_length: length of the motif
+- bp_length_alleles: bp length of each allele
+- allele_1_rep_length: repeat length of allele 1
+- allele_2_rep_length: repeat length of allele 2
+- allele_1_bp_length: bp length of allele 1
+- allele_2_bp_length: bp length of allele 2
+- aggregated_info.mode_allele:mode allele at each locus
+- num_alleles: number of alleles at each locus
+- allele_1_minus_mode: difference between allele 1 and mode allele
+- allele_2_minus_mode: difference between allele 2 and mode allele
+- sum_alleles_is_not_mode: count of non-mode alleles at each locus
+- prop_alleles_is_not_mode: proportion of alleles that are not the mode allele per locus
 
 """
 
@@ -83,8 +96,8 @@ def main():
     mt = mt.drop("sum_allele_2_is_not_mode")
     mt = mt.annotate_rows(prop_alleles_is_not_mode = mt.sum_alleles_is_not_mode/hl.sum(mt.aggregated_info.allele_array_counts.values()))
 
-    #checkpoint
-    mt.checkpoint('gs://cpg-bioheart-test/str/polymorphic_run/mt_joiner/checkpoint/n_2045_annotated.mt')
+    #write out mt
+    mt.write('gs://cpg-bioheart-test/str/polymorphic_run/mt_joiner/n_2045_annotated.mt')
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
