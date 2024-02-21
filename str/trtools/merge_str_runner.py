@@ -21,7 +21,7 @@ import click
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import command, get_batch, output_path
 
 
 config = get_config()
@@ -95,15 +95,20 @@ def main(
         if len(cpg_ids) != len(set(cpg_ids)):
             raise ValueError('Duplicate CPG IDs detected in sample list')
 
-        # TODO Convert to use mergeSTR --vcfs-list when that option is available
-        trtools_job.command(
+        batch_vcfs_list = '${BATCH_TMPDIR}/batch_vcfs.list'
+
+        newline = '\n'
+        trtools_job.command(command(
             f"""
-        cd ${{BATCH_TMPDIR}}/inputs
-        mergeSTR --vcfs `(echo {";echo ,".join(batch_vcfs)}) | sed 's|'${{BATCH_TMPDIR}}'/inputs/*||' | tr -d '\\n'` --out {trtools_job.vcf_output} --vcftype eh
+        cat <<EOF >{batch_vcfs_list}
+        {newline.join(batch_vcfs)}
+        EOF
+
+        mergeSTR --vcfs-list {batch_vcfs_list} --out {trtools_job.vcf_output} --vcftype eh
         bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
         tabix -f -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
         """
-        )
+        ))
 
         output_path_name = output_path(
             f'mergeSTR_{num_samples}_samples_eh_shard{shard_index}', 'analysis'
