@@ -12,4 +12,3 @@ Runner scripts support HipSTR, GangSTR, and ExpansionHunter; however, downstream
 - Final output is one VCF containing genotypes for all samples at all loci specified in the catalog, ready for import into Hail query:
   - BGZIP the VCF using `helper/bgzip.py`
   - Create a matrix table using `helper/mt_extractor.py`.
-
