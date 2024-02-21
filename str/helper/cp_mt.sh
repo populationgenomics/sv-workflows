@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Moves Hail Matrix Table containing STR genotypes into test bucket
+# Copies Hail Matrix Table containing STR genotypes into test bucket
 
 set -ex
 
