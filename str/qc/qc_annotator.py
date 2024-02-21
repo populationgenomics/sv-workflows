@@ -33,8 +33,8 @@ from cpg_utils.hail_batch import init_batch,output_path
 config = get_config()
 
 @click.option('--mt-path', help='GCS Path to the input MT')
-
-def main(mt_path: str):
+@click.command()
+def main(mt_path):
 
     init_batch(worker_memory='highmem')
     mt = hl.read_matrix_table(mt_path)
