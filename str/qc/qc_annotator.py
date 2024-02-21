@@ -40,13 +40,13 @@ def main(mt_path):
     mt = hl.read_matrix_table(mt_path)
     print(f'MT dimensions: {mt.count()}')
 
-    # change key (as two variants can have the same locus, but different REPID)
-    mt = mt.annotate_rows(REPID=mt.info.REPID)
-    mt = mt.key_rows_by('REPID')
-
     # sample_qc and variant_qc function
     mt = hl.sample_qc(mt)
     mt = hl.variant_qc(mt)
+
+    # change key (as two variants can have the same locus, but different REPID)
+    mt = mt.annotate_rows(REPID=mt.info.REPID)
+    mt = mt.key_rows_by('REPID')
 
     # clean up repeat length representation - remove 'STR'
     mt = mt.annotate_rows(
