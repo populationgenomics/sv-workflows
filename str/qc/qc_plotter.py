@@ -24,7 +24,7 @@ def main(mt_path):
 
     mt = hl.read_matrix_table(mt_path)
     #print(f'MT dimensions: {mt.count()}')
-    print(f'MT rows example: mt.rows().show(5)')
+    print(f'MT rows example: {mt.rows().show(5)}')
 
     # Filter out monomorphic loci
     mt = mt.filter_rows(mt.num_alleles>1)
