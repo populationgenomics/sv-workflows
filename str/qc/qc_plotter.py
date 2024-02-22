@@ -7,6 +7,7 @@ analysis-runner --access-level "test" --dataset "bioheart" --description "QC plo
 
 """
 import hail as hl
+import click
 
 from cpg_utils.config import get_config
 
@@ -15,10 +16,21 @@ from bokeh.plotting import output_file, save
 
 config = get_config()
 
-def main():
-    init_batch(worker_memory='highmem')
-    mt = hl.read_matrix_table('gs://cpg-bioheart-test/str/polymorphic_run/mt_joiner/n_2045_annotated.mt')
+@click.option('--mt-path', help='GCS Path to the input MT')
+@click.command()
+def main(mt_path):
+    init_batch()
+
+    mt = hl.read_matrix_table(mt_path)
     print(f'MT dimensions: {mt.count()}')
+
+    # Filter out monomorphic loci
+    mt = mt.filter_rows(mt.num_alleles>1)
+    print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
+
+
+
+
     """
     non_mode_alleles_mt = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
@@ -43,14 +55,15 @@ def main():
     save(r)
     gcs_path_2 = output_path('allele_size_range/allele_size_range_20_20.html', 'analysis')
     hl.hadoop_copy('local_plot_2.html', gcs_path_2)
-    """
+
+
     #MT dimensions
     print(f'Original MT dimensions: {mt.count()}')
     mt = mt.filter_entries(mt.num_alleles > 1)
     print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
     mt = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     print(f'MT dimensions after subsetting to [-20,20] alleles rel. to mode: {mt.count()}')
-
+    """
 
 
 
