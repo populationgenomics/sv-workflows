@@ -3,7 +3,7 @@
 """
 This script makes QC plots
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
+analysis-runner --access-level "test" --dataset "bioheart"  --cpu 16 --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
 --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v1/str_annotated.mt
 
 """
@@ -30,7 +30,7 @@ def main(mt_path):
     mt = mt.filter_rows(mt.num_alleles>1)
     #print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
 
-
+    """
     # Alleles minus mode histogram
     alleles_minus_mode_ht = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
@@ -55,6 +55,7 @@ def main(mt_path):
     save(r)
     gcs_path_2 = output_path('alleles_minus_mode/allele_size_range_20_20.html', 'analysis')
     hl.hadoop_copy('local_plot_2.html', gcs_path_2)
+    """
 
     # Alleles histogram (num. repeats)
     alleles_ht = mt.select_rows(
@@ -62,18 +63,20 @@ def main(mt_path):
         .extend(hl.agg.collect(mt.allele_2_rep_length))
     ).rows()
     alleles_ht = alleles_ht.explode('alleles', name='alleles')
+    """
     s = hl.plot.histogram(alleles_ht.alleles,legend= "Allele sizes (num. repeats)")
     output_file('local_plot_3.html')
     save(s)
     gcs_path_3 = output_path('alleles_num_repeats/alleles_num_repeats.html', 'analysis')
     hl.hadoop_copy('local_plot_3.html', gcs_path_3)
+    """
 
-    t = hl.plot.histogram(alleles_ht.alleles,legend= "Allele sizes (num. repeats)", range=(0, 50))
+    t = hl.plot.histogram(alleles_ht.alleles,legend= "Allele sizes (num. repeats)", range=(0, 100))
     output_file('local_plot_4.html')
     save(t)
-    gcs_path_4 = output_path('alleles_num_repeats/alleles_num_repeats_0_50.html', 'analysis')
+    gcs_path_4 = output_path('alleles_num_repeats/alleles_num_repeats_0_100.html', 'analysis')
     hl.hadoop_copy('local_plot_4.html', gcs_path_4)
-
+    """
     # Alleles histogram (bp length)
     alleles_bp_ht = mt.select_rows(
     alleles_bp = hl.agg.collect(mt.allele_1_bp_length)
@@ -92,7 +95,7 @@ def main(mt_path):
     save(v)
     gcs_path_6 = output_path('alleles_bp_length/alleles_bp_length_0_500.html', 'analysis')
     hl.hadoop_copy('local_plot_6.html', gcs_path_6)
-
+    """
 
 
 
