@@ -3,7 +3,8 @@
 """
 This script makes QC plots
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run/QC_plots" qc_plotter.py
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v1/str_annotated.mt
 
 """
 import hail as hl
@@ -27,6 +28,13 @@ def main(mt_path):
     # Filter out monomorphic loci
     mt = mt.filter_rows(mt.num_alleles>1)
     print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
+
+    # Locus level call rate
+    locus_call_rate = hl.plot.histogram(mt.variant_qc.call_rate,legend= "Locus level call rate")
+    output_file('locus_call_rate.html')
+    save(locus_call_rate)
+    gcs_path = output_path('locus_call_rate/locus_call_rate.html', 'analysis')
+    hl.hadoop_copy('locus_call_rate.html', gcs_path)
 
 
 
