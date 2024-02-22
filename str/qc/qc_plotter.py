@@ -23,17 +23,28 @@ def main(mt_path):
     init_batch()
 
     mt = hl.read_matrix_table(mt_path)
-    print(f'MT dimensions: {mt.count()}')
+    #print(f'MT dimensions: {mt.count()}')
+    print(f'MT rows example: mt.rows().show(5)')
 
     # Filter out monomorphic loci
     mt = mt.filter_rows(mt.num_alleles>1)
-    print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
+    #print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
+
 
     # Locus level call rate
+    """
     locus_call_rate = hl.plot.histogram(mt.variant_qc.call_rate,legend= "Locus level call rate")
     output_file('locus_call_rate.html')
     save(locus_call_rate)
     gcs_path = output_path('locus_call_rate/locus_call_rate.html', 'analysis')
+    hl.hadoop_copy('locus_call_rate.html', gcs_path)
+    """
+
+
+    locus_call_rate = hl.plot.histogram(mt.filter_rows(mt.variant_qc.call_rate<1).variant_qc.call_rate,legend= "Locus level call rate<1")
+    output_file('locus_call_rate.html')
+    save(locus_call_rate)
+    gcs_path = output_path('locus_call_rate/locus_call_rate_lt_1.html', 'analysis')
     hl.hadoop_copy('locus_call_rate.html', gcs_path)
 
 
