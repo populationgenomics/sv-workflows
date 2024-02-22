@@ -32,17 +32,17 @@ def main(mt_path):
 
 
     # Alleles minus mode histogram
-    mt = mt.filter_rows(mt.locus == hl.locus('chr1', 100046212))
+    mt = mt.filter_rows(mt.locus == hl.locus('chr1', 100227834))
     alleles_minus_mode_ht = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
     ).rows()
     alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
 
-    pq = hl.plot.histogram(alleles_minus_mode_ht.allele_minus_mode,legend= "Allele sizes minus mode, chr1:100046212")
+    pq = hl.plot.histogram(alleles_minus_mode_ht.allele_minus_mode,legend= "Allele sizes minus mode, chr1:100227834")
     output_file('local_plot_pq.html')
     save(pq)
-    gcs_path_pq = output_path('alleles_minus_mode/allele_size_chr1_100046212.html', 'analysis')
+    gcs_path_pq = output_path('alleles_minus_mode/allele_size_chr1_100227834.html', 'analysis')
     hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
     """
