@@ -4,7 +4,7 @@
 This script makes QC plots
 
 analysis-runner --access-level "test" --dataset "bioheart"  --cpu 16 --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v1/str_annotated.mt
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
 import hail as hl
@@ -56,27 +56,26 @@ def main(mt_path):
     gcs_path_2 = output_path('alleles_minus_mode/allele_size_range_20_20.html', 'analysis')
     hl.hadoop_copy('local_plot_2.html', gcs_path_2)
     """
-
+    """
     # Alleles histogram (num. repeats)
     alleles_ht = mt.select_rows(
     alleles = hl.agg.collect(mt.allele_1_rep_length)
         .extend(hl.agg.collect(mt.allele_2_rep_length))
     ).rows()
     alleles_ht = alleles_ht.explode('alleles', name='alleles')
-    """
+
     s = hl.plot.histogram(alleles_ht.alleles,legend= "Allele sizes (num. repeats)")
     output_file('local_plot_3.html')
     save(s)
     gcs_path_3 = output_path('alleles_num_repeats/alleles_num_repeats.html', 'analysis')
     hl.hadoop_copy('local_plot_3.html', gcs_path_3)
-    """
 
     t = hl.plot.histogram(alleles_ht.alleles,legend= "Allele sizes (num. repeats)", range=(0, 100))
     output_file('local_plot_4.html')
     save(t)
     gcs_path_4 = output_path('alleles_num_repeats/alleles_num_repeats_0_100.html', 'analysis')
     hl.hadoop_copy('local_plot_4.html', gcs_path_4)
-    """
+
     # Alleles histogram (bp length)
     alleles_bp_ht = mt.select_rows(
     alleles_bp = hl.agg.collect(mt.allele_1_bp_length)
@@ -96,8 +95,37 @@ def main(mt_path):
     gcs_path_6 = output_path('alleles_bp_length/alleles_bp_length_0_500.html', 'analysis')
     hl.hadoop_copy('local_plot_6.html', gcs_path_6)
     """
+    ## CI over CN plots
 
+    CI_over_CN_ht = mt.select_rows(
+    CI_over_CN = hl.agg.collect(mt.allele_1_REPCI_over_CN)
+        .extend(hl.agg.collect(mt.allele_2_REPCI_over_CN)
+    )
+    ).rows()
+    CI_over_CN_ht = CI_over_CN_ht.explode('CI_over_CN', name='CI_over_CN')
+    w = hl.plot.histogram(CI_over_CN_ht.CI_over_CN,legend= "CI/CN of all alleles")
+    output_file('local_plot_7.html')
+    save(w)
+    gcs_path_7 = output_path('CI_over_CN/CI_over_CN.html', 'analysis')
+    hl.hadoop_copy('local_plot_7.html', gcs_path_7)
 
+    x = hl.plot.histogram(CI_over_CN_ht.CI_over_CN,legend= "CI/CN of all alleles", range=(0, 5))
+    output_file('local_plot_8.html')
+    save(x)
+    gcs_path_8 = output_path('CI_over_CN/CI_over_CN_0_5.html', 'analysis')
+    hl.hadoop_copy('local_plot_8.html', gcs_path_8)
+
+    y = hl.plot.histogram(CI_over_CN_ht.CI_over_CN,legend= "CI/CN of all alleles", range=(0, 2))
+    output_file('local_plot_9.html')
+    save(y)
+    gcs_path_9 = output_path('CI_over_CN/CI_over_CN_0_2.html', 'analysis')
+    hl.hadoop_copy('local_plot_9.html', gcs_path_9)
+
+    z = hl.plot.histogram(CI_over_CN_ht.CI_over_CN,legend= "CI/CN of all alleles", range=(0, 1))
+    output_file('local_plot_10.html')
+    save(z)
+    gcs_path_10 = output_path('CI_over_CN/CI_over_CN_0_1.html', 'analysis')
+    hl.hadoop_copy('local_plot_10.html', gcs_path_10)
 
     """
     #MT dimensions
