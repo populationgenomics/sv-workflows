@@ -18,7 +18,7 @@ This script annotates the MT with the following annotations:
 - binom_hwep: binomial Hardy-Weinberg equilibrium p-value
 - obs_het: proportion of observed heterozygous calls per locus
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run_n2045/annotated_mt/v1" qc_annotator.py \
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run_n2045/annotated_mt/v2" qc_annotator.py \
 --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/mt/v1/str.mt
 
 """
@@ -107,8 +107,7 @@ def main(mt_path):
     mt = mt.annotate_rows(sum_allele_1_is_not_mode=hl.agg.sum(hl.cond(mt.allele_1_is_non_mode, 1, 0)),
                          sum_allele_2_is_not_mode=hl.agg.sum(hl.cond(mt.allele_2_is_non_mode, 1, 0)))
     mt = mt.annotate_rows(sum_alleles_is_not_mode = mt.sum_allele_1_is_not_mode + mt.sum_allele_2_is_not_mode)
-    mt = mt.drop('sum_allele_1_is_not_mode')
-    mt = mt.drop('sum_allele_2_is_not_mode')
+    mt = mt.drop('sum_allele_1_is_not_mode', 'sum_allele_2_is_not_mode')
 
     # proportion of alleles that are not the mode allele
     mt = mt.annotate_rows(prop_alleles_is_not_mode = mt.sum_alleles_is_not_mode/hl.sum(mt.aggregated_info.allele_array_counts.values()))
@@ -120,12 +119,26 @@ def main(mt_path):
     mt = mt.annotate_rows(n_hom = hl.int32(mt.n_hom))
     mt = mt.annotate_rows(n_called = hl.int32(mt.variant_qc.n_called))
     mt = mt.annotate_rows(binom_hwep = hl.binom_test(mt.n_hom, mt.n_called, mt.exp_hom_frac, 'two-sided'))
-    mt = mt.drop('n_hom')
-    mt = mt.drop('n_called')
-    mt = mt.drop('exp_hom_frac')
+    mt = mt.drop('n_hom', 'n_called', 'exp_hom_frac')
 
     # proportion of observed heterozygous calls per locus
     mt = mt.annotate_rows(obs_het = mt.variant_qc.n_het/mt.variant_qc.n_called)
+
+    #average 'locus coverage' per locus
+    mt = mt.annotate_rows(variant_lc = hl.agg.sum(mt.LC)/mt.variant_qc.n_called)
+
+    #confidence interval (CI) annotations
+    mt = mt.annotate_entries(allele_1_REPCI=hl.str(mt.REPCI.split("/")[0]),
+                            allele_2_REPCI=hl.if_else(hl.len(mt.REPCN.split("/")) ==2, hl.str(mt.REPCI.split("/")[1]), hl.missing('str')))
+    mt = mt.annotate_entries(allele_1_REPCI_1=hl.int32(mt.allele_1_REPCI.split("-")[0]),
+                            allele_1_REPCI_2=hl.int32(mt.allele_1_REPCI.split("-")[1]))
+    mt = mt.annotate_entries(allele_2_REPCI_1 = hl.if_else(hl.len(mt.allele_2_REPCI.split("-")) ==2, hl.int(mt.allele_2_REPCI.split("-")[0]), hl.missing('int32')))
+    mt = mt.annotate_entries(allele_2_REPCI_2 = hl.if_else(hl.len(mt.allele_2_REPCI.split("-")) ==2, hl.int(mt.allele_2_REPCI.split("-")[1]), hl.missing('int32')))
+    mt = mt.annotate_entries(allele_1_REPCI_size=hl.int32(mt.allele_1_REPCI_2 - mt.allele_1_REPCI_1),
+                            allele_2_REPCI_size=hl.int32(mt.allele_2_REPCI_2 - mt.allele_2_REPCI_1))
+    mt = mt.annotate_entries(allele_1_REPCI_over_CN=hl.float64(mt.allele_1_REPCI_size/mt.allele_1_rep_length),
+                            allele_2_REPCI_over_CN=hl.float64(mt.allele_2_REPCI_size/mt.allele_2_rep_length))
+    mt = mt.drop('allele_1_REPCI_1', 'allele_1_REPCI_2', 'allele_2_REPCI_1', 'allele_2_REPCI_2','allele_1_REPCI', 'allele_2_REPCI')
 
     # write out mt to GCS path
     mt.write(output_path('str_annotated.mt'))
