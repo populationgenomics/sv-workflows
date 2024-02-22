@@ -3,7 +3,7 @@
 """
 This script makes QC plots
 
-analysis-runner --access-level "test" --dataset "bioheart"  --cpu 16 --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
 --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
@@ -26,17 +26,26 @@ def main(mt_path):
     #print(f'MT dimensions: {mt.count()}')
 
 
-    # Filter out monomorphic loci
-    mt = mt.filter_rows(mt.num_alleles>1)
+    # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.095
+    mt = mt.filter_rows((mt.num_alleles>1) & (mt.variant_qc.call_rate>=0.9) & (mt.obs_het>=0.095) )
     #print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
 
-    """
+
     # Alleles minus mode histogram
+    mt = mt.filter_rows(mt.locus == hl.locus('chr1', 100046212))
     alleles_minus_mode_ht = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
     ).rows()
     alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
+
+    pq = hl.plot.histogram(alleles_minus_mode_ht.allele_minus_mode,legend= "Allele sizes minus mode, chr1:100046212")
+    output_file('local_plot_pq.html')
+    save(pq)
+    gcs_path_pq = output_path('alleles_minus_mode/allele_size_chr1_100046212.html', 'analysis')
+    hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
+
+    """
     p = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele sizes minus mode", range=(-50, 100))
 
     output_file('local_plot.html')
@@ -94,7 +103,6 @@ def main(mt_path):
     save(v)
     gcs_path_6 = output_path('alleles_bp_length/alleles_bp_length_0_500.html', 'analysis')
     hl.hadoop_copy('local_plot_6.html', gcs_path_6)
-    """
     ## CI over CN plots
 
     CI_over_CN_ht = mt.select_rows(
@@ -127,7 +135,7 @@ def main(mt_path):
     gcs_path_10 = output_path('CI_over_CN/CI_over_CN_0_1.html', 'analysis')
     hl.hadoop_copy('local_plot_10.html', gcs_path_10)
 
-    """
+
     #MT dimensions
     print(f'Original MT dimensions: {mt.count()}')
     mt = mt.filter_entries(mt.num_alleles > 1)
