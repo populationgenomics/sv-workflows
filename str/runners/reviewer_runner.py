@@ -41,7 +41,9 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
         bam_input = b.read_input(
-            os.path.join(input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam')
+            os.path.join(
+                input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam'
+            )
         )
 
         # read in VCF from EH output
@@ -54,7 +56,9 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
         samtools_job.image(SAMTOOLS_IMAGE)
         file_size_bytes = (
             AnyPath(
-                os.path.join(input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam')
+                os.path.join(
+                    input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam'
+                )
             )
             .stat()
             .st_size
