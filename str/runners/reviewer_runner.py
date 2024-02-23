@@ -26,7 +26,7 @@ REVIEWER_IMAGE = config['images']['reviewer']
 @click.option('--locus', help='Locus identifier as per catalog')
 @click.option('--catalog', help='GCP path to catalog')
 @click.option('--input-dir', help='GCP path to input-dir, includes gs://')
-@click.option('--shard-vcf', help='shard number of the VCF')
+@click.option('--shard-vcf', help='shard number of the VCF/BAM')
 @click.argument('cpg-sample-ids', nargs=-1)
 @click.command()
 def main(locus, catalog, input_dir, shard_vcf,cpg_sample_ids: list[str]):
