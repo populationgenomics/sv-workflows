@@ -26,9 +26,10 @@ REVIEWER_IMAGE = config['images']['reviewer']
 @click.option('--locus', help='Locus identifier as per catalog')
 @click.option('--catalog', help='GCP path to catalog')
 @click.option('--input-dir', help='GCP path to input-dir, includes gs://')
+@click.option('--shard-vcf', help='shard number of the VCF')
 @click.argument('cpg-sample-ids', nargs=-1)
 @click.command()
-def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
+def main(locus, catalog, input_dir, shard_vcf,cpg_sample_ids: list[str]):
     # Initializing Batch
     b = get_batch()
     ref = b.read_input_group(
@@ -40,16 +41,16 @@ def main(locus, catalog, input_dir, cpg_sample_ids: list[str]):
     )
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
-        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
+        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh_shard{shard_vcf}.realigned.bam'))
 
         # read in VCF from EH output
-        vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh.vcf'))
+        vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}_eh_shard{shard_vcf}.vcf'))
 
         # BAM file must be sorted and indexed prior to inputting into REViewer
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
         file_size_bytes = (
-            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh.realigned.bam'))
+            AnyPath(os.path.join(input_dir, f'{cpg_id}_eh_shard{shard_vcf}.realigned.bam'))
             .stat()
             .st_size
         )
