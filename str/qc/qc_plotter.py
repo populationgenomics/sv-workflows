@@ -29,15 +29,26 @@ def main(mt_path):
     # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.00995
     mt = mt.filter_rows((mt.num_alleles>1) & (mt.variant_qc.call_rate>=0.9) & (mt.obs_het>=0.00995) )
     #print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
-
-    potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
-    print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
+    #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
+    #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
 
     mt = mt.annotate_entries(allele_1_minus_ref = mt.allele_1_rep_length- mt.info.REF)
     mt = mt.annotate_entries(allele_2_minus_ref = mt.allele_2_rep_length-mt.info.REF)
 
-    dotato = mt.filter_entries((mt.allele_1_minus_ref> -21) & (mt.allele_1_minus_ref<21) & (mt.allele_2_minus_ref>-21) & (mt.allele_2_minus_ref<21))
-    print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
+    #dotato = mt.filter_entries((mt.allele_1_minus_ref> -21) & (mt.allele_1_minus_ref<21) & (mt.allele_2_minus_ref>-21) & (mt.allele_2_minus_ref<21))
+    #print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
+
+    # Alleles minus ref histogram
+    alleles_minus_ref_ht = mt.select_rows(
+    allele_minus_ref = hl.agg.collect(mt.allele_1_minus_ref)
+        .extend(hl.agg.collect(mt.allele_2_minus_ref))
+    ).rows()
+    alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
+    p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus ref", range=(-31, 31))
+    output_file('local_plot_1.html')
+    save(p)
+    gcs_path_1 = output_path('alleles_minus_ref/allele_size_range_31_to_31.html', 'analysis')
+    hl.hadoop_copy('local_plot_1.html', gcs_path_1)
 
     """
     # Alleles minus mode histogram
