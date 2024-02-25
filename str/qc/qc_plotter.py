@@ -26,11 +26,20 @@ def main(mt_path):
     #print(f'MT dimensions: {mt.count()}')
 
 
-    # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.095
-    mt = mt.filter_rows((mt.num_alleles>1) & (mt.variant_qc.call_rate>=0.9) & (mt.obs_het>=0.095) )
+    # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.00995
+    mt = mt.filter_rows((mt.num_alleles>1) & (mt.variant_qc.call_rate>=0.9) & (mt.obs_het>=0.00995) )
     #print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
 
+    potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
+    print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
 
+    mt = mt.annotate_entries(allele_1_minus_ref = mt.allele_1_rep_length- mt.info.REF)
+    mt = mt.annotate_entries(allele_2_minus_ref = mt.allele_2_rep_length-mt.info.REF)
+
+    dotato = mt.filter_entries((mt.allele_1_minus_ref> -21) & (mt.allele_1_minus_ref<21) & (mt.allele_2_minus_ref>-21) & (mt.allele_2_minus_ref<21))
+    print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
+
+    """
     # Alleles minus mode histogram
     mt = mt.filter_rows(mt.locus == hl.locus('chr1', 105963350))
     alleles_minus_mode_ht = mt.select_rows(
@@ -45,7 +54,7 @@ def main(mt_path):
     gcs_path_pq = output_path('alleles_minus_mode/allele_size_chr1_105963350.html', 'analysis')
     hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
-    """
+
     p = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele sizes minus mode", range=(-50, 100))
 
     output_file('local_plot.html')
