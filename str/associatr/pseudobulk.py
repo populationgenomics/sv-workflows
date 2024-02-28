@@ -26,7 +26,6 @@ from cpg_utils import to_path
 @click.option('--input-file', help='GCS Path to the input AnnData object')
 @click.command()
 def main(input_file):
-
     expression_h5ad_path = to_path(input_file).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
