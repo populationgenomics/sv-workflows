@@ -10,6 +10,8 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type. Each row is a sample and each column is a gene.
 
+analysis-runner --access-level test --dataset bioheart --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py --input-file=gs://cpg-bioheart-test/str/anndata/224_libraries_concatenated_gene_info_donor_info.h5ad
+
 """
 import click
 import numpy as np
@@ -19,6 +21,7 @@ import scanpy as sc
 from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
 
+
 # inputs:
 @click.option('--input-file', help='GCS Path to the input AnnData object')
 @click.command()
@@ -27,39 +30,44 @@ def main(input_file):
     expression_h5ad_path = to_path(input_file).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
-    #remove cells with no counts
+    # remove cells with no counts
     sc.pp.filter_cells(adata, min_counts=1)
 
-    #normalisation
+    # normalisation
     sc.pp.normalize_total(adata, target_sum=1e4)
-    #log transformation
+    # log transformation
     sc.pp.log1p(adata)
     adata.raw = adata
 
-    #batch correction
-    sc.pp.combat(adata, key = 'sequencing_library')
+    # batch correction
+    sc.pp.combat(adata, key='sequencing_library')
 
     for cell_type in adata.obs.wg2_scpred_prediction.unique():
         cell_type_adata = adata[adata.obs['wg2_scpred_prediction'] == cell_type]
-        #each cell type will have its own pseudobulk object
+        # each cell type will have its own pseudobulk object
         pbs = []
         for chr in cell_type_adata.var.chr.unique():
-            chr_adata = cell_type_adata[:,cell_type_adata.var['chr'] == chr]
+            chr_adata = cell_type_adata[:, cell_type_adata.var['chr'] == chr]
             for sample in chr_adata.obs.individual.unique():
                 samp_cell_subset = adata[adata.obs['individual'] == sample]
-                #pseudobulk mean aggregation
-                rep_adata = sc.AnnData(X = np.matrix(samp_cell_subset.X.mean(axis=0)), var = samp_cell_subset.var[[]])
-                rep_adata.obs_names=[sample]
+                # pseudobulk mean aggregation
+                rep_adata = sc.AnnData(
+                    X=np.matrix(samp_cell_subset.X.mean(axis=0)),
+                    var=samp_cell_subset.var[[]],
+                )
+                rep_adata.obs_names = [sample]
                 pbs.append(rep_adata)
-        #concatenate individual-specific pseudobulk objects
+        # concatenate individual-specific pseudobulk objects
         pb = sc.concat(pbs)
 
-        #convert pb into dataframe
+        # convert pb into dataframe
         data_df = pd.DataFrame(pb.X, index=pb.obs.index, columns=pb.var.index)
-        data_df = data_df.rename_axis("individual").reset_index()
-        cell_type_name = cell_type.replace(" ","_")
-        data_df.to_csv(output_path(f'pseudobulk/{cell_type_name}_pseudobulk.csv'), index=False)
+        data_df = data_df.rename_axis('individual').reset_index()
+        cell_type_name = cell_type.replace(' ', '_')
+        data_df.to_csv(
+            output_path(f'pseudobulk/{cell_type_name}_pseudobulk.csv'), index=False
+        )
+
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter,missing-function-docstring
-
