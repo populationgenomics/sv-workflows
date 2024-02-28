@@ -10,7 +10,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py --input-file=gs://cpg-bioheart-test/str/anndata/224_libraries_concatenated_gene_info_donor_info.h5ad
+analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --storage=300G --cpu=16 --memory=highmem --output-dir "str/associatr/input_files" pseudobulk.py --input-file=gs://cpg-bioheart-test/str/anndata/test.h5ad
 
 """
 import click
@@ -34,7 +34,7 @@ def main(input_file):
     sc.pp.filter_cells(adata, min_counts=1)
 
     # normalisation
-    sc.pp.normalize_total(adata, target_sum=1e4)
+    sc.pp.normalize_total(adata, target_sum=1e6)
     # log transformation
     sc.pp.log1p(adata)
     adata.raw = adata
