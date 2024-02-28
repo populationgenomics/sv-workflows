@@ -2,7 +2,6 @@
 """
 This script performs pseudobulk (mean aggregation) of an input AnnData object
 Prior to pseudobulking, the following steps are performed:
-- Remove cells with no counts
 - Normalisation
 - Log transformation (ln(1+x))
 - Batch correction using ComBat
@@ -29,9 +28,6 @@ def pseudobulk(input_file_path, target_sum):
     """
     expression_h5ad_path = to_path(input_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
-
-    # remove cells with no counts
-    sc.pp.filter_cells(adata, min_counts=1)
 
     # normalisation
     # we can't use pp.normalize_total because the expected input is a chr-specific anndata file, while
