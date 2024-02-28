@@ -4,7 +4,7 @@ This script calculates cell-type specific PCs from the pseudobulk RNA data (geno
 merges them with other pre-calculated covariates, and writes the file to GCP.
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --output-dir "str/associatr/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/pseudobulk \
+--description "Get covariates" --output-dir "str/associatr/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk \
 --cell-types=B_naive --chromosomes=10,22 --covariate-file-path=gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv
 
 """
