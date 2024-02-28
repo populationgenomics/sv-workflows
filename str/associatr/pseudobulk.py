@@ -109,7 +109,7 @@ def main(
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
             input_file = f'{input_dir}/{cell_type}_chr{chromosome}.h5ad'
-            j = b.new_python_job(name=f'Pseudobulk for cell_type')
+            j = b.new_python_job(name=f'Pseudobulk for {cell_type}: chr{chromosome}')
             j.image(
                 'australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'
             )
