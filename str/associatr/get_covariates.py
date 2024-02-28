@@ -63,7 +63,9 @@ def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
     # write to GCP
-    merged_df.to_csv(output_path(f'covariates/{cell_type}_covariates.csv', 'analysis'), index=False)
+    merged_df.to_csv(
+        output_path(f'covariates/{cell_type}_covariates.csv', 'analysis'), index=False
+    )
 
 
 # inputs:
