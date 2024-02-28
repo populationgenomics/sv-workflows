@@ -9,20 +9,21 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --storage=200G --cpu=16 --memory=highmem --output-dir "str/associatr/input_files" pseudobulk.py --input-file=gs://cpg-bioheart-test/str/anndata/test.h5ad
+analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
+--input-dir=gs://cpg-bioheart-test/str/anndata --cell-types=B_naive --chromosomes=10,22
 
 """
-import click
 import logging
+import click
 import numpy as np
 import pandas as pd
 import scanpy as sc
 
-from cpg_utils.hail_batch import get_batch,output_path
+from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
 
-def pseudobulk(input_file_path):
+def pseudobulk(input_file_path, target_sum):
     """
     Performs pseudobulking in a cell-type chromosome-specific manner
     """
@@ -37,8 +38,8 @@ def pseudobulk(input_file_path):
     # pp.normalize_total expects a whole genome-wide anndata file
     # obs.total_counts is the sum of counts (genome-wide) for each cell, determined in prior QC processing steps
     total_counts = adata.obs['total_counts'].values
-    scaled_X = (adata.X / total_counts[:, np.newaxis])*1000000
-    adata.X = scaled_X
+    scaled_x = (adata.X / total_counts[:, np.newaxis]) * target_sum
+    adata.X = scaled_x
 
     # log transformation
     sc.pp.log1p(adata)
@@ -47,7 +48,7 @@ def pseudobulk(input_file_path):
     # batch correction
     sc.pp.combat(adata, key='sequencing_library')
 
-    #initialise array to hold pseudobulk anndata objects
+    # initialise array to hold pseudobulk anndata objects
     pbs = []
 
     for sample in adata.obs.individual.unique():
@@ -71,19 +72,31 @@ def pseudobulk(input_file_path):
     chrom_num = input_file_path.split('/')[-1].split('_chr')[1].split('.')[0]
 
     data_df.to_csv(
-        output_path(f'pseudobulk/{cell_type}/{cell_type}_chr{chrom_num}_pseudobulk.csv'), index=False
+        output_path(
+            f'pseudobulk/{cell_type}/{cell_type}_chr{chrom_num}_pseudobulk.csv'
+        ),
+        index=False,
     )
 
 
 # inputs:
 @click.option('--input-dir', help='GCS Path to the input AnnData object')
 @click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
-@click.option('--chromosomes', help='Chromosome number eg 1, comma separated if multiple')
+@click.option(
+    '--chromosomes', help='Chromosome number eg 1, comma separated if multiple'
+)
 @click.option('--job-storage', help='Storage of the batch job eg 30G', default='20G')
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
 @click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
+@click.option(
+    '--target-sum',
+    help='Target sum of counts per cell (for normalization purposes)',
+    default=1e6,
+)
 @click.command()
-def main(input_dir, cell_types, chromosomes, job_storage, job_memory, job_cpu):
+def main(
+    input_dir, cell_types, chromosomes, job_storage, job_memory, job_cpu, target_sum
+):
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
 
@@ -96,15 +109,16 @@ def main(input_dir, cell_types, chromosomes, job_storage, job_memory, job_cpu):
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
             input_file = f'{input_dir}/{cell_type}_chr{chromosome}.h5ad'
-            j = b.new_python_job(
-                name=f'Pseudobulk for cell_type'
+            j = b.new_python_job(name=f'Pseudobulk for cell_type')
+            j.image(
+                'australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'
             )
-            j.image('australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3')
             j.cpu(job_cpu)
             j.memory(job_memory)
             j.storage(job_storage)
-            j.call(pseudobulk, input_file)
+            j.call(pseudobulk, input_file, target_sum)
     b.run(wait=False)
+
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
