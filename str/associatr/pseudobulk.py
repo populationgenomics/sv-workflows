@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-function-docstring,no-member
 """
 This script performs pseudobulk (mean aggregation) of an input AnnData object
 Prior to pseudobulking, the following steps are performed:
@@ -26,6 +25,12 @@ from cpg_utils import to_path
 @click.option('--input-file', help='GCS Path to the input AnnData object')
 @click.command()
 def main(input_file):
+    """
+    Perform pseudobulk (mean aggregation) of an input AnnData object
+
+    Args
+        input_file (str): GCS Path to the input AnnData object
+    """
     expression_h5ad_path = to_path(input_file).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
@@ -69,4 +74,4 @@ def main(input_file):
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter,missing-function-docstring
+    main()  # pylint: disable=no-value-for-parameter
