@@ -108,7 +108,6 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        print('starting job')
         j.call(get_covariates, input_dir, cell_type, chromosomes, covariate_file_path)
 
     b.run(wait=False)
