@@ -4,7 +4,7 @@ This script performs pseudobulk (mean aggregation) of an input AnnData object
 Prior to pseudobulking, the following steps are performed:
 - Normalisation
 - Log transformation (ln(1+x))
-- Batch correction using ComBat
+- Batch correction
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
@@ -42,7 +42,7 @@ def pseudobulk(input_file_path, target_sum):
     adata.raw = adata
 
     # batch correction
-    sc.pp.combat(adata, key='sequencing_library')
+    sc.pp.regress_out(adata, keys='sequencing_library')
 
     # initialise array to hold pseudobulk anndata objects
     pbs = []
