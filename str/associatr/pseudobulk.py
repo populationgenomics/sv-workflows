@@ -69,7 +69,7 @@ def pseudobulk(input_file_path, target_sum):
 
     data_df.to_csv(
         output_path(
-            f'pseudobulk/{cell_type}/{cell_type}_chr{chrom_num}_pseudobulk.csv',
+            f'{cell_type}/{cell_type}_chr{chrom_num}_pseudobulk.csv',
             'analysis',
         ),
         index=False,
