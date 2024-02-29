@@ -30,7 +30,7 @@ def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_
         gcs_file_path = (
             f'{pseudobulk_input_dir}/{cell_type}/{cell_type}_chr{i}_pseudobulk.csv'
         )
-        logging.info(f'Loading {gcs_file_path}...')
+        print(f'Loading {gcs_file_path}...')
 
         local_file_path = to_path(gcs_file_path).copy('here.csv')
         adata = sc.read_csv(local_file_path)
@@ -108,6 +108,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
+        print('starting job')
         j.call(get_covariates, input_dir, cell_type, chromosomes, covariate_file_path)
 
     b.run(wait=False)
