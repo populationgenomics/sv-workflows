@@ -30,6 +30,7 @@ def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_
         gcs_file_path = (
             f'{pseudobulk_input_dir}/{cell_type}/{cell_type}_chr{i}_pseudobulk.csv'
         )
+        logging.info(f'Loading {gcs_file_path}...')
 
         local_file_path = to_path(gcs_file_path).copy('here.csv')
         adata = sc.read_csv(local_file_path)
@@ -91,7 +92,7 @@ def main(
     covariate_file_path,
 ):
     """
-    Obtain cell-type specific covariattes for pseudobulk associaTR model
+    Obtain cell-type specific covariates for pseudobulk associaTR model
 
     """
     b = get_batch()
