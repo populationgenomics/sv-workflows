@@ -27,7 +27,7 @@ def pseudobulk(input_file_path, target_sum):
     Performs pseudobulking in a cell-type chromosome-specific manner
     """
     expression_h5ad_path = to_path(input_file_path).copy('here.h5ad')
-    adata = sc.read_h5ad(expression_h5ad_path, backed = 'r+')
+    adata = sc.read_h5ad(expression_h5ad_path)
 
     # normalisation
     # we can't use pp.normalize_total because the expected input is a chr-specific anndata file, while
