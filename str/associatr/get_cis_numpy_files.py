@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# pylint: disable=too-many-arguments
 """
 This script aims to:
  - output cis window files for each gene with scRNA data (cell type + chr specific)
