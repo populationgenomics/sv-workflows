@@ -11,6 +11,7 @@ import click
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import hail as hl
 
 from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
@@ -25,6 +26,10 @@ def cis_window_numpy_extractor(
     cis_window,
     version,
 ):
+    """
+    Creates gene-specific cis window files and phenotype-covaraite numpy objects
+
+    """
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
     expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
@@ -121,4 +126,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pylint: disable=no-value-for-parameter
