@@ -120,7 +120,7 @@ def main(
     Run cis window extraction and phenotype/covariate numpy object creation
     """
     b = get_batch()
-    init_batch()
+
 
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
@@ -135,6 +135,7 @@ def main(
 
     for cell_type in cell_types.split(','):
         for chrom in chromosomes.split(','):
+            init_batch()
             chrom_len = hl.get_reference('GRCh38').lengths[chrom]
             j = b.new_python_job(
                 name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
