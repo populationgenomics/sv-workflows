@@ -56,10 +56,8 @@ def cis_window_numpy_extractor(
         start_coord = adata.var[adata.var.index == gene]['start']
         end_coord = adata.var[adata.var.index == gene]['end']
 
-        left_boundary = max(1, int(start_coord) - int(cis_window))
-        right_boundary = min(
-            int(end_coord) + int(cis_window), chrom_len
-        )
+        left_boundary = max(1, int(start_coord.iloc[0]) - int(cis_window))
+        right_boundary = min(int(end_coord.iloc[0]) + int(cis_window), chrom_len)
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
         ofile_path = output_path(
@@ -78,11 +76,13 @@ def cis_window_numpy_extractor(
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
         gene_pheno_cov = gene_pheno_cov.to_numpy()
-        with hl.hadoop_open(output_path(
-                    f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
-                ), 'wb') as f:
+        with hl.hadoop_open(
+            output_path(
+                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
+            ),
+            'wb',
+        ) as f:
             np.save(f, gene_pheno_cov)
-
 
 
 @click.option('--input-h5ad-dir', help='GCS directory to the input AnnData objects')
@@ -94,9 +94,9 @@ def cis_window_numpy_extractor(
 @click.option('--cell-types', help='cell type, comma separated if multiple')
 @click.option('--cis-window', help='cis window size in bp')
 @click.option('--version', default='v1', help='version of the output files')
-@click.option('--job-cpu', default=4, help='Number of CPUs to use for the job')
+@click.option('--job-cpu', default=2, help='Number of CPUs to use for the job')
 @click.option('--job-memory', default='standard', help='Memory to use for the job')
-@click.option('--job-storage', default='10G', help='Storage to use for the job')
+@click.option('--job-storage', default='5G', help='Storage to use for the job')
 @click.option(
     '--max-parallel-jobs',
     type=int,
@@ -121,7 +121,6 @@ def main(
     Run cis window extraction and phenotype/covariate numpy object creation
     """
     b = get_batch()
-
 
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
@@ -161,7 +160,6 @@ def main(
 
             manage_concurrency_for_job(j)
     b.run(wait=False)
-
 
 
 if __name__ == '__main__':
