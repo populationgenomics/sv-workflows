@@ -17,7 +17,7 @@ import pandas as pd
 import scanpy as sc
 import hail as hl
 
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch, output_path, init_batch
 from cpg_utils import to_path
 
 
@@ -29,12 +29,12 @@ def cis_window_numpy_extractor(
     cell_type,
     cis_window,
     version,
+    chrom_len
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
 
     """
-    init_batch()
 
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
@@ -56,7 +56,7 @@ def cis_window_numpy_extractor(
 
         left_boundary = max(1, int(start_coord) - int(cis_window))
         right_boundary = min(
-            int(end_coord) + int(cis_window), hl.get_reference('GRCh38').lengths[chromosome]
+            int(end_coord) + int(cis_window), chrom_len
         )
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
@@ -113,8 +113,11 @@ def main(
     Run cis window extraction and phenotype/covariate numpy object creation
     """
     b = get_batch()
+    init_batch()
+
     for cell_type in cell_types.split(','):
         for chrom in chromosomes.split(','):
+            chrom_len = hl.get_reference('GRCh38').lengths[chrom]
             j = b.new_python_job(
                 name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
             )
@@ -133,6 +136,7 @@ def main(
                 cell_type,
                 cis_window,
                 version,
+                chrom_len,
             )
     b.run(wait=False)
 
