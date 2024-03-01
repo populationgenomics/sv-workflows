@@ -31,7 +31,6 @@ def cis_window_numpy_extractor(
     cis_window,
     version,
     chrom_len,
-    npy_ofile_path,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -78,7 +77,10 @@ def cis_window_numpy_extractor(
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
         gene_pheno_cov = gene_pheno_cov.to_numpy()
-        np.save(npy_ofile_path,gene_pheno_cov)
+        with hl.hadoop_open(output_path(
+                    f'pheno_cov_numpy/{version}/{cell_type}/{chrom}/{gene}_pheno_cov.npy'
+                ), 'wb') as f:
+            np.save(f, gene_pheno_cov)
 
 
 
@@ -153,15 +155,8 @@ def main(
                 cis_window,
                 version,
                 chrom_len,
-                j.ofile
             )
-            j.ofile.add_extension('.npy')
-            b.write_output(
-                j.ofile,
-                output_path(
-                    f'pheno_cov_numpy/{version}/{cell_type}/{chrom}/{gene}_pheno_cov.npy'
-                ),
-            )
+
             manage_concurrency_for_job(j)
     b.run(wait=False)
 
