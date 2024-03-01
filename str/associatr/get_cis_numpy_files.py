@@ -61,7 +61,8 @@ def cis_window_numpy_extractor(
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
         ofile_path = output_path(
-            f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed'
+            f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed',
+            'analysis',
         )
         # write cis window file to gcp
         pd.DataFrame(data, index=[gene]).to_csv(
@@ -78,7 +79,8 @@ def cis_window_numpy_extractor(
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         with hl.hadoop_open(
             output_path(
-                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
+                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy',
+                'analysis',
             ),
             'wb',
         ) as f:
@@ -163,4 +165,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter,too-many-arguments
