@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import hail as hl
+import hailtop.batch as hb
 
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
 from cpg_utils import to_path
@@ -29,7 +30,8 @@ def cis_window_numpy_extractor(
     cell_type,
     cis_window,
     version,
-    chrom_len
+    chrom_len,
+    npy_ofile_path,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -76,12 +78,8 @@ def cis_window_numpy_extractor(
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
         gene_pheno_cov = gene_pheno_cov.to_numpy()
-        np.save(
-            to_path(output_path(
-                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
-            )),
-            gene_pheno_cov,
-        )
+        np.save(npy_ofile_path,gene_pheno_cov)
+
 
 
 @click.option('--input-h5ad-dir', help='GCS directory to the input AnnData objects')
@@ -96,6 +94,12 @@ def cis_window_numpy_extractor(
 @click.option('--job-cpu', default=4, help='Number of CPUs to use for the job')
 @click.option('--job-memory', default='standard', help='Memory to use for the job')
 @click.option('--job-storage', default='10G', help='Storage to use for the job')
+@click.option(
+    '--max-parallel-jobs',
+    type=int,
+    default=500,
+    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
+)
 @click.command()
 def main(
     input_h5ad_dir,
@@ -108,12 +112,24 @@ def main(
     job_cpu,
     job_memory,
     job_storage,
+    max_parallel_jobs,
 ):
     """
     Run cis window extraction and phenotype/covariate numpy object creation
     """
     b = get_batch()
     init_batch()
+
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
 
     for cell_type in cell_types.split(','):
         for chrom in chromosomes.split(','):
@@ -137,8 +153,18 @@ def main(
                 cis_window,
                 version,
                 chrom_len,
+                j.ofile
             )
+            j.ofile.add_extension('.npy')
+            b.write_output(
+                j.ofile,
+                output_path(
+                    f'pheno_cov_numpy/{version}/{cell_type}/{chrom}/{gene}_pheno_cov.npy'
+                ),
+            )
+            manage_concurrency_for_job(j)
     b.run(wait=False)
+
 
 
 if __name__ == '__main__':
