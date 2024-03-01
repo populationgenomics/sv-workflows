@@ -52,9 +52,9 @@ def cis_window_numpy_extractor(
         start_coord = adata.var[adata.var.index == gene]['start']
         end_coord = adata.var[adata.var.index == gene]['end']
 
-        left_boundary = max(1, int(start_coord) - cis_window)
+        left_boundary = max(1, int(start_coord) - int(cis_window))
         right_boundary = min(
-            int(end_coord) + cis_window, hl.get_reference('GRCh38').lengths[chromosome]
+            int(end_coord) + int(cis_window), hl.get_reference('GRCh38').lengths[chromosome]
         )
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
