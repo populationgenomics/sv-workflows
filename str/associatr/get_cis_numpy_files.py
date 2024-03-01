@@ -36,6 +36,7 @@ def cis_window_numpy_extractor(
     Creates gene-specific cis window files and phenotype-covariate numpy objects
 
     """
+    init_batch()
 
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
