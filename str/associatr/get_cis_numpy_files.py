@@ -30,9 +30,12 @@ def cis_window_numpy_extractor(
     Creates gene-specific cis window files and phenotype-covaraite numpy objects
 
     """
+    # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
     expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
+
+    #read in pseudobulk and covariate files
     pseudobulk_path = (
         f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_pseudobulk.csv'
     )
@@ -41,9 +44,10 @@ def cis_window_numpy_extractor(
     covariates = pd.read_csv(covariate_path)
 
     for gene in adata.var.index:
+        # get gene body position (start and end) and add window
         start_coord = adata.var[adata.var.index == gene]['start']
         end_coord = adata.var[adata.var.index == gene]['end']
-        # get gene body position (start and end) and add window
+
         left_boundary = max(1, int(start_coord) - cis_window)
         right_boundary = min(
             int(end_coord) + cis_window, hl.get_reference('GRCh38').lengths[chromosome]
@@ -53,10 +57,12 @@ def cis_window_numpy_extractor(
         ofile_path = output_path(
             f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed'
         )
+        # write cis window file to gcp
         pd.DataFrame(data, index=[gene]).to_csv(
             ofile_path, sep='\t', header=False, index=False
         )
 
+        # make the phenotype-covariate numpy objects
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)
         gene_pheno = pseudobulk[['sample_id', gene]]
         gene_pheno_cov = gene_pheno.merge(covariates, on="sample_id", how='inner')
