@@ -31,9 +31,11 @@ def cis_window_numpy_extractor(
     version,
 ):
     """
-    Creates gene-specific cis window files and phenotype-covaraite numpy objects
+    Creates gene-specific cis window files and phenotype-covariate numpy objects
 
     """
+    init_batch()
+
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
     expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
@@ -91,7 +93,7 @@ def cis_window_numpy_extractor(
 @click.option('--cell-types', help='cell type, comma separated if multiple')
 @click.option('--cis-window', help='cis window size in bp')
 @click.option('--version', default='v1', help='version of the output files')
-@click.option('--job-cpu', default=8, help='Number of CPUs to use for the job')
+@click.option('--job-cpu', default=4, help='Number of CPUs to use for the job')
 @click.option('--job-memory', default='standard', help='Memory to use for the job')
 @click.option('--job-storage', default='10G', help='Storage to use for the job')
 @click.command()
