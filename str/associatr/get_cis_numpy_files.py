@@ -78,7 +78,7 @@ def cis_window_numpy_extractor(
         ]  # remove CPG prefix because associatr expects id to be numeric
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         with hl.hadoop_open(output_path(
-                    f'pheno_cov_numpy/{version}/{cell_type}/{chrom}/{gene}_pheno_cov.npy'
+                    f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
                 ), 'wb') as f:
             np.save(f, gene_pheno_cov)
 
