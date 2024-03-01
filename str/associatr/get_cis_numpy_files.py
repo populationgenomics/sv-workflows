@@ -77,9 +77,9 @@ def cis_window_numpy_extractor(
         ]  # remove CPG prefix because associatr expects id to be numeric
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         np.save(
-            output_path(
+            to_path(output_path(
                 f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
-            ),
+            )),
             gene_pheno_cov,
         )
 
