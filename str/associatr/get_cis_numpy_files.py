@@ -65,7 +65,7 @@ def cis_window_numpy_extractor(
         # make the phenotype-covariate numpy objects
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)
         gene_pheno = pseudobulk[['sample_id', gene]]
-        gene_pheno_cov = gene_pheno.merge(covariates, on="sample_id", how='inner')
+        gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
