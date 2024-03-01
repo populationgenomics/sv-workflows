@@ -5,6 +5,10 @@ This script aims to:
  - output cis window files for each gene with scRNA data (cell type + chr specific)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
+ analysis-runner --dataset "bioheart" --access-level "test" --description "get cis and numpy" --output-dir "str/associatr/input_files" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
+ get_cis_numpy_files.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --input-pseudobulk-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/pseudobulk --input-cov-dir=gs://cpg-bioheart-test/str/associatr/input_files/covariates \
+ --chromosomes=chr1 --cell-types=ASDC --cis-window=100000 --version=v1
+
 """
 
 import click
@@ -35,7 +39,7 @@ def cis_window_numpy_extractor(
     expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
-    #read in pseudobulk and covariate files
+    # read in pseudobulk and covariate files
     pseudobulk_path = (
         f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_pseudobulk.csv'
     )
@@ -83,19 +87,19 @@ def cis_window_numpy_extractor(
     '--input-pseudobulk-dir', help='GCS directory to the input pseudobulk CSV files'
 )
 @click.option('--input-cov-dir', help='GCS directory to the input covariate CSV files')
-@click.option('--chromosome', help=' eg chr22, comma separated if multiple')
+@click.option('--chromosomes', help=' eg chr22, comma separated if multiple')
 @click.option('--cell-types', help='cell type, comma separated if multiple')
 @click.option('--cis-window', help='cis window size in bp')
-@click.option('--version', help='version of the output files')
-@click.option('--job-cpu', default=2, help='Number of CPUs to use for the job')
-@click.option('--job-memory', default='4G', help='Memory to use for the job')
-@click.option('--job-storage', default='20G', help='Storage to use for the job')
+@click.option('--version', default='v1', help='version of the output files')
+@click.option('--job-cpu', default=8, help='Number of CPUs to use for the job')
+@click.option('--job-memory', default='standard', help='Memory to use for the job')
+@click.option('--job-storage', default='10G', help='Storage to use for the job')
 @click.command()
 def main(
     input_h5ad_dir,
     input_pseudobulk_dir,
     input_cov_dir,
-    chromosome,
+    chromosomes,
     cell_types,
     cis_window,
     version,
@@ -108,7 +112,7 @@ def main(
     """
     b = get_batch()
     for cell_type in cell_types.split(','):
-        for chrom in chromosome.split(','):
+        for chrom in chromosomes.split(','):
             j = b.new_python_job(
                 name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
             )
