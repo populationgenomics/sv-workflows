@@ -36,6 +36,9 @@ config = get_config()
 @click.option('--mt-path', help='GCS Path to the input MT')
 @click.command()
 def main(mt_path):
+    """
+    Annotates the ExpansionHunter MT, and outputs annotated MT to GCS
+    """
 
     init_batch(worker_memory='highmem')
     mt = hl.read_matrix_table(mt_path)
