@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member
 """
-This script annotates the MT with the following annotations:
+This script annotates the ExpansionHunter MT with the following annotations:
 - rep_length_alleles: repeat length of each allele
 - motif_length: length of the motif
 - bp_length_alleles: bp length of each allele
