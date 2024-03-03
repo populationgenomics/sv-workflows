@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=too-many-arguments
+
+# TODO: rescale (0,1) and filter for genes that are expressed in eg 10% of individuals. quantile normalise??
 """
 This script aims to:
  - output cis window files for each gene with scRNA data (cell type + chr specific)
@@ -31,6 +33,7 @@ def cis_window_numpy_extractor(
     cis_window,
     version,
     chrom_len,
+    non_zero_threshold
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -50,6 +53,12 @@ def cis_window_numpy_extractor(
     pseudobulk = pd.read_csv(pseudobulk_path)
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
+
+    # filter columns (genes) in pseudobulk df where at least non_zero_threshold of individuals have non-zero values
+    threshold = len(pseudobulk) * non_zero_threshold
+    pseudobulk = pseudobulk.loc[:, (pseudobulk != 0).sum() > threshold]
+
+
 
     for gene in adata.var.index:
         # get gene body position (start and end) and add window
