@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-function-docstring,no-member
+# pylint: disable=missing-function-docstring,no-member,unnecessary-lambda
 """
 This script applies filters to a ExpansionHunter MT, and outputs a VCF ready for input into associaTR.
 Input MT should be the output of qc_annotator.py
@@ -35,7 +35,10 @@ config = get_config()
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-def call_level_filter(mt_path, gcs_path):
+def qc_filter(mt_path, gcs_path):
+    """
+    Applies QC filters to the input MT
+    """
     init_batch()
 
     # read in mt
@@ -213,6 +216,9 @@ def main(
     bcftools_memory,
     version,
 ):
+    """
+    Runner to apply QC filters to input MT, and bgzip and tabix.
+    """
 
     b = get_batch()
     hail_job = b.new_python_job(name=f'QC filters')
@@ -221,7 +227,7 @@ def main(
     hail_job.cpu(hail_cpu)
     hail_job.memory(hail_memory)
     gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf')
-    hail_job.call(call_level_filter, mt_path, gcs_output_path)
+    hail_job.call(qc_filter, mt_path, gcs_output_path)
 
     bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
     bcftools_job.depends_on(hail_job)
