@@ -14,11 +14,11 @@ Applied filters:
 - enforce locus-level call rate >=0.9
 
 
- analysis-runner --dataset "tob-wgs" \
+ analysis-runner --dataset "bioheart" \
     --description "Hail QC for associaTR" \
     --access-level "test" \
-    --output-dir "hoptan-str/associatr/test-2024" \
-    qc_filters_associatr.py --file-path=gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/dumpSTR/dumpSTR_filtered.vcf.gz
+    --output-dir "str/associatr/input_files" \
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
 
@@ -194,8 +194,8 @@ def qc_filter(mt_path, gcs_path):
 
 
 @click.option(
-    '--file-path',
-    help='GCS file path to VCF',
+    '--mt-path',
+    help='GCS file path to mt (output of qc_annotator.py)',
     type=str,
 )
 @click.option('--hail-storage', help='Hail storage', type=str, default='20G')
