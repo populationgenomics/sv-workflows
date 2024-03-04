@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments,too-many-locals
 
 """
 This script aims to:
@@ -12,9 +12,8 @@ This script aims to:
  --chromosomes=chr1 --cell-types=ASDC --cis-window=100000 --version=v1
 
 """
-
-import click
 import json
+import click
 import numpy as np
 import pandas as pd
 import scanpy as sc
