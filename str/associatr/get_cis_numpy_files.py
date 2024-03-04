@@ -58,9 +58,10 @@ def cis_window_numpy_extractor(
     threshold = len(pseudobulk) * non_zero_threshold
     pseudobulk = pseudobulk.loc[:, (pseudobulk != 0).sum() > threshold]
 
+    #extract genes in pseudobulk df
+    gene_names = pseudobulk.columns[1:] #individual ID is the first column
 
-
-    for gene in adata.var.index:
+    for gene in gene_names:
         # get gene body position (start and end) and add window
         start_coord = adata.var[adata.var.index == gene]['start']
         end_coord = adata.var[adata.var.index == gene]['end']
