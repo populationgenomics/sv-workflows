@@ -28,6 +28,7 @@ import click
 from cpg_utils.config import get_config
 
 from cpg_utils.hail_batch import get_batch, init_batch, output_path
+from cpg_utils import to_path
 
 
 config = get_config()
@@ -200,9 +201,9 @@ def qc_filter(mt_path, gcs_path):
 @click.option('--hail-storage', help='Hail storage', type=str, default='20G')
 @click.option('--hail-cpu', help='Hail CPU', type=int, default=4)
 @click.option('--hail-memory', help='Hail memory', type=str, default='standard')
-@click.option('--bcftools-storage', help='BCFTOOLS storage', type=str, default='20G')
-@click.option('--bcftools-cpu', help='BCFTOOLS CPU', type=int, default=4)
-@click.option('--bcftools-memory', help='BCFTOOLS memory', type=str, default='standard')
+@click.option('--bcftools-storage', help='BCFTOOLS storage', type=str, default='300G')
+@click.option('--bcftools-cpu', help='BCFTOOLS CPU', type=int, default=16)
+@click.option('--bcftools-memory', help='BCFTOOLS memory', type=str, default='highmem')
 @click.option('--version', help='version of the output files', type=str, default='v1')
 @click.command()
 def main(
@@ -220,13 +221,15 @@ def main(
     """
 
     b = get_batch()
-    hail_job = b.new_python_job(name=f'QC filters')
-    hail_job.image(config['workflow']['driver_image'])
-    hail_job.storage(hail_storage)
-    hail_job.cpu(hail_cpu)
-    hail_job.memory(hail_memory)
-    gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf')
-    hail_job.call(qc_filter, mt_path, gcs_output_path)
+
+    gcs_output_path = to_path(output_path(f'vcf/{version}/hail_filtered.vcf'))
+    if not gcs_output_path.exists():
+        hail_job = b.new_python_job(name=f'QC filters')
+        hail_job.image(config['workflow']['driver_image'])
+        hail_job.storage(hail_storage)
+        hail_job.cpu(hail_cpu)
+        hail_job.memory(hail_memory)
+        hail_job.call(qc_filter, mt_path, gcs_output_path)
 
     bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
     bcftools_job.depends_on(hail_job)
