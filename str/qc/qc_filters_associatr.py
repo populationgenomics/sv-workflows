@@ -154,7 +154,6 @@ def qc_filter(mt_path, gcs_path):
 
     # drop unneccessary columns prior to writing out
     mt = mt.drop(
-        mt.rep_length_alleles,
         'allele_1_rep_length',
         'allele_2_rep_length',
         'allele_1_bp_length',
