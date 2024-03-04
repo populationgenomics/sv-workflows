@@ -161,7 +161,7 @@ def main(
     """
     Run cis window extraction and phenotype/covariate numpy object creation
     """
-    b = get_batch(name= 'get cis_numpy files')
+    b = get_batch(name='get cis_numpy files')
 
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
