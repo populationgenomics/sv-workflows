@@ -28,8 +28,6 @@ import click
 from cpg_utils.config import get_config
 
 from cpg_utils.hail_batch import get_batch, init_batch, output_path
-from cpg_utils import to_path
-
 
 config = get_config()
 
