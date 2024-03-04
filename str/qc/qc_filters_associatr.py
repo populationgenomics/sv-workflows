@@ -39,7 +39,7 @@ def qc_filter(mt_path, gcs_path):
     """
     Applies QC filters to the input MT
     """
-    init_batch()
+    init_batch(worker_memory='highmem')
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
