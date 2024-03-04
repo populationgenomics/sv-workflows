@@ -222,7 +222,7 @@ def main(
 
     b = get_batch()
 
-    gcs_output_path = to_path(output_path(f'vcf/{version}/hail_filtered.vcf'))
+    gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf')
     #hail_job = b.new_python_job(name=f'QC filters')
     #hail_job.image(config['workflow']['driver_image'])
     #hail_job.storage(hail_storage)
