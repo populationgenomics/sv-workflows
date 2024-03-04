@@ -231,8 +231,11 @@ def main(
         hail_job.memory(hail_memory)
         hail_job.call(qc_filter, mt_path, gcs_output_path)
 
-    bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
-    bcftools_job.depends_on(hail_job)
+        bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
+        bcftools_job.depends_on(hail_job)
+    else:
+        bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
+
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.storage(bcftools_storage)
     bcftools_job.cpu(bcftools_cpu)
