@@ -14,11 +14,14 @@ This script aims to:
 """
 
 import click
+import json
 import numpy as np
 import pandas as pd
 import scanpy as sc
 import hail as hl
 import hailtop.batch as hb
+from scipy.stats import norm
+
 
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
 from cpg_utils import to_path
@@ -33,7 +36,7 @@ def cis_window_numpy_extractor(
     cis_window,
     version,
     chrom_len,
-    non_zero_threshold
+    non_zero_threshold,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -54,12 +57,21 @@ def cis_window_numpy_extractor(
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
 
-    # filter columns (genes) in pseudobulk df where at least non_zero_threshold of individuals have non-zero values
+    # filter columns (genes) in pseudobulk df where fewer than non_zero_threshold of individuals have non-zero values
+    # eg. filter out genes that are expressed in <10% of individuals
     threshold = len(pseudobulk) * non_zero_threshold
-    pseudobulk = pseudobulk.loc[:, (pseudobulk != 0).sum() > threshold]
+    pseudobulk = pseudobulk.loc[:, (pseudobulk != 0).sum() >= threshold]
 
-    #extract genes in pseudobulk df
-    gene_names = pseudobulk.columns[1:] #individual ID is the first column
+    # extract genes in pseudobulk df
+    gene_names = pseudobulk.columns[1:]  # individual ID is the first column
+
+    # write gene names to a JSON file
+    with to_path(
+        output_path(
+            f'scRNA_gene_lists/{non_zero_threshold}_non_zero_threshold/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
+        )
+    ).open('w') as write_handle:
+        json.dump(list(gene_names), write_handle)
 
     for gene in gene_names:
         # get gene body position (start and end) and add window
@@ -71,8 +83,7 @@ def cis_window_numpy_extractor(
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
         ofile_path = output_path(
-            f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed',
-            'analysis',
+            f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed'
         )
         # write cis window file to gcp
         pd.DataFrame(data, index=[gene]).to_csv(
@@ -82,6 +93,20 @@ def cis_window_numpy_extractor(
         # make the phenotype-covariate numpy objects
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)
         gene_pheno = pseudobulk[['sample_id', gene]]
+
+        # rank-based inverse normal transformation based on R's orderNorm()
+        # Rank the values
+        gene_pheno.loc[:, 'gene_rank'] = gene_pheno[gene].rank()
+        # Calculate the percentile of each rank
+        gene_pheno.loc[:, 'gene_percentile'] = (gene_pheno['gene_rank'] - 0.5) / (
+            len(gene_pheno)
+        )
+        # Use the inverse normal cumulative distribution function (quantile function) to transform percentiles to normal distribution values
+        gene_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(
+            gene_pheno['gene_percentile']
+        )
+        gene_pheno = gene_pheno[['sample_id', 'gene_inverse_normal']]
+
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
@@ -89,8 +114,7 @@ def cis_window_numpy_extractor(
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         with hl.hadoop_open(
             output_path(
-                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy',
-                'analysis',
+                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
             ),
             'wb',
         ) as f:
@@ -115,6 +139,11 @@ def cis_window_numpy_extractor(
     default=500,
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
+@click.option(
+    '--non-zero-threshold',
+    default=0.01,
+    help='filter out genes that are expressed in fewer than XX of individuals',
+)
 @click.command()
 def main(
     input_h5ad_dir,
@@ -128,6 +157,7 @@ def main(
     job_memory,
     job_storage,
     max_parallel_jobs,
+    non_zero_threshold,
 ):
     """
     Run cis window extraction and phenotype/covariate numpy object creation
@@ -168,6 +198,7 @@ def main(
                 cis_window,
                 version,
                 chrom_len,
+                non_zero_threshold,
             )
 
             manage_concurrency_for_job(j)
