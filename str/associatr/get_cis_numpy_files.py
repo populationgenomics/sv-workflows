@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=too-many-arguments
 
-# TODO: rescale (0,1) and filter for genes that are expressed in eg 10% of individuals. quantile normalise??
 """
 This script aims to:
+ - output gene lists for each cell type and chromosome (after filtering out lowly expressed genes)
  - output cis window files for each gene with scRNA data (cell type + chr specific)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
@@ -162,7 +162,7 @@ def main(
     """
     Run cis window extraction and phenotype/covariate numpy object creation
     """
-    b = get_batch()
+    b = get_batch(name= 'get cis_numpy files')
 
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
