@@ -18,7 +18,7 @@ from cpg_utils import to_path
 @click.option('--input-h5ad-dir', help='GCS path to the input anndata object')
 @click.option('--version', help='version of the output', default='v1')
 @click.command()
-def main(input_h5ad_dir, version):
+def main(input_h5ad_dir: str, version: str):
     """
     Extracts the number of cells per individual per cell type from the anndata object.
     """
