@@ -15,7 +15,7 @@ from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
 
 
-@click.option('--input-h5ad-dir', help='GCS path to the input anndata object', type=str)
+@click.option('--input-h5ad-dir', help='GCS path to the input anndata object')
 @click.option('--version', help='version of the output', default='v1')
 @click.command()
 def main(input_h5ad_dir, version):
