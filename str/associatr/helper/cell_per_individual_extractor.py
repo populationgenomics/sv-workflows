@@ -15,21 +15,21 @@ from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
 
 
-@click.option('--input-h5ad-dir', help='GCS path to the input anndata object')
+@click.option('--input-h5ad-file-path', help='GCS path to the input anndata object')
 @click.option('--version', help='version of the output', default='v1')
 @click.command()
-def main(input_h5ad_dir: str, version: str):
+def main(input_h5ad_file_path: str, version: str):
     """
     Extracts the number of cells per individual per cell type from the anndata object.
     """
     # read in anndata object because anndata.obs has the CPG ID and cell type
-    expression_h5ad_path = to_path(input_h5ad_dir).copy('here.h5ad')
+    expression_h5ad_path = to_path(input_h5ad_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
     # create a dataframe with CPG ID, cell type, and counts of cells
     counts = adata.obs.groupby(['cpg_id', 'wg2_scpred_prediction']).size()
 
-    input_file_name = input_h5ad_dir.split('/')[-1].split('.')[0]
+    input_file_name = input_h5ad_file_path.split('/')[-1].split('.')[0]
 
     output_gcs = output_path(
         f'{version}/{input_file_name}_cell_counts_per_individual.csv', 'analysis'
