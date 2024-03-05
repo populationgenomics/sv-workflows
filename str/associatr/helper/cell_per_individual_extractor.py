@@ -5,7 +5,7 @@ This script aims to extract the number of cells per individual per cell type fro
 The output is a CSV file with three columns: CPG ID, cell type, counts of cells.
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "get cell counts per individual" --output-dir "str/associatr/helper" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---storage=10G --cpu=4 \
+--storage=10G \
 cell_per_individual_extractor.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/B_naive_chr10.h5ad
 """
 
