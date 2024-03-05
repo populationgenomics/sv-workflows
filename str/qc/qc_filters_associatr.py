@@ -172,8 +172,6 @@ def qc_filter(mt_path, gcs_path):
 
     # Set 'rsid' to REPID
     mt = mt.annotate_rows(rsid=mt.REPID)
-    # Set 'alleles' to 'rep_length_alleles' (transform to string type to meet export_vcf() specs)
-    mt = mt.annotate_rows(alleles=hl.map(lambda x: hl.str(x), mt.rep_length_alleles))
 
     # Key by locus and alleles
     mt = mt.key_rows_by('locus', 'alleles')
