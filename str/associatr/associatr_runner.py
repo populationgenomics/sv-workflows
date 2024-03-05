@@ -98,10 +98,9 @@ def main(
                 gene_cis_window_file = f'{cis_window_dir}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
                 # need to extract the gene start and end from the cis window file for input into 'region'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
-                #gene_pheno_cov = b.read_input(
-                    #f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy'
-               # )
-                gene_pheno_cov = b.read_input('gs://cpg-bioheart-test/str/numpy_test.npy')
+                gene_pheno_cov = b.read_input(
+                    f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy'
+                )
 
                 # run associaTR job on the gene
                 associatr_job = b.new_job(
