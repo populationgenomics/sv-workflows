@@ -108,7 +108,7 @@ def main(
                 )
                 associatr_job.image(get_config()['images']['trtools'])
                 associatr_job.storage('50G')
-                associatr_job.cpu(4)
+                associatr_job.cpu(2)
                 associatr_job.declare_resource_group(
                     association_results={'tsv': '{root}.tsv'}
                 )
