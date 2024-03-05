@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-function-docstring,no-member
+# pylint: disable=missing-function-docstring,no-member,too-many-arguments
 """
 This script runs associaTR, given a chromosome or cell type.
 Ensure prior scripts have been run to generate dependent files, particularly:
