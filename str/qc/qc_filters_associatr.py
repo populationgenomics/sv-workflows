@@ -243,7 +243,7 @@ def main(
         f"""
     set -ex;
     echo "Compressing";
-    bcftools sort {vcf} --temp-dir ${BATCH_TMPDIR}/ | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+    bcftools sort {vcf} --temp-dir $BATCH_TMPDIR/ | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
