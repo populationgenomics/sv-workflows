@@ -100,42 +100,42 @@ def qc_filter(mt_path, gcs_path):
 
     mt = mt.annotate_entries(
         GT=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('call'),
             mt.GT,
         ),
         ADFL=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('str'),
             mt.ADFL,
         ),
         ADIR=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('str'),
             mt.ADIR,
         ),
         ADSP=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('str'),
             mt.ADSP,
         ),
         LC=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('float64'),
             mt.LC,
         ),
         REPCI=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('str'),
             mt.REPCI,
         ),
         REPCN=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('str'),
             mt.REPCN,
         ),
         SO=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
             hl.missing('str'),
             mt.SO,
         ),
@@ -188,6 +188,7 @@ def qc_filter(mt_path, gcs_path):
         mt,
         gcs_path,
         append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
+        tabix = True
     )
 
 
@@ -199,9 +200,6 @@ def qc_filter(mt_path, gcs_path):
 @click.option('--hail-storage', help='Hail storage', type=str, default='20G')
 @click.option('--hail-cpu', help='Hail CPU', type=int, default=4)
 @click.option('--hail-memory', help='Hail memory', type=str, default='standard')
-@click.option('--bcftools-storage', help='BCFTOOLS storage', type=str, default='300G')
-@click.option('--bcftools-cpu', help='BCFTOOLS CPU', type=int, default=8)
-@click.option('--bcftools-memory', help='BCFTOOLS memory', type=str, default='standard')
 @click.option('--version', help='version of the output files', type=str, default='v1')
 @click.command()
 def main(
@@ -209,9 +207,6 @@ def main(
     hail_storage,
     hail_cpu,
     hail_memory,
-    bcftools_storage,
-    bcftools_cpu,
-    bcftools_memory,
     version,
 ):
     """
@@ -220,37 +215,18 @@ def main(
 
     b = get_batch()
 
-    gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf')
-    #hail_job = b.new_python_job(name=f'QC filters')
-    #hail_job.image(config['workflow']['driver_image'])
-    #hail_job.storage(hail_storage)
-    #hail_job.cpu(hail_cpu)
-    #hail_job.memory(hail_memory)
-    #hail_job.call(qc_filter, mt_path, gcs_output_path)
-
-    bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
-    #bcftools_job.depends_on(hail_job)
-    bcftools_job.image(BCFTOOLS_IMAGE)
-    bcftools_job.storage(bcftools_storage)
-    bcftools_job.cpu(bcftools_cpu)
-    bcftools_job.memory(bcftools_memory)
-    vcf = b.read_input(gcs_output_path)
-
-    bcftools_job.declare_resource_group(
-        vcf_output={'vcf.gz': '{root}.vcf.gz', 'vcf.gz.tbi': '{root}.vcf.gz.tbi'}
-    )
-    bcftools_job.command(
-        f"""
-    set -ex;
-    echo "Compressing";
-    bcftools sort {vcf} --temp-dir $BATCH_TMPDIR/ | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
-
-    echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
-    tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
-"""
+    gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf.bgz')
+    hail_job = b.new_python_job(name=f'QC filters')
+    hail_job.image(config['workflow']['driver_image'])
+    hail_job.storage(hail_storage)
+    hail_job.cpu(hail_cpu)
+    hail_job.memory(hail_memory)
+    hail_job.call(qc_filter, mt_path, gcs_output_path)
+    hail_job.declare_resource_group(
+        vcf_output={'vcf.bgz.tbi': '{root}.vcf.bgz.tbi'}
     )
     b.write_output(
-        bcftools_job.vcf_output, output_path(f'vcf/{version}/bctools/hail_filtered')
+        hail_job.vcf_output, output_path(f'vcf/{version}/hail_filtered')
     )
 
     b.run(wait=False)
