@@ -12,10 +12,10 @@ Ensure prior scripts have been run to generate dependent files, particularly:
     --description "run associatr" \
     --access-level "test" \
     --output-dir "str/associatr" \
-     associatr_runner_part5.py  --celltypes=ASDC --chromosomes=chr1 \
-    --vcf-file-path=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1/bctools/hail_filtered.vcf.gz
-    --gene-list-dir=gs://cpg-bioheart-test/str/associatr/input_files/scRNA_gene_lists/0.01_non_zero_threshold
-    --cis-window-dir=gs://cpg-bioheart-test/str/associatr/input_files/cis_window_files/v1
+     associatr_runner.py  --celltypes=ASDC --chromosomes=chr1 \
+    --vcf-file-path=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1/bctools/hail_filtered.vcf.bgz \
+    --gene-list-dir=gs://cpg-bioheart-test/str/associatr/input_files/scRNA_gene_lists/0.01_non_zero_threshold \
+    --cis-window-dir=gs://cpg-bioheart-test/str/associatr/input_files/cis_window_files/v1 \
     --pheno-cov-numpy-dir=gs://cpg-bioheart-test/str/associatr/input_files/pheno_cov_numpy/v1
 
 
@@ -50,7 +50,7 @@ def gene_cis_window_file_reader(file_path):
 )
 @click.option('--cis-window-size', type=int, default=100000)
 @click.option('--gene-list-dir', help='directory to gene list json files')
-@click.option('cis-window-dir', help='directory to cis window files')
+@click.option('--cis-window-dir', help='directory to cis window files')
 @click.option('--pheno-cov-numpy-dir', help='directory to numpy files')
 @click.option('--version', help='version of the output', default='v1')
 @click.command()
