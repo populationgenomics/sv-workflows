@@ -53,6 +53,8 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--cis-window-dir', help='directory to cis window files')
 @click.option('--pheno-cov-numpy-dir', help='directory to numpy files')
 @click.option('--version', help='version of the output', default='v1')
+@click.option('--job-storage', help='eg 50G', default='50G')
+@click.option('--job-cpu', help='eg 2', default=2)
 @click.command()
 def main(
     celltypes,
@@ -64,6 +66,8 @@ def main(
     cis_window_dir,
     pheno_cov_numpy_dir,
     version,
+    job_storage,
+    job_cpu,
 ):
     """
     Run associaTR processing pipeline
@@ -107,8 +111,8 @@ def main(
                     name=f'Run associatr on {gene} [{celltype};{chromosome}]'
                 )
                 associatr_job.image(get_config()['images']['trtools'])
-                associatr_job.storage('50G')
-                associatr_job.cpu(2)
+                associatr_job.storage(job_storage)
+                associatr_job.cpu(job_cpu)
                 associatr_job.declare_resource_group(
                     association_results={'tsv': '{root}.tsv'}
                 )
