@@ -20,17 +20,14 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 
 
 """
+import json
 import click
 import pandas as pd
-import hail as hl
 import hailtop.batch as hb
-import json
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
-
-config = get_config()
 
 
 def gene_cis_window_file_reader(file_path):
@@ -71,7 +68,6 @@ def main(
     """
     Run associaTR processing pipeline
     """
-    config = get_config()
     b = get_batch(name='Run associatr')
     init_batch()
 
