@@ -222,12 +222,7 @@ def main(
     hail_job.cpu(hail_cpu)
     hail_job.memory(hail_memory)
     hail_job.call(qc_filter, mt_path, gcs_output_path)
-    hail_job.declare_resource_group(
-        vcf_output={'vcf.bgz.tbi': '{root}.vcf.bgz.tbi'}
-    )
-    b.write_output(
-        hail_job.vcf_output, output_path(f'vcf/{version}/hail_filtered')
-    )
+
 
     b.run(wait=False)
 
