@@ -107,7 +107,7 @@ def main(
                     name=f'Run associatr on {gene} [{celltype};{chromosome}]'
                 )
                 associatr_job.image(get_config()['images']['trtools'])
-                associatr_job.storage('8G')
+                associatr_job.storage('50G')
                 associatr_job.cpu(4)
                 associatr_job.declare_resource_group(
                     association_results={'tsv': '{root}.tsv'}
