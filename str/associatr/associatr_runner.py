@@ -101,7 +101,7 @@ def main(
                 #gene_pheno_cov = b.read_input(
                     #f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy'
                # )
-                gene_pheno_cov = 'gs://cpg-bioheart-test/str/numpy_test.npy'
+                gene_pheno_cov = b.read_input('gs://cpg-bioheart-test/str/numpy_test.npy')
 
                 # run associaTR job on the gene
                 associatr_job = b.new_job(
