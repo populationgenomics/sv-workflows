@@ -5,12 +5,14 @@ This script aims to extract the number of cells per individual per cell type fro
 The output is a CSV file with three columns: CPG ID, cell type, counts of cells.
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "get cell counts per individual" --output-dir "str/associatr/helper" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
+--storage=10G --cpu=4 \
 cell_per_individual_extractor.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/B_naive_chr10.h5ad
 """
 
 import click
 import scanpy as sc
 from cpg_utils.hail_batch import output_path
+from cpg_utils import to_path
 
 
 @click.option('--input-h5ad-dir', help='GCS path to the input anndata object', type=str)
@@ -21,7 +23,8 @@ def main(input_h5ad_dir, version):
     Extracts the number of cells per individual per cell type from the anndata object.
     """
     # read in anndata object because anndata.obs has the CPG ID and cell type
-    adata = sc.read_h5ad(input_h5ad_dir)
+    expression_h5ad_path = to_path(input_h5ad_dir).copy('here.h5ad')
+    adata = sc.read_h5ad(expression_h5ad_path)
 
     # create a dataframe with CPG ID, cell type, and counts of cells
     counts = adata.obs.groupby(['cpg_id', 'wg2_scpred_prediction']).size()
