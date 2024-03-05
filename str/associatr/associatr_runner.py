@@ -90,8 +90,8 @@ def main(
                     tbi=vcf_file_path + '.tbi',
                 )
             )
-            with to_path(f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json'
-
+            with to_path(
+                f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json'
             ).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
@@ -120,11 +120,9 @@ def main(
                     associatr_job.association_results,
                     output_path(
                         f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp',
-                        'analysis')
-
+                        'analysis',
+                    ),
                 )
-                if True:
-                    break
                 manage_concurrency_for_job(associatr_job)
     b.run(wait=False)
 
