@@ -13,7 +13,7 @@ Ensure prior scripts have been run to generate dependent files, particularly:
     --access-level "test" \
     --output-dir "str/associatr" \
      associatr_runner.py  --celltypes=ASDC --chromosomes=chr1 \
-    --vcf-file-path=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1/bctools/hail_filtered.vcf.bgz \
+    --vcf-file-path=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1/hail_filtered.vcf.bgz \
     --gene-list-dir=gs://cpg-bioheart-test/str/associatr/input_files/scRNA_gene_lists/0.01_non_zero_threshold \
     --cis-window-dir=gs://cpg-bioheart-test/str/associatr/input_files/cis_window_files/v1 \
     --pheno-cov-numpy-dir=gs://cpg-bioheart-test/str/associatr/input_files/pheno_cov_numpy/v1
@@ -99,7 +99,7 @@ def main(
                 # need to extract the gene start and end from the cis window file for input into 'region'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
                 gene_pheno_cov = b.read_input(
-                    f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}_{celltype}_{gene}.npy'
+                    f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy'
                 )
 
                 # run associaTR job on the gene
