@@ -119,9 +119,9 @@ def main(
                 b.write_output(
                     associatr_job.association_results,
                     output_path(
-                        f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp'
-                    ),
-                    'analysis',
+                        f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp',
+                        'analysis')
+
                 )
                 manage_concurrency_for_job(associatr_job)
     b.run(wait=False)
