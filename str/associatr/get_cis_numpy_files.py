@@ -93,16 +93,6 @@ def cis_window_numpy_extractor(
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)
         gene_pheno = pseudobulk[['sample_id', gene]]
 
-        #filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
-        gene_pheno = gene_pheno[gene_pheno['sample_id'].str.startswith('CPG')]
-
-        gene_pheno['sample_id'] = gene_pheno['sample_id'].str[
-            3:
-        ]  # remove CPG prefix because associatr expects id to be numeric
-
-        gene_pheno['sample_id'] = gene_pheno['sample_id'].astype(float)
-
-
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
         gene_pheno.loc[:, 'gene_rank'] = gene_pheno[gene].rank()
@@ -117,6 +107,15 @@ def cis_window_numpy_extractor(
         gene_pheno = gene_pheno[['sample_id', 'gene_inverse_normal']]
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
+
+        #filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
+        gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
+
+        gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
+            3:
+        ]  # remove CPG prefix because associatr expects id to be numeric
+
+        gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].astype(float)
 
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         with hl.hadoop_open(
