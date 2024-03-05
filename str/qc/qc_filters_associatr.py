@@ -221,15 +221,15 @@ def main(
     b = get_batch()
 
     gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf')
-    hail_job = b.new_python_job(name=f'QC filters')
-    hail_job.image(config['workflow']['driver_image'])
-    hail_job.storage(hail_storage)
-    hail_job.cpu(hail_cpu)
-    hail_job.memory(hail_memory)
-    hail_job.call(qc_filter, mt_path, gcs_output_path)
+    #hail_job = b.new_python_job(name=f'QC filters')
+    #hail_job.image(config['workflow']['driver_image'])
+    #hail_job.storage(hail_storage)
+    #hail_job.cpu(hail_cpu)
+    #hail_job.memory(hail_memory)
+    #hail_job.call(qc_filter, mt_path, gcs_output_path)
 
     bcftools_job = b.new_job(name=f'bgzip and tabix the Hail output VCF')
-    bcftools_job.depends_on(hail_job)
+    #bcftools_job.depends_on(hail_job)
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.storage(bcftools_storage)
     bcftools_job.cpu(bcftools_cpu)
@@ -243,7 +243,7 @@ def main(
         f"""
     set -ex;
     echo "Compressing";
-    bcftools sort {vcf} | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
+    bcftools sort {vcf} --temp-dir ${BATCH_TMPDIR}/ | bgzip -c > {bcftools_job.vcf_output['vcf.gz']};
 
     echo "indexing {bcftools_job.vcf_output['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_output['vcf.gz']};
