@@ -94,13 +94,13 @@ def cis_window_numpy_extractor(
         gene_pheno = pseudobulk[['sample_id', gene]]
 
         #filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
-        gene_pheno = gene_pheno[gene_pheno['individual'].str.startswith('CPG')]
+        gene_pheno = gene_pheno[gene_pheno['sample_id'].str.startswith('CPG')]
 
-        gene_pheno['individual'] = gene_pheno['individual'].str[
+        gene_pheno['sample_id'] = gene_pheno['sample_id'].str[
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
 
-        gene_pheno['individual'] = gene_pheno['individual'].astype(float)
+        gene_pheno['sample_id'] = gene_pheno['sample_id'].astype(float)
 
 
         # rank-based inverse normal transformation based on R's orderNorm()
