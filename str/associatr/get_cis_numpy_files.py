@@ -117,7 +117,7 @@ def cis_window_numpy_extractor(
             ),
             'wb',
         ) as f:
-            np.save(f, gene_pheno_cov)
+            np.save(f, gene_pheno_cov, allow_pickle=False)
 
 
 @click.option('--input-h5ad-dir', help='GCS directory to the input AnnData objects')
