@@ -186,7 +186,7 @@ def qc_filter(mt_path, gcs_path):
         mt,
         gcs_path,
         append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
-        tabix = True
+        tabix=True,
     )
 
 
@@ -220,7 +220,6 @@ def main(
     hail_job.cpu(hail_cpu)
     hail_job.memory(hail_memory)
     hail_job.call(qc_filter, mt_path, gcs_output_path)
-
 
     b.run(wait=False)
 
