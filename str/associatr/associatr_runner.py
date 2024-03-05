@@ -90,10 +90,8 @@ def main(
                     tbi=vcf_file_path + '.tbi',
                 )
             )
-            with to_path(
-                output_path(
-                    f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json'
-                )
+            with to_path(f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json'
+
             ).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
