@@ -4,7 +4,7 @@
 This script writes the andata obs to a gcs bucket
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "get cell counts per individual" --output-dir "str/associatr/helper" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---storage=20G --memory=standard --cpu=16 \
+--storage=5G --memory=standard --cpu=4 \
 write_andata_obs.py --input-h5ad-file-path=gs://cpg-bioheart-test/str/anndata/concatenated_gene_info_donor_info_obs.csv
 """
 
@@ -24,12 +24,12 @@ def main(input_h5ad_file_path: str, version: str):
     """
     df = pd.read_csv(input_h5ad_file_path)
     #create a dataframe with CPG ID, cell type, and counts of cells
-    counts = df.groupby(['cpg_id', 'wg2_scpred_prediction']).size()
+    counts = df.groupby(['cpg_id', 'sequencing_library']).size()
 
     input_file_name = input_h5ad_file_path.split('/')[-1].split('.')[0]
 
     output_gcs = output_path(
-        f'{version}/{input_file_name}_cell_counts_per_individual.csv', 'analysis'
+        f'{version}/{input_file_name}_cell_counts_per_individual_sequencing_library.csv', 'analysis'
     )
 
     # write to CSV
