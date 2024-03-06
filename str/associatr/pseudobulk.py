@@ -8,14 +8,11 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
---input-file=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC/ASDC_chr21.h5ad
+analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:1.- --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
+--input-file=
 
 """
-import logging
-import click
-import numpy as np
-import pandas as pd
+
 import scanpy as sc
 from scipy.sparse import issparse
 
@@ -56,17 +53,13 @@ def pyScTransform(adata, output_file=None):
     if output_file:
         adata.write(output_file)
 
-# inputs:
-@click.option('--input-file', help='GCS Path to the input AnnData object')
-@click.command()
-def main(input_file):
+
+def main():
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
 
-    Args
-        input_file (str): GCS Path to the input AnnData object
     """
-    expression_h5ad_path = to_path(input_file).copy('here.h5ad')
+    expression_h5ad_path = to_path('gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC/ASDC_chr21.h5ad').copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
     pyScTransform(adata)
