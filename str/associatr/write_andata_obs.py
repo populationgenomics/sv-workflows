@@ -4,8 +4,8 @@
 This script writes the andata obs to a gcs bucket
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "get cell counts per individual" --output-dir "str/associatr/helper" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---storage=200G --memory=highmem --cpu=16 \
-write_andata_obs.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/concatenated_gene_info_donor_info.h5ad
+--storage=200G --memory=standard --cpu=16 \
+write_andata_obs.py --input-h5ad-file-path=gs://cpg-bioheart-test/str/anndata/concatenated_gene_info_donor_info.h5ad
 """
 
 import click
@@ -23,7 +23,7 @@ def main(input_h5ad_file_path: str, version: str):
     """
     # read in anndata object because anndata.obs has the CPG ID and cell type
     expression_h5ad_path = to_path(input_h5ad_file_path).copy('here.h5ad')
-    adata = sc.read_h5ad(expression_h5ad_path)
+    adata = sc.read_h5ad(expression_h5ad_path, backed = 'r')
 
     output_gcs = 'gs://cpg-bioheart-test/str/anndata/concatenated_gene_info_donor_info_obs.csv'
     # write to CSV
