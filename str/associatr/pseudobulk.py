@@ -65,7 +65,7 @@ def main():
     adata = sc.read_h5ad(expression_h5ad_path)
 
     sctransform_job.call(pyScTransform, adata, sctransform_job.ofile)
-    j.ofile.add_extension('.h5ad')
+    sctransform_job.ofile.add_extension('.h5ad')
     b.write_output(sctransform_job.ofile, output_path('sctransform_chr21_ASDC.h5ad'))
 
 
