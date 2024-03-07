@@ -45,7 +45,7 @@ def pyScTransform(adata, ofile_path=None):
     ro.r('seurat_obj = as.Seurat(adata, counts="X", data = NULL, assay = NULL)')
     print(ro.r('print(seurat_obj)'))
 
-    ro.r('res <- SCTransform(object=seurat_obj, assay = "originalexp",vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = FALSE)')
+    ro.r('res <- SCTransform(object=seurat_obj, assay = "originalexp",vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = TRUE)')
 
     corrected_counts = ro.r('res@assays$SCT@counts').T
     adata.layers['corrected_counts'] = corrected_counts
