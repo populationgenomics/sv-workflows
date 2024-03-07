@@ -8,7 +8,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:4.0 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py
+analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:5.0 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py
 
 """
 
@@ -27,9 +27,10 @@ def pyScTransform(adata, ofile_path=None):
 
     ro.r('library(Seurat)')
     ro.r('library(scater)')
+    ro.r('library(tidyverse)')
     anndata2ri.activate()
 
-    #sc.pp.filter_genes(adata, min_cells=5)
+    sc.pp.filter_genes(adata, min_cells=5)
 
     if issparse(adata.X):
         if not adata.X.has_sorted_indices:
@@ -45,13 +46,18 @@ def pyScTransform(adata, ofile_path=None):
     ro.r('seurat_obj = as.Seurat(adata, counts="X", data = NULL, assay = NULL)')
     print(ro.r('print(seurat_obj)'))
 
-    ro.r('res <- SCTransform(object=seurat_obj, assay = "originalexp",vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = TRUE)')
+    ro.r('res <- SCTransform(object=seurat_obj, assay = "originalexp",vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = TRUE, verbose = TRUE)')
 
-    corrected_counts = ro.r('res@assays$SCT@counts').T
-    adata.layers['corrected_counts'] = corrected_counts
+    pseudobulk = ro.r('as.data.frame(t(AggregateExpression(object = res, return.seurat = T, group.by = c("cpg_id"))$SCT))')
 
-    if ofile_path:
-        adata.write_h5ad(str(ofile_path))
+    print (type(pseudobulk))
+
+
+    #corrected_counts = ro.r('res@assays$SCT@counts').T
+    #adata.layers['corrected_counts'] = corrected_counts
+
+    #if ofile_path:
+        #adata.write_h5ad(str(ofile_path))
 
 
 def main():
