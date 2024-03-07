@@ -63,7 +63,6 @@ def main():
     sctransform_job = b.new_python_job('Run scTransform')
     expression_h5ad_path = to_path('gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC/ASDC_chr21.h5ad').copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
-    sctransform_job.declare_resource_group(output = {'h5ad':'{root}.h5ad'})
 
     sctransform_job.call(pyScTransform, adata, sctransform_job.ofile)
     j.ofile.add_extension('.h5ad')
