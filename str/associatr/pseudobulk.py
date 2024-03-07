@@ -8,15 +8,13 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:1.- --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
---input-file=
+analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:4.0 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py
 
 """
 
 import scanpy as sc
 from scipy.sparse import issparse
 
-from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
 def pyScTransform(adata, output_file=None):
@@ -45,7 +43,7 @@ def pyScTransform(adata, output_file=None):
 
     ro.r('seurat_obj = as.Seurat(adata, counts="X", data = NULL)')
 
-    ro.r('res <- SCTransform(object=seurat_obj, vars.to.regress = c("pct_counts_mt","batch:),return.only.var.genes = FALSE, do.correct.umi = FALSE)')
+    ro.r('res <- SCTransform(object=seurat_obj, vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = FALSE)')
 
     corrected_counts = ro.r('res@assays$SCT@counts').T
 
