@@ -50,7 +50,7 @@ def pyScTransform(adata, ofile_path=None):
     corrected_counts = ro.r('res@assays$SCT@counts').T
 
     adata.X = corrected_counts
-    if output_file:
+    if ofile_path:
         adata.write_h5ad(str(ofile_path))
 
 
