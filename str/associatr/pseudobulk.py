@@ -53,11 +53,11 @@ def pyScTransform(adata, ofile_path=None):
     print (type(pseudobulk))
 
 
-    #corrected_counts = ro.r('res@assays$SCT@counts').T
-    #adata.layers['corrected_counts'] = corrected_counts
+    corrected_counts = ro.r('res@assays$SCT@counts').T
+    adata.layers['corrected_counts'] = corrected_counts
 
-    #if ofile_path:
-        #adata.write_h5ad(str(ofile_path))
+    if ofile_path:
+        adata.write_h5ad(str(ofile_path))
 
 
 def main():
