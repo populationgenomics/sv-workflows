@@ -29,7 +29,7 @@ def pyScTransform(adata, ofile_path=None):
     ro.r('library(scater)')
     anndata2ri.activate()
 
-    sc.pp.filter_genes(adata, min_cells=5)
+    #sc.pp.filter_genes(adata, min_cells=5)
 
     if issparse(adata.X):
         if not adata.X.has_sorted_indices:
