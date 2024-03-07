@@ -16,6 +16,7 @@ import scanpy as sc
 from scipy.sparse import issparse
 
 from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 def pyScTransform(adata, output_file=None):
     """
@@ -61,7 +62,9 @@ def main():
     expression_h5ad_path = to_path('gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC/ASDC_chr21.h5ad').copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
-    pyScTransform(adata)
+    output_file = to_path(output_path('ASDC_chr21_sctransformed.h5ad'))
+
+    pyScTransform(adata,output_file)
 
 
 
