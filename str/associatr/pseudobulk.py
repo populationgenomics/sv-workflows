@@ -51,7 +51,7 @@ def pyScTransform(adata, output_file=None):
 
     adata.X = corrected_counts
     if output_file:
-        adata.write(output_file)
+        adata.write_h5ad(output_file)
 
 
 def main():
