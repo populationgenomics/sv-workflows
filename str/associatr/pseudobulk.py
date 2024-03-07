@@ -48,9 +48,8 @@ def pyScTransform(adata, ofile_path=None):
     ro.r('res <- SCTransform(object=seurat_obj, assay = "originalexp",vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = FALSE)')
 
     corrected_counts = ro.r('res@assays$SCT@counts').T
+    adata.layers['corrected_counts'] = corrected_counts
 
-    adata.X = corrected_counts
-    adata.raw = adata
     if ofile_path:
         adata.write_h5ad(str(ofile_path))
 
