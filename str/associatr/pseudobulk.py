@@ -41,7 +41,7 @@ def pyScTransform(adata, output_file=None):
 
     ro.globalenv['adata'] = adata
 
-    ro.r('seurat_obj = as.Seurat(adata, counts="X", data = NULL, assay = "RNA")')
+    ro.r('seurat_obj = as.Seurat(adata, counts="X", data = NULL, assay = NULL)')
     ro.r('print(seurat_obj)')
 
     ro.r('res <- SCTransform(object=seurat_obj, vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = FALSE)')
