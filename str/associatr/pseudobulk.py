@@ -8,7 +8,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:5.0 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py
+analysis-runner --access-level "test" --dataset "bioheart" --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform:4.0 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py
 
 """
 
@@ -48,7 +48,7 @@ def pyScTransform(adata, ofile_path=None):
 
     ro.r('res <- SCTransform(object=seurat_obj, assay = "originalexp",vars.to.regress = c("pct_counts_mt","batch"),return.only.var.genes = FALSE, do.correct.umi = TRUE, verbose = TRUE)')
 
-    pseudobulk = ro.r('as.data.frame(t(AggregateExpression(object = res, return.seurat = T, group.by = c("cpg_id"))$SCT))')
+    pseudobulk = ro.r('as.data.frame(t(AggregateExpression(object = res, group.by = c("cpg_id"))$SCT))')
 
     print (type(pseudobulk))
 
