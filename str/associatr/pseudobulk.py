@@ -69,7 +69,7 @@ def main():
     b.write_output(sctransform_job.ofile, output_path('sctransform_chr21_ASDC.h5ad'))
 
 
-
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
