@@ -3,8 +3,10 @@
 
 """
 This script aims to:
+ - filter out lowly expressed genes (genes expressed in fewer than XX% of cells)
  - output gene lists for each cell type and chromosome (after filtering out lowly expressed genes)
  - output cis window files for each gene with scRNA data (cell type + chr specific)
+ - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner --dataset "bioheart" --access-level "test" --description "get cis and numpy" --output-dir "str/associatr/input_files" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
@@ -20,6 +22,7 @@ import scanpy as sc
 import hail as hl
 import hailtop.batch as hb
 from scipy.stats import norm
+import math
 
 
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
@@ -35,7 +38,7 @@ def cis_window_numpy_extractor(
     cis_window,
     version,
     chrom_len,
-    non_zero_threshold,
+    min_pct,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -56,23 +59,20 @@ def cis_window_numpy_extractor(
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
 
-    # filter columns (genes) in pseudobulk df where fewer than non_zero_threshold of individuals have non-zero values
-    # eg. filter out genes that are expressed in <10% of individuals
-    threshold = len(pseudobulk) * non_zero_threshold
-    pseudobulk = pseudobulk.loc[:, (pseudobulk != 0).sum() >= threshold]
+    # filter lowly expressed genes
+    n_all_cells = len(adata.obs.index)
+    min_cells = math.ceil((n_all_cells * min_pct) / 100)
+    sc.pp.filter_genes(adata, min_cells=min_cells)
 
-    # extract genes in pseudobulk df
-    gene_names = pseudobulk.columns[1:]  # individual ID is the first column
-
-    # write gene names to a JSON file
+    # write filtered gene names to a JSON file
     with to_path(
         output_path(
-            f'scRNA_gene_lists/{non_zero_threshold}_non_zero_threshold/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
+            f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
         )
     ).open('w') as write_handle:
-        json.dump(list(gene_names), write_handle)
+        json.dump(list(adata.var.index), write_handle)
 
-    for gene in gene_names:
+    for gene in list(adata.var.index):
         # get gene body position (start and end) and add window
         start_coord = adata.var[adata.var.index == gene]['start']
         end_coord = adata.var[adata.var.index == gene]['end']
@@ -108,8 +108,10 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
-        #filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
-        gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
+        # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
+        gene_pheno_cov = gene_pheno_cov[
+            gene_pheno_cov['sample_id'].str.startswith('CPG')
+        ]
 
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
@@ -150,6 +152,11 @@ def cis_window_numpy_extractor(
     default=0.01,
     help='filter out genes that are expressed in fewer than XX of individuals',
 )
+@click.option(
+    '--min-pct',
+    default=1,
+    help='filter out genes that are expressed in fewer than XX% of cells',
+)
 @click.command()
 def main(
     input_h5ad_dir,
@@ -163,7 +170,7 @@ def main(
     job_memory,
     job_storage,
     max_parallel_jobs,
-    non_zero_threshold,
+    min_pct,
 ):
     """
     Run cis window extraction and phenotype/covariate numpy object creation
@@ -204,7 +211,7 @@ def main(
                 cis_window,
                 version,
                 chrom_len,
-                non_zero_threshold,
+                min_pct,
             )
 
             manage_concurrency_for_job(j)
