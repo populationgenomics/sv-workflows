@@ -96,7 +96,7 @@ def cis_window_numpy_extractor(
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
-        gene_pheno.loc[:, 'gene_rank'] = gene_pheno.loc[:, gene].rank()
+        gene_pheno.loc[:, 'gene_rank'] = gene_pheno[gene].rank()
         # Calculate the percentile of each rank
         gene_pheno.loc[:, 'gene_percentile'] = (
             gene_pheno.loc[:, 'gene_rank'] - 0.5
