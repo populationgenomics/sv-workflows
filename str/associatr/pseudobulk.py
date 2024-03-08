@@ -17,7 +17,6 @@ import click
 import numpy as np
 import pandas as pd
 import scanpy as sc
-from scipy.sparse import issparse
 
 from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
