@@ -149,11 +149,6 @@ def cis_window_numpy_extractor(
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
 @click.option(
-    '--non-zero-threshold',
-    default=0.01,
-    help='filter out genes that are expressed in fewer than XX of individuals',
-)
-@click.option(
     '--min-pct',
     default=1,
     help='filter out genes that are expressed in fewer than XX% of cells',
