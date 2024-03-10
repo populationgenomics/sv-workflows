@@ -87,9 +87,9 @@ def get_covariates(
 @click.option(
     '--chromosomes', help='Chromosome number eg 1, comma separated if multiple'
 )
-@click.option('--job-storage', help='Storage of the batch job eg 30G', default='20G')
+@click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
-@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
+@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=2)
 @click.option('--covariate-file-path', help='GCS Path to the existing covariate file')
 @click.option('--num-pcs', help='Number of PCs to calculate', default=20)
 @click.command()
