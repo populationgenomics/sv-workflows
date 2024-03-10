@@ -56,8 +56,8 @@ def get_covariates(
     sc.tl.pca(adata_genome, svd_solver='arpack')
 
     # Variance ratio plot
-    sc.pl.pca_variance_ratio(adata_genome, save='local_scree_plot.png')
-    hl.hadoop_copy('local_scree_plot.png', output_path(f'{cell_type}_scree_plot.png', 'analysis'))
+    sc.pl.pca_variance_ratio(adata_genome, save='local.png')
+    hl.hadoop_copy('figures/pca_variance_ratiolocal.png', output_path(f'{cell_type}_scree_plot.png', 'analysis'))
 
     # extract PCs
     df_pcs = pd.DataFrame(adata_genome.obsm['X_pca'])
