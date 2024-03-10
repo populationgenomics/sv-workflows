@@ -114,6 +114,17 @@ def cis_window_numpy_extractor(
             gene_pheno_cov['sample_id'].str.startswith('CPG')
         ]
 
+        # add in cohort as a covariate
+        cohort_cpg_id = adata.obs[['cpg_id', 'cohort']]
+        mapping = {'TOB': 1, 'BioHEART': 2}
+        cohort_cpg_id['cohort'] = cohort_cpg_id['cohort'].map(mapping)
+        cohort_cpg_id.rename(columns={'cpg_id': 'sample_id'}, inplace=True)
+        cohort_cpg_id = cohort_cpg_id.drop_duplicates()
+
+        gene_pheno_cov = gene_pheno_cov.merge(
+            cohort_cpg_id, on='sample_id', how='inner'
+        )
+
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
