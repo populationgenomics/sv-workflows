@@ -10,11 +10,10 @@ This script aims to:
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
- analysis-runner --dataset "bioheart" --access-level "test" \
+ analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files"  \
---config get_cis_numpy_files.toml
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
- get_cis_numpy_files.py
+python3 get_cis_numpy_files.py
 
 """
 import json
@@ -181,7 +180,7 @@ def main():
             )
             j.image(
                 image_path(
-                    'australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'
+                    'scanpy'
                 )
             )
             j.cpu(get_config()['get_cis_numpy']['job_cpu'])
