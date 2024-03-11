@@ -11,7 +11,7 @@ This script aims to:
 
  analysis-runner --dataset "bioheart" --access-level "test" --description "get cis and numpy" --output-dir "str/associatr/input_files" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
  get_cis_numpy_files.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --input-pseudobulk-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/pseudobulk --input-cov-dir=gs://cpg-bioheart-test/str/associatr/input_files/covariates \
- --chromosomes=chr1 --cell-types=ASDC --cis-window=100000 --version=v1
+ --chromosomes=chr1 --cell-types=ASDC --cis-window=100000 --version=v1 --remove-samples-file=gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt
 
 """
 import json
@@ -40,6 +40,7 @@ def cis_window_numpy_extractor(
     version,
     chrom_len,
     min_pct,
+    remove_samples_file
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -93,6 +94,13 @@ def cis_window_numpy_extractor(
         # make the phenotype-covariate numpy objects
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)
         gene_pheno = pseudobulk[['sample_id', gene]]
+
+        # remove samples that are in the remove_samples_file
+        if remove_samples_file:
+            with to_path(remove_samples_file).open() as f:
+                array_string = f.read().strip()
+                remove_samples = eval(array_string)
+                gene_pheno = gene_pheno[~gene_pheno['sample_id'].isin(remove_samples)]
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
@@ -164,6 +172,11 @@ def cis_window_numpy_extractor(
     default=1,
     help='filter out genes that are expressed in fewer than XX% of cells',
 )
+@click.options(
+    '--remove-samples-file',
+    default=None,
+    help='GCS path to the file containing the list of samples to remove'
+)
 @click.command()
 def main(
     input_h5ad_dir,
@@ -178,6 +191,7 @@ def main(
     job_storage,
     max_parallel_jobs,
     min_pct,
+    remove_samples_file,
 ):
     """
     Run cis window extraction and phenotype/covariate numpy object creation
@@ -219,6 +233,8 @@ def main(
                 version,
                 chrom_len,
                 min_pct,
+                remove_samples_file
+
             )
 
             manage_concurrency_for_job(j)
