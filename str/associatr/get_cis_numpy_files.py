@@ -18,6 +18,8 @@ This script aims to:
 """
 import json
 import math
+from ast import literal_eval
+
 
 import click
 import numpy as np
@@ -26,8 +28,6 @@ import scanpy as sc
 import hail as hl
 import hailtop.batch as hb
 from scipy.stats import norm
-from ast import literal_eval
-
 
 
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
