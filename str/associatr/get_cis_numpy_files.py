@@ -10,9 +10,10 @@ This script aims to:
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
- analysis-runner --dataset "bioheart" --access-level "test" --description "get cis and numpy" --output-dir "str/associatr/input_files" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
- get_cis_numpy_files.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --input-pseudobulk-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/pseudobulk --input-cov-dir=gs://cpg-bioheart-test/str/associatr/input_files/covariates \
- --chromosomes=chr1 --cell-types=ASDC --cis-window=100000 --version=v1 --remove-samples-file=gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt
+ analysis-runner --dataset "bioheart" --access-level "test" --description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
+ get_cis_numpy_files.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --input-pseudobulk-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/pseudobulk --input-cov-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/covariates \
+ --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 \
+--cell-types=CD8_TEM --cis-window=100000 --version=v1 --remove-samples-file=gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt
 
 """
 import json
@@ -25,6 +26,8 @@ import scanpy as sc
 import hail as hl
 import hailtop.batch as hb
 from scipy.stats import norm
+from ast import literal_eval
+
 
 
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
@@ -100,7 +103,7 @@ def cis_window_numpy_extractor(
         if remove_samples_file:
             with to_path(remove_samples_file).open() as f:
                 array_string = f.read().strip()
-                remove_samples = eval(array_string)
+                remove_samples = literal_eval(array_string)
                 gene_pheno = gene_pheno[~gene_pheno['sample_id'].isin(remove_samples)]
 
         # rank-based inverse normal transformation based on R's orderNorm()
@@ -173,7 +176,7 @@ def cis_window_numpy_extractor(
     default=1,
     help='filter out genes that are expressed in fewer than XX% of cells',
 )
-@click.options(
+@click.option(
     '--remove-samples-file',
     default=None,
     help='GCS path to the file containing the list of samples to remove',
