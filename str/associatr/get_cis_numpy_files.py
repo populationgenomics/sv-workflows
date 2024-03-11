@@ -30,7 +30,7 @@ import hailtop.batch as hb
 from scipy.stats import norm
 
 
-from cpg_utils.hail_batch import get_batch, output_path, init_batch
+from cpg_utils.hail_batch import get_batch, output_path, init_batch, image_path
 from cpg_utils import to_path
 
 
