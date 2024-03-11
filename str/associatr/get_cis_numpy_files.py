@@ -10,10 +10,11 @@ This script aims to:
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
- analysis-runner --dataset "bioheart" --access-level "test" --description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files" --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
- get_cis_numpy_files.py --input-h5ad-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --input-pseudobulk-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/pseudobulk --input-cov-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/covariates \
- --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 \
---cell-types=CD8_TEM --cis-window=100000 --version=v1 --remove-samples-file=gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt
+ analysis-runner --dataset "bioheart" --access-level "test" \
+--description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files"  \
+--config get_cis_numpy_files.toml
+--image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
+ get_cis_numpy_files.py
 
 """
 import json
@@ -31,6 +32,7 @@ from scipy.stats import norm
 
 
 from cpg_utils.hail_batch import get_batch, output_path, init_batch, image_path
+from cpg_utils.config import get_config
 from cpg_utils import to_path
 
 
@@ -153,50 +155,7 @@ def cis_window_numpy_extractor(
             np.save(f, gene_pheno_cov)
 
 
-@click.option('--input-h5ad-dir', help='GCS directory to the input AnnData objects')
-@click.option(
-    '--input-pseudobulk-dir', help='GCS directory to the input pseudobulk CSV files'
-)
-@click.option('--input-cov-dir', help='GCS directory to the input covariate CSV files')
-@click.option('--chromosomes', help=' eg chr22, comma separated if multiple')
-@click.option('--cell-types', help='cell type, comma separated if multiple')
-@click.option('--cis-window', help='cis window size in bp')
-@click.option('--version', default='v1', help='version of the output files')
-@click.option('--job-cpu', default=2, help='Number of CPUs to use for the job')
-@click.option('--job-memory', default='standard', help='Memory to use for the job')
-@click.option('--job-storage', default='5G', help='Storage to use for the job')
-@click.option(
-    '--max-parallel-jobs',
-    type=int,
-    default=500,
-    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
-)
-@click.option(
-    '--min-pct',
-    default=1,
-    help='filter out genes that are expressed in fewer than XX% of cells',
-)
-@click.option(
-    '--remove-samples-file',
-    default=None,
-    help='GCS path to the file containing the list of samples to remove',
-)
-@click.command()
-def main(
-    input_h5ad_dir,
-    input_pseudobulk_dir,
-    input_cov_dir,
-    chromosomes,
-    cell_types,
-    cis_window,
-    version,
-    job_cpu,
-    job_memory,
-    job_storage,
-    max_parallel_jobs,
-    min_pct,
-    remove_samples_file,
-):
+def main():
     """
     Run cis window extraction and phenotype/covariate numpy object creation
     """
@@ -209,33 +168,37 @@ def main(
         """
         To avoid having too many jobs running at once, we have to limit concurrency.
         """
-        if len(_dependent_jobs) >= max_parallel_jobs:
-            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        if len(_dependent_jobs) >= get_config()['get_cis_numpy']['max_parallel_jobs']:
+            job.depends_on(_dependent_jobs[-['get_cis_numpy']['max_parallel_jobs']])
         _dependent_jobs.append(job)
 
-    for cell_type in cell_types.split(','):
-        for chrom in chromosomes.split(','):
+    for cell_type in get_config()['get_cis_numpy']['cell_types'].split(','):
+        for chrom in get_config()['get_cis_numpy']['chromosomes'].split(','):
             init_batch()
             chrom_len = hl.get_reference('GRCh38').lengths[chrom]
             j = b.new_python_job(
                 name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
             )
-            j.image(image_path('australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'))
-            j.cpu(job_cpu)
-            j.memory(job_memory)
-            j.storage(job_storage)
+            j.image(
+                image_path(
+                    'australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'
+                )
+            )
+            j.cpu(get_config()['get_cis_numpy']['job_cpu'])
+            j.memory(get_config()['get_cis_numpy']['job_memory'])
+            j.storage(get_config()['get_cis_numpy']['job_storage'])
             j.call(
                 cis_window_numpy_extractor,
-                input_h5ad_dir,
-                input_pseudobulk_dir,
-                input_cov_dir,
+                get_config()['get_cis_numpy']['input_h5ad_dir'],
+                get_config()['get_cis_numpy']['input_pseudobulk_dir'],
+                get_config()['get_cis_numpy']['input_cov_dir'],
                 chrom,
                 cell_type,
-                cis_window,
-                version,
+                get_config()['get_cis_numpy']['cis_window'],
+                get_config()['get_cis_numpy']['version'],
                 chrom_len,
-                min_pct,
-                remove_samples_file,
+                get_config()['get_cis_numpy']['min_pct'],
+                get_config()['get_cis_numpy']['remove_samples_file'],
             )
 
             manage_concurrency_for_job(j)
