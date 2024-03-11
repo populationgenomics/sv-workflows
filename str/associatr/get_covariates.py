@@ -57,7 +57,12 @@ def get_covariates(
 
     # Variance ratio plot
     sc.pl.pca_variance_ratio(adata_genome, save='local.png')
-    hl.hadoop_copy('figures/pca_variance_ratiolocal.png', output_path(f'pseudobulk_RNA_PCs_scree_plots/{cell_type}_scree_plot.png', 'analysis'))
+    hl.hadoop_copy(
+        'figures/pca_variance_ratiolocal.png',
+        output_path(
+            f'pseudobulk_RNA_PCs_scree_plots/{cell_type}_scree_plot.png', 'analysis'
+        ),
+    )
 
     # extract PCs
     df_pcs = pd.DataFrame(adata_genome.obsm['X_pca'])
@@ -65,7 +70,9 @@ def get_covariates(
     df_pcs = df_pcs.rename_axis(
         'sample_id'
     ).reset_index()  # index (CPG ids) are not stored in 'sample_id' column
-    df_pcs = df_pcs[['sample_id'] + list(range(num_pcs))]  # only keep first 20 PCs by default
+    df_pcs = df_pcs[
+        ['sample_id'] + list(range(num_pcs))
+    ]  # only keep first 20 PCs by default
     df_pcs = df_pcs.rename(
         columns={i: f'rna_PC{i+1}' for i in range(num_pcs)}
     )  # rename PC columns: rna_PC{num}
@@ -77,7 +84,10 @@ def get_covariates(
 
     # write to GCP
     merged_df.to_csv(
-        output_path(f'covariates/{cell_type}_covariates.csv', 'analysis'), index=False
+        output_path(
+            f'covariates/{num_pcs}_rna_pcs/{cell_type}_covariates.csv', 'analysis'
+        ),
+        index=False,
     )
 
 
@@ -130,7 +140,6 @@ def main(
             covariate_file_path,
             num_pcs,
         )
-
 
     b.run(wait=False)
 
