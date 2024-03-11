@@ -6,6 +6,7 @@ This script aims to:
  - filter out lowly expressed genes (genes expressed in fewer than XX% of cells)
  - output gene lists for each cell type and chromosome (after filtering out lowly expressed genes)
  - output cis window files for each gene with scRNA data (cell type + chr specific)
+ - optionally removes samples based on a provided sample file
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
@@ -40,7 +41,7 @@ def cis_window_numpy_extractor(
     version,
     chrom_len,
     min_pct,
-    remove_samples_file
+    remove_samples_file,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -175,7 +176,7 @@ def cis_window_numpy_extractor(
 @click.options(
     '--remove-samples-file',
     default=None,
-    help='GCS path to the file containing the list of samples to remove'
+    help='GCS path to the file containing the list of samples to remove',
 )
 @click.command()
 def main(
@@ -233,8 +234,7 @@ def main(
                 version,
                 chrom_len,
                 min_pct,
-                remove_samples_file
-
+                remove_samples_file,
             )
 
             manage_concurrency_for_job(j)
