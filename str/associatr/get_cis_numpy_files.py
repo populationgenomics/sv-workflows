@@ -220,9 +220,7 @@ def main(
             j = b.new_python_job(
                 name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
             )
-            j.image(
-                'australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'
-            )
+            j.image(image_path('australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'))
             j.cpu(job_cpu)
             j.memory(job_memory)
             j.storage(job_storage)
