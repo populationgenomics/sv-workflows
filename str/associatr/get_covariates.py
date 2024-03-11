@@ -80,6 +80,12 @@ def get_covariates(
     # read in covariates
     cov = pd.read_csv(covariate_file_path)
 
+    # Get the index of the column 'geno_PC7'
+    index_of_geno_PC7 = cov.columns.get_loc('geno_PC7')
+    # Drop columns from 'geno_PC7' onwards (use the first 6 geno PCs only)
+    cov = cov.iloc[:, :index_of_geno_PC7]
+
+
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
     # write to GCP
