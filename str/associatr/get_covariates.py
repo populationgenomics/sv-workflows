@@ -4,8 +4,9 @@ This script calculates cell-type specific PCs from the pseudobulk RNA data (geno
 merges them with other pre-calculated covariates, and writes the file to GCP.
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --output-dir "str/associatr/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk \
---cell-types=ASDC --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --covariate-file-path=gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv
+--description "Get covariates" --output-dir "str/associatr/input_files/rna_pc_calibration/2_pcs" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk \
+--cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --covariate-file-path=gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv \
+--num-pcs=2
 
 """
 
@@ -59,9 +60,7 @@ def get_covariates(
     sc.pl.pca_variance_ratio(adata_genome, save='local.png')
     hl.hadoop_copy(
         'figures/pca_variance_ratiolocal.png',
-        output_path(
-            f'pseudobulk_RNA_PCs_scree_plots/{cell_type}_scree_plot.png', 'analysis'
-        ),
+        output_path(f'pseudobulk_RNA_PCs_scree_plots/{cell_type}_scree_plot.png'),
     )
 
     # extract PCs
@@ -85,14 +84,11 @@ def get_covariates(
     # Drop columns from 'geno_PC7' onwards (use the first 6 geno PCs only)
     cov = cov.iloc[:, :index_of_geno_PC7]
 
-
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
     # write to GCP
     merged_df.to_csv(
-        output_path(
-            f'covariates/{num_pcs}_rna_pcs/{cell_type}_covariates.csv', 'analysis'
-        ),
+        output_path(f'covariates/{num_pcs}_rna_pcs/{cell_type}_covariates.csv'),
         index=False,
     )
 
