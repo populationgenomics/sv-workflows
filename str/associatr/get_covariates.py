@@ -71,7 +71,7 @@ def get_covariates(
     ).reset_index()  # index (CPG ids) are not stored in 'sample_id' column
     df_pcs = df_pcs[
         ['sample_id'] + list(range(num_pcs))
-    ]  # only keep first 20 PCs by default
+    ]
     df_pcs = df_pcs.rename(
         columns={i: f'rna_PC{i+1}' for i in range(num_pcs)}
     )  # rename PC columns: rna_PC{num}
