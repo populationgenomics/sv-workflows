@@ -19,5 +19,3 @@ max_parallel_jobs = 500
 min_pct = 1
 # GCS path to the file containing the list of samples to remove
 remove_samples_file = 'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
-
-

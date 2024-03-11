@@ -167,7 +167,9 @@ def main():
         To avoid having too many jobs running at once, we have to limit concurrency.
         """
         if len(_dependent_jobs) >= get_config()['get_cis_numpy']['max_parallel_jobs']:
-            job.depends_on(_dependent_jobs[-get_config()['get_cis_numpy']['max_parallel_jobs']])
+            job.depends_on(
+                _dependent_jobs[-get_config()['get_cis_numpy']['max_parallel_jobs']]
+            )
         _dependent_jobs.append(job)
 
     for cell_type in get_config()['get_cis_numpy']['cell_types'].split(','):
