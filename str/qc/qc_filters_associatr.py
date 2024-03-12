@@ -18,7 +18,7 @@ Applied filters:
     --description "Hail QC for associaTR" \
     --access-level "test" \
     --output-dir "str/associatr/input_files" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
     --version=v1-chr-specific
 
 """
