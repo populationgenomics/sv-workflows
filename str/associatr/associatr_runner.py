@@ -13,8 +13,8 @@ Ensure prior scripts have been run to generate dependent files, particularly:
     --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs" \
      associatr_runner.py  --celltypes=CD8_TEM \
-    --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 \
-    --vcf-file-path=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1/hail_filtered.vcf.bgz \
+    --chromosomes=chr1 \
+    --vcf-file-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --gene-list-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --cis-window-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/cis_window_files/v1 \
     --pheno-cov-numpy-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/pheno_cov_numpy/v1
@@ -41,7 +41,7 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--celltypes')
 @click.option('--chromosomes', help=' eg chr22')
 @click.option(
-    '--vcf-file-path', help='gs://... to the output of qc_filters_associatr.py'
+    '--vcf-file-dir', help='gs://... to the chr-specific output of qc_filters_associatr.py'
 )
 @click.option(
     '--max-parallel-jobs',
@@ -54,7 +54,7 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--cis-window-dir', help='directory to cis window files')
 @click.option('--pheno-cov-numpy-dir', help='directory to numpy files')
 @click.option('--version', help='version of the output', default='v1')
-@click.option('--job-storage', help='eg 50G', default='50G')
+@click.option('--job-storage', help='eg 50G', default='4G')
 @click.option('--job-cpu', help='eg 2', default=1)
 @click.command()
 def main(
@@ -62,7 +62,7 @@ def main(
     chromosomes,
     max_parallel_jobs,
     cis_window_size,
-    vcf_file_path,
+    vcf_file_dir,
     gene_list_dir,
     cis_window_dir,
     pheno_cov_numpy_dir,
@@ -89,6 +89,7 @@ def main(
 
     for celltype in celltypes.split(','):
         for chromosome in chromosomes.split(','):
+            vcf_file_path = f'{vcf_file_dir}/hail_filtered_{chromosome}.vcf.bgz'
             variant_vcf = b.read_input_group(
                 **dict(
                     base=vcf_file_path,
