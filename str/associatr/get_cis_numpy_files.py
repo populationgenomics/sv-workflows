@@ -3,7 +3,6 @@
 
 """
 This script aims to:
- - filter out lowly expressed genes (genes expressed in fewer than XX% of cells)
  - output gene lists for each cell type and chromosome (after filtering out lowly expressed genes)
  - output cis window files for each gene with scRNA data (cell type + chr specific)
  - optionally removes samples based on a provided sample file
@@ -63,11 +62,6 @@ def cis_window_numpy_extractor(
     pseudobulk = pd.read_csv(pseudobulk_path)
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
-
-    # filter lowly expressed genes
-    n_all_cells = len(adata.obs.index)
-    min_cells = math.ceil((n_all_cells * min_pct) / 100)
-    sc.pp.filter_genes(adata, min_cells=min_cells)
 
     # write filtered gene names to a JSON file
     with to_path(
