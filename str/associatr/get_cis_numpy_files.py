@@ -178,11 +178,7 @@ def main():
             j = b.new_python_job(
                 name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
             )
-            j.image(
-                image_path(
-                    'scanpy'
-                )
-            )
+            j.image(image_path('scanpy'))
             j.cpu(get_config()['get_cis_numpy']['job_cpu'])
             j.memory(get_config()['get_cis_numpy']['job_memory'])
             j.storage(get_config()['get_cis_numpy']['job_storage'])
