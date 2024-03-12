@@ -125,7 +125,7 @@ def main(
             j.cpu(job_cpu)
             j.memory(job_memory)
             j.storage(job_storage)
-            j.call(pseudobulk, input_file, target_sum)
+            j.call(pseudobulk, input_file, target_sum, min_pct)
     b.run(wait=False)
 
 
