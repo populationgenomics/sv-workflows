@@ -2,6 +2,7 @@
 """
 This script performs pseudobulk (mean aggregation) of an input AnnData object
 Prior to pseudobulking, the following steps are performed:
+- Filtering out lowly expressed genes
 - Normalisation
 - Log transformation (ln(1+x))
 - Batch correction
