@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member,unnecessary-lambda
 """
-This script applies filters to a ExpansionHunter MT, and outputs a VCF ready for input into associaTR.
+This script applies filters to a ExpansionHunter MT, and outputs chromosome-specific VCF ready for input into associaTR.
 Input MT should be the output of qc_annotator.py
 
 Applied filters:
@@ -19,6 +19,7 @@ Applied filters:
     --access-level "test" \
     --output-dir "str/associatr/input_files" \
     qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
+    --version=v1-chr-specific
 
 """
 
@@ -34,7 +35,7 @@ config = get_config()
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-def qc_filter(mt_path, gcs_path):
+def qc_filter(mt_path, version):
     """
     Applies QC filters to the input MT
     """
@@ -181,13 +182,18 @@ def qc_filter(mt_path, gcs_path):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
-    # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
-    hl.export_vcf(
-        mt,
-        gcs_path,
-        append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
-        tabix=True,
-    )
+    for chr_index in range(22):  # iterate over chr1-22
+        mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
+        gcs_output_path = output_path(
+            f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz'
+        )
+        # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
+        hl.export_vcf(
+            mt_chr,
+            gcs_output_path,
+            append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
+            tabix=True,
+        )
 
 
 @click.option(
@@ -211,15 +217,14 @@ def main(
     Runner to apply QC filters to input MT, and bgzip and tabix.
     """
 
-    b = get_batch()
+    b = get_batch('Apply QC filters to MT and export chr-specific VCFs')
 
-    gcs_output_path = output_path(f'vcf/{version}/hail_filtered.vcf.bgz')
     hail_job = b.new_python_job(name=f'QC filters')
     hail_job.image(config['workflow']['driver_image'])
     hail_job.storage(hail_storage)
     hail_job.cpu(hail_cpu)
     hail_job.memory(hail_memory)
-    hail_job.call(qc_filter, mt_path, gcs_output_path)
+    hail_job.call(qc_filter, mt_path, version)
 
     b.run(wait=False)
 
