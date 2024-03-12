@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 
-from cpg_utils.hail_batch import get_batch, output_path,image_path
+from cpg_utils.hail_batch import get_batch, output_path, image_path
 from cpg_utils import to_path
 
 
