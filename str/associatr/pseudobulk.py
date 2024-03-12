@@ -9,7 +9,7 @@ Prior to pseudobulking, the following steps are performed:
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
---input-dir=gs://cpg-bioheart-test/str/anndata --cell-types=CD4_TCM --chromosomes=1
+--input-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --cell-types=CD4_TCM --chromosomes=1 --job-memory=highmem --job-cpu=16
 
 """
 import math
@@ -31,7 +31,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
     expression_h5ad_path = to_path(input_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
-    #filter out lowly expressed genes
+    # filter out lowly expressed genes
     n_all_cells = len(adata.obs.index)
     min_cells = math.ceil((n_all_cells * min_pct) / 100)
     sc.pp.filter_genes(adata, min_cells=min_cells)
@@ -89,7 +89,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
 @click.option(
     '--chromosomes', help='Chromosome number eg 1, comma separated if multiple'
 )
-@click.option('--job-storage', help='Storage of the batch job eg 30G', default='20G')
+@click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
 @click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
 @click.option(
@@ -104,7 +104,14 @@ def pseudobulk(input_file_path, target_sum, min_pct):
 )
 @click.command()
 def main(
-    input_dir, cell_types, chromosomes, job_storage, job_memory, job_cpu, target_sum, min_pct
+    input_dir,
+    cell_types,
+    chromosomes,
+    job_storage,
+    job_memory,
+    job_cpu,
+    target_sum,
+    min_pct,
 ):
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
