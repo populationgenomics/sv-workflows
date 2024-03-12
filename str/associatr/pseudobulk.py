@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch, output_path,image_path
 from cpg_utils import to_path
 
 
@@ -127,9 +127,7 @@ def main(
         for chromosome in chromosomes.split(','):
             input_file = f'{input_dir}/{cell_type}_chr{chromosome}.h5ad'
             j = b.new_python_job(name=f'Pseudobulk for {cell_type}: chr{chromosome}')
-            j.image(
-                'australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3'
-            )
+            j.image(image_path('scanpy'))
             j.cpu(job_cpu)
             j.memory(job_memory)
             j.storage(job_storage)
