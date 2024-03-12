@@ -41,7 +41,8 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--celltypes')
 @click.option('--chromosomes', help=' eg chr22')
 @click.option(
-    '--vcf-file-dir', help='gs://... to the chr-specific output of qc_filters_associatr.py'
+    '--vcf-file-dir',
+    help='gs://... to the chr-specific output of qc_filters_associatr.py',
 )
 @click.option(
     '--max-parallel-jobs',
