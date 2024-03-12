@@ -16,7 +16,6 @@ python3 get_cis_numpy_files.py
 
 """
 import json
-import math
 from ast import literal_eval
 
 import numpy as np
@@ -63,15 +62,18 @@ def cis_window_numpy_extractor(
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
 
+    # extract genes in pseudobulk df
+    gene_names = pseudobulk.columns[1:]  # individual ID is the first column
+
     # write filtered gene names to a JSON file
     with to_path(
         output_path(
             f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
         )
     ).open('w') as write_handle:
-        json.dump(list(adata.var.index), write_handle)
+        json.dump(gene_names, write_handle)
 
-    for gene in list(adata.var.index):
+    for gene in gene_names:
         # get gene body position (start and end) and add window
         start_coord = adata.var[adata.var.index == gene]['start']
         end_coord = adata.var[adata.var.index == gene]['end']
