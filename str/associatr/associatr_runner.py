@@ -11,12 +11,13 @@ Ensure prior scripts have been run to generate dependent files, particularly:
  analysis-runner --dataset "bioheart" \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr" \
-     associatr_runner.py  --celltypes=ASDC --chromosomes=chr1 \
+    --output-dir "str/associatr/rna_pc_calibration/2_pcs" \
+     associatr_runner.py  --celltypes=CD8_TEM \
+    --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 \
     --vcf-file-path=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1/hail_filtered.vcf.bgz \
-    --gene-list-dir=gs://cpg-bioheart-test/str/associatr/input_files/scRNA_gene_lists/0.01_non_zero_threshold \
-    --cis-window-dir=gs://cpg-bioheart-test/str/associatr/input_files/cis_window_files/v1 \
-    --pheno-cov-numpy-dir=gs://cpg-bioheart-test/str/associatr/input_files/pheno_cov_numpy/v1
+    --gene-list-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --cis-window-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/cis_window_files/v1 \
+    --pheno-cov-numpy-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/pheno_cov_numpy/v1
 
 
 """
@@ -54,7 +55,7 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--pheno-cov-numpy-dir', help='directory to numpy files')
 @click.option('--version', help='version of the output', default='v1')
 @click.option('--job-storage', help='eg 50G', default='50G')
-@click.option('--job-cpu', help='eg 2', default=2)
+@click.option('--job-cpu', help='eg 2', default=1)
 @click.command()
 def main(
     celltypes,
