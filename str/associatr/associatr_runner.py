@@ -55,7 +55,7 @@ def gene_cis_window_file_reader(file_path):
 @click.option('--cis-window-dir', help='directory to cis window files')
 @click.option('--pheno-cov-numpy-dir', help='directory to numpy files')
 @click.option('--version', help='version of the output', default='v1')
-@click.option('--job-storage', help='eg 50G', default='4G')
+@click.option('--job-storage', help='eg 50G', default='0G')
 @click.option('--job-cpu', help='eg 2', default=1)
 @click.command()
 def main(
