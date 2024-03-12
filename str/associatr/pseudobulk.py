@@ -8,10 +8,12 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/scanpy_sctransform --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
---input-dir=gs://cpg-bioheart-test/str/anndata --cell-types=B_naive --chromosomes=10,22
+analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
+--input-dir=gs://cpg-bioheart-test/str/anndata --cell-types=CD4_TCM --chromosomes=1
 
 """
+import math
+
 import logging
 import click
 import numpy as np
@@ -22,12 +24,17 @@ from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
 
-def pseudobulk(input_file_path, target_sum):
+def pseudobulk(input_file_path, target_sum, min_pct):
     """
     Performs pseudobulking in a cell-type chromosome-specific manner
     """
     expression_h5ad_path = to_path(input_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
+
+    #filter out lowly expressed genes
+    n_all_cells = len(adata.obs.index)
+    min_cells = math.ceil((n_all_cells * min_pct) / 100)
+    sc.pp.filter_genes(adata, min_cells=min_cells)
 
     # normalisation
     # we can't use pp.normalize_total because the expected input is a chr-specific anndata file, while
@@ -90,15 +97,20 @@ def pseudobulk(input_file_path, target_sum):
     help='Target sum of counts per cell (for normalization purposes)',
     default=1e6,
 )
+@click.option(
+    '--min-pct',
+    help='Minimum percentage of cells expressing a gene to be included in the pseudobulk',
+    default=0.1,
+)
 @click.command()
 def main(
-    input_dir, cell_types, chromosomes, job_storage, job_memory, job_cpu, target_sum
+    input_dir, cell_types, chromosomes, job_storage, job_memory, job_cpu, target_sum, min_pct
 ):
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
 
     """
-    b = get_batch()
+    b = get_batch('Run pseudobulk')
 
     logging.info(f'Cell types to run: {cell_types}')
     logging.info(f'Chromosomes to run: {chromosomes}')
