@@ -134,7 +134,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    genes_per_job = 50
+    genes_per_job = 100
 
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
