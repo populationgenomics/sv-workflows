@@ -142,7 +142,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                 to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
             )
             for i in range(0, len(gene_files), genes_per_job):
-                batch_gene_files = gene_files[i:i+genes_per_job]
+                batch_gene_files = gene_files[i : i + genes_per_job]
                 j = get_batch('Compute gene level pvals').new_python_job(
                     name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}'
                 )
