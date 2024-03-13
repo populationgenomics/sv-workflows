@@ -13,9 +13,7 @@ analysis-runner --dataset "bioheart" --description "compute gene level pvals" --
 
 """
 
-import numpy as np
 import pandas as pd
-import hailtop.batch as hb
 
 import click
 from cpg_utils.hail_batch import get_batch, output_path
