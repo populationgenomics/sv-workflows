@@ -9,7 +9,7 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
-    compute_gene_level_pvals.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
+    run_acat.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
     --cell-types=CD8_TEM --chromosomes=2
 
 """
@@ -44,9 +44,8 @@ def cct(gene_name, pvals, cell_type, chromosome, weights=None):
     R code is implemented in python
     """
 
-    # check if there is NA
-    if np.isnan(pvals).sum() > 0:
-        raise ValueError('Cannot have NAs in the p-values!')
+    # remove NA values - associaTR reports pval as NA if locus was thrown out (not tested)
+    pvals = pvals[~np.isnan(pvals)]
 
     # check if all p-values are between 0 and 1
     if ((pvals < 0).sum() + (pvals > 1).sum()) > 0:
