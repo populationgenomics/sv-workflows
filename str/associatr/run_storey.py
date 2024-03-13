@@ -21,7 +21,6 @@ import click
 from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 import rpy2.robjects as ro
-import numpy as np
 
 
 def compute_storey(input_dir, cell_type, chromosomes):
@@ -40,10 +39,9 @@ def compute_storey(input_dir, cell_type, chromosomes):
             pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
     pvals = pval_df['gene_level_pval']
-    ro.globalenv['pvals'] = ro.FloatVector(list(pvals)) #  - make it into a list or np array?
+    ro.globalenv['pvals'] = ro.FloatVector(list(pvals))
     pval_df['qval'] = ro.r('qvalue(pvals)$qvalues')
 
-    # write to TSV
     # write to output
     gcs_output = output_path(
         f'fdr_qvals/{cell_type}_qval.tsv',
