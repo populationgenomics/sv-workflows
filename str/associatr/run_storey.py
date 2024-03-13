@@ -5,10 +5,11 @@
 
 This script performs FDR (across gene) correction (the second and final step of multiple testing correction).
 Ensure that `run_acat.py` has been run to generate the gene-level p-values first.
+Output is one TSV file per cell type with three columns - gene name, gene-level p-value (ACAT-corrected), and q-value.
 
-analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
+analysis-runner --dataset "bioheart" --description "compute qvals" --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
-    run_acat.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
+    run_storey.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
     --cell-types=CD8_TEM --chromosomes=2
 
 """
