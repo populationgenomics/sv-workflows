@@ -66,6 +66,7 @@ def main(input_dir, cell_types, chromosomes):
         j = get_batch('compute_storey').new_python_job(
             name=f'compute_storey_{cell_type}'
         )
+        j.cpu(0.5).memory('lowmem')
         j.call(compute_storey, input_dir, cell_type, chromosomes)
     get_batch('compute_storey').run(wait=False)
 
