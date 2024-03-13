@@ -33,7 +33,7 @@ def cct(gene_name, pvals, cell_type, chromosome, weights=None):
     #' between 0 to 1, to be combined.
     #' @param weights a numeric vector of non-negative weights. If code{NULL}, the
     #' equal weights are assumed.
-    #' @return the aggregated p-value combining p-values from the vector \code{pvals}.
+    #' @return the aggregated p-value combining p-values from the vector code{pvals}.
     #' @examples pvalues <- c(2e-02,4e-04,0.2,0.1,0.8)
     #' @examples CCT(pvals=pvalues)
     #' @references Liu, Y., & Xie, J. (2020). Cauchy combination test: a powerful test
