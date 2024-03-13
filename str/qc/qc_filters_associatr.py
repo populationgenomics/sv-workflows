@@ -55,7 +55,7 @@ def qc_filter(mt_path, version):
     # set sample level call rate >=0.99
     mt = mt.filter_cols(mt.sample_qc.call_rate >= 0.99)
 
-    # set big expansions/deletions beyond [-20,30] relative to mode allele to NA
+    # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
     mt = mt.annotate_entries(
         GT=hl.if_else(
             ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
@@ -201,7 +201,7 @@ def qc_filter(mt_path, version):
     help='GCS file path to mt (output of qc_annotator.py)',
     type=str,
 )
-@click.option('--hail-storage', help='Hail storage', type=str, default='20G')
+@click.option('--hail-storage', help='Hail storage', type=str, default='0G')
 @click.option('--hail-cpu', help='Hail CPU', type=int, default=1)
 @click.option('--hail-memory', help='Hail memory', type=str, default='standard')
 @click.option('--version', help='version of the output files', type=str, default='v1')
