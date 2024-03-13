@@ -76,10 +76,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
     chrom_num = input_file_path.split('/')[-1].split('_chr')[1].split('.')[0]
 
     data_df.to_csv(
-        output_path(
-            f'{cell_type}/{cell_type}_chr{chrom_num}_pseudobulk.csv',
-            'analysis',
-        ),
+        output_path(f'{cell_type}/{cell_type}_chr{chrom_num}_pseudobulk.csv'),
         index=False,
     )
 
