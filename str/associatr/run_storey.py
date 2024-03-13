@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+# pylint: disable=too-many-arguments,too-many-locals
+
+"""
+
+This script performs FDR (across gene) correction (the second and final step of multiple testing correction).
+Ensure that `run_acat.py` has been run to generate the gene-level p-values first.
+
+analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
+    --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
+    run_acat.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
+    --cell-types=CD8_TEM --chromosomes=2
+
+"""
+
+import numpy as np
+import pandas as pd
+import hailtop.batch as hb
+
+import click
+from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils import to_path
+
+def compute_storey(input_dir, cell_type, chromosomes):
+    """
+    Compute Storey's q-values for gene-level p-values
+    """
+    import rpy2.robjects as ro
+    ro.r('library(qvalue)')
+
+    for chromosome in chromosomes.split(','):
+        # read in gene-level p-values
+        gene_pval_files = list(
+                    to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
+                )
+        pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
+        for gene_pval_file in gene_pval_files[1:]:
+            pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
+
+    pvals = pval_df['pval']
+    ro.globalenv['pvals'] = pvals
+    pval_df['qval'] = ro.r('qvalue(pvals)$qvalues')
+
+    # write to TSV
+    # write to output
+    gcs_output = output_path(
+        f'fdr_qvals/{cell_type}_qval.tsv',
+        'analysis',
+    )
+    pval_df.to_csv(gcs_output, sep='\t', index=False, header=True)
+
+@click.option('--input-dir', help='GCS path directoy to the input gene-level p-value files')
+@click.option('--cell-types', help='cell type')
+@click.option('--chromosomes', help='chromosomes')
+@click.command()
+def main(input_dir, cell_types, chromosomes):
+    """
+    Compute Storey's q-values for gene-level p-values
+    """
+    for cell_type in cell_types.split(','):
+        j = get_batch('compute_storey').new_python_job(name=f'compute_storey_{cell_type}')
+        j.call(compute_storey, input_dir, cell_type, chromosomes)
+    get_batch('compute_storey').run(wait=False)
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
