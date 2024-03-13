@@ -134,22 +134,26 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
+    genes_per_job = 15
+
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
             gene_files = list(
                 to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
             )
-            for gene_file in gene_files:
-                # read the raw results
-                gene_results = pd.read_csv(gene_file, sep='\t')
-                pvals = gene_results.iloc[:, 5]  # stored in the 6th column
-                pvals = np.array(pvals)
-                gene_name = gene_results.columns[5].split('_')[-1]
+            for i in range(0, len(gene_files), genes_per_job):
+                batch_gene_files = gene_files[i:i+genes_per_job]
                 j = get_batch('Compute gene level pvals').new_python_job(
-                    name=f'Compute gene-level p-values for {gene_name}'
+                    name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}'
                 )
                 j.cpu(0.25).memory('lowmem')
-                j.call(cct, gene_name, pvals, cell_type, chromosome)
+                for gene_file in batch_gene_files:
+                    # read the raw results
+                    gene_results = pd.read_csv(gene_file, sep='\t')
+                    pvals = gene_results.iloc[:, 5]  # stored in the 6th column
+                    pvals = np.array(pvals)
+                    gene_name = gene_results.columns[5].split('_')[-1]
+                    j.call(cct, gene_name, pvals, cell_type, chromosome)
                 manage_concurrency_for_job(j)
 
     get_batch('Compute gene level pvals').run(wait=False)
