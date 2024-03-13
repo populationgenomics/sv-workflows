@@ -38,7 +38,7 @@ def compute_storey(input_dir, cell_type, chromosomes):
         for gene_pval_file in gene_pval_files[1:]:
             pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
-    pvals = pval_df['pval']
+    pvals = pval_df['gene_level_pval']
     ro.globalenv['pvals'] = pvals
     pval_df['qval'] = ro.r('qvalue(pvals)$qvalues')
 
