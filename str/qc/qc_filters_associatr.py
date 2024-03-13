@@ -182,7 +182,7 @@ def qc_filter(mt_path, version):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
-    for chr_index in range(18,22):  # iterate over chr1-22
+    for chr_index in range(22):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(
             f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz'
@@ -201,7 +201,7 @@ def qc_filter(mt_path, version):
     help='GCS file path to mt (output of qc_annotator.py)',
     type=str,
 )
-@click.option('--hail-storage', help='Hail storage', type=str, default='0G')
+@click.option('--hail-storage', help='Hail storage', type=str, default='20G')
 @click.option('--hail-cpu', help='Hail CPU', type=int, default=1)
 @click.option('--hail-memory', help='Hail memory', type=str, default='standard')
 @click.option('--version', help='version of the output files', type=str, default='v1')
