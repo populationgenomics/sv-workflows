@@ -16,7 +16,6 @@ python3 get_cis_numpy_files.py
 
 """
 import json
-import math
 from ast import literal_eval
 
 import numpy as np
