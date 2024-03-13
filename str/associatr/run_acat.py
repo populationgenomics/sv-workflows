@@ -16,6 +16,7 @@ analysis-runner --dataset "bioheart" --description "compute gene level pvals" --
 import numpy as np
 from scipy.stats import cauchy
 import pandas as pd
+import hailtop.batch as hb
 
 import click
 from cpg_utils.hail_batch import get_batch, output_path
@@ -112,11 +113,28 @@ def cct(gene_name, pvals, cell_type, chromosome, weights=None):
     '--chromosomes',
     help='Chromosome number eg 1, comma separated if multiple',
 )
+@click.option(
+    '--max-parallel-jobs',
+    type=int,
+    default=50,
+    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
+)
 @click.command()
-def main(input_dir, cell_types, chromosomes):
+def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
     """
     Compute gene-level p-values using the ACAT method
     """
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
             gene_files = list(
@@ -132,6 +150,7 @@ def main(input_dir, cell_types, chromosomes):
                     name=f'Compute gene-level p-values for {gene_name}'
                 )
                 j.call(cct, gene_name, pvals, cell_type, chromosome)
+                manage_concurrency_for_job(j)
 
     get_batch('Compute gene level pvals').run(wait=False)
 
