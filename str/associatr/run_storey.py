@@ -40,7 +40,7 @@ def compute_storey(input_dir, cell_type, chromosomes):
             pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
     pvals = pval_df['gene_level_pval']
-    ro.globalenv['pvals'] = np.array(list(pvals)) #  - make it into a list or np array?
+    ro.globalenv['pvals'] = ro.FloatVector(list(pvals)) #  - make it into a list or np array?
     pval_df['qval'] = ro.r('qvalue(pvals)$qvalues')
 
     # write to TSV
