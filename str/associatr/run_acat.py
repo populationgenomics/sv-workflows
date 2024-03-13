@@ -116,7 +116,7 @@ def cct(gene_name, pvals, cell_type, chromosome, weights=None):
 @click.option(
     '--max-parallel-jobs',
     type=int,
-    default=50,
+    default=500,
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
 @click.command()
@@ -149,6 +149,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                 j = get_batch('Compute gene level pvals').new_python_job(
                     name=f'Compute gene-level p-values for {gene_name}'
                 )
+                j.cpu(0.25).memory('lowmem')
                 j.call(cct, gene_name, pvals, cell_type, chromosome)
                 manage_concurrency_for_job(j)
 
