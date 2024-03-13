@@ -3,15 +3,26 @@
 
 """
 
-This script computes gene-level p-values using ACAT.
+This script computes gene-level p-values using ACAT (the first step of multiple testing correction).
+Assumed input files follow the format of output TSV files from associaTR.
+Output is multiple gene-specific TSV files with the gene name in the first column, and gene-level p-value in the second column.
+
+analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
+    --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
+    compute_gene_level_pvals.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
+    --cell-types=CD8_TEM --chromosomes=2
 
 """
 import numpy as np
 from scipy.stats import cauchy
+import pandas as pd
 
 import click
+from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils import to_path
 
-def CCT(pvals, weights=None):
+
+def CCT(gene_name, pvals, cell_type, chromosome, weights=None):
     """
     Code adapted from the STAR package https://github.com/xihaoli/STAAR/blob/dc4f7e509f4fa2fb8594de48662bbd06a163108c/R/CCT.R wtih a modifitcaiton: when indiviudal p-value = 1, use minimum p-value
     #' An analytical p-value combination method using the Cauchy distribution
@@ -33,8 +44,8 @@ def CCT(pvals, weights=None):
     R code is implemented in python
     """
 
-    #check if there is NA
-    if np.isnan(pvals).sum() >0:
+    # check if there is NA
+    if np.isnan(pvals).sum() > 0:
         raise ValueError("Cannot have NAs in the p-values!")
 
     # check if all p-values are between 0 and 1
@@ -52,9 +63,11 @@ def CCT(pvals, weights=None):
 
     # check the validity of weights (default: equal weights) and standardize them.
     if weights is None:
-        weights = np.repeat(1/len(pvals), len(pvals))
+        weights = np.repeat(1 / len(pvals), len(pvals))
     elif len(weights) != len(pvals):
-        raise ValueError("The length of weights should be the same as that of the p-values!")
+        raise ValueError(
+            "The length of weights should be the same as that of the p-values!"
+        )
     elif (weights < 0).sum() > 0:
         raise ValueError("All the weights must be positive!")
     else:
@@ -66,15 +79,25 @@ def CCT(pvals, weights=None):
         cct_stat = np.sum(weights * np.tan((0.5 - pvals) * np.pi))
     else:
         cct_stat = np.sum((weights[is_small] / pvals[is_small]) / np.pi)
-        cct_stat += np.sum(weights[~is_small] * np.tan((0.5 - pvals[~is_small]) * np.pi))
+        cct_stat += np.sum(
+            weights[~is_small] * np.tan((0.5 - pvals[~is_small]) * np.pi)
+        )
 
     # check if the test statistic is very large.
-    if cct_stat > 1e+15:
+    if cct_stat > 1e15:
         pval = (1 / cct_stat) / np.pi
     else:
         pval = 1 - cauchy.cdf(cct_stat)
 
-    return pval
+    # write to output
+    gcs_output = output_path(
+        f'gene_level_pvals/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
+        'analysis',
+    )
+    with to_path(gcs_output).open('w') as f:
+        f.write(f'gene_name\tgene_level_pval\n')
+        f.write(f'{gene_name}\t{str(pval)}\n')
+
 
 @click.option(
     '--input-dir',
@@ -93,10 +116,22 @@ def CCT(pvals, weights=None):
 def main(input_dir, cell_types, chromosomes):
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
-            # read the raw results
-            raw_results = pd.read_csv(f"{input_dir}/{cell_type}/chr{chromosome}.assoc", sep='\t')
-            # compute gene-level p-values
-            gene_pvals = raw_results.groupby('gene')['pval'].apply(CCT)
-            # write the gene-level p-values to a file
-            gene_pvals.to_csv(f"{input_dir}/{cell_type}/chr{chromosome}_gene_pvals.tsv", sep='\t', header=False)
+            gene_files = list(
+                to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
+            )
+            for gene_file in gene_files:
+                # read the raw results
+                gene_results = pd.read_csv(gene_file, sep='\t')
+                pvals = gene_results.iloc[:, 5]  # stored in the 6th column
+                pvals = np.array(pvals)
+                gene_name = gene_results.columns[5].split('_')[-1]
+                j = get_batch('Compute gene level pvals').new_python_job(
+                    name=f'Compute gene-level p-values for {gene_name}'
+                )
+                j.call(CCT, gene_name, pvals, cell_type, chromosome)
 
+    get_batch('Compute gene level pvals').run(wait=False)
+
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
