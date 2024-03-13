@@ -92,7 +92,6 @@ def CCT(pvals, weights=None):
 @click.command()
 def main(input_dir, cell_types, chromosomes):
     for cell_type in cell_types.split(','):
-        genes_pval_dict={}
         for chromosome in chromosomes.split(','):
             # read the raw results
             raw_results = pd.read_csv(f"{input_dir}/{cell_type}/chr{chromosome}.assoc", sep='\t')
