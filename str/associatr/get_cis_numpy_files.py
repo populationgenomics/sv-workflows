@@ -63,7 +63,7 @@ def cis_window_numpy_extractor(
     covariates = pd.read_csv(covariate_path)
 
     # extract genes in pseudobulk df
-    gene_names = pseudobulk.columns[1:]  # individual ID is the first column
+    gene_names = list(pseudobulk.columns[1:])  # individual ID is the first column
 
     # write filtered gene names to a JSON file
     with to_path(
