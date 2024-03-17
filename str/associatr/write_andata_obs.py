@@ -23,7 +23,7 @@ def main(input_h5ad_file_path: str, version: str):
     """
     # read in anndata object because anndata.obs has the CPG ID and cell type
     expression_h5ad_path = to_path(input_h5ad_file_path).copy('here.h5ad')
-    adata = sc.read_h5ad(expression_h5ad_path)
+    adata = sc.read_h5ad(expression_h5ad_path, backed = 'r')
 
     output_gcs = 'gs://cpg-bioheart-test/str/anndata-240/concatenated_gene_info_donor_info_obs.csv'
     # write to CSV
