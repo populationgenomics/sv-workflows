@@ -24,12 +24,7 @@ def main(input_h5ad_file_path: str, version: str):
     """
     df = pd.read_csv(input_h5ad_file_path)
 
-    length = len(df[df['individual'].str.startswith('CPG')]['individual'].unique())
-    length_all = len(df['individual'].unique())
-
-    print(f'Number of individuals with CPG ids:{length}')
-    print(f'Number of individuals with all ids:{length_all}')
-
+    print(df[['sequencing_library', 'individual']].value_counts())
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
