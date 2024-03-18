@@ -24,7 +24,9 @@ def main(input_h5ad_file_path: str, version: str):
     """
     df = pd.read_csv(input_h5ad_file_path)
 
-    print(df[['sequencing_library', 'individual']].value_counts())
+    gcs_path = output_path(f'for_blake.csv')
+
+    df[['sequencing_library', 'individual']].value_counts().to_csv(gcs_path)
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
