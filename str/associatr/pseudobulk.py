@@ -98,7 +98,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
 @click.option(
     '--min-pct',
     help='Minimum percentage of cells expressing a gene to be included in the pseudobulk',
-    default=0.1,
+    default=1,
 )
 @click.command()
 def main(
