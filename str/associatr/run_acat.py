@@ -37,6 +37,7 @@ def cct(
     r2,
     motif,
     ref_len,
+    allele_frequency,
     weights=None,
 ):
     """
@@ -112,10 +113,10 @@ def cct(
     )
     with to_path(gcs_output).open('w') as f:
         f.write(
-            f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\n'
+            f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
         f.write(
-            f'{gene_name}\t{str(pval)}\t{str(chr)}\t{str(pos)}\t{str(n_samples_tested)}\t{str(raw_pval)}\t{str(coeff)}\t{str(se)}\t{str(r2)}\t{str(motif)}\t{str(ref_len)}\n'
+            f'{gene_name}\t{str(pval)}\t{str(chr)}\t{str(pos)}\t{str(n_samples_tested)}\t{str(raw_pval)}\t{str(coeff)}\t{str(se)}\t{str(r2)}\t{str(motif)}\t{str(ref_len)}\t{str(allele_frequency)}\n'
         )
 
 
@@ -186,7 +187,8 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                         se = [min_rows.iloc[:, 7].values[0]]
                         r2 = [min_rows.iloc[:, 8].values[0]]
                         motif = [min_rows.iloc[:, 9].values[0]]
-                        ref_len = [min_rows.iloc[:, 10].values[0]]
+                        ref_len = [min_rows.iloc[:, 11].values[0]]
+                        allele_frequency = [min_rows.iloc[:, 12].values[0]]
                     else:
                         chr = []
                         pos = []
@@ -206,7 +208,8 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                             se.append(row.iloc[7])
                             r2.append(row.iloc[8])
                             motif.append(row.iloc[9])
-                            ref_len.append(row.iloc[10])
+                            ref_len.append(row.iloc[11])
+                            allele_frequency.append(row.iloc[12])
 
                     pvals = np.array(pvals)
                     gene_name = gene_results.columns[5].split('_')[-1]
@@ -225,6 +228,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                         r2,
                         motif,
                         ref_len,
+                        allele_frequency,
                     )
                 manage_concurrency_for_job(j)
 
