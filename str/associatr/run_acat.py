@@ -172,9 +172,9 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                     pvals = gene_results.iloc[:, 5]  # stored in the 6th column
                     # Find and store the attributes of the locus with lowest raw pval
                     # Find the minimum value in column 6
-                    min_value = df.iloc[:, 5].min()
+                    min_value = gene_results.iloc[:, 5].min()
                     # Find the rows with the minimum value in column 6
-                    min_rows = df[df.iloc[:, 5] == min_value]
+                    min_rows = gene_results[gene_results.iloc[:, 5] == min_value]
 
                     if len(min_rows) == 1:
                         chr = [min_rows.iloc[:, 0].values[0]]
