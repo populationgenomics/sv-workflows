@@ -103,7 +103,7 @@ def qc_filter(mt_path, version):
 
     mt = mt.annotate_entries(
         GT=hl.if_else(
-           condition_allele_2,
+            condition_allele_2,
             hl.missing('call'),
             mt.GT,
         ),
