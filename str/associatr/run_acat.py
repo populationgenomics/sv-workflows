@@ -9,7 +9,7 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
     run_acat.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
-    --cell-types=CD8_TEM --chromosomes=2
+    --cell-types=CD8_TEM --chromosomes=21
 
 """
 import numpy as np
@@ -22,7 +22,22 @@ from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
 
-def cct(gene_name, pvals, cell_type, chromosome, weights=None):
+def cct(
+    gene_name,
+    pvals,
+    cell_type,
+    chromosome,
+    chr,
+    pos,
+    n_samples_tested,
+    raw_pval,
+    coeff,
+    se,
+    r2,
+    motif,
+    ref_len,
+    weights=None,
+):
     """
     Code adapted from the STAR package https://github.com/xihaoli/STAAR/blob/dc4f7e509f4fa2fb8594de48662bbd06a163108c/R/CCT.R wtih a modifitcaiton: when indiviudal p-value = 1, use minimum p-value
     #' An analytical p-value combination method using the Cauchy distribution
@@ -95,8 +110,12 @@ def cct(gene_name, pvals, cell_type, chromosome, weights=None):
         'analysis',
     )
     with to_path(gcs_output).open('w') as f:
-        f.write(f'gene_name\tgene_level_pval\n')
-        f.write(f'{gene_name}\t{str(pval)}\n')
+        f.write(
+            f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\n'
+        )
+        f.write(
+            f'{gene_name}\t{str(pval)}\t{str(chr)}\t{str(pos)}\t{str(n_samples_tested)}\t{str(raw_pval)}\t{str(coeff)}\t{str(se)}\t{str(r2)}\t{str(motif)}\t{str(ref_len)}\n'
+        )
 
 
 @click.option(
@@ -151,9 +170,61 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                     # read the raw results
                     gene_results = pd.read_csv(gene_file, sep='\t')
                     pvals = gene_results.iloc[:, 5]  # stored in the 6th column
+                    # Find and store the attributes of the locus with lowest raw pval
+                    # Find the minimum value in column 6
+                    min_value = df.iloc[:, 5].min()
+                    # Find the rows with the minimum value in column 6
+                    min_rows = df[df.iloc[:, 5] == min_value]
+
+                    if len(min_rows) == 1:
+                        chr = [min_rows.iloc[:, 0].values[0]]
+                        pos = [min_rows.iloc[:, 1].values[0]]
+                        n_samples_tested = [min_rows.iloc[:, 3].values[0]]
+                        raw_pval = [min_rows.iloc[:, 5].values[0]]
+                        coeff = [min_rows.iloc[:, 6].values[0]]
+                        se = [min_rows.iloc[:, 7].values[0]]
+                        r2 = [min_rows.iloc[:, 8].values[0]]
+                        motif = [min_rows.iloc[:, 9].values[0]]
+                        ref_len = [min_rows.iloc[:, 10].values[0]]
+                    else:
+                        chr = []
+                        pos = []
+                        n_samples_tested = []
+                        raw_pval = []
+                        coeff = []
+                        se = []
+                        r2 = []
+                        motif = []
+                        ref_len = []
+                        for index, row in min_rows.iterrows():
+                            chr.append(row.iloc[0])
+                            pos.append(row.iloc[1])
+                            n_samples_tested.append(row.iloc[3])
+                            raw_pval.append(row.iloc[5])
+                            coeff.append(row.iloc[6])
+                            se.append(row.iloc[7])
+                            r2.append(row.iloc[8])
+                            motif.append(row.iloc[9])
+                            ref_len.append(row.iloc[10])
+
                     pvals = np.array(pvals)
                     gene_name = gene_results.columns[5].split('_')[-1]
-                    j.call(cct, gene_name, pvals, cell_type, chromosome)
+                    j.call(
+                        cct,
+                        gene_name,
+                        pvals,
+                        cell_type,
+                        chromosome,
+                        chr,
+                        pos,
+                        n_samples_tested,
+                        raw_pval,
+                        coeff,
+                        se,
+                        r2,
+                        motif,
+                        ref_len,
+                    )
                 manage_concurrency_for_job(j)
 
     get_batch('Compute gene level pvals').run(wait=False)
