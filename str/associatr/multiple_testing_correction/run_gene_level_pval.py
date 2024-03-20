@@ -136,6 +136,9 @@ def bonferroni_compute(
     ref_len,
     allele_frequency,
 ):
+    """
+    Computes Bonferroni adjusted p-value of the lowest raw p-value for a gene
+    """
     pval = min(pvals) * len(pvals)
     # write to output
     gcs_output = output_path(
@@ -183,7 +186,7 @@ def bonferroni_compute(
 @click.command()
 def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni):
     """
-    Compute gene-level p-values using the ACAT method
+    Compute gene-level p-values
     """
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
