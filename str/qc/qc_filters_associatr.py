@@ -56,44 +56,46 @@ def qc_filter(mt_path, version):
     mt = mt.filter_cols(mt.sample_qc.call_rate >= 0.99)
 
     # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
+    condition_allele_1 = (mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)
+    condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
     mt = mt.annotate_entries(
         GT=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('call'),
             mt.GT,
         ),
         ADFL=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('str'),
             mt.ADFL,
         ),
         ADIR=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('str'),
             mt.ADIR,
         ),
         ADSP=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('str'),
             mt.ADSP,
         ),
         LC=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('float64'),
             mt.LC,
         ),
         REPCI=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('str'),
             mt.REPCI,
         ),
         REPCN=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('str'),
             mt.REPCN,
         ),
         SO=hl.if_else(
-            ((mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)),
+            condition_allele_1,
             hl.missing('str'),
             mt.SO,
         ),
@@ -101,42 +103,42 @@ def qc_filter(mt_path, version):
 
     mt = mt.annotate_entries(
         GT=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+           condition_allele_2,
             hl.missing('call'),
             mt.GT,
         ),
         ADFL=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('str'),
             mt.ADFL,
         ),
         ADIR=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('str'),
             mt.ADIR,
         ),
         ADSP=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('str'),
             mt.ADSP,
         ),
         LC=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('float64'),
             mt.LC,
         ),
         REPCI=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('str'),
             mt.REPCI,
         ),
         REPCN=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('str'),
             mt.REPCN,
         ),
         SO=hl.if_else(
-            ((mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)),
+            condition_allele_2,
             hl.missing('str'),
             mt.SO,
         ),
