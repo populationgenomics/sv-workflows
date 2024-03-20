@@ -29,12 +29,15 @@ def compute_storey(input_dir, cell_type, chromosomes):
     """
     ro.r('library(qvalue)')
 
+    first_iteration = True
     for chromosome in chromosomes.split(','):
         # read in gene-level p-values
         gene_pval_files = list(
             to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
         )
-        pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
+        if first_iteration:
+            pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
+            first_iteration = False
         for gene_pval_file in gene_pval_files[1:]:
             pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
