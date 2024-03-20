@@ -5,6 +5,7 @@
 This script computes gene-level p-values using ACAT (the first step of multiple testing correction).
 Assumed input files follow the format of output TSV files from associaTR.
 Output is multiple gene-specific TSV files with the gene name in the first column, and gene-level p-value in the second column.
+The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, beta, se, raw pval,r2, motif, ref_len).
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
@@ -196,7 +197,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
                         r2 = []
                         motif = []
                         ref_len = []
-                        for index, row in min_rows.iterrows():
+                        for _index, row in min_rows.iterrows():
                             chr.append(row.iloc[0])
                             pos.append(row.iloc[1])
                             n_samples_tested.append(row.iloc[3])
@@ -231,4 +232,4 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter,too-many-arguments,too-many-locals,too-many-nested-blocks
