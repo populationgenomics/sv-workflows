@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# pylint: disable=no-value-for-parameter,too-many-arguments,too-many-locals,too-many-nested-blocks
 """
 
 This script computes gene-level p-values using ACAT (the first step of multiple testing correction).
