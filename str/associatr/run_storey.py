@@ -47,6 +47,8 @@ def compute_storey(input_dir, cell_type, chromosomes):
         f'fdr_qvals/{cell_type}_qval.tsv',
         'analysis',
     )
+    # arrange by ascending q-value
+    pval_df = pval_df.sort_values(by='qval', ascending=True)
     pval_df.to_csv(gcs_output, sep='\t', index=False, header=True)
 
 
