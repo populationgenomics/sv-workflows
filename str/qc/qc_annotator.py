@@ -141,10 +141,10 @@ def main(mt_path):
 
     # add in Gymrek binomial HWEP implementation (Hail Query's HWEP implementation only works for biallelic loci)
     # https://github.com/gymrek-lab/TRTools/blob/master/trtools/utils/utils.py#L325
-    mt = mt.annotate_rows(n_hom=mt.variant_qc.n_called - mt.variant_qc.n_het)
-    mt = mt.annotate_rows(exp_hom_frac=hl.sum(mt.variant_qc.AF**2))
+    mt = mt.annotate_rows(n_hom=mt.variant_qc.n_called - mt.variant_qc.n_het,
+                        exp_hom_frac=hl.sum(mt.variant_qc.AF**2),
+                        n_called=hl.int32(mt.variant_qc.n_called))
     mt = mt.annotate_rows(n_hom=hl.int32(mt.n_hom))
-    mt = mt.annotate_rows(n_called=hl.int32(mt.variant_qc.n_called))
     mt = mt.annotate_rows(
         binom_hwep=hl.binom_test(mt.n_hom, mt.n_called, mt.exp_hom_frac, 'two-sided')
     )
@@ -168,15 +168,11 @@ def main(mt_path):
     mt = mt.annotate_entries(
         allele_1_REPCI_1=hl.int32(mt.allele_1_REPCI.split('-')[0]),
         allele_1_REPCI_2=hl.int32(mt.allele_1_REPCI.split('-')[1]),
-    )
-    mt = mt.annotate_entries(
         allele_2_REPCI_1=hl.if_else(
             hl.len(mt.allele_2_REPCI.split('-')) == 2,
             hl.int(mt.allele_2_REPCI.split('-')[0]),
             hl.missing('int32'),
-        )
-    )
-    mt = mt.annotate_entries(
+        ),
         allele_2_REPCI_2=hl.if_else(
             hl.len(mt.allele_2_REPCI.split('-')) == 2,
             hl.int(mt.allele_2_REPCI.split('-')[1]),
