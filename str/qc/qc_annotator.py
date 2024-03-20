@@ -62,16 +62,14 @@ def main(mt_path):
             )
         )
     )
-    # motif length
-    mt = mt.annotate_rows(motif_length=hl.len(mt.info.RU))
 
-    # bp length array annotation: motif length*repeat length
+    # motif length, bp length array annotation: motif length*repeat length
     mt = mt.annotate_rows(
+        motif_length=hl.len(mt.info.RU),
         bp_length_alleles=mt.rep_length_alleles.map(lambda x: x * mt.motif_length)
     )
     # break up allele_1 and allele_2 into separate columns
-    mt = mt.annotate_entries(allele_1_rep_length=hl.int(mt.REPCN.split('/')[0]))
-    mt = mt.annotate_entries(
+    mt = mt.annotate_entries(allele_1_rep_length=hl.int(mt.REPCN.split('/')[0]),
         allele_2_rep_length=hl.if_else(
             hl.len(mt.REPCN.split('/')) == 2,
             hl.int(mt.REPCN.split('/')[1]),
@@ -79,9 +77,7 @@ def main(mt_path):
         )
     )
     mt = mt.annotate_entries(
-        allele_1_bp_length=mt.allele_1_rep_length * mt.motif_length
-    )
-    mt = mt.annotate_entries(
+        allele_1_bp_length=mt.allele_1_rep_length * mt.motif_length,
         allele_2_bp_length=mt.allele_2_rep_length * mt.motif_length
     )
 
@@ -118,17 +114,13 @@ def main(mt_path):
 
     # the difference between each allele and the mode allele
     mt = mt.annotate_entries(
-        allele_1_minus_mode=mt.allele_1_rep_length - mt.aggregated_info.mode_allele
-    )
-    mt = mt.annotate_entries(
+        allele_1_minus_mode=mt.allele_1_rep_length - mt.aggregated_info.mode_allele,
         allele_2_minus_mode=mt.allele_2_rep_length - mt.aggregated_info.mode_allele
     )
 
     # annotate the sum of alleles that are not the mode allele
     mt = mt.annotate_entries(
-        allele_1_is_non_mode=hl.if_else(mt.allele_1_minus_mode != 0, True, False)
-    )
-    mt = mt.annotate_entries(
+        allele_1_is_non_mode=hl.if_else(mt.allele_1_minus_mode != 0, True, False),
         allele_2_is_non_mode=hl.if_else(mt.allele_2_minus_mode != 0, True, False)
     )
     mt = mt.annotate_rows(
