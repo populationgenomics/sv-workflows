@@ -108,7 +108,38 @@ def cct(
 
     # write to output
     gcs_output = output_path(
-        f'gene_level_pvals/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
+        f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
+        'analysis',
+    )
+    with to_path(gcs_output).open('w') as f:
+        f.write(
+            f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
+        )
+        f.write(
+            f'{gene_name}\t{str(pval)}\t{str(chr)}\t{str(pos)}\t{str(n_samples_tested)}\t{str(raw_pval)}\t{str(coeff)}\t{str(se)}\t{str(r2)}\t{str(motif)}\t{str(ref_len)}\t{str(allele_frequency)}\n'
+        )
+
+
+def bonferroni_compute(
+    gene_name,
+    pvals,
+    cell_type,
+    chromosome,
+    chr,
+    pos,
+    n_samples_tested,
+    raw_pval,
+    coeff,
+    se,
+    r2,
+    motif,
+    ref_len,
+    allele_frequency,
+):
+    pval = min(pvals) * len(pvals)
+    # write to output
+    gcs_output = output_path(
+        f'gene_level_pvals/bonferroni/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
         'analysis',
     )
     with to_path(gcs_output).open('w') as f:
@@ -139,8 +170,18 @@ def cct(
     default=500,
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
+@click.option(
+    '--acat',
+    is_flag=True,
+    help='Run ACAT method',
+)
+@click.option(
+    '--bonferroni',
+    is_flag=True,
+    help='Run Bonferroni method',
+)
 @click.command()
-def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
+def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni):
     """
     Compute gene-level p-values using the ACAT method
     """
@@ -165,9 +206,13 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
             for i in range(0, len(gene_files), genes_per_job):
                 batch_gene_files = gene_files[i : i + genes_per_job]
                 j = get_batch('Compute gene level pvals').new_python_job(
-                    name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}'
+                    name=f'Compute gene-level ACAT p-values for genes {i+1}-{i+genes_per_job}'
                 )
                 j.cpu(0.25).memory('lowmem')
+                f = get_batch('Compute gene level pvals').new_python_job(
+                    name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}'
+                )
+                f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:
                     # read the raw results
                     gene_results = pd.read_csv(gene_file, sep='\t')
@@ -213,23 +258,42 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs):
 
                     pvals = np.array(pvals)
                     gene_name = gene_results.columns[5].split('_')[-1]
-                    j.call(
-                        cct,
-                        gene_name,
-                        pvals,
-                        cell_type,
-                        chromosome,
-                        chr,
-                        pos,
-                        n_samples_tested,
-                        raw_pval,
-                        coeff,
-                        se,
-                        r2,
-                        motif,
-                        ref_len,
-                        allele_frequency,
-                    )
+                    if acat:
+                        j.call(
+                            cct,
+                            gene_name,
+                            pvals,
+                            cell_type,
+                            chromosome,
+                            chr,
+                            pos,
+                            n_samples_tested,
+                            raw_pval,
+                            coeff,
+                            se,
+                            r2,
+                            motif,
+                            ref_len,
+                            allele_frequency,
+                        )
+                    if bonferroni:
+                        f.call(
+                            bonferroni_compute,
+                            gene_name,
+                            pvals,
+                            cell_type,
+                            chromosome,
+                            chr,
+                            pos,
+                            n_samples_tested,
+                            raw_pval,
+                            coeff,
+                            se,
+                            r2,
+                            motif,
+                            ref_len,
+                            allele_frequency,
+                        )
                 manage_concurrency_for_job(j)
 
     get_batch('Compute gene level pvals').run(wait=False)
