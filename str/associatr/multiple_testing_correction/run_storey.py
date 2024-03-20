@@ -4,8 +4,8 @@
 """
 
 This script performs FDR (across gene) correction (the second and final step of multiple testing correction).
-Ensure that `run_acat.py` has been run to generate the gene-level p-values first.
-Output is one TSV file per cell type with three columns - gene name, gene-level p-value (ACAT-corrected), and q-value.
+Ensure that `run_gene_level_pval.py` has been run to generate the gene-level p-values first.
+Output is one TSV file per cell type with three columns - gene name, gene-level p-value (ACAT/Bonferroni), and q-value.
 
 analysis-runner --dataset "bioheart" --description "compute qvals" --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
@@ -23,7 +23,7 @@ from cpg_utils import to_path
 import rpy2.robjects as ro
 
 
-def compute_storey(input_dir, cell_type, chromosomes):
+def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
     """
     Compute Storey's q-values for gene-level p-values
     """
@@ -33,7 +33,9 @@ def compute_storey(input_dir, cell_type, chromosomes):
     for chromosome in chromosomes.split(','):
         # read in gene-level p-values
         gene_pval_files = list(
-            to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
+            to_path(
+                f'{input_dir}/{gene_level_correction}/{cell_type}/chr{chromosome}'
+            ).glob('*.tsv')
         )
         if first_iteration:
             pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
@@ -49,7 +51,7 @@ def compute_storey(input_dir, cell_type, chromosomes):
 
     # write to output
     gcs_output = output_path(
-        f'fdr_qvals/{cell_type}_qval.tsv',
+        f'fdr_qvals/using_{gene_level_correction}/{cell_type}_qval.tsv',
         'analysis',
     )
     # arrange by ascending q-value
@@ -58,12 +60,17 @@ def compute_storey(input_dir, cell_type, chromosomes):
 
 
 @click.option(
-    '--input-dir', help='GCS path directoy to the input gene-level p-value files'
+    '--input-dir', help='GCS path directory to the input gene-level p-value files'
+)
+@click.option(
+    '--gene-level-correction',
+    type=click.Choice(['acat', 'bonferroni']),
+    help='Choose between "acat" or "bonferroni"',
 )
 @click.option('--cell-types', help='cell type')
 @click.option('--chromosomes', help='chromosomes')
 @click.command()
-def main(input_dir, cell_types, chromosomes):
+def main(input_dir, cell_types, chromosomes, gene_level_correction):
     """
     Compute Storey's q-values for gene-level p-values
     """
@@ -72,7 +79,7 @@ def main(input_dir, cell_types, chromosomes):
             name=f'compute_storey_{cell_type}'
         )
         j.cpu(1)
-        j.call(compute_storey, input_dir, cell_type, chromosomes)
+        j.call(compute_storey, input_dir, cell_type, chromosomes, gene_level_correction)
     get_batch('compute_storey').run(wait=False)
 
 
