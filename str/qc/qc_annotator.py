@@ -66,19 +66,20 @@ def main(mt_path):
     # motif length, bp length array annotation: motif length*repeat length
     mt = mt.annotate_rows(
         motif_length=hl.len(mt.info.RU),
-        bp_length_alleles=mt.rep_length_alleles.map(lambda x: x * mt.motif_length)
+        bp_length_alleles=mt.rep_length_alleles.map(lambda x: x * mt.motif_length),
     )
     # break up allele_1 and allele_2 into separate columns
-    mt = mt.annotate_entries(allele_1_rep_length=hl.int(mt.REPCN.split('/')[0]),
+    mt = mt.annotate_entries(
+        allele_1_rep_length=hl.int(mt.REPCN.split('/')[0]),
         allele_2_rep_length=hl.if_else(
             hl.len(mt.REPCN.split('/')) == 2,
             hl.int(mt.REPCN.split('/')[1]),
             hl.missing('int32'),
-        )
+        ),
     )
     mt = mt.annotate_entries(
         allele_1_bp_length=mt.allele_1_rep_length * mt.motif_length,
-        allele_2_bp_length=mt.allele_2_rep_length * mt.motif_length
+        allele_2_bp_length=mt.allele_2_rep_length * mt.motif_length,
     )
 
     # annotate rows with counts of alleles that appear in each VARID
@@ -115,13 +116,13 @@ def main(mt_path):
     # the difference between each allele and the mode allele
     mt = mt.annotate_entries(
         allele_1_minus_mode=mt.allele_1_rep_length - mt.aggregated_info.mode_allele,
-        allele_2_minus_mode=mt.allele_2_rep_length - mt.aggregated_info.mode_allele
+        allele_2_minus_mode=mt.allele_2_rep_length - mt.aggregated_info.mode_allele,
     )
 
     # annotate the sum of alleles that are not the mode allele
     mt = mt.annotate_entries(
         allele_1_is_non_mode=hl.if_else(mt.allele_1_minus_mode != 0, True, False),
-        allele_2_is_non_mode=hl.if_else(mt.allele_2_minus_mode != 0, True, False)
+        allele_2_is_non_mode=hl.if_else(mt.allele_2_minus_mode != 0, True, False),
     )
     mt = mt.annotate_rows(
         sum_allele_1_is_not_mode=hl.agg.sum(hl.cond(mt.allele_1_is_non_mode, 1, 0)),
@@ -141,9 +142,11 @@ def main(mt_path):
 
     # add in Gymrek binomial HWEP implementation (Hail Query's HWEP implementation only works for biallelic loci)
     # https://github.com/gymrek-lab/TRTools/blob/master/trtools/utils/utils.py#L325
-    mt = mt.annotate_rows(n_hom=mt.variant_qc.n_called - mt.variant_qc.n_het,
-                        exp_hom_frac=hl.sum(mt.variant_qc.AF**2),
-                        n_called=hl.int32(mt.variant_qc.n_called))
+    mt = mt.annotate_rows(
+        n_hom=mt.variant_qc.n_called - mt.variant_qc.n_het,
+        exp_hom_frac=hl.sum(mt.variant_qc.AF**2),
+        n_called=hl.int32(mt.variant_qc.n_called),
+    )
     mt = mt.annotate_rows(n_hom=hl.int32(mt.n_hom))
     mt = mt.annotate_rows(
         binom_hwep=hl.binom_test(mt.n_hom, mt.n_called, mt.exp_hom_frac, 'two-sided')
@@ -177,7 +180,7 @@ def main(mt_path):
             hl.len(mt.allele_2_REPCI.split('-')) == 2,
             hl.int(mt.allele_2_REPCI.split('-')[1]),
             hl.missing('int32'),
-        )
+        ),
     )
     mt = mt.annotate_entries(
         allele_1_REPCI_size=hl.int32(mt.allele_1_REPCI_2 - mt.allele_1_REPCI_1),
