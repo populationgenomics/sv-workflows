@@ -44,6 +44,8 @@ def compute_storey(input_dir, cell_type, chromosomes):
     pvals = pval_df['gene_level_pval']
     ro.globalenv['pvals'] = ro.FloatVector(list(pvals))
     pval_df['qval'] = ro.r('qvalue(pvals)$qvalues')
+    pi_o = ro.r('qvalue(pvals)$pi0')
+    print(f'pi0: {pi_o}')
 
     # write to output
     gcs_output = output_path(
