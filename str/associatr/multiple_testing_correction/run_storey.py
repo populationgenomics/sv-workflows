@@ -11,7 +11,8 @@ analysis-runner --dataset "bioheart" --description "compute qvals" --access-leve
     --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-qvalue:1.0 \
     run_storey.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/gene_level_pvals \
-    --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
+    --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 \
+    --gene-level-correction=bonferroni
 
 """
 
@@ -75,7 +76,7 @@ def main(input_dir, cell_types, chromosomes, gene_level_correction):
     Compute Storey's q-values for gene-level p-values
     """
     for cell_type in cell_types.split(','):
-        j = get_batch('compute_storey').new_python_job(
+        j = get_batch(f'compute_storey {gene_level_correction}').new_python_job(
             name=f'compute_storey_{cell_type}'
         )
         j.cpu(1)
