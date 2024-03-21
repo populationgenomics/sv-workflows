@@ -199,7 +199,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    genes_per_job = 50
+    genes_per_job = 70
 
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
@@ -212,10 +212,10 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                     name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}'
                 )
                 j.cpu(0.25).memory('lowmem')
-                #f = get_batch('Compute gene level pvals').new_python_job(
-                #    name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}'
-                #)
-                #f.cpu(0.25).memory('lowmem')
+                f = get_batch('Compute gene level pvals').new_python_job(
+                    name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}'
+                )
+                f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:
                     # read the raw results
                     gene_results = pd.read_csv(gene_file, sep='\t')
@@ -280,7 +280,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                             allele_frequency,
                         )
                     if bonferroni:
-                        j.call(
+                        f.call(
                             bonferroni_compute,
                             gene_name,
                             pvals,
