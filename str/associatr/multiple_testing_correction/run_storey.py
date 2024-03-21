@@ -8,9 +8,9 @@ Ensure that `run_gene_level_pval.py` has been run to generate the gene-level p-v
 Output is one TSV file per cell type with three columns - gene name, gene-level p-value (ACAT/Bonferroni), and q-value.
 
 analysis-runner --dataset "bioheart" --description "compute qvals" --access-level "test" \
-    --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
+    --output-dir "str/associatr/rna_pc_calibration/5_pcs/results" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-qvalue:1.0 \
-    run_storey.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/gene_level_pvals \
+    run_storey.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/5_pcs/results/gene_level_pvals \
     --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 \
     --gene-level-correction=bonferroni
 
@@ -45,6 +45,10 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
             pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
     pvals = pval_df['gene_level_pval']
+    if gene_level_correction == 'bonferroni':
+        pvals = list(pvals)
+        # set p-values > 1 to 1
+        pvals = [1 if num > 1 else num for num in pvals]
     ro.globalenv['pvals'] = ro.FloatVector(list(pvals))
     pval_df['qval'] = ro.r('qvalue(pvals)$qvalues')
     pi_o = ro.r('qvalue(pvals)$pi0')
