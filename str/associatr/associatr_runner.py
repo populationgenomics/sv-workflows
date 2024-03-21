@@ -8,21 +8,15 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 - get_covariates.py
 - qc_filters_associatr.py (depends on qc_annotator.py)
 
- analysis-runner --dataset "bioheart" \
+ analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
     --access-level "test" \
     --output-dir "str/associatr/rna_pc_calibration/2_pcs" \
-     associatr_runner.py  --celltypes=CD8_TEM \
-    --chromosomes=chr1 \
-    --vcf-file-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
-    --gene-list-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cis-window-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/cis_window_files/v1 \
-    --pheno-cov-numpy-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/pheno_cov_numpy/v1
+     python3 associatr_runner.py
 
 
 """
 import json
-import click
 import pandas as pd
 import hailtop.batch as hb
 
@@ -37,40 +31,7 @@ def gene_cis_window_file_reader(file_path):
     return f'{cis_window["chrom"][0]}:{cis_window["start"][0]}-{cis_window["end"][0]}'
 
 
-# inputs:
-@click.option('--celltypes')
-@click.option('--chromosomes', help=' eg chr22')
-@click.option(
-    '--vcf-file-dir',
-    help='gs://... to the chr-specific output of qc_filters_associatr.py',
-)
-@click.option(
-    '--max-parallel-jobs',
-    type=int,
-    default=50,
-    help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
-)
-@click.option('--cis-window-size', type=int, default=100000)
-@click.option('--gene-list-dir', help='directory to gene list json files')
-@click.option('--cis-window-dir', help='directory to cis window files')
-@click.option('--pheno-cov-numpy-dir', help='directory to numpy files')
-@click.option('--version', help='version of the output', default='v1')
-@click.option('--job-storage', help='eg 50G', default='0G')
-@click.option('--job-cpu', help='eg 2', type = float, default=1)
-@click.command()
-def main(
-    celltypes,
-    chromosomes,
-    max_parallel_jobs,
-    cis_window_size,
-    vcf_file_dir,
-    gene_list_dir,
-    cis_window_dir,
-    pheno_cov_numpy_dir,
-    version,
-    job_storage,
-    job_cpu,
-):
+def main():
     """
     Run associaTR processing pipeline
     """
@@ -84,27 +45,34 @@ def main(
         """
         To avoid having too many jobs running at once, we have to limit concurrency.
         """
-        if len(_dependent_jobs) >= max_parallel_jobs:
-            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        if len(_dependent_jobs) >= get_config()['associatr']['max_parallel_jobs']:
+            job.depends_on(
+                _dependent_jobs[-get_config()['associatr']['max_parallel_jobs']]
+            )
         _dependent_jobs.append(job)
 
-    for celltype in celltypes.split(','):
-        for chromosome in chromosomes.split(','):
-            vcf_file_path = f'{vcf_file_dir}/hail_filtered_{chromosome}.vcf.bgz'
+    for celltype in get_config()['associatr']['celltypes'].split(','):
+        for chromosome in get_config()['associatr']['chromosomes'].split(','):
+            input_dir = get_config()['associatr']['vcf_file_dir']
+            vcf_file_path = f'{input_dir}/hail_filtered_{chromosome}.vcf.bgz'
             variant_vcf = b.read_input_group(
                 **dict(
                     base=vcf_file_path,
                     tbi=vcf_file_path + '.tbi',
                 )
             )
+            gene_list_dir = get_config()['associatr']['gene_list_dir']
             with to_path(
                 f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json'
             ).open('r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
+                cis_window_dir = get_config()['associatr']['cis_window_dir']
+                cis_window_size = get_config()['associatr']['cis_window_size']
                 gene_cis_window_file = f'{cis_window_dir}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
                 # need to extract the gene start and end from the cis window file for input into 'region'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
+                pheno_cov_numpy_dir = get_config()['associatr']['pheno_cov_numpy_dir']
                 gene_pheno_cov = b.read_input(
                     f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy'
                 )
@@ -114,15 +82,15 @@ def main(
                     name=f'Run associatr on {gene} [{celltype};{chromosome}]'
                 )
                 associatr_job.image(get_config()['images']['trtools'])
-                associatr_job.storage(job_storage)
-                associatr_job.cpu(job_cpu)
+                associatr_job.storage(get_config()['associatr']['job_storage'])
+                associatr_job.cpu(get_config()['associatr']['job_cpu'])
                 associatr_job.declare_resource_group(
                     association_results={'tsv': '{root}.tsv'}
                 )
                 associatr_job.command(
                     f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh"
                 )
-
+                version = get_config()['associatr']['version']
                 b.write_output(
                     associatr_job.association_results,
                     output_path(
