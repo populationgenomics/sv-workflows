@@ -120,7 +120,9 @@ def cct(
             f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
         f.write(f'{gene_name}\t{pval}\t')
-        f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
+        f.write(
+            '\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n'
+        )
 
 
 def bonferroni_compute(
@@ -144,7 +146,9 @@ def bonferroni_compute(
             f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
         f.write(f'{gene_name}\t{pval}\t')
-        f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
+        f.write(
+            '\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n'
+        )
 
 
 @click.option(
