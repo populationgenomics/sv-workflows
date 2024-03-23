@@ -8,9 +8,9 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, beta, se, raw pval,r2, motif, ref_len).
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
-    --output-dir "str/associatr/rna_pc_calibration/2_pcs/results" \
-    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/results/v1 \
-    --cell-types=CD8_TEM --chromosomes=21 --acat --bonferroni
+    --output-dir "str/associatr/rna_pc_calibration/24_pcs/chr_1/results" \
+    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/24_pcs/results/v1 \
+    --cell-types=CD8_TEM --chromosomes=1 --acat --bonferroni
 
 """
 import numpy as np
@@ -22,22 +22,27 @@ import click
 from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
+# store a mapping of the key description to the index
+VALUES_TO_INDEXES = [
+    ('chr', 0),
+    ('pos', 1),
+    ('n_samples_tested', 3),
+    ('raw_pval', 5),
+    ('coeff', 6),
+    ('se', 7),
+    ('r2', 8),
+    ('motif', 9),
+    ('ref_len', 11),
+    ('allele_frequency', 12),
+]
+
 
 def cct(
     gene_name,
     pvals,
     cell_type,
     chromosome,
-    chr,
-    pos,
-    n_samples_tested,
-    raw_pval,
-    coeff,
-    se,
-    r2,
-    motif,
-    ref_len,
-    allele_frequency,
+    row_dict,
     weights=None,
 ):
     """
@@ -115,9 +120,8 @@ def cct(
         f.write(
             f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
-        f.write(
-            f'{gene_name}\t{str(pval)}\t{str(chr)}\t{str(pos)}\t{str(n_samples_tested)}\t{str(raw_pval)}\t{str(coeff)}\t{str(se)}\t{str(r2)}\t{str(motif)}\t{str(ref_len)}\t{str(allele_frequency)}\n'
-        )
+        f.write(f'{gene_name}\t{pval}\t')
+        f.write('\t'.join([row_dict[key] for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
 def bonferroni_compute(
@@ -125,16 +129,7 @@ def bonferroni_compute(
     pvals,
     cell_type,
     chromosome,
-    chr,
-    pos,
-    n_samples_tested,
-    raw_pval,
-    coeff,
-    se,
-    r2,
-    motif,
-    ref_len,
-    allele_frequency,
+    row_dict,
 ):
     """
     Computes Bonferroni adjusted p-value of the lowest raw p-value for a gene
@@ -149,9 +144,8 @@ def bonferroni_compute(
         f.write(
             f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
-        f.write(
-            f'{gene_name}\t{str(pval)}\t{str(chr)}\t{str(pos)}\t{str(n_samples_tested)}\t{str(raw_pval)}\t{str(coeff)}\t{str(se)}\t{str(r2)}\t{str(motif)}\t{str(ref_len)}\t{str(allele_frequency)}\n'
-        )
+        f.write(f'{gene_name}\t{pval}\t')
+        f.write('\t'.join([row_dict[key] for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
 @click.option(
@@ -226,38 +220,13 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                     # Find the rows with the minimum value in column 6
                     min_rows = gene_results[gene_results.iloc[:, 5] == min_value]
 
-                    if len(min_rows) == 1:
-                        chr = [min_rows.iloc[:, 0].values[0]]
-                        pos = [min_rows.iloc[:, 1].values[0]]
-                        n_samples_tested = [min_rows.iloc[:, 3].values[0]]
-                        raw_pval = [min_rows.iloc[:, 5].values[0]]
-                        coeff = [min_rows.iloc[:, 6].values[0]]
-                        se = [min_rows.iloc[:, 7].values[0]]
-                        r2 = [min_rows.iloc[:, 8].values[0]]
-                        motif = [min_rows.iloc[:, 9].values[0]]
-                        ref_len = [min_rows.iloc[:, 11].values[0]]
-                        allele_frequency = [min_rows.iloc[:, 12].values[0]]
-                    else:
-                        chr = []
-                        pos = []
-                        n_samples_tested = []
-                        raw_pval = []
-                        coeff = []
-                        se = []
-                        r2 = []
-                        motif = []
-                        ref_len = []
-                        for _index, row in min_rows.iterrows():
-                            chr.append(row.iloc[0])
-                            pos.append(row.iloc[1])
-                            n_samples_tested.append(row.iloc[3])
-                            raw_pval.append(row.iloc[5])
-                            coeff.append(row.iloc[6])
-                            se.append(row.iloc[7])
-                            r2.append(row.iloc[8])
-                            motif.append(row.iloc[9])
-                            ref_len.append(row.iloc[11])
-                            allele_frequency.append(row.iloc[12])
+                    # create a dictionary of {key: list}
+                    row_dict = {key: [] for key, value in VALUES_TO_INDEXES}
+
+                    # populate the dict
+                    for _index, row in min_rows.iterrows():
+                        for key, value in VALUES_TO_INDEXES:
+                            row_dict[key].append(row.iloc[value])
 
                     pvals = np.array(pvals)
                     gene_name = gene_results.columns[5].split('_')[-1]
@@ -268,16 +237,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                             pvals,
                             cell_type,
                             chromosome,
-                            chr,
-                            pos,
-                            n_samples_tested,
-                            raw_pval,
-                            coeff,
-                            se,
-                            r2,
-                            motif,
-                            ref_len,
-                            allele_frequency,
+                            row_dict,
                         )
                     if bonferroni:
                         f.call(
@@ -286,16 +246,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                             pvals,
                             cell_type,
                             chromosome,
-                            chr,
-                            pos,
-                            n_samples_tested,
-                            raw_pval,
-                            coeff,
-                            se,
-                            r2,
-                            motif,
-                            ref_len,
-                            allele_frequency,
+                            row_dict,
                         )
                 manage_concurrency_for_job(j)
 
