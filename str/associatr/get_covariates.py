@@ -4,9 +4,9 @@ This script calculates cell-type specific PCs from the pseudobulk RNA data (geno
 merges them with other pre-calculated covariates, and writes the file to GCP.
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/pseudobulk \
+--description "Get covariates" --output-dir "str/associatr/rna_pc_calibration/24_pcs/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk/remapped_ids \
 --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --covariate-file-path=gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv \
---num-pcs=2
+--num-pcs=24
 
 """
 
@@ -77,10 +77,10 @@ def get_covariates(
     # read in covariates
     cov = pd.read_csv(covariate_file_path)
 
-    # Get the index of the column 'geno_PC7'
-    index_of_excluded_geno_pc = cov.columns.get_loc('geno_PC7')
-    # Drop columns from 'geno_PC7' onwards (use the first 6 geno PCs only)
-    cov = cov.iloc[:, :index_of_excluded_geno_pc]
+    cov = cov[['sample_id', 'sex', 'age', 'geno_PC1', 'geno_PC6']]
+
+    # cut-offs for geno PCs (filter out ancestry outliers)
+    cov = cov[(cov['geno_PC1'] >= -0.1) & (cov['geno_PC6'] <= 0.15)]
 
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
@@ -103,7 +103,7 @@ def get_covariates(
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
 @click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=2)
 @click.option('--covariate-file-path', help='GCS Path to the existing covariate file')
-@click.option('--num-pcs', help='Number of PCs to calculate', default=20)
+@click.option('--num-pcs', help='Number of RNA PCs to calculate', default=20)
 @click.command()
 def main(
     input_dir,
