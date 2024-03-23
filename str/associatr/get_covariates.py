@@ -4,6 +4,7 @@ This script calculates cell-type specific PCs from the pseudobulk RNA data (geno
 merges them with other pre-calculated covariates, and writes the file to GCP.
 
 We include only genotype PC 1 and 6 as covariates and apply thresholds to remove ancestry outliers.
+Thresholds are a temporary solution, awaiting finalization of ancestry results from the LC pipeline.
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 --description "Get covariates" --output-dir "str/associatr/input_files/240_libraries_tenk10kp1_v2" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/pseudobulk \
@@ -121,7 +122,7 @@ def main(
     Obtain cell-type specific covariates for pseudobulk associaTR model
 
     """
-    b = get_batch(name = f'Get covariates for {cell_types}')
+    b = get_batch(name=f'Get covariates for {cell_types}')
 
     logging.info(f'Cell types to run: {cell_types}')
     logging.info(f'Chromosomes to run: {chromosomes}')
