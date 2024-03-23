@@ -8,10 +8,9 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, beta, se, raw pval,r2, motif, ref_len).
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
-    --output-dir "str/associatr/rna_pc_calibration/24_pcs/chr_1/results" \
-    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/24_pcs/results/v1 \
-    --cell-types=CD8_TEM --chromosomes=1 --acat --bonferroni
-
+    --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/results" \
+    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/240_libraries_tenk10kp1_v2_run/results/v1 \
+    --cell-types=CD4_TCM --chromosomes=21 --acat
 """
 import numpy as np
 from scipy.stats import cauchy
@@ -121,7 +120,7 @@ def cct(
             f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
         f.write(f'{gene_name}\t{pval}\t')
-        f.write('\t'.join([row_dict[key] for key, _value in VALUES_TO_INDEXES]) + '\n')
+        f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
 def bonferroni_compute(
@@ -145,7 +144,7 @@ def bonferroni_compute(
             f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
         )
         f.write(f'{gene_name}\t{pval}\t')
-        f.write('\t'.join([row_dict[key] for key, _value in VALUES_TO_INDEXES]) + '\n')
+        f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
 @click.option(
