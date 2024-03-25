@@ -7,7 +7,7 @@ For downstream use to make a QQ plot.
 analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "test" \
     --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/results" \
     raw_pval_extractor.py --input-dir=gs://cpg-bioheart-test/str/associatr/240_libraries_tenk10kp1_v2_run/results/v1 \
-    --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
+    --cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
 
 """
 
@@ -50,7 +50,7 @@ def main(input_dir, cell_types, chromosomes):
                     pos = gene_results.iloc[:, 1]
                     pvals = gene_results.iloc[:, 5]
                     for chr1,pos1,pval1 in zip(chr,pos,pvals):
-                        f.write(chr1+'\t'+pos1+'\t'+ pval1 + '\n')
+                        f.write(chr1+'\t'+str(pos1)+'\t'+ str(pval1) + '\n')
 
 
 if __name__ == '__main__':
