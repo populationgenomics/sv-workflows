@@ -46,9 +46,11 @@ def main(input_dir, cell_types, chromosomes):
                 for gene_file in gene_files:
                     # read the raw results
                     gene_results = pd.read_csv(gene_file, sep='\t')
+                    chr = gene_results.iloc[:, 0]
+                    pos = gene_results.iloc[:, 1]
                     pvals = gene_results.iloc[:, 5]
-                    for pval in pvals:
-                        f.write(str(pval) + '\n')
+                    for chr1,pos1,pval1 in zip(chr,pos,pvals):
+                        f.write(chr1+'\t'+pos1+'\t'+ pval1 + '\n')
 
 
 if __name__ == '__main__':
