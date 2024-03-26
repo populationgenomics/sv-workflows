@@ -14,7 +14,8 @@ This Hail Query script performs a PCA using STR genotypes (summed repeat length)
 import hail as hl
 import click
 
-from cpg_utils.hail_batch import output_path, init_batch, get_batch, to_path
+from cpg_utils.hail_batch import output_path, init_batch, get_batch
+from cpg_utils import to_path
 
 
 def pca_runner(file_path):
