@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+# pylint: disable=missing-function-docstring,no-member
+"""
+This Hail Query script performs a PCA using STR genotypes (summed repeat length).
+
+ analysis-runner --dataset "bioheart" \
+    --description "str_pca" \
+    --access-level "test" \
+    --output-dir "str/qc" \
+    str_pca.py --file-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
+
+"""
+
+import hail as hl
+import click
+
+from cpg_utils.hail_batch import output_path, init_batch, get_batch, to_path
+
+
+def pca_runner(file_path):
+    """
+    Performs PCA of STR summed repeat length genotypes
+
+    """
+    init_batch(worker_memory='highmem')
+    mt = hl.read_matrix_table(file_path)
+
+    # calculate the summed repeat length
+    mt = mt.annotate_entries(sum_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
+    mt = mt.annotate_cols(mean_sum_length=hl.agg.mean(hl.float(mt.sum_length)))
+
+    # replace missing sum_length with the mean for that locus (PCA doesn't accept missing values)
+    mt = mt.annotate_entries(
+        sum_length=hl.if_else(
+            hl.is_missing(mt.sum_length), mt.mean_sum_length, mt.sum_length
+        )
+    )
+
+    # mean-centre and normalise sum_length
+    mt = mt.annotate_cols(sd_sum_length=hl.agg.stats(mt.sum_length).stdev)
+    mt = mt.annotate_entries(
+        sum_length=(mt.sum_length - mt.mean_sum_length) / mt.sd_sum_length
+    )
+
+    # run PCA
+    eigenvalues, scores, loadings = hl.pca(mt.sum_length, k=10, compute_loadings=True)
+
+    scores_output_path = output_path(f'str_pca/scores.tsv.bgz')
+    scores.export(scores_output_path)
+
+    loadings_output_path = output_path(f'str_pca/loadings.tsv.bgz')
+    loadings.export(loadings_output_path)
+
+    # Convert the list to a regular Python list
+    eigenvalues_list = hl.eval(eigenvalues)
+    # write the eigenvalues to a file
+    with to_path(output_path(f'str_pca/eigenvalues.txt')).open('w') as f:
+        for item in eigenvalues_list:
+            f.write(f'{item}\n')
+
+
+@click.option(
+    '--file-path',
+    help='GCS file path to Hail STR matrix Table',
+    type=str,
+)
+@click.command()
+def main(file_path):
+    # Initialise batch
+    b = get_batch(name=f'STR PCA batch job')
+
+    # Initialise job
+    j = b.new_python_job(name=f'STR PCA')
+
+    j.call(pca_runner, file_path)
+
+    b.run(wait=False)
+
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
