@@ -4,7 +4,7 @@
 This Hail Query script subsets a Hail Matrix Table (selects 5 individuals/columns, all rows).
 
  analysis-runner --dataset "bioheart" \
-    --description "str_pca" \
+    --description "subset mt" \
     --access-level "test" \
     --output-dir "str" \
     mt_subset.py --file-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
@@ -31,8 +31,8 @@ def main(file_path):
     init_batch(worker_memory='highmem')
     mt = hl.read_matrix_table(file_path)
 
-    mt = mt.head(n_rows=None, n_cols=5)
-    mt.write(output_path('polymorphic_run_n5/str_subset.mt'), overwrite=True)
+    mt = mt.head(n_rows=15, n_cols=5)
+    mt.write(output_path('polymorphic_run_n5_15variants/str_subset.mt'), overwrite=True)
 
 
 if __name__ == '__main__':
