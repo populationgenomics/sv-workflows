@@ -7,6 +7,8 @@ Script to submit a dataproc job
 """
 from analysis_runner import dataproc
 from cpg_utils.hail_batch import get_batch
+from cpg_workflows.large_cohort.dataproc_utils import dataproc_job
+from sv_workflows.str.helper.str_pca_dataproc_hail_script import pca_runner
 
 def main():
     script = (
@@ -15,7 +17,7 @@ def main():
     )
     j = dataproc.hail_dataproc_job(
                 get_batch(),
-                script,
+                function = pca_runner,
                 max_age='48h',
                 packages=[
                     'cpg_workflows',
