@@ -8,9 +8,9 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, beta, se, raw pval,r2, motif, ref_len).
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
-    --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/results" \
-    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/240_libraries_tenk10kp1_v2_run/results/v1 \
-    --cell-types=CD4_TCM --chromosomes=21 --acat
+    --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/inflation-debug/cohort_2/results" \
+    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/240_libraries_tenk10kp1_v2_run/inflation-debug/cohort_2/results/v1 \
+    --cell-types=CD4_TCM,CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --acat
 """
 import numpy as np
 from scipy.stats import cauchy
@@ -215,7 +215,10 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                 f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:
                     # read the raw results
-                    gene_results = pd.read_csv(gene_file, sep='\t')
+                    try:
+                        gene_results = pd.read_csv(gene_file, sep='\t')
+                    except:
+                        continue
                     pvals = gene_results.iloc[:, 5]  # stored in the 6th column
                     # Find and store the attributes of the locus with lowest raw pval
                     # Find the minimum value in column 6
