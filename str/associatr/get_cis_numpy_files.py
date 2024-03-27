@@ -138,14 +138,18 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].astype(float)
 
-        gene_pheno_cov = gene_pheno_cov.to_numpy()
-        with hl.hadoop_open(
-            output_path(
-                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
-            ),
-            'wb',
-        ) as f:
-            np.save(f, gene_pheno_cov)
+        ## make separate objects for each cohort
+        for cohort in [1, 2]:
+            gene_pheno_cov_cohort = gene_pheno_cov[gene_pheno_cov['cohort'] == cohort]
+            gene_pheno_cov_cohort = gene_pheno_cov_cohort.drop(columns=['cohort'])
+            gene_pheno_cov = gene_pheno_cov.to_numpy()
+            with hl.hadoop_open(
+                output_path(
+                    f'pheno_cov_numpy/{version}/{cohort}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
+                ),
+                'wb',
+            ) as f:
+                np.save(f, gene_pheno_cov)
 
 
 def main():
