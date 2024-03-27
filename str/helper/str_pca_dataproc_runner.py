@@ -16,7 +16,6 @@ def main():
         f'--file-path=gs://cpg-bioheart-test/str/associatr/mt_filtered/v1/str.mt'
     )
     j = dataproc_job(
-                get_batch(),
                 function = pca_runner,
                 function_path_args=dict(file_path='gs://cpg-bioheart-test/str/associatr/mt_filtered/v1/str.mt'),
                 job_name='STR-PCA')
