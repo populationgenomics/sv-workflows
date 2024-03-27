@@ -6,8 +6,8 @@ This Hail Query script performs a PCA using STR genotypes (summed repeat length)
  analysis-runner --dataset "bioheart" \
     --description "str_pca" \
     --access-level "test" \
-    --output-dir "str/qc" \
-    str_pca.py --file-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
+    --output-dir "str/qc/filtered_mt" \
+    str_pca.py --file-path=gs://cpg-bioheart-test/str/associatr/mt_filtered/v1/str.mt
 
 """
 
@@ -25,6 +25,15 @@ def pca_runner(file_path):
     """
     init_batch(worker_memory='highmem')
     mt = hl.read_matrix_table(file_path)
+
+    mt = mt.annotate_entries(
+        allele_1_rep_length=hl.int(mt.REPCN.split('/')[0]),
+        allele_2_rep_length=hl.if_else(
+            hl.len(mt.REPCN.split('/')) == 2,
+            hl.int(mt.REPCN.split('/')[1]),
+            hl.missing('int32'),
+        ),
+    )
 
     # calculate the summed repeat length
     mt = mt.annotate_entries(sum_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
