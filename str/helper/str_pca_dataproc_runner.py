@@ -28,6 +28,7 @@ def main():
             )
     j._preemptible = False
     j.attributes = (j.attributes or {}) | {'tool': 'hailctl dataproc'}
+    get_batch.run(wait=False)
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
