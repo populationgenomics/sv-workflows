@@ -10,7 +10,7 @@ This script aims to:
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files"  \
+--description "get cis and numpy" --output-dir "str/associatr/input_files/240_libraries_tenk10kp1_v2/inflation_debug"  \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -138,18 +138,18 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].astype(float)
 
-        ## make separate objects for each cohort
+        # make separate objects for each cohort
         for cohort in [1, 2]:
             gene_pheno_cov_cohort = gene_pheno_cov[gene_pheno_cov['cohort'] == cohort]
             gene_pheno_cov_cohort = gene_pheno_cov_cohort.drop(columns=['cohort'])
-            gene_pheno_cov = gene_pheno_cov.to_numpy()
+            gene_pheno_cov_cohort = gene_pheno_cov_cohort.to_numpy()
             with hl.hadoop_open(
                 output_path(
                     f'pheno_cov_numpy/{version}/{cohort}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
                 ),
                 'wb',
             ) as f:
-                np.save(f, gene_pheno_cov)
+                np.save(f, gene_pheno_cov_cohort)
 
 
 def main():
