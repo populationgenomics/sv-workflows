@@ -83,7 +83,7 @@ def get_covariates(
     cov = cov[['sample_id', 'sex', 'age', 'geno_PC1', 'geno_PC6']]
 
     # cut-offs for geno PCs (filter out ancestry outliers)
-    cov = cov[(cov['geno_PC1'] >= -0.1) & (cov['geno_PC6'] <= 0.15)]
+    cov = cov[(cov['geno_PC1'] >= -0.05) & (cov['geno_PC6'] <= 0.05) &(cov['geno_PC6'] >= -0.05) ]
 
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
