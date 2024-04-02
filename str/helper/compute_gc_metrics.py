@@ -13,22 +13,18 @@ analysis-runner --dataset "bioheart" \
 """
 
 import click
-import hailtop.batch as hb
 
 from cpg_utils.hail_batch import command, image_path
-from cpg_workflows.resources import (
-    HIGHMEM
-)
+from cpg_workflows.resources import HIGHMEM
 from cpg_utils.hail_batch import get_batch, output_path
 
 
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
 
+
 @click.option('--cram-path')
 @click.command()
-
-def main(cram_path
-):
+def main(cram_path):
     """
     Make job that runs Picard CollectGcBiasMetrics.
     """
@@ -53,12 +49,13 @@ def main(cram_path
         output_files={
             'gc_bias_sample': '{root}.gc_bias_metrics.txt',
             'gc_bias_summary': '{root}.summary_metrics.txt',
-            'gc_bias_chart': '{root}.gc_bias_metrics.pdf'
-        })
+            'gc_bias_chart': '{root}.gc_bias_metrics.pdf',
+        }
+    )
 
     cmd = f"""
 
-    samtools view -b -o {j.temp_bam} {input_cram}
+    samtools view -b -T {reference.base} -o {j.temp_bam} {input_cram}
     rm {input_cram}
     echo "samtools view finished successfully"
 
