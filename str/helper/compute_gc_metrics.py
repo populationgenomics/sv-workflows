@@ -7,7 +7,7 @@ analysis-runner --dataset "bioheart" \
     --description "Compute GC metrics" \
     --access-level "test" \
     --output-dir "qc-stand-alone" \
-    compute_gc_metrics.py --input-dir "gs://cpg-bioheart-test/cram" CPGXXX CPGYYY
+    compute_gc_metrics.py --input-dir "gs://cpg-bioheart-test/cram" CPG305235 CPG305284
 
 
 """
@@ -48,7 +48,7 @@ def main(input_dir, internal_wgs_ids):
 
         j.image(image_path('picard'))
         resource = HIGHMEM.request_resources(ncpu=4)
-        resource.attach_disk_storage_gb = 250
+        resource.attach_disk_storage_gb = 50
         resource.set_to_job(j)
 
         j.declare_resource_group(
