@@ -53,9 +53,9 @@ def main(input_dir, internal_wgs_ids):
 
         j.declare_resource_group(
             output_files={
-                'gc_bias_sample.txt': '{root}.gc_bias_metrics.txt',
-                'gc_bias_summary.txt': '{root}.summary_metrics.txt',
-                'gc_bias_chart.pdf': '{root}.gc_bias_metrics.pdf',
+                'gc_bias_sample.txt': '{root}.gc_bias_sample.txt',
+                'gc_bias_summary.txt': '{root}.gc_bias_summary.txt',
+                'gc_bias_chart.pdf': '{root}.gc_bias_chart.pdf',
             }
         )
 
