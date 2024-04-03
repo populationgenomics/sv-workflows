@@ -14,9 +14,8 @@ analysis-runner --dataset "bioheart" \
 
 import click
 
-from cpg_utils.hail_batch import command, image_path
+from cpg_utils.hail_batch import command, image_path,get_batch, output_path
 from cpg_workflows.resources import HIGHMEM
-from cpg_utils.hail_batch import get_batch, output_path
 
 
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -55,12 +54,9 @@ def main(cram_path):
 
     cmd = f"""
 
-    samtools view -b -T {reference.base} -o {j.temp_bam} {input_cram}
-    rm {input_cram}
-    echo "samtools view finished successfully"
 
     picard CollectGcBiasMetrics -Xms{resource.get_java_mem_mb()}M \\
-    I={j.temp_bam} O={j.output_files.gc_bias_sample} CHART={j.output_files.gc_bias_chart} \\
+    I={input_cram} O={j.output_files.gc_bias_sample} CHART={j.output_files.gc_bias_chart} \\
     S={j.output_files.gc_bias_summary} \\
     R={reference.base}
     echo "CollectGcBiasMetrics finished successfully"
