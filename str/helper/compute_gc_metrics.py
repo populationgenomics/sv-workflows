@@ -18,7 +18,7 @@ from cpg_utils.hail_batch import command, image_path,get_batch, output_path
 from cpg_workflows.resources import HIGHMEM
 
 
-REF_FASTA = 'gs://pg-common-main/references/hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
+REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
 
 
 @click.option('--cram-path')
