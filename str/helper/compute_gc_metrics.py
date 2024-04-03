@@ -15,7 +15,7 @@ import os
 import click
 
 from cpg_utils.hail_batch import command, image_path, get_batch, output_path
-from cpg_workflows.resources import HIGHMEM
+from cpg_workflows.resources import HIGHMEM, STANDARD
 
 
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
@@ -47,7 +47,7 @@ def main(input_dir, internal_wgs_ids):
         j = b.new_job(f'CollectGcBiasMetrics: {id}')
 
         j.image(image_path('picard'))
-        resource = HIGHMEM.request_resources(ncpu=4)
+        resource = STANDARD.request_resources(ncpu=1)
         resource.attach_disk_storage_gb = 50
         resource.set_to_job(j)
 
