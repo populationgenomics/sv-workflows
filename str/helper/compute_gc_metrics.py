@@ -7,7 +7,7 @@ analysis-runner --dataset "bioheart" \
     --description "Compute GC metrics" \
     --access-level "test" \
     --output-dir "qc-stand-alone" \
-    compute_gc_metrics.py --input-dir "gs://cpg-bioheart-test/cram" CPG305235 CPG305284
+    compute_gc_metrics.py --input-dir "gs://cpg-bioheart-test/cram" CPGXXXX
 
 
 """
