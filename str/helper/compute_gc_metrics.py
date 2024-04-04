@@ -42,7 +42,6 @@ def main(input_dir, internal_wgs_ids):
     cram_dict = {id: os.path.join(input_dir, f'{id}.cram') for id in internal_wgs_ids}
 
     for id in list(cram_dict.keys()):
-
         input_cram = b.read_input(cram_dict[id])
 
         j = b.new_job(f'CollectGcBiasMetrics: {id}')
