@@ -13,9 +13,10 @@ analysis-runner --dataset "bioheart" \
 """
 import os
 import click
+from cpg_utils import to_path
 
 from cpg_utils.hail_batch import command, image_path, get_batch, output_path
-from cpg_workflows.resources import HIGHMEM, STANDARD
+from cpg_workflows.resources import STANDARD
 
 
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
@@ -48,7 +49,10 @@ def main(input_dir, internal_wgs_ids):
 
         j.image(image_path('picard'))
         resource = STANDARD.request_resources(ncpu=1)
-        resource.attach_disk_storage_gb = 50
+        cram_file = to_path(cram_dict[id])
+        cram_size = (cram_file.stat().st_size) / (1024**3)
+
+        resource.attach_disk_storage_gb = cram_size * 1.5
         resource.set_to_job(j)
 
         j.declare_resource_group(
@@ -77,4 +81,4 @@ def main(input_dir, internal_wgs_ids):
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter,missing-function-docstring
+    main()  # pylint: disable=no-value-for-parameter
