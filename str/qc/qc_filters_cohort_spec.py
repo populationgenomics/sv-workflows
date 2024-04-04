@@ -159,7 +159,7 @@ def qc_filter(mt_path, version):
     # remove chrX from analysis
     mt = mt.filter_rows((hl.str(mt.locus.contig).startswith('chrX')), keep=False)
     table = hl.import_table(
-        'gs://cpg-bioheart-main-analysis/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv',
+        'gs://cpg-bioheart-test/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv',
         delimiter=',',
         impute=True,
     )
