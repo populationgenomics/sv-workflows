@@ -18,8 +18,7 @@ Applied filters:
     --description "Hail QC for associaTR" \
     --access-level "test" \
     --output-dir "str/associatr/input_files" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
-    --version=v1-chr-specific
+    qc_filters_cohort_spec.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
 
@@ -156,36 +155,64 @@ def qc_filter(mt_path, version):
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
     ### APPLY SUBSETS FOR COHORT SPECIFIC MTS
-    table = hl.import_table('gs://cpg-bioheart-main-analysis/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv', delimiter=',', impute=True)
+    # remove chrX from analysis
+    mt = mt.filter_rows((hl.str(mt.locus.contig).startswith('chrX')), keep=False)
+    table = hl.import_table(
+        'gs://cpg-bioheart-main-analysis/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv',
+        delimiter=',',
+        impute=True,
+    )
+
     # Define a function to determine the cohort based on the 'id' column
     def get_cohort(id):
-        return hl.if_else(hl.str(id).startswith('CT'), 'bioheart',
-                        hl.if_else(hl.str(id).startswith('TOB'), 'tob', 'Unknown'))
+        return hl.if_else(
+            hl.str(id).startswith('CT'),
+            'bioheart',
+            hl.if_else(hl.str(id).startswith('TOB'), 'tob', 'Unknown'),
+        )
 
     # Add a new column 'cohort' based on the 'id' column using the defined function
     table = table.annotate(cohort=get_cohort(table.external_id))
     table = table.key_by('s')
-    mt = mt.annotate_cols(cohort = table[mt.s].cohort)
+    mt = mt.annotate_cols(cohort=table[mt.s].cohort)
 
-    table_geno_pcs = hl.import_table('gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv', delimiter=',', impute=True)
+    table_geno_pcs = hl.import_table(
+        'gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv',
+        delimiter=',',
+        impute=True,
+    )
 
     table_geno_pcs = table_geno_pcs.key_by('sample_id')
-    mt = mt.annotate_cols(geno_pc1 = hl.float(table_geno_pcs[mt.s].geno_PC1))
-    mt = mt.annotate_cols(geno_pc6 = hl.float(table_geno_pcs[mt.s].geno_PC6))
-    #remove ancestry outliers
-    mt = mt.filter_cols((mt.geno_pc1 >=-0.05) & (mt.geno_pc6<=0.05) & (mt.geno_pc6 >=-0.05))
-    with to_path('gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt').open() as f:
+    mt = mt.annotate_cols(geno_pc1=hl.float(table_geno_pcs[mt.s].geno_PC1))
+    mt = mt.annotate_cols(geno_pc6=hl.float(table_geno_pcs[mt.s].geno_PC6))
+    # remove ancestry outliers
+    mt = mt.filter_cols(
+        (mt.geno_pc1 >= -0.05) & (mt.geno_pc6 <= 0.05) & (mt.geno_pc6 >= -0.05)
+    )
+    with to_path(
+        'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
+    ).open() as f:
         array_string = f.read().strip()
         remove_samples = literal_eval(array_string)
 
-    #remove related individuals
-    mt = mt.filter_cols(hl.literal(remove_samples).contains(mt.s), keep = False)
+    # remove related individuals
+    mt = mt.filter_cols(hl.literal(remove_samples).contains(mt.s), keep=False)
 
-    for cohort in ['tob','bioheart']:
+    ### calculate col specific values and export
+    mt = mt.annotate_cols(
+        col_sum_allele_1_is_not_mode=hl.agg.sum(hl.cond(mt.allele_1_is_non_mode, 1, 0)),
+        col_sum_allele_2_is_not_mode=hl.agg.sum(hl.cond(mt.allele_2_is_non_mode, 1, 0)),
+    )
+    mt = mt.annotate_cols(
+        col_sum_alleles_is_not_mode=mt.col_sum_allele_1_is_not_mode
+        + mt.col_sum_allele_2_is_not_mode
+    )
+    mt = mt.annotate_cols(missing_calls_count=hl.agg.count_where(hl.is_missing(mt.GT)))
+
+    mt.cols().write('gs://cpg-bioheart-test/str/batch_debug/cols.ht')
+
+    for cohort in ['tob', 'bioheart']:
         mt_cohort = mt.filter_cols(mt.cohort == cohort)
-        # remove chrX from analysis
-        mt_cohort = mt_cohort.filter_rows(
-        (hl.str(mt_cohort.locus.contig).startswith('chrX')), keep = False)
 
         # annotate rows with counts of alleles that appear in each VARID
         ht = mt_cohort.select_rows(
@@ -202,14 +229,22 @@ def qc_filter(mt_path, version):
             allele_array_counts=hl.agg.counter(exploded_table.alleles_rep_lengths)
         )
 
-         # annotate the mt with the aggregated counts
-        mt_cohort = mt_cohort.annotate_rows(aggregated_info_cohort=aggregated_table[mt_cohort.REPID])
+        # annotate the mt with the aggregated counts
         mt_cohort = mt_cohort.annotate_rows(
-            cohort_num_alleles=hl.len(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
+            aggregated_info_cohort=aggregated_table[mt_cohort.REPID]
+        )
+        mt_cohort = mt_cohort.annotate_rows(
+            cohort_num_alleles=hl.len(
+                mt_cohort.aggregated_info_cohort.allele_array_counts.values()
             )
+        )
         mt_cohort = mt_cohort.annotate_rows(
-            sum_allele_1_is_not_mode=hl.agg.sum(hl.cond(mt_cohort.allele_1_is_non_mode, 1, 0)),
-            sum_allele_2_is_not_mode=hl.agg.sum(hl.cond(mt_cohort.allele_2_is_non_mode, 1, 0)),
+            sum_allele_1_is_not_mode=hl.agg.sum(
+                hl.cond(mt_cohort.allele_1_is_non_mode, 1, 0)
+            ),
+            sum_allele_2_is_not_mode=hl.agg.sum(
+                hl.cond(mt_cohort.allele_2_is_non_mode, 1, 0)
+            ),
         )
         mt_cohort = mt_cohort.annotate_rows(
             sum_alleles_is_not_mode=mt_cohort.sum_allele_1_is_not_mode
@@ -222,17 +257,9 @@ def qc_filter(mt_path, version):
             / hl.sum(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
         )
 
-
-
-
-
-
-
-
-
-
-
-
+        mt_cohort.rows().write(
+            f'gs://cpg-bioheart-test/str/batch_debug/rows_{cohort}.ht'
+        )
 
 
 @click.option(
