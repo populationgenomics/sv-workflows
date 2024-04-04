@@ -67,11 +67,10 @@ def main(input_dir, internal_wgs_ids):
 
 
         picard CollectGcBiasMetrics -Xms{resource.get_java_mem_mb()}M \\
-        I={input_cram} O={j.output_files['gc_bias_sample.txt']} CHART={j.output_files['gc_bias_chart.pdf']} \\
-        S={j.output_files['gc_bias_summary.txt']} \\
-        R={reference.base}
+        -I {input_cram} -O {j.output_files['gc_bias_sample.txt']} -CHART {j.output_files['gc_bias_chart.pdf']} \\
+        -S {j.output_files['gc_bias_summary.txt']} \\
+        -R {reference.base}
         echo "CollectGcBiasMetrics finished successfully"
-
         """
         j.command(command(cmd, monitor_space=True))
 
