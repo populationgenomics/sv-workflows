@@ -220,7 +220,7 @@ def qc_filter(mt_path, version):
     )
     mt = mt.annotate_cols(missing_calls_count=hl.agg.count_where(hl.is_missing(mt.GT)))
 
-    mt.cols().write('gs://cpg-bioheart-test/str/batch_debug/cols.ht')
+    mt.cols().write('gs://cpg-bioheart-test/str/batch_debug/cols.ht', overwrite=True)
 
     for cohort in ['tob', 'bioheart']:
         mt_cohort = mt.filter_cols(mt.cohort == cohort)
@@ -269,7 +269,7 @@ def qc_filter(mt_path, version):
         )
 
         mt_cohort.rows().write(
-            f'gs://cpg-bioheart-test/str/batch_debug/rows_{cohort}.ht'
+            f'gs://cpg-bioheart-test/str/batch_debug/rows_{cohort}.ht', overwrite=True
         )
 
 
