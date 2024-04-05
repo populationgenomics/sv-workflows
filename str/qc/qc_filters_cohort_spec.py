@@ -209,14 +209,27 @@ def qc_filter(mt_path, version):
     # remove related individuals
     mt = mt.filter_cols(hl.literal(remove_samples).contains(mt.s), keep=False)
 
+    ## annotate relative to REF
+    mt = mt.annotate_entries(
+        allele_1_minus_ref=mt.allele_1_rep_length - mt.info.REF,
+        allele_2_minus_ref=mt.allele_2_rep_length - mt.info.REF,
+    )
+    # annotate the sum of alleles that are not the ref allele
+    mt = mt.annotate_entries(
+        allele_1_is_non_ref=hl.if_else(mt.allele_1_minus_ref != 0, True, False),
+        allele_2_is_non_ref=hl.if_else(mt.allele_2_minus_ref != 0, True, False),
+    )
     ### calculate col specific values and export
     mt = mt.annotate_cols(
         col_sum_allele_1_is_not_mode=hl.agg.sum(hl.cond(mt.allele_1_is_non_mode, 1, 0)),
         col_sum_allele_2_is_not_mode=hl.agg.sum(hl.cond(mt.allele_2_is_non_mode, 1, 0)),
+        col_sum_allele_1_is_not_ref=hl.agg.sum(hl.cond(mt.allele_1_is_non_ref, 1, 0)),
+        col_sum_allele_2_is_not_ref=hl.agg.sum(hl.cond(mt.allele_2_is_non_ref, 1, 0)),
     )
     mt = mt.annotate_cols(
         col_sum_alleles_is_not_mode=mt.col_sum_allele_1_is_not_mode
-        + mt.col_sum_allele_2_is_not_mode
+        + mt.col_sum_allele_2_is_not_mode,
+        col_sum_alleles_is_not_ref=mt.col_sum_allele_1_is_not_ref + mt.col_sum_allele_2_is_not_ref,
     )
     mt = mt.annotate_cols(missing_calls_count=hl.agg.count_where(hl.is_missing(mt.GT)))
 
@@ -256,15 +269,27 @@ def qc_filter(mt_path, version):
             sum_allele_2_is_not_mode=hl.agg.sum(
                 hl.cond(mt_cohort.allele_2_is_non_mode, 1, 0)
             ),
+            sum_allele_1_is_not_ref=hl.agg.sum(
+                hl.cond(mt_cohort.allele_1_is_non_ref, 1, 0)
+            ),
+            sum_allele_2_is_not_ref=hl.agg.sum(
+                hl.cond(mt_cohort.allele_2_is_non_ref, 1, 0)
+            ),
         )
         mt_cohort = mt_cohort.annotate_rows(
             sum_alleles_is_not_mode=mt_cohort.sum_allele_1_is_not_mode
-            + mt_cohort.sum_allele_2_is_not_mode
+            + mt_cohort.sum_allele_2_is_not_mode,
+            sum_alleles_is_not_ref=mt_cohort.sum_allele_1_is_not_ref + mt_cohort.sum_allele_2_is_not_ref,
         )
 
         # proportion of alleles that are not the mode allele
         mt_cohort = mt_cohort.annotate_rows(
             prop_alleles_is_not_mode=mt_cohort.sum_alleles_is_not_mode
+            / hl.sum(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
+        )
+        # proportion of alleles that are not the ref allele
+        mt_cohort = mt_cohort.annotate_rows(
+            prop_alleles_is_not_ref=mt_cohort.sum_alleles_is_not_ref
             / hl.sum(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
         )
 
