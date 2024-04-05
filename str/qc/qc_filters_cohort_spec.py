@@ -100,6 +100,11 @@ def qc_filter(mt_path, version):
             hl.missing('str'),
             mt.SO,
         ),
+        allele_1_rep_length=hl.if_else(
+            condition_allele_1,
+            hl.missing('int32'),
+            mt.allele_1_rep_length,
+        ),
     )
 
     condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
@@ -144,6 +149,11 @@ def qc_filter(mt_path, version):
             condition_allele_2,
             hl.missing('str'),
             mt.SO,
+        ),
+        allele_2_rep_length=hl.if_else(
+            condition_allele_2,
+            hl.missing('int32'),
+            mt.allele_2_rep_length,
         ),
     )
 
