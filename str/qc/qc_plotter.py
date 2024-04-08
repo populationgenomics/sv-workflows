@@ -40,8 +40,7 @@ def main(mt_path):
     table = hl.import_table('gs://cpg-bioheart-test/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv', delimiter=',', impute=True)
     # Define a function to determine the cohort based on the 'id' column
     def get_cohort(id):
-        return hl.if_else(hl.str(id).startswith('CT'), 'bioheart',
-                        hl.if_else(hl.str(id).startswith('TOB'), 'tob', 'Unknown'))
+        return hl.if_else(hl.str(id).startswith('CT'), 'bioheart', 'tob')
 
     # Add a new column 'cohort' based on the 'id' column using the defined function
     table = table.annotate(cohort=get_cohort(table.external_id))
