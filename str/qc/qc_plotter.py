@@ -32,8 +32,8 @@ def main(mt_path):
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
 
-    chr = 'chr15'
-    position = 40262509
+    chr = 'chr14'
+    position = 42532368
 
     mt = mt.filter_rows((mt.locus.contig == chr) & (mt.locus.position == position))
 
