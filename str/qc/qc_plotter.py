@@ -64,10 +64,10 @@ def main(mt_path):
             .extend(hl.agg.collect(mt.allele_2_minus_ref))
         ).rows()
         alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
-        p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus ref", range=(-31, 31))
+        p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus ref")
         output_file('local_plot_1.html')
         save(p)
-        gcs_path_1 = output_path(f'alleles_minus_ref/{chr}_{position}/{cohort}/allele_size_range_31_to_31.html', 'analysis')
+        gcs_path_1 = output_path(f'alleles_minus_ref/{chr}_{position}/{cohort}/allele_size.html', 'analysis')
         hl.hadoop_copy('local_plot_1.html', gcs_path_1)
 
     """
