@@ -54,7 +54,7 @@ def main(mt_path):
     #dotato = mt.filter_entries((mt.allele_1_minus_ref> -21) & (mt.allele_1_minus_ref<21) & (mt.allele_2_minus_ref>-21) & (mt.allele_2_minus_ref<21))
     #print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
 
-    for cohort in ['tob', 'bioheart']:
+    for cohort in ['bioheart']:
         mt = mt.filter_cols(mt.cohort == cohort)
 
         # Alleles minus ref histogram
