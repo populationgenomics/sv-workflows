@@ -9,10 +9,11 @@ This Hail Query script outputs a Hail matrix table  from a BGZIPPED VCF file.
 
 """
 
-import hail as hl
 import click
 
-from cpg_utils.hail_batch import output_path, init_batch
+import hail as hl
+
+from cpg_utils.hail_batch import init_batch, output_path
 
 
 @click.option(

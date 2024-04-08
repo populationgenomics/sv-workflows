@@ -11,10 +11,8 @@ analysis-runner --access-level test --dataset bioheart --description  \
 
 import click
 
-
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path
-
 
 config = get_config()
 
@@ -44,7 +42,7 @@ def main(input_file, job_memory, job_storage, job_cpu):
     bcftools_job.declare_resource_group(
         vcf_output={
             'vcf.bgz': '{root}.vcf.bgz',
-        }
+        },
     )
 
     bcftools_job.command(
@@ -53,11 +51,9 @@ def main(input_file, job_memory, job_storage, job_cpu):
         bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_output['vcf.bgz']}
 
 
-        """
+        """,
     )
-    b.write_output(
-        bcftools_job.vcf_output, (output_path(f'{input_file_name}', 'analysis'))
-    )
+    b.write_output(bcftools_job.vcf_output, (output_path(f'{input_file_name}', 'analysis')))
 
     b.run(wait=False)
 

@@ -17,12 +17,14 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 
 """
 import json
+
 import pandas as pd
+
 import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, output_path, init_batch
+from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 
 def gene_cis_window_file_reader(file_path):
@@ -46,9 +48,7 @@ def main():
         To avoid having too many jobs running at once, we have to limit concurrency.
         """
         if len(_dependent_jobs) >= get_config()['associatr']['max_parallel_jobs']:
-            job.depends_on(
-                _dependent_jobs[-get_config()['associatr']['max_parallel_jobs']]
-            )
+            job.depends_on(_dependent_jobs[-get_config()['associatr']['max_parallel_jobs']])
         _dependent_jobs.append(job)
 
     for celltype in get_config()['associatr']['celltypes'].split(','):
@@ -59,12 +59,10 @@ def main():
                 **dict(
                     base=vcf_file_path,
                     tbi=vcf_file_path + '.tbi',
-                )
+                ),
             )
             gene_list_dir = get_config()['associatr']['gene_list_dir']
-            with to_path(
-                f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json'
-            ).open('r') as file:
+            with to_path(f'{gene_list_dir}/{celltype}/{chromosome}_{celltype}_gene_list.json').open('r') as file:
                 pseudobulk_gene_names = json.load(file)
             for gene in pseudobulk_gene_names:
                 cis_window_dir = get_config()['associatr']['cis_window_dir']
@@ -73,22 +71,16 @@ def main():
                 # need to extract the gene start and end from the cis window file for input into 'region'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
                 pheno_cov_numpy_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-                gene_pheno_cov = b.read_input(
-                    f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy'
-                )
+                gene_pheno_cov = b.read_input(f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy')
 
                 # run associaTR job on the gene
-                associatr_job = b.new_job(
-                    name=f'Run associatr on {gene} [{celltype};{chromosome}]'
-                )
+                associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
                 associatr_job.image(get_config()['images']['trtools'])
                 associatr_job.storage(get_config()['associatr']['job_storage'])
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
-                associatr_job.declare_resource_group(
-                    association_results={'tsv': '{root}.tsv'}
-                )
+                associatr_job.declare_resource_group(association_results={'tsv': '{root}.tsv'})
                 associatr_job.command(
-                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh"
+                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh",
                 )
                 version = get_config()['associatr']['version']
                 b.write_output(

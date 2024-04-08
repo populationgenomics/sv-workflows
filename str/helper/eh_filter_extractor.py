@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 
 """
-This script extracts sample/REPID combinations with EH binary filter set to "LowDepth" for all EH VCFs found within a directory into a .JSON format to be used as an annotation file in Hail query. 
+This script extracts sample/REPID combinations with EH binary filter set to "LowDepth" for all EH VCFs found within a directory into a .JSON format to be used as an annotation file in Hail query.
 
 analysis-runner --access-level standard --dataset tob-wgs --description \
     'EH Filter Extractor' --output-dir 'str/expansionhunter/v3-eh-filter-extractor' \
     eh_filter_extractor.py \
     --input-dir-eh=gs://cpg-tob-wgs-main/str/expansionhunter/v3 \
-    --output-name-eh=eh.json 
+    --output-name-eh=eh.json
 """
 
 import json
 import logging
 from collections import defaultdict
+
 import click
 from cloudpathlib import GSPath
 from cyvcf2 import VCFReader
+
 import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path
-
+from cpg_utils.hail_batch import output_path, remote_tmpdir
 
 config = get_config()
 
@@ -67,9 +68,7 @@ def main(
         billing_project=get_config()['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
-    b = hb.Batch(
-        backend=backend, default_python_image=config['workflow']['driver_image']
-    )
+    b = hb.Batch(backend=backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name='EH filter status extractor')
     j.storage('20Gi')
 

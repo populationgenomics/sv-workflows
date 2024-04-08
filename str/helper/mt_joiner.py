@@ -13,10 +13,11 @@ The columns of both matrix tables will be in the final mt.
     --mt-path-2=gs://cpg-bioheart-test/str/polymorphic_run/bzip/v1/tester_file.mt
 """
 
-import hail as hl
 import click
 
-from cpg_utils.hail_batch import output_path, init_batch
+import hail as hl
+
+from cpg_utils.hail_batch import init_batch, output_path
 
 
 @click.option(
@@ -51,7 +52,7 @@ def main(mt_path_1, mt_path_2):
     mt_joined = mt_1.union_cols(mt_2)
     print(f'Joined matrix table dimensions: {mt_joined.count()}')
 
-    gcs_output_path = output_path(f'combined.mt', 'analysis')
+    gcs_output_path = output_path('combined.mt', 'analysis')
     mt_joined.write(gcs_output_path, overwrite=True)
 
 

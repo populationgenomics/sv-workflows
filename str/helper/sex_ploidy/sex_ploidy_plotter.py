@@ -13,11 +13,12 @@ Sample QC Table (eg: inferred karyotypic sex, or dataset) from the SampleQC Hail
 
 """
 
-import hail as hl
 import click
-
-from cpg_utils.hail_batch import output_path, init_batch, get_batch
 from bokeh.plotting import output_file, save
+
+import hail as hl
+
+from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 
 def sex_ploidy_plotter(file_path, gcs_path, label):
@@ -45,24 +46,20 @@ def sex_ploidy_plotter(file_path, gcs_path, label):
     help='GCS file path to SampleQC Hail Table',
     type=str,
 )
-@click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
-)
+@click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='20G')
 @click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='8G')
-@click.option(
-    '--label', help='Column field in SampleQC table eg dataset or sex_karyotype'
-)
+@click.option('--label', help='Column field in SampleQC table eg dataset or sex_karyotype')
 @click.command()
 def main(file_path, job_storage, job_memory, label):
     # Initialise batch
     b = get_batch()
 
     # Initialise job
-    j = b.new_python_job(name=f'Sex ploidy plotter job')
+    j = b.new_python_job(name='Sex ploidy plotter job')
     j.memory(job_memory)
     j.storage(job_storage)
 
-    gcs_output_path = output_path(f'sex_ploidy_plot.html', 'analysis')
+    gcs_output_path = output_path('sex_ploidy_plot.html', 'analysis')
     j.call(sex_ploidy_plotter, file_path, gcs_output_path, label)
 
     b.run(wait=False)

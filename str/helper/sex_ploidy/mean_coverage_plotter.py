@@ -14,12 +14,14 @@ Input: VDS file path, sex-sample-mapping file path, and chromosome (default chrY
     --chromosome=chrY
 """
 import csv
-import hail as hl
+
 import click
+from bokeh.plotting import output_file, save
+
+import hail as hl
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path, init_batch, get_batch
-from bokeh.plotting import output_file, save
+from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 
 def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
@@ -65,7 +67,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
 
     # calculate mean coverage per sample
     filtered_mt_xx = filtered_mt_xx.annotate_cols(
-        dp_mean_cols=hl.agg.sum(filtered_mt_xx.DP) / filtered_mt_xx.count_rows()
+        dp_mean_cols=hl.agg.sum(filtered_mt_xx.DP) / filtered_mt_xx.count_rows(),
     )
 
     # Create a histogram using Hail's plotting functions
@@ -83,7 +85,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     # repeat for XY:
     filtered_mt_xy = filtered_mt.filter_cols(xy_samples.contains(filtered_mt.s))
     filtered_mt_xy = filtered_mt_xy.annotate_cols(
-        dp_mean_cols=hl.agg.sum(filtered_mt_xy.DP) / filtered_mt_xy.count_rows()
+        dp_mean_cols=hl.agg.sum(filtered_mt_xy.DP) / filtered_mt_xy.count_rows(),
     )
     p_xy = hl.plot.histogram(
         filtered_mt_xy.dp_mean_cols,
@@ -99,9 +101,7 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
 
     # repeat for X:
     filtered_mt_x = filtered_mt.filter_cols(x_samples.contains(filtered_mt.s))
-    filtered_mt_x = filtered_mt_x.annotate_cols(
-        dp_mean_cols=hl.agg.sum(filtered_mt_x.DP) / filtered_mt_x.count_rows()
-    )
+    filtered_mt_x = filtered_mt_x.annotate_cols(dp_mean_cols=hl.agg.sum(filtered_mt_x.DP) / filtered_mt_x.count_rows())
     p_x = hl.plot.histogram(
         filtered_mt_x.dp_mean_cols,
         legend=f'Mean DP per individual (X) for {chromosome} loci',
@@ -119,19 +119,13 @@ def coverage_plotter(vds_path, sex_sample_mapping, chromosome, xy_ylim):
     help='GCS file path to VDS file',
     type=str,
 )
-@click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
-)
+@click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='20G')
 @click.option('--job-memory', help='Memory of the Hail batch job eg 64G', default='8G')
-@click.option(
-    '--sex-sample-mapping-path', help='GCS file path to sex sample mapping file'
-)
+@click.option('--sex-sample-mapping-path', help='GCS file path to sex sample mapping file')
 @click.option('--chromosome', help='Chromosome to plot mean coverage for')
 @click.option('--xy-ylim', help='Y-axis limit for XY plot', default=100)
 @click.command()
-def main(
-    vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome, xy_ylim
-):
+def main(vds_file_path, job_storage, job_memory, sex_sample_mapping_path, chromosome, xy_ylim):
     # Initialise batch
     b = get_batch()
 
@@ -140,9 +134,7 @@ def main(
     j.memory(job_memory)
     j.storage(job_storage)
 
-    j.call(
-        coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim
-    )
+    j.call(coverage_plotter, vds_file_path, sex_sample_mapping_path, chromosome, xy_ylim)
 
     b.run(wait=False)
 
