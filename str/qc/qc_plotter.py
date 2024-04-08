@@ -32,8 +32,8 @@ def main(mt_path):
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
 
-    chr = 'chr15'
-    position = 40262509
+    chr = 'chr14'
+    position = 42532368
 
     mt = mt.filter_rows((mt.locus.contig == chr) & (mt.locus.position == position))
 
@@ -54,16 +54,16 @@ def main(mt_path):
     #dotato = mt.filter_entries((mt.allele_1_minus_ref> -21) & (mt.allele_1_minus_ref<21) & (mt.allele_2_minus_ref>-21) & (mt.allele_2_minus_ref<21))
     #print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
 
-    for cohort in ['bioheart']:
-        mt = mt.filter_cols(mt.cohort == cohort)
+    for cohort in ['tob','bioheart']:
+        mt_cohort = mt.filter_cols(mt.cohort == cohort)
 
         # Alleles minus ref histogram
-        alleles_minus_ref_ht = mt.select_rows(
-        allele_minus_ref = hl.agg.collect(mt.allele_1_minus_ref)
-            .extend(hl.agg.collect(mt.allele_2_minus_ref))
+        alleles_minus_ref_ht = mt_cohort.select_rows(
+        allele_minus_ref = hl.agg.collect(mt_cohort.allele_1_rep_length)
+            .extend(hl.agg.collect(mt_cohort.allele_2_rep_length))
         ).rows()
         alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
-        p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus ref")
+        p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes")
         output_file('local_plot_1.html')
         save(p)
         gcs_path_1 = output_path(f'alleles_minus_ref/{chr}_{position}/{cohort}/allele_size.html', 'analysis')
