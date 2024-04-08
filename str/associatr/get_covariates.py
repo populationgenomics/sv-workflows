@@ -24,11 +24,7 @@ from cpg_utils import to_path
 
 
 def get_covariates(
-    pseudobulk_input_dir,
-    cell_type,
-    chromosomes,
-    covariate_file_path,
-    num_pcs,
+    pseudobulk_input_dir, cell_type, chromosomes, covariate_file_path, num_pcs
 ):
     """
     Calculates cell-type specific PCs from the pseudobulk data (genome-wide),
@@ -69,13 +65,11 @@ def get_covariates(
     # extract PCs
     df_pcs = pd.DataFrame(adata_genome.obsm['X_pca'])
     df_pcs.index = adata_genome.obs.index
-    df_pcs = df_pcs.rename_axis(
-        'sample_id'
-    ).reset_index()  # index (CPG ids) are not stored in 'sample_id' column
+    # index (CPG ids) are not stored in 'sample_id' column
+    df_pcs = df_pcs.rename_axis('sample_id').reset_index()
     df_pcs = df_pcs[['sample_id'] + list(range(num_pcs))]
-    df_pcs = df_pcs.rename(
-        columns={i: f'rna_PC{i+1}' for i in range(num_pcs)}
-    )  # rename PC columns: rna_PC{num}
+    # rename PC columns: rna_PC{num}
+    df_pcs = df_pcs.rename(columns={i: f'rna_PC{i+1}' for i in range(num_pcs)})
 
     # read in covariates
     cov = pd.read_csv(covariate_file_path)
@@ -83,7 +77,11 @@ def get_covariates(
     cov = cov[['sample_id', 'sex', 'age', 'geno_PC1', 'geno_PC6']]
 
     # cut-offs for geno PCs (filter out ancestry outliers)
-    cov = cov[(cov['geno_PC1'] >= -0.05) & (cov['geno_PC6'] <= 0.05) &(cov['geno_PC6'] >= -0.05) ]
+    cov = cov[
+        (cov['geno_PC1'] >= -0.05)
+        & (cov['geno_PC6'] <= 0.05)
+        & (cov['geno_PC6'] >= -0.05)
+    ]
 
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
@@ -94,7 +92,6 @@ def get_covariates(
     )
 
 
-# inputs:
 @click.option(
     '--input-dir', help='GCS Path to the input dir storing pseudobulk CSV files'
 )
@@ -120,7 +117,6 @@ def main(
 ):
     """
     Obtain cell-type specific covariates for pseudobulk associaTR model
-
     """
     b = get_batch(name=f'Get covariates for {cell_types}')
 
