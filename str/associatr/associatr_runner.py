@@ -11,7 +11,7 @@ Ensure prior scripts have been run to generate dependent files, particularly:
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/inflation-debug/cohort_2" \
+    --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/genome-wide-run/cohort_1" \
      python3 associatr_runner.py
 
 
@@ -25,10 +25,6 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path, init_batch
 
 
-def gene_cis_window_file_reader(file_path):
-    cis_window = pd.read_csv(file_path, sep='\t', header=None)
-    cis_window.columns = ['chrom', 'start', 'end']
-    return f'{cis_window["chrom"][0]}:{cis_window["start"][0]}-{cis_window["end"][0]}'
 
 
 def main():
