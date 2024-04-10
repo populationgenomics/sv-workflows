@@ -299,6 +299,10 @@ def qc_filter(mt_path, version):
         mt_cohort.rows().write(
             f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_{cohort}.ht', overwrite=True
         )
+        mt_cohort.rows().export(
+            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_{cohort}.tsv'
+
+        )
 
 
 @click.option(
