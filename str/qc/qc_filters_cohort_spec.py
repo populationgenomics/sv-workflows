@@ -198,7 +198,7 @@ def qc_filter(mt_path, version):
     mt = mt.annotate_cols(geno_pc6=hl.float(table_geno_pcs[mt.s].geno_PC6))
     # remove ancestry outliers
     mt = mt.filter_cols(
-        (mt.geno_pc1 >= -0.05) & (mt.geno_pc6 <= 0.05) & (mt.geno_pc6 >= -0.05)
+        (mt.geno_pc1 >=0.01) & (mt.geno_pc6 <= 0.04) & (mt.geno_pc6 >= -0.03)& (mt.geno_pc6 <= 0.01)
     )
     with to_path(
         'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
@@ -293,8 +293,11 @@ def qc_filter(mt_path, version):
             / hl.sum(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
         )
 
+        #add mean LC
+        mt_cohort = mt_cohort.annotate_rows(variant_lc = hl.agg.mean(mt.LC))
+
         mt_cohort.rows().write(
-            f'gs://cpg-bioheart-test/str/batch_debug/rows_{cohort}.ht', overwrite=True
+            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_{cohort}.ht', overwrite=True
         )
 
 
