@@ -294,7 +294,7 @@ def qc_filter(mt_path, version):
         )
 
         #add mean LC
-        mt_cohort = mt_cohort.annotate_rows(variant_lc = hl.agg.mean(mt.LC))
+        mt_cohort = mt_cohort.annotate_rows(variant_lc = hl.agg.mean(mt_cohort.LC))
 
         mt_cohort.rows().write(
             f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_{cohort}.ht', overwrite=True
