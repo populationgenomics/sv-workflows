@@ -6,11 +6,12 @@ analysis-runner --access-level test --dataset hgdp --description "reviewer" --ou
 
 """
 
-import os
 import math
-import click
+import os
 
+import click
 from cloudpathlib import AnyPath
+
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path
 
@@ -35,33 +36,20 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
         base=REF_FASTA,
         catalog=catalog,
         fai=REF_FASTA + '.fai',
-        dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-        + '.dict',
+        dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
     )
     for cpg_id in cpg_sample_ids:
         # read in bam file from EH output
-        bam_input = b.read_input(
-            os.path.join(
-                input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam'
-            )
-        )
+        bam_input = b.read_input(os.path.join(input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam'))
 
         # read in VCF from EH output
-        vcf_input = b.read_input(
-            os.path.join(input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.vcf')
-        )
+        vcf_input = b.read_input(os.path.join(input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.vcf'))
 
         # BAM file must be sorted and indexed prior to inputting into REViewer
         samtools_job = b.new_job(name=f'Sorting and indexing {cpg_id}')
         samtools_job.image(SAMTOOLS_IMAGE)
         file_size_bytes = (
-            AnyPath(
-                os.path.join(
-                    input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam'
-                )
-            )
-            .stat()
-            .st_size
+            AnyPath(os.path.join(input_dir, f'{cpg_id}/{cpg_id}_eh_shard{shard_vcf}.realigned.bam')).stat().st_size
         )
         padding = 5
         file_size_gib = str(math.ceil(file_size_bytes / (1024**3)) + padding) + 'Gi'
@@ -70,7 +58,7 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
             bam={
                 'sorted.bam': '{root}.sorted.bam',
                 'sorted.bam.bai': '{root}.sorted.bam.bai',
-            }
+            },
         )
 
         samtools_job.cpu(4)  # to support the -@ 4
@@ -82,7 +70,7 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
         echo "indexing {samtools_job.bam['sorted.bam']}";
         samtools index -@ 4 {samtools_job.bam['sorted.bam']} -b -o {samtools_job.bam['sorted.bam.bai']};
 
-        """
+        """,
         )
 
         # REViewer job
@@ -96,7 +84,7 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
                 'svg': f'{{root}}.{locus}.svg',
                 'metrics.tsv': '{root}.metrics.tsv',
                 'phasing.tsv': '{root}.phasing.tsv',
-            }
+            },
         )
 
         reviewer_job.command(
@@ -104,12 +92,10 @@ def main(locus, catalog, input_dir, shard_vcf, cpg_sample_ids: list[str]):
             ./REViewer-v0.2.7-linux_x86_64 --reads {samtools_job.bam['sorted.bam']} \\
             --vcf {vcf_input} --reference {ref.base} --catalog {ref.catalog} \\
             --out {reviewer_job.ofile} --locus {locus}
-            """
+            """,
         )
         # output writing
-        reviewer_output_path = output_path(
-            f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis'
-        )
+        reviewer_output_path = output_path(f'{locus}/{cpg_id}_{locus}_reviewer', 'analysis')
         b.write_output(reviewer_job.ofile, reviewer_output_path)
 
     b.run(wait=False)

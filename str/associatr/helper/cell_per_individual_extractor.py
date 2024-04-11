@@ -11,8 +11,9 @@ cell_per_individual_extractor.py --input-h5ad-dir=gs://cpg-bioheart-test/str/ann
 
 import click
 import scanpy as sc
-from cpg_utils.hail_batch import output_path
+
 from cpg_utils import to_path
+from cpg_utils.hail_batch import output_path
 
 
 @click.option('--input-h5ad-file-path', help='GCS path to the input anndata object')
@@ -31,9 +32,7 @@ def main(input_h5ad_file_path: str, version: str):
 
     input_file_name = input_h5ad_file_path.split('/')[-1].split('.')[0]
 
-    output_gcs = output_path(
-        f'{version}/{input_file_name}_cell_counts_per_individual.csv', 'analysis'
-    )
+    output_gcs = output_path(f'{version}/{input_file_name}_cell_counts_per_individual.csv', 'analysis')
 
     # write to CSV
     counts.to_csv(output_gcs, header=['count'])

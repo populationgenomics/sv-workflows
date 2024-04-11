@@ -12,12 +12,12 @@ analysis-runner --dataset "bioheart" \
 
 """
 import os
+
 import click
+
 from cpg_utils import to_path
-
-from cpg_utils.hail_batch import command, image_path, get_batch, output_path
+from cpg_utils.hail_batch import command, get_batch, image_path, output_path
 from cpg_workflows.resources import STANDARD
-
 
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/dragen_reference/Homo_sapiens_assembly38_masked.fasta'
 
@@ -35,8 +35,7 @@ def main(input_dir, internal_wgs_ids):
     reference = b.read_input_group(
         base=REF_FASTA,
         fai=REF_FASTA + '.fai',
-        dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-        + '.dict',
+        dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
     )
 
     cram_dict = {id: os.path.join(input_dir, f'{id}.cram') for id in internal_wgs_ids}
@@ -59,7 +58,7 @@ def main(input_dir, internal_wgs_ids):
                 'gc_bias_sample.txt': '{root}.gc_bias_sample.txt',
                 'gc_bias_summary.txt': '{root}.gc_bias_summary.txt',
                 'gc_bias_chart.pdf': '{root}.gc_bias_chart.pdf',
-            }
+            },
         )
 
         cmd = f"""

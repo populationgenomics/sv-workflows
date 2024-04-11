@@ -31,21 +31,15 @@ SOMALIER_IMAGE = config['images']['somalier']
     help='2nd (optional)input directory to cram.somalier files',
     default=None,
 )
-@click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='10G'
-)
+@click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='10G')
 @click.option('--job-memory', help='Memory of the Hail batch job', default='8G')
 @click.option('--job-ncpu', help='Number of CPUs of the Hail batch job', default=4)
 @click.command()
-def main(
-    job_memory, job_ncpu, job_storage, input_dir_1, input_dir_2
-):  # pylint: disable=missing-function-docstring
+def main(job_memory, job_ncpu, job_storage, input_dir_1, input_dir_2):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
     input_files = list(to_path(input_dir_1).glob('*.somalier'))
-    input_files = [
-        str(gs_path) for gs_path in input_files
-    ]  # coverts into a string type
+    input_files = [str(gs_path) for gs_path in input_files]  # coverts into a string type
     if input_dir_2 is not None:
         input_files_2 = list(to_path(input_dir_2).glob('*.somalier'))
         input_files_2 = [str(gs_path) for gs_path in input_files_2]
@@ -72,7 +66,7 @@ def main(
                 mv related.pairs.tsv {somalier_job.output_pairs}
                 mv related.samples.tsv {somalier_job.output_samples}
                 mv related.html {somalier_job.output_html}
-                """
+                """,
     )
     # Output writing
     b.write_output(

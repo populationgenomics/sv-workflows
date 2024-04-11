@@ -8,9 +8,10 @@ analysis-runner --access-level standard --dataset tob-wgs --description  \
     merge_str_vcf_combiner.py \
     --input-dir=gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs/merge_str/v5
 """
-import gzip
-import click
 
+import gzip
+
+import click
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
@@ -33,10 +34,7 @@ def main(input_dir, output):
     input_file_paths = map(str, to_path(input_dir).glob('*.vcf.gz'))
 
     # create a dictionary where key is the shard number and value is the path to the shard
-    input_files_dict = {
-        int(file_path.split('eh_shard')[1].split('.')[0]): file_path
-        for file_path in input_file_paths
-    }
+    input_files_dict = {int(file_path.split('eh_shard')[1].split('.')[0]): file_path for file_path in input_file_paths}
 
     # Initialize variables to store information
     fileformat_line = ''

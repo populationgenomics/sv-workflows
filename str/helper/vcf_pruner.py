@@ -55,11 +55,7 @@ def pruner(vcf_file_path, cpg_id, chunk_number, variant_id_order):
             # Collect information from the header lines
             if line.startswith('##fileformat'):
                 fileformat_line = line
-            elif (
-                line.startswith('##INFO')
-                or line.startswith('##FILTER')
-                or line.startswith('##FORMAT')
-            ):
+            elif line.startswith('##INFO') or line.startswith('##FILTER') or line.startswith('##FORMAT'):
                 info_lines.append(line)
             elif line.startswith('##ALT'):
                 # Collect ALT lines from all files into a set to remove duplicates
@@ -114,26 +110,18 @@ def main(vcf_catalog_dir, vcf_file_dir, cpg_ids: list[str]):
 
     # list of catalog files (multiple, if catalog is sharded)
     catalog_files = list(to_path(vcf_catalog_dir).glob('*.vcf'))
-    catalog_files = [
-        str(gs_path) for gs_path in catalog_files
-    ]  # coverts into a string type
+    catalog_files = [str(gs_path) for gs_path in catalog_files]  # coverts into a string type
     for catalog_file in catalog_files:
-        variant_id_collector_job = b.new_python_job(
-            name=f'Variant ID collector job: {catalog_file}'
-        )
+        variant_id_collector_job = b.new_python_job(name=f'Variant ID collector job: {catalog_file}')
         variant_id_collector_job.memory('8G')
         variant_id_collector_job.storage('10G')
-        variant_id_order = variant_id_collector_job.call(
-            variant_id_collector, catalog_file
-        )
+        variant_id_order = variant_id_collector_job.call(variant_id_collector, catalog_file)
 
         for cpg_id in cpg_ids:
             vcf_file_path = f'{vcf_file_dir}/{cpg_id}_eh.vcf'
             # extract shard number from the VCF file name
             chunk_number = catalog_file.split('/')[-1].split('shard')[1].split('.')[0]
-            vcf_pruner_job = b.new_python_job(
-                name=f'VCF pruner job: {cpg_id} chunk {chunk_number}'
-            )
+            vcf_pruner_job = b.new_python_job(name=f'VCF pruner job: {cpg_id} chunk {chunk_number}')
             vcf_pruner_job.memory('8G')
             vcf_pruner_job.storage('10G')
             vcf_pruner_job.call(

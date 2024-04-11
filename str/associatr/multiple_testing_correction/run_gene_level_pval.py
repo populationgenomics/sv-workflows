@@ -12,14 +12,15 @@ analysis-runner --dataset "bioheart" --description "compute gene level pvals" --
     run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/240_libraries_tenk10kp1_v2_run/results/v1 \
     --cell-types=CD4_TCM --chromosomes=21 --acat
 """
+import click
 import numpy as np
-from scipy.stats import cauchy
 import pandas as pd
+from scipy.stats import cauchy
+
 import hailtop.batch as hb
 
-import click
-from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 # store a mapping of the key description to the index
 VALUES_TO_INDEXES = [
@@ -80,9 +81,7 @@ def cct(
     if weights is None:
         weights = np.repeat(1 / len(pvals), len(pvals))
     elif len(weights) != len(pvals):
-        raise ValueError(
-            'The length of weights should be the same as that of the p-values!'
-        )
+        raise ValueError('The length of weights should be the same as that of the p-values!')
     elif (weights < 0).sum() > 0:
         raise ValueError('All the weights must be positive!')
     else:
@@ -94,9 +93,7 @@ def cct(
         cct_stat = np.sum(weights * np.tan((0.5 - pvals) * np.pi))
     else:
         cct_stat = np.sum((weights[is_small] / pvals[is_small]) / np.pi)
-        cct_stat += np.sum(
-            weights[~is_small] * np.tan((0.5 - pvals[~is_small]) * np.pi)
-        )
+        cct_stat += np.sum(weights[~is_small] * np.tan((0.5 - pvals[~is_small]) * np.pi))
 
     if is_zero:
         pval = 0
@@ -117,12 +114,10 @@ def cct(
     )
     with to_path(gcs_output).open('w') as f:
         f.write(
-            f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
+            'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n',
         )
         f.write(f'{gene_name}\t{pval}\t')
-        f.write(
-            '\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n'
-        )
+        f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
 def bonferroni_compute(
@@ -143,12 +138,10 @@ def bonferroni_compute(
     )
     with to_path(gcs_output).open('w') as f:
         f.write(
-            f'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n'
+            'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested\tlowest_raw_pval\tcoeff\tse\tr2\tmotif\tref_len\tallele_freq\n',
         )
         f.write(f'{gene_name}\t{pval}\t')
-        f.write(
-            '\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n'
-        )
+        f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
 @click.option(
@@ -200,17 +193,15 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
 
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
-            gene_files = list(
-                to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
-            )
+            gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
             for i in range(0, len(gene_files), genes_per_job):
                 batch_gene_files = gene_files[i : i + genes_per_job]
                 j = get_batch('Compute gene level pvals').new_python_job(
-                    name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}'
+                    name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}',
                 )
                 j.cpu(0.25).memory('lowmem')
                 f = get_batch('Compute gene level pvals').new_python_job(
-                    name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}'
+                    name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}',
                 )
                 f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:

@@ -21,14 +21,14 @@ from ast import literal_eval
 import numpy as np
 import pandas as pd
 import scanpy as sc
-import hail as hl
-import hailtop.batch as hb
 from scipy.stats import norm
 
+import hail as hl
+import hailtop.batch as hb
 
-from cpg_utils.hail_batch import get_batch, output_path, init_batch, image_path
-from cpg_utils.config import get_config
 from cpg_utils import to_path
+from cpg_utils.config import get_config
+from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
 
 def cis_window_numpy_extractor(
@@ -55,9 +55,7 @@ def cis_window_numpy_extractor(
     adata = sc.read_h5ad(expression_h5ad_path)
 
     # read in pseudobulk and covariate files
-    pseudobulk_path = (
-        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_pseudobulk.csv'
-    )
+    pseudobulk_path = f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_pseudobulk.csv'
     pseudobulk = pd.read_csv(pseudobulk_path)
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
@@ -68,8 +66,8 @@ def cis_window_numpy_extractor(
     # write filtered gene names to a JSON file
     with to_path(
         output_path(
-            f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
-        )
+            f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json',
+        ),
     ).open('w') as write_handle:
         json.dump(gene_names, write_handle)
 
@@ -82,16 +80,12 @@ def cis_window_numpy_extractor(
         right_boundary = min(int(end_coord.iloc[0]) + int(cis_window), chrom_len)
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
-        ofile_path = output_path(
-            f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed'
-        )
+        ofile_path = output_path(f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed')
         # write cis window file to gcp
-        pd.DataFrame(data, index=[gene]).to_csv(
-            ofile_path, sep='\t', header=False, index=False
-        )
+        pd.DataFrame(data, index=[gene]).to_csv(ofile_path, sep='\t', header=False, index=False)
 
         # make the phenotype-covariate numpy objects
-        pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)
+        pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
         gene_pheno = pseudobulk[['sample_id', gene]]
 
         # remove samples that are in the remove_samples_file
@@ -105,32 +99,24 @@ def cis_window_numpy_extractor(
         # Rank the values
         gene_pheno.loc[:, 'gene_rank'] = gene_pheno[gene].rank()
         # Calculate the percentile of each rank
-        gene_pheno.loc[:, 'gene_percentile'] = (
-            gene_pheno.loc[:, 'gene_rank'] - 0.5
-        ) / (len(gene_pheno))
+        gene_pheno.loc[:, 'gene_percentile'] = (gene_pheno.loc[:, 'gene_rank'] - 0.5) / (len(gene_pheno))
         # Use the inverse normal cumulative distribution function (quantile function) to transform percentiles to normal distribution values
-        gene_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(
-            gene_pheno.loc[:, 'gene_percentile']
-        )
+        gene_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(gene_pheno.loc[:, 'gene_percentile'])
         gene_pheno = gene_pheno[['sample_id', 'gene_inverse_normal']]
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
-        gene_pheno_cov = gene_pheno_cov[
-            gene_pheno_cov['sample_id'].str.startswith('CPG')
-        ]
+        gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
 
         # add in cohort as a covariate
         cohort_cpg_id = adata.obs[['cpg_id', 'cohort']]
         mapping = {'TOB': 1, 'BioHEART': 2}
         cohort_cpg_id['cohort'] = cohort_cpg_id['cohort'].map(mapping)
-        cohort_cpg_id.rename(columns={'cpg_id': 'sample_id'}, inplace=True)
+        cohort_cpg_id.rename(columns={'cpg_id': 'sample_id'}, inplace=True)  # noqa: PD002
         cohort_cpg_id = cohort_cpg_id.drop_duplicates()
 
-        gene_pheno_cov = gene_pheno_cov.merge(
-            cohort_cpg_id, on='sample_id', how='inner'
-        )
+        gene_pheno_cov = gene_pheno_cov.merge(cohort_cpg_id, on='sample_id', how='inner')
 
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
@@ -140,9 +126,7 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         with hl.hadoop_open(
-            output_path(
-                f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'
-            ),
+            output_path(f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'),
             'wb',
         ) as f:
             np.save(f, gene_pheno_cov)
@@ -162,9 +146,7 @@ def main():
         To avoid having too many jobs running at once, we have to limit concurrency.
         """
         if len(_dependent_jobs) >= get_config()['get_cis_numpy']['max_parallel_jobs']:
-            job.depends_on(
-                _dependent_jobs[-get_config()['get_cis_numpy']['max_parallel_jobs']]
-            )
+            job.depends_on(_dependent_jobs[-get_config()['get_cis_numpy']['max_parallel_jobs']])
         _dependent_jobs.append(job)
 
     for cell_type in get_config()['get_cis_numpy']['cell_types'].split(','):
@@ -172,7 +154,7 @@ def main():
             init_batch()
             chrom_len = hl.get_reference('GRCh38').lengths[chrom]
             j = b.new_python_job(
-                name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}'
+                name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}',
             )
             j.image(image_path('scanpy'))
             j.cpu(get_config()['get_cis_numpy']['job_cpu'])

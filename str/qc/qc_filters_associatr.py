@@ -23,11 +23,11 @@ Applied filters:
 
 """
 
-import hail as hl
 import click
 
-from cpg_utils.config import get_config
+import hail as hl
 
+from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 config = get_config()
@@ -46,10 +46,7 @@ def qc_filter(mt_path, version):
 
     # remove monomorphic variants, set locus level call rate >=0.9, observed heterozygosity >=0.00995, locus level HWEP (binom definition) >=10^-6
     mt = mt.filter_rows(
-        (mt.num_alleles > 1)
-        & (mt.variant_qc.call_rate >= 0.9)
-        & (mt.obs_het >= 0.00995)
-        & (mt.binom_hwep >= 0.000001)
+        (mt.num_alleles > 1) & (mt.variant_qc.call_rate >= 0.9) & (mt.obs_het >= 0.00995) & (mt.binom_hwep >= 0.000001),
     )
 
     # set sample level call rate >=0.99
@@ -146,8 +143,7 @@ def qc_filter(mt_path, version):
 
     # calculate proportion of GTs that are defined per locus (after applying call-level filters, variant_qc.call_rate is not accurate anymore)
     mt = mt.annotate_rows(
-        prop_GT_exists=hl.agg.count_where(hl.is_defined(mt.GT))
-        / (mt.variant_qc.n_called + mt.variant_qc.n_not_called)
+        prop_GT_exists=hl.agg.count_where(hl.is_defined(mt.GT)) / (mt.variant_qc.n_called + mt.variant_qc.n_not_called),
     )
     # re-enforce locus level call rate >=0.9
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
@@ -186,9 +182,7 @@ def qc_filter(mt_path, version):
 
     for chr_index in range(22):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
-        gcs_output_path = output_path(
-            f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz'
-        )
+        gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
         hl.export_vcf(
             mt_chr,
@@ -221,7 +215,7 @@ def main(
 
     b = get_batch('Apply QC filters to MT and export chr-specific VCFs')
 
-    hail_job = b.new_python_job(name=f'QC filters')
+    hail_job = b.new_python_job(name='QC filters')
     hail_job.image(config['workflow']['driver_image'])
     hail_job.storage(hail_storage)
     hail_job.cpu(hail_cpu)

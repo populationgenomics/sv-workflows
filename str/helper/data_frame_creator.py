@@ -15,12 +15,12 @@ analysis-runner --access-level test --dataset tob-wgs --description \
 import click
 from cloudpathlib import GSPath
 from cyvcf2 import VCFReader
+
 import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path
-
+from cpg_utils.hail_batch import output_path, remote_tmpdir
 
 config = get_config()
 
@@ -48,7 +48,7 @@ def eh_csv_writer(input_dir):
                 'e_adfl',
                 'e_adir',
                 'e_lc',
-            ]
+            ],
         )
         + '\n'
     )
@@ -96,7 +96,7 @@ def eh_csv_writer(input_dir):
                         e_adfl,
                         e_adir,
                         e_lc,
-                    ]
+                    ],
                 )
                 + '\n'
             )
@@ -125,7 +125,7 @@ def gangstr_tsv_writer(input_dir):
                 'g_allele_1',
                 'g_allele_2',
                 'g_qexp',
-            ]
+            ],
         )
         + '\n'
     )
@@ -158,18 +158,14 @@ def gangstr_tsv_writer(input_dir):
                 g_gt = f'{variant.genotypes[0][0]}/{variant.genotypes[0][1]}'
                 g_dp = str(variant.format('DP')[0][0])
                 g_q = str(variant.format('Q')[0][0])
-                g_repcn = (
-                    f'{variant.format("REPCN")[0][0]}, {variant.format("REPCN")[0][1]}'
-                )
+                g_repcn = f'{variant.format("REPCN")[0][0]}, {variant.format("REPCN")[0][1]}'
                 g_repci = str(variant.format('REPCI')[0])
                 g_rc = str(variant.format('RC')[0])
                 g_enclreads = str(variant.format('ENCLREADS')[0])
                 g_flnkreads = str(variant.format('FLNKREADS')[0])
                 g_ml = str(variant.format('ML')[0][0])
                 g_ins = f'{variant.format("INS")[0][0]},{variant.format("INS")[0][1]}'
-                g_stderr = (
-                    f'{variant.format("STDERR")[0][0]},{variant.format("STDERR")[0][1]}'
-                )
+                g_stderr = f'{variant.format("STDERR")[0][0]},{variant.format("STDERR")[0][1]}'
                 g_qexp = f'{variant.format("QEXP")[0][0]},{variant.format("QEXP")[0][1]},{variant.format("QEXP")[0][2]}'
                 g_allele_1 = str(g_repcn.split(',')[0].strip())
                 g_allele_2 = str(g_repcn.split(',')[1].strip())
@@ -192,7 +188,7 @@ def gangstr_tsv_writer(input_dir):
                         g_allele_1,
                         g_allele_2,
                         g_qexp,
-                    ]
+                    ],
                 )
                 + '\n'
             )
@@ -215,7 +211,7 @@ def hipstr_csv_writer(input_dir):
                 'h_period',
                 'h_gb',
                 'h_q',
-            ]
+            ],
         )
         + '\n'
     )
@@ -252,7 +248,7 @@ def hipstr_csv_writer(input_dir):
                             str(period),
                             gb,
                             str(q),
-                        ]
+                        ],
                     )
                     + '\n'
                 )
@@ -263,13 +259,9 @@ def hipstr_csv_writer(input_dir):
 @click.command()
 @click.option('--input-dir-eh', help='Input directory for ExpansionHunter VCFs')
 @click.option('--input-dir-gangstr', help='Input directory for GangSTR VCFs')
-@click.option(
-    '--input-dir-hipstr', help='Input directory for HipSTR merged VCF.gz file'
-)
+@click.option('--input-dir-hipstr', help='Input directory for HipSTR merged VCF.gz file')
 @click.option('--output-name-eh', help='Output file name for ExpansionHunter eg eh.csv')
-@click.option(
-    '--output-name-gangstr', help='Output file name for GangSTR eg gangstr.tsv'
-)
+@click.option('--output-name-gangstr', help='Output file name for GangSTR eg gangstr.tsv')
 @click.option('--output-name-hipstr', help='Output file name for HipSTR eg hipstr.csv')
 def main(
     input_dir_eh,
@@ -285,9 +277,7 @@ def main(
         billing_project=get_config()['hail']['billing_project'],
         remote_tmpdir=remote_tmpdir(),
     )
-    b = hb.Batch(
-        backend=backend, default_python_image=config['workflow']['driver_image']
-    )
+    b = hb.Batch(backend=backend, default_python_image=config['workflow']['driver_image'])
     j = b.new_python_job(name='EH dataframe writer')
     g = b.new_python_job(name='GangSTR dataframe writer')
     h = b.new_python_job(name='HipSTR dataframe writer')

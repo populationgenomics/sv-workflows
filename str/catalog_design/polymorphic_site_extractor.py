@@ -20,12 +20,13 @@ Note this script filters out chrY and chrM sites by default.
 
 """
 import json
-import hail as hl
+
 import click
 
+import hail as hl
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path, init_batch
+from cpg_utils.hail_batch import init_batch, output_path
 
 
 def polymorphic_site_extractor(file_path):
@@ -55,9 +56,7 @@ def polymorphic_site_extractor(file_path):
     return rep_id_set
 
 
-def catalog_filter(
-    polymorphic_rep_id_set: set[str], catalog_path: str, gcs_output_path: str
-):
+def catalog_filter(polymorphic_rep_id_set: set[str], catalog_path: str, gcs_output_path: str):
     """Retains loci in a JSON file that intersect with a list of REPIDs (STR equiv. of rsids) and writes the filtered catalog to a new JSON file"""
     with to_path(catalog_path).open('r') as json_file:
         # Load the JSON content
@@ -67,9 +66,7 @@ def catalog_filter(
 
     for entry in catalog:
         # Check if 'VariantId' exists, use 'LocusId' otherwise
-        entry_variant_ids = (
-            set(entry['VariantId']) if 'VariantId' in entry else {entry['LocusId']}
-        )
+        entry_variant_ids = set(entry['VariantId']) if 'VariantId' in entry else {entry['LocusId']}
 
         # Append to filtered_data if the entry Variant Id intersects with polymorphic_rep_id_set
         if entry_variant_ids & polymorphic_rep_id_set:
@@ -128,7 +125,7 @@ def main(vcf_path, catalog_path, chunk_size, folder_name):
     rep_id_set = polymorphic_site_extractor(vcf_path)
 
     # Filter catalog JSON file for polymorphic sites
-    catalog_output_path = output_path(f'filtered_polymorphic_catalog.json', 'analysis')
+    catalog_output_path = output_path('filtered_polymorphic_catalog.json', 'analysis')
     filtered_catalog = catalog_filter(rep_id_set, catalog_path, catalog_output_path)
 
     # Shard the filtered catalog

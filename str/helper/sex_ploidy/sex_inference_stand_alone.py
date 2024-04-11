@@ -15,14 +15,14 @@ This script runs annotate_sex() as a stand-alone step, mainly for debugging usin
 
 import logging
 
-import hail as hl
-from cpg_utils.hail_batch import reference_path, genome_build, output_path, init_batch
-from gnomad.sample_qc.pipeline import annotate_sex
-from hail.vds.variant_dataset import VariantDataset
-from cpg_workflows.utils import can_reuse
-
-
 import click
+
+import hail as hl
+from hail.vds.variant_dataset import VariantDataset
+
+from cpg_utils.hail_batch import genome_build, init_batch, output_path, reference_path
+from cpg_workflows.utils import can_reuse
+from gnomad.sample_qc.pipeline import annotate_sex
 
 
 def generate_sex_coverage_mt(
@@ -46,7 +46,7 @@ def generate_sex_coverage_mt(
     ):
         raise ValueError(
             f'"impute_sex_chromosome_ploidy": expect calling_intervals to be list of intervals or '
-            f'table with single key of type interval<locus>, found table with key: {key_dtype}'
+            f'table with single key of type interval<locus>, found table with key: {key_dtype}',
         )
 
     rg = vds.reference_data.locus.dtype.reference_genome
@@ -60,11 +60,11 @@ def generate_sex_coverage_mt(
 
     # remove intervals overlapping PAR
     calling_intervals = calling_intervals.filter(
-        hl.all(lambda x: ~x.overlaps(calling_intervals.interval), hl.literal(rg.par))
+        hl.all(lambda x: ~x.overlaps(calling_intervals.interval), hl.literal(rg.par)),
     )
 
     # checkpoint for efficient multiple downstream usages
-    checkpoint_path = output_path(f'sample_qc/calling_intervals_partial.ht', 'tmp')
+    checkpoint_path = output_path('sample_qc/calling_intervals_partial.ht', 'tmp')
     if can_reuse(checkpoint_path, overwrite=True):
         calling_intervals = hl.read_matrix_table(str(checkpoint_path))
     else:
@@ -75,25 +75,23 @@ def generate_sex_coverage_mt(
         (
             hl.agg.any(interval.start.contig != interval.end.contig),
             hl.agg.collect_as_set(interval.start.contig),
-        )
+        ),
     )
     if any_bad_intervals:
         raise ValueError(
-            "'impute_sex_chromosome_ploidy' does not support calling intervals that span chromosome boundaries"
+            "'impute_sex_chromosome_ploidy' does not support calling intervals that span chromosome boundaries",
         )
 
     if len(rg.x_contigs) != 1:
         raise NotImplementedError(
-            f"reference genome {rg.name!r} has multiple X contigs, this is not supported in 'impute_sex_chromosome_ploidy'"
+            f"reference genome {rg.name!r} has multiple X contigs, this is not supported in 'impute_sex_chromosome_ploidy'",
         )
     if len(rg.y_contigs) != 1:
         raise NotImplementedError(
-            f"reference genome {rg.name!r} has multiple Y contigs, this is not supported in 'impute_sex_chromosome_ploidy'"
+            f"reference genome {rg.name!r} has multiple Y contigs, this is not supported in 'impute_sex_chromosome_ploidy'",
         )
 
-    kept_contig_filter = hl.array(chrs_represented).map(
-        lambda x: hl.parse_locus_interval(x, reference_genome=rg)
-    )
+    kept_contig_filter = hl.array(chrs_represented).map(lambda x: hl.parse_locus_interval(x, reference_genome=rg))
     vds = VariantDataset(
         hl.filter_intervals(vds.reference_data, kept_contig_filter),
         hl.filter_intervals(vds.variant_data, kept_contig_filter),
@@ -138,10 +136,8 @@ def impute_sex(
         vds = hl.vds.filter_intervals(vds, tel_cent_ht, keep=False)
 
     # Load calling intervals
-    calling_intervals_path = reference_path(f'broad/genome_calling_interval_lists')
-    calling_intervals_ht = hl.import_locus_intervals(
-        str(calling_intervals_path), reference_genome=genome_build()
-    )
+    calling_intervals_path = reference_path('broad/genome_calling_interval_lists')
+    calling_intervals_ht = hl.import_locus_intervals(str(calling_intervals_path), reference_genome=genome_build())
 
     logging.info('Calling intervals table:')
     calling_intervals_ht.describe()
@@ -153,11 +149,12 @@ def impute_sex(
         if interval_table.count() > 0:
             # remove all rows where the locus falls within a defined interval
             tmp_variant_data = vds.variant_data.filter_rows(
-                hl.is_defined(interval_table[vds.variant_data.locus]), keep=False
+                hl.is_defined(interval_table[vds.variant_data.locus]),
+                keep=False,
             )
-            vds = VariantDataset(
-                reference_data=vds.reference_data, variant_data=tmp_variant_data
-            ).checkpoint(output_path(f'{name}.vds', 'tmp'))
+            vds = VariantDataset(reference_data=vds.reference_data, variant_data=tmp_variant_data).checkpoint(
+                output_path(f'{name}.vds', 'tmp'),
+            )
             logging.info(f'count post {name} filter:{vds.variant_data.count()}')
 
     if use_coverage:
@@ -186,11 +183,11 @@ def impute_sex(
             n_called=sex_ht.n_called,
             expected_homs=sex_ht.expected_homs,
             observed_homs=sex_ht.observed_homs,
-        )
+        ),
     )
 
     # output writing
-    sex_ht.write(output_path(f'sex.ht', 'analysis'))
+    sex_ht.write(output_path('sex.ht', 'analysis'))
 
 
 @click.option(
@@ -198,9 +195,7 @@ def impute_sex(
     help='GCS file path to VDS',
     type=str,
 )
-@click.option(
-    '--use-coverage', help='Precompute coverage mt ', type=bool, default=False
-)
+@click.option('--use-coverage', help='Precompute coverage mt ', type=bool, default=False)
 @click.option(
     '--variants-only-x-ploidy',
     help='Only use variants for X ploidy',

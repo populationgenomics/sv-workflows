@@ -8,12 +8,10 @@ Required packages: str_analysis
 python3 -m pip install --upgrade str_analysis
 """
 
-
 import json
+
 from str_analysis.utils.find_repeat_unit import extend_repeat_into_sequence
-
 from utils import break_coordinate_string, read_lines_from_file
-
 
 INPUT_FASTA = 'intermediate_files/catalog_with_flanks_one_motif_length.fasta'
 PURE_NOT_FINAL_JSON = 'intermediate_files/pure_repeat_catalog_not_final.json'
@@ -104,12 +102,8 @@ with open(LEFT_FLANK_ONE, 'w', encoding='utf-8') as handle:
 # consider L/R flanks that are 2 motifs long now.
 
 # File loading of catalog with L/R flanks that are two motif lengths long.
-flank_catalog_two_motif_lengths_dict = read_fasta_content_from_6_line_groups(
-    TWO_MOTIF_FLANKS
-)
-print(
-    f'flank_catalog_two_motif_lengths_dict (164847): {len(flank_catalog_two_motif_lengths_dict)}'
-)
+flank_catalog_two_motif_lengths_dict = read_fasta_content_from_6_line_groups(TWO_MOTIF_FLANKS)
+print(f'flank_catalog_two_motif_lengths_dict (164847): {len(flank_catalog_two_motif_lengths_dict)}')
 
 # Look into L flank for additional repeats
 left_flank_two_motif_added_repeat_loci = []
@@ -155,6 +149,4 @@ with open(PURE_BED, 'w', encoding='utf-8') as handle:
     for p, (motif, repeat_count) in revised_pure_catalog_dict.items():
         motif_length = len(motif)
         chrom, start, end = break_coordinate_string(p)
-        handle.write(
-            f'{chrom}\t{start}\t{end}\t{motif_length}\t{motif}\t{repeat_count}\n'
-        )
+        handle.write(f'{chrom}\t{start}\t{end}\t{motif_length}\t{motif}\t{repeat_count}\n')

@@ -13,16 +13,16 @@ analysis-runner --access-level test --dataset bioheart --image australia-southea
 --input-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --cell-types=CD4_TCM --chromosomes=1 --job-memory=highmem --job-cpu=16
 
 """
+import logging
 import math
 
-import logging
 import click
 import numpy as np
 import pandas as pd
 import scanpy as sc
 
-from cpg_utils.hail_batch import get_batch, output_path, image_path
 from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
 def pseudobulk(input_file_path, target_sum, min_pct):
@@ -84,9 +84,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
 # inputs:
 @click.option('--input-dir', help='GCS Path to the input AnnData object')
 @click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
-@click.option(
-    '--chromosomes', help='Chromosome number eg 1, comma separated if multiple'
-)
+@click.option('--chromosomes', help='Chromosome number eg 1, comma separated if multiple')
 @click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
 @click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
