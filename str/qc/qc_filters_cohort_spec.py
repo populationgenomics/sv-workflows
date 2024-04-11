@@ -209,100 +209,38 @@ def qc_filter(mt_path, version):
     # remove related individuals
     mt = mt.filter_cols(hl.literal(remove_samples).contains(mt.s), keep=False)
 
-    ## annotate relative to REF
-    mt = mt.annotate_entries(
-        allele_1_minus_ref=mt.allele_1_rep_length - mt.info.REF,
-        allele_2_minus_ref=mt.allele_2_rep_length - mt.info.REF,
-    )
-    # annotate the sum of alleles that are not the ref allele
-    mt = mt.annotate_entries(
-        allele_1_is_non_ref=hl.if_else(mt.allele_1_minus_ref != 0, True, False),
-        allele_2_is_non_ref=hl.if_else(mt.allele_2_minus_ref != 0, True, False),
-    )
-    ### calculate col specific values and export
-    mt = mt.annotate_cols(
-        col_sum_allele_1_is_not_mode=hl.agg.sum(hl.cond(mt.allele_1_is_non_mode, 1, 0)),
-        col_sum_allele_2_is_not_mode=hl.agg.sum(hl.cond(mt.allele_2_is_non_mode, 1, 0)),
-        col_sum_allele_1_is_not_ref=hl.agg.sum(hl.cond(mt.allele_1_is_non_ref, 1, 0)),
-        col_sum_allele_2_is_not_ref=hl.agg.sum(hl.cond(mt.allele_2_is_non_ref, 1, 0)),
-    )
-    mt = mt.annotate_cols(
-        col_sum_alleles_is_not_mode=mt.col_sum_allele_1_is_not_mode
-        + mt.col_sum_allele_2_is_not_mode,
-        col_sum_alleles_is_not_ref=mt.col_sum_allele_1_is_not_ref + mt.col_sum_allele_2_is_not_ref,
-    )
-    mt = mt.annotate_cols(missing_calls_count=hl.agg.count_where(hl.is_missing(mt.GT)))
+    table_variants = hl.import_table('gs://cpg-bioheart-test/str/filtered_variants_opt12.csv')
+    table_variants = table_variants.annotate(locus = hl.parse_locus(table_variants['locus']))
+    table_variants = table_variants.key_by('locus')
 
-    mt.cols().write('gs://cpg-bioheart-test/str/batch_debug/cols.ht', overwrite=True)
+    mt = mt.annotate_rows(not_batch_effect = hl.is_defined(table_variants[mt.locus]))
+    mt_not_batch_effect = mt.filter_rows(mt.not_batch_effect == True)
+    mt_not_batch_effect.rows().export(
+            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_retained.tsv'
+
+        )
+
+    mt_batch_effect = mt.filter_rows(mt.not_batch_effect == False)
+    mt_batch_effect.rows().export(
+            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_removed.tsv'
+        )
 
     for cohort in ['tob', 'bioheart']:
-        mt_cohort = mt.filter_cols(mt.cohort == cohort)
-
-        # annotate rows with counts of alleles that appear in each VARID
-        ht = mt_cohort.select_rows(
-            alleles_rep_lengths=hl.agg.collect(mt_cohort.allele_1_rep_length).extend(
-                hl.agg.collect(mt_cohort.allele_2_rep_length)
-            )
-        ).rows()
-
-        # explode the allele_array to create one row for each element in the array
-        exploded_table = ht.explode(ht.alleles_rep_lengths)
-
-        # aggregate the counts for each distinct value in the exploded allele_array
-        aggregated_table = exploded_table.group_by(exploded_table.REPID).aggregate(
-            allele_array_counts=hl.agg.counter(exploded_table.alleles_rep_lengths)
-        )
-
-        # annotate the mt with the aggregated counts
-        mt_cohort = mt_cohort.annotate_rows(
-            aggregated_info_cohort=aggregated_table[mt_cohort.REPID]
-        )
-        mt_cohort = mt_cohort.annotate_rows(
-            cohort_num_alleles=hl.len(
-                mt_cohort.aggregated_info_cohort.allele_array_counts.values()
-            )
-        )
-        mt_cohort = mt_cohort.annotate_rows(
-            sum_allele_1_is_not_mode=hl.agg.sum(
-                hl.cond(mt_cohort.allele_1_is_non_mode, 1, 0)
-            ),
-            sum_allele_2_is_not_mode=hl.agg.sum(
-                hl.cond(mt_cohort.allele_2_is_non_mode, 1, 0)
-            ),
-            sum_allele_1_is_not_ref=hl.agg.sum(
-                hl.cond(mt_cohort.allele_1_is_non_ref, 1, 0)
-            ),
-            sum_allele_2_is_not_ref=hl.agg.sum(
-                hl.cond(mt_cohort.allele_2_is_non_ref, 1, 0)
-            ),
-        )
-        mt_cohort = mt_cohort.annotate_rows(
-            sum_alleles_is_not_mode=mt_cohort.sum_allele_1_is_not_mode
-            + mt_cohort.sum_allele_2_is_not_mode,
-            sum_alleles_is_not_ref=mt_cohort.sum_allele_1_is_not_ref + mt_cohort.sum_allele_2_is_not_ref,
-        )
-
-        # proportion of alleles that are not the mode allele
-        mt_cohort = mt_cohort.annotate_rows(
-            prop_alleles_is_not_mode=mt_cohort.sum_alleles_is_not_mode
-            / hl.sum(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
-        )
-        # proportion of alleles that are not the ref allele
-        mt_cohort = mt_cohort.annotate_rows(
-            prop_alleles_is_not_ref=mt_cohort.sum_alleles_is_not_ref
-            / hl.sum(mt_cohort.aggregated_info_cohort.allele_array_counts.values())
-        )
+        mt_batch_effect_cohort = mt_batch_effect.filter_cols(mt_batch_effect.cohort == cohort)
+        mt_not_batch_effect_cohort = mt_not_batch_effect.filter_cols(mt_not_batch_effect.cohort == cohort)
 
         #add mean LC
-        mt_cohort = mt_cohort.annotate_rows(variant_lc = hl.agg.mean(mt_cohort.LC))
-
-        mt_cohort.rows().write(
-            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_{cohort}.ht', overwrite=True
-        )
-        mt_cohort.rows().export(
-            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_{cohort}.tsv'
+        mt_batch_effect_cohort = mt_batch_effect_cohort.annotate_rows(variant_lc = hl.agg.mean(mt_batch_effect_cohort.LC))
+        mt_not_batch_effect_cohort = mt_not_batch_effect_cohort.annotate_rows(variant_lc = hl.agg.mean(mt_not_batch_effect_cohort.LC))
+        mt_batch_effect_cohort.rows().export(
+            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_removed_{cohort}.tsv'
 
         )
+        mt_not_batch_effect_cohort.rows().export(
+            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_retained_{cohort}.tsv'
+        )
+
+
 
 
 @click.option(
