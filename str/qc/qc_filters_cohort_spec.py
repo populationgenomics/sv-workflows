@@ -166,6 +166,7 @@ def qc_filter(mt_path, version):
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
     mt.write(output_path(f'mt_filtered/v2/str.mt'))
+    mt.rows().export(output_path(f'mt_filtered/v2/str_rows.tsv'))
 
     print(mt.count())
 
