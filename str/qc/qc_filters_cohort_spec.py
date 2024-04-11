@@ -17,7 +17,7 @@ Applied filters:
  analysis-runner --dataset "bioheart" \
     --description "Hail QC for associaTR" \
     --access-level "test" \
-    --output-dir "str/associatr/input_files" \
+    --output-dir "str/associatr" \
     qc_filters_cohort_spec.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
@@ -165,83 +165,9 @@ def qc_filter(mt_path, version):
     # re-enforce locus level call rate >=0.9
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
-    ### APPLY SUBSETS FOR COHORT SPECIFIC MTS
-    # remove chrX from analysis
-    mt = mt.filter_rows((hl.str(mt.locus.contig).startswith('chrX')), keep=False)
-    table = hl.import_table(
-        'gs://cpg-bioheart-test/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv',
-        delimiter=',',
-        impute=True,
-    )
+    mt.write(output_path(f'mt_filtered/v2/str.mt'))
 
-    # Define a function to determine the cohort based on the 'id' column
-    def get_cohort(id):
-        return hl.if_else(
-            hl.str(id).startswith('CT'),
-            'bioheart',
-            hl.if_else(hl.str(id).startswith('TOB'), 'tob', 'Unknown'),
-        )
-
-    # Add a new column 'cohort' based on the 'id' column using the defined function
-    table = table.annotate(cohort=get_cohort(table.external_id))
-    table = table.key_by('s')
-    mt = mt.annotate_cols(cohort=table[mt.s].cohort)
-
-    table_geno_pcs = hl.import_table(
-        'gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv',
-        delimiter=',',
-        impute=True,
-    )
-
-    table_geno_pcs = table_geno_pcs.key_by('sample_id')
-    mt = mt.annotate_cols(geno_pc1=hl.float(table_geno_pcs[mt.s].geno_PC1))
-    mt = mt.annotate_cols(geno_pc6=hl.float(table_geno_pcs[mt.s].geno_PC6))
-    # remove ancestry outliers
-    mt = mt.filter_cols(
-        (mt.geno_pc1 >=0.01) & (mt.geno_pc6 <= 0.04) & (mt.geno_pc6 >= -0.03)& (mt.geno_pc6 <= 0.01)
-    )
-    with to_path(
-        'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
-    ).open() as f:
-        array_string = f.read().strip()
-        remove_samples = literal_eval(array_string)
-
-    # remove related individuals
-    mt = mt.filter_cols(hl.literal(remove_samples).contains(mt.s), keep=False)
-
-    table_variants = hl.import_table('gs://cpg-bioheart-test/str/filtered_variants_opt12.csv')
-    table_variants = table_variants.annotate(locus = hl.parse_locus(table_variants['locus']))
-    table_variants = table_variants.key_by('locus')
-
-    mt = mt.annotate_rows(not_batch_effect = hl.is_defined(table_variants[mt.locus]))
-    mt_not_batch_effect = mt.filter_rows(mt.not_batch_effect == True)
-    mt_not_batch_effect.rows().export(
-            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_retained.tsv'
-
-        )
-
-    mt_batch_effect = mt.filter_rows(mt.not_batch_effect == False)
-    mt_batch_effect.rows().export(
-            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_removed.tsv'
-        )
-
-    for cohort in ['tob', 'bioheart']:
-        mt_batch_effect_cohort = mt_batch_effect.filter_cols(mt_batch_effect.cohort == cohort)
-        mt_not_batch_effect_cohort = mt_not_batch_effect.filter_cols(mt_not_batch_effect.cohort == cohort)
-
-        #add mean LC
-        mt_batch_effect_cohort = mt_batch_effect_cohort.annotate_rows(variant_lc = hl.agg.mean(mt_batch_effect_cohort.LC))
-        mt_not_batch_effect_cohort = mt_not_batch_effect_cohort.annotate_rows(variant_lc = hl.agg.mean(mt_not_batch_effect_cohort.LC))
-        mt_batch_effect_cohort.rows().export(
-            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_removed_{cohort}.tsv'
-
-        )
-        mt_not_batch_effect_cohort.rows().export(
-            f'gs://cpg-bioheart-test/str/batch_debug/tight_SNP_bounds/rows_retained_{cohort}.tsv'
-        )
-
-
-
+    print(mt.count())
 
 @click.option(
     '--mt-path',
