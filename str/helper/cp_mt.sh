@@ -10,3 +10,4 @@ set -ex
 
 gsutil -m cp -r gs://cpg-bioheart-main/str/polymorphic_run_n990_bioheart_only/mt/v1/str.mt gs://cpg-bioheart-test/str/polymorphic_run_n990_bioheart_only/mt/v1/str.mt
 gsutil -m cp -r gs://cpg-bioheart-main/str/polymorphic_run_n1055_tob_only/mt/v1/str.mt gs://cpg-bioheart-test/str/polymorphic_run_n1055_tob_only/mt/v1/str.mt
+
