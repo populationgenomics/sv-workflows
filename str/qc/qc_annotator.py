@@ -66,6 +66,8 @@ def main(mt_path):
     # motif length, bp length array annotation: motif length*repeat length
     mt = mt.annotate_rows(
         motif_length=hl.len(mt.info.RU),
+    )
+    mt = mt.annotate_rows(
         bp_length_alleles=mt.rep_length_alleles.map(lambda x: x * mt.motif_length),
     )
     # break up allele_1 and allele_2 into separate columns
