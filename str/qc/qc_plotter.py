@@ -3,8 +3,8 @@
 """
 This script makes QC plots
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n1055_tob_only/QC" qc_plotter.py \
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n1055_tob_only/annotated_mt/v1/str_annotated.mt
 
 """
 import hail as hl
@@ -32,42 +32,45 @@ def main(mt_path):
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
 
-    chr = 'chr14'
-    position = 42532368
+    #chr = 'chr14'
+    #position = 42532368
 
-    mt = mt.filter_rows((mt.locus.contig == chr) & (mt.locus.position == position))
+    #mt = mt.filter_rows((mt.locus.contig == chr) & (mt.locus.position == position))
 
-    table = hl.import_table('gs://cpg-bioheart-test/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv', delimiter=',', impute=True)
+    #table = hl.import_table('gs://cpg-bioheart-test/str/sample-sex-mapping/sample_karyotype_sex_mapping.csv', delimiter=',', impute=True)
     # Define a function to determine the cohort based on the 'id' column
-    def get_cohort(id):
-        return hl.if_else(hl.str(id).startswith('CT'), 'bioheart', 'tob')
+    #def get_cohort(id):
+    #    return hl.if_else(hl.str(id).startswith('CT'), 'bioheart', 'tob')
 
     # Add a new column 'cohort' based on the 'id' column using the defined function
-    table = table.annotate(cohort=get_cohort(table.external_id))
-    table = table.key_by('s')
-    mt = mt.annotate_cols(cohort = table[mt.s].cohort)
+    #table = table.annotate(cohort=get_cohort(table.external_id))
+    #table = table.key_by('s')
+    #mt = mt.annotate_cols(cohort = table[mt.s].cohort)
 
 
-    mt = mt.annotate_entries(allele_1_minus_ref = mt.allele_1_rep_length- mt.info.REF)
-    mt = mt.annotate_entries(allele_2_minus_ref = mt.allele_2_rep_length-mt.info.REF)
+    #t = mt.annotate_entries(allele_1_minus_ref = mt.allele_1_rep_length- mt.info.REF)
+    #t = mt.annotate_entries(allele_2_minus_ref = mt.allele_2_rep_length-mt.info.REF)
 
     #dotato = mt.filter_entries((mt.allele_1_minus_ref> -21) & (mt.allele_1_minus_ref<21) & (mt.allele_2_minus_ref>-21) & (mt.allele_2_minus_ref<21))
     #print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
 
-    for cohort in ['tob','bioheart']:
-        mt_cohort = mt.filter_cols(mt.cohort == cohort)
+    # Alleles minus ref histogram
+    alleles_minus_ref_ht = mt.select_rows(
+    allele_minus_ref = hl.agg.collect(mt.allele_1_minus_mode)
+        .extend(hl.agg.collect(mt.allele_2_minus_mode))
+    ).rows()
+    alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
+    p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus mode (1to300)", range = (1,300))
+    output_file('local_plot_1.html')
+    save(p)
+    gcs_path_1 = output_path(f'alleles_minus_mode/1to300.html', 'analysis')
+    hl.hadoop_copy('local_plot_1.html', gcs_path_1)
+
+    #for cohort in ['tob','bioheart']:
+        #mt_cohort = mt.filter_cols(mt.cohort == cohort)
 
         # Alleles minus ref histogram
-        alleles_minus_ref_ht = mt_cohort.select_rows(
-        allele_minus_ref = hl.agg.collect(mt_cohort.allele_1_rep_length)
-            .extend(hl.agg.collect(mt_cohort.allele_2_rep_length))
-        ).rows()
-        alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
-        p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes")
-        output_file('local_plot_1.html')
-        save(p)
-        gcs_path_1 = output_path(f'alleles_minus_ref/{chr}_{position}/{cohort}/allele_size.html', 'analysis')
-        hl.hadoop_copy('local_plot_1.html', gcs_path_1)
+
 
     """
     # Alleles minus mode histogram
