@@ -3,8 +3,8 @@
 """
 This script makes QC plots
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n1055_tob_only/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n1055_tob_only/annotated_mt/v1/str_annotated.mt
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n990_bioheart_only/QC" qc_plotter.py \
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n990_bioheart_only/annotated_mt/v1/str_annotated.mt
 
 """
 import hail as hl
@@ -60,10 +60,10 @@ def main(mt_path):
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
     ).rows()
     alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
-    p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus mode (1to300)", range = (1,300))
+    p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus mode (10to200)", range = (10,200))
     output_file('local_plot_1.html')
     save(p)
-    gcs_path_1 = output_path(f'alleles_minus_mode/1to300.html', 'analysis')
+    gcs_path_1 = output_path(f'alleles_minus_mode/10to200.html', 'analysis')
     hl.hadoop_copy('local_plot_1.html', gcs_path_1)
 
     #for cohort in ['tob','bioheart']:
