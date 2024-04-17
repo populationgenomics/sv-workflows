@@ -36,7 +36,7 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct):
     # retain only samples in the id file
     with to_path(id_file_path).open() as csvfile:
         cpg_ids = list(csv.reader(csvfile))
-    cpg_ids= cpg_ids[0] # the function above creates a list in a list
+    cpg_ids = cpg_ids[0]  # the function above creates a list in a list
     adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # filter out lowly expressed genes
@@ -135,7 +135,7 @@ def main(
             j.cpu(job_cpu)
             j.memory(job_memory)
             j.storage(job_storage)
-            j.call(pseudobulk, input_file,sample_id_file_path, target_sum, min_pct)
+            j.call(pseudobulk, input_file, sample_id_file_path, target_sum, min_pct)
     b.run(wait=False)
 
 
