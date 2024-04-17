@@ -17,8 +17,8 @@ Applied filters:
  analysis-runner --dataset "bioheart" \
     --description "Hail QC for associaTR" \
     --access-level "test" \
-    --output-dir "str/associatr/bioheart_n990/mt" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n990_bioheart_only/annotated_mt/v1/str_annotated.mt \
+    --output-dir "str/associatr/tob_n1055/mt" \
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n1055_tob_only/annotated_mt/v1/str_annotated.mt \
     --version=v1
 
 """
@@ -39,6 +39,25 @@ def qc_filter(mt_path, version):
     """
     Applies QC filters to the input MT
     """
+
+
+
+@click.option(
+    '--mt-path',
+    help='GCS file path to mt (output of qc_annotator.py)',
+    type=str,
+)
+
+@click.option('--version', help='version of the output files', type=str, default='v1')
+@click.command()
+def main(
+    mt_path,
+    version,
+):
+    """
+    Runner to apply QC filters to input MT, and bgzip and tabix.
+    """
+
     init_batch(worker_memory='highmem')
 
     # read in mt
@@ -150,40 +169,6 @@ def qc_filter(mt_path, version):
 
     # write out mt to GCS path
     mt.write(output_path(f'mt_standard_filtered/{version}/str.mt'))
-
-
-@click.option(
-    '--mt-path',
-    help='GCS file path to mt (output of qc_annotator.py)',
-    type=str,
-)
-@click.option('--hail-storage', help='Hail storage', type=str, default='0G')
-@click.option('--hail-cpu', help='Hail CPU', type=int, default=1)
-@click.option('--hail-memory', help='Hail memory', type=str, default='standard')
-@click.option('--version', help='version of the output files', type=str, default='v1')
-@click.command()
-def main(
-    mt_path,
-    hail_storage,
-    hail_cpu,
-    hail_memory,
-    version,
-):
-    """
-    Runner to apply QC filters to input MT, and bgzip and tabix.
-    """
-
-    b = get_batch('Apply QC filters to MT and export chr-specific VCFs')
-
-    hail_job = b.new_python_job(name='QC filters')
-    hail_job.image(config['workflow']['driver_image'])
-    hail_job.storage(hail_storage)
-    hail_job.cpu(hail_cpu)
-    hail_job.memory(hail_memory)
-    hail_job.call(qc_filter, mt_path, version)
-
-    b.run(wait=False)
-
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
