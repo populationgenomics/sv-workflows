@@ -6,7 +6,7 @@ sample_id_file_path = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_file
 # name of the cell type, comma separated if multiple
 cell_types ='CD4_TCM'
 # Chromosome number eg 1, comma separated if multiple
-chromosomes =22
+chromosomes ='22'
 # Storage of the batch job eg 30G
 job_storage = '8G'
 # Memory of the batch job
