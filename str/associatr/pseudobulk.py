@@ -13,11 +13,11 @@ analysis-runner --access-level test --dataset bioheart --image australia-southea
 --input-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --cell-types=CD4_TCM --chromosomes=1 --job-memory=highmem --job-cpu=16
 
 """
+import csv
 import logging
 import math
 
 import click
-import csv
 import numpy as np
 import pandas as pd
 import scanpy as sc
