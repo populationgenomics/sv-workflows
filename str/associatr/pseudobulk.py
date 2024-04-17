@@ -9,20 +9,20 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/associatr/input_files" pseudobulk.py \
---input-dir=gs://cpg-bioheart-test/str/anndata/saige-qtl/anndata_objects_from_HPC --cell-types=CD4_TCM --chromosomes=1 --job-memory=highmem --job-cpu=16
+analysis-runner --config pseudobulk.toml --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/test" python3 pseudobulk.py
 
 """
 import csv
 import logging
 import math
 
-import click
 import numpy as np
 import pandas as pd
 import scanpy as sc
 
 from cpg_utils import to_path
+from cpg_utils.config import get_config
+
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
@@ -89,40 +89,23 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct):
 
 
 # inputs:
-@click.option('--input-dir', help='GCS Path to the input AnnData object')
-@click.option('--sample-id-file-path', help='GCS Path to the sample ID file to do the analysis on')
-@click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
-@click.option('--chromosomes', help='Chromosome number eg 1, comma separated if multiple')
-@click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
-@click.option('--job-memory', help='Memory of the batch job', default='standard')
-@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
-@click.option(
-    '--target-sum',
-    help='Target sum of counts per cell (for normalization purposes)',
-    default=1e6,
-)
-@click.option(
-    '--min-pct',
-    help='Minimum percentage of cells expressing a gene to be included in the pseudobulk',
-    default=1,
-)
-@click.command()
-def main(
-    input_dir,
-    sample_id_file_path,
-    cell_types,
-    chromosomes,
-    job_storage,
-    job_memory,
-    job_cpu,
-    target_sum,
-    min_pct,
-):
+
+
+def main():
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
 
     """
     b = get_batch('Run pseudobulk')
+    input_dir = get_config()['pseudobulk']['input_dir']
+    sample_id_file_path = get_config()['pseudobulk']['sample_id_file_path']
+    cell_types = get_config()['pseudobulk']['cell_types']
+    chromosomes = get_config()['pseudobulk']['chromosomes']
+    job_storage = get_config()['pseudobulk']['job_storage']
+    job_memory = get_config()['pseudobulk']['job_memory']
+    job_cpu = get_config()['pseudobulk']['job_cpu']
+    target_sum = get_config()['pseudobulk']['target_sum']
+    min_pct = get_config()['pseudobulk']['min_pct']
 
     logging.info(f'Cell types to run: {cell_types}')
     logging.info(f'Chromosomes to run: {chromosomes}')
