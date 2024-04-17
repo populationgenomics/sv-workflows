@@ -17,6 +17,7 @@ import logging
 import math
 
 import click
+import csv
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -25,12 +26,18 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
-def pseudobulk(input_file_path, target_sum, min_pct):
+def pseudobulk(input_file_path, id_file_path, target_sum, min_pct):
     """
     Performs pseudobulking in a cell-type chromosome-specific manner
     """
     expression_h5ad_path = to_path(input_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
+
+    # retain only samples in the id file
+    with to_path(id_file_path).open() as csvfile:
+        cpg_ids = list(csv.reader(csvfile))
+    cpg_ids= cpg_ids[0] # the function above creates a list in a list
+    adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # filter out lowly expressed genes
     n_all_cells = len(adata.obs.index)
@@ -83,6 +90,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
 
 # inputs:
 @click.option('--input-dir', help='GCS Path to the input AnnData object')
+@click.option('--sample-id-file-path', help='GCS Path to the sample ID file to do the analysis on')
 @click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
 @click.option('--chromosomes', help='Chromosome number eg 1, comma separated if multiple')
 @click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
@@ -101,6 +109,7 @@ def pseudobulk(input_file_path, target_sum, min_pct):
 @click.command()
 def main(
     input_dir,
+    sample_id_file_path,
     cell_types,
     chromosomes,
     job_storage,
@@ -126,7 +135,7 @@ def main(
             j.cpu(job_cpu)
             j.memory(job_memory)
             j.storage(job_storage)
-            j.call(pseudobulk, input_file, target_sum, min_pct)
+            j.call(pseudobulk, input_file,sample_id_file_path, target_sum, min_pct)
     b.run(wait=False)
 
 
