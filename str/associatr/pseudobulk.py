@@ -22,7 +22,6 @@ import scanpy as sc
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
