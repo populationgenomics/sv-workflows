@@ -96,28 +96,16 @@ def main():
 
     """
     b = get_batch('Run pseudobulk')
-    input_dir = get_config()['pseudobulk']['input_dir']
-    sample_id_file_path = get_config()['pseudobulk']['sample_id_file_path']
-    cell_types = get_config()['pseudobulk']['cell_types']
-    chromosomes = get_config()['pseudobulk']['chromosomes']
-    job_storage = get_config()['pseudobulk']['job_storage']
-    job_memory = get_config()['pseudobulk']['job_memory']
-    job_cpu = get_config()['pseudobulk']['job_cpu']
-    target_sum = get_config()['pseudobulk']['target_sum']
-    min_pct = get_config()['pseudobulk']['min_pct']
 
-    logging.info(f'Cell types to run: {cell_types}')
-    logging.info(f'Chromosomes to run: {chromosomes}')
-
-    for cell_type in cell_types.split(','):
-        for chromosome in chromosomes.split(','):
-            input_file = f'{input_dir}/{cell_type}_chr{chromosome}.h5ad'
+    for cell_type in get_config()['pseudobulk']['cell_types'].split(','):
+        for chromosome in get_config()['pseudobulk']['chromosomes'].split(','):
+            input_file = f'{get_config()['pseudobulk']['input_dir']}/{cell_type}_chr{chromosome}.h5ad'
             j = b.new_python_job(name=f'Pseudobulk for {cell_type}: chr{chromosome}')
             j.image(image_path('scanpy'))
-            j.cpu(job_cpu)
-            j.memory(job_memory)
-            j.storage(job_storage)
-            j.call(pseudobulk, input_file, sample_id_file_path, target_sum, min_pct)
+            j.cpu(get_config()['pseudobulk']['job_cpu'])
+            j.memory(get_config()['pseudobulk']['job_memory'])
+            j.storage(get_config()['pseudobulk']['job_storage'])
+            j.call(pseudobulk, input_file, get_config()['pseudobulk']['sample_id_file_path'], get_config()['pseudobulk']['target_sum'],  get_config()['pseudobulk']['min_pct'])
     b.run(wait=False)
 
 
