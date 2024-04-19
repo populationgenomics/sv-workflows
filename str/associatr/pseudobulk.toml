@@ -1,0 +1,19 @@
+[pseudobulk]
+# GCS Path to the input AnnData object
+input_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_anndata'
+# GCS Path to the sample ID file to do the analysis o
+sample_id_file_path = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/tob_ids_n1055.csv'
+# name of the cell type, comma separated if multiple
+cell_types ='CD4_TCM'
+# Chromosome number eg 1, comma separated if multiple
+chromosomes ='22'
+# Storage of the batch job eg 30G
+job_storage = '8G'
+# Memory of the batch job
+job_memory = 'standard'
+# Number of CPUs of Hail batch job
+job_cpu = 8
+# Target sum of counts per cell (for normalization purposes)
+target_sum = 1e6
+# Minimum percentage of cells expressing a gene to be included in the pseudobulk
+min_pct = 1
