@@ -99,13 +99,19 @@ def main():
 
     for cell_type in get_config()['pseudobulk']['cell_types'].split(','):
         for chromosome in get_config()['pseudobulk']['chromosomes'].split(','):
-            input_file = f'{get_config()['pseudobulk']['input_dir']}/{cell_type}_chr{chromosome}.h5ad'
+            input_file = f"{get_config()['pseudobulk']['input_dir']}/{cell_type}_chr{chromosome}.h5ad"
             j = b.new_python_job(name=f'Pseudobulk for {cell_type}: chr{chromosome}')
             j.image(image_path('scanpy'))
             j.cpu(get_config()['pseudobulk']['job_cpu'])
             j.memory(get_config()['pseudobulk']['job_memory'])
             j.storage(get_config()['pseudobulk']['job_storage'])
-            j.call(pseudobulk, input_file, get_config()['pseudobulk']['sample_id_file_path'], get_config()['pseudobulk']['target_sum'],  get_config()['pseudobulk']['min_pct'])
+            j.call(
+                pseudobulk,
+                input_file,
+                get_config()['pseudobulk']['sample_id_file_path'],
+                get_config()['pseudobulk']['target_sum'],
+                get_config()['pseudobulk']['min_pct'],
+            )
     b.run(wait=False)
 
 
