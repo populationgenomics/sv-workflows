@@ -8,9 +8,9 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, beta, se, raw pval,r2, motif, ref_len).
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
-    --output-dir "str/associatr/240_libraries_tenk10kp1_v2_run/results" \
-    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/240_libraries_tenk10kp1_v2_run/results/v1 \
-    --cell-types=CD4_TCM --chromosomes=21 --acat
+    --output-dir "str/associatr/tob_n1055/results" \
+    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
+    --cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21 --acat
 """
 import click
 import numpy as np
@@ -193,16 +193,21 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
 
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
+            b = get_batch()
             gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
             for i in range(0, len(gene_files), genes_per_job):
                 batch_gene_files = gene_files[i : i + genes_per_job]
-                j = get_batch('Compute gene level pvals').new_python_job(
+                j = b.new_python_job(
                     name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}',
                 )
+                j.image('australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:772ece1280285247acf06ae8826401ea28b4df2a-hail-8f6797b033d2e102575c40166cf0c977e91f834e')
+
                 j.cpu(0.25).memory('lowmem')
-                f = get_batch('Compute gene level pvals').new_python_job(
+                f = b.new_python_job(
                     name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}',
                 )
+                f.image('australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:772ece1280285247acf06ae8826401ea28b4df2a-hail-8f6797b033d2e102575c40166cf0c977e91f834e')
+
                 f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:
                     # read the raw results
@@ -244,7 +249,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                         )
                 manage_concurrency_for_job(j)
 
-    get_batch('Compute gene level pvals').run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
