@@ -10,7 +10,7 @@ This script aims to:
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files"  \
+--description "get cis and numpy" --output-dir "str/associatr/tob_n1055/input_files"  \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -66,7 +66,7 @@ def cis_window_numpy_extractor(
     # write filtered gene names to a JSON file
     with to_path(
         output_path(
-            f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json',
+            f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/CD4_TCM_permuted/{chromosome}_CD4_TCM_permuted_gene_list.json',
         ),
     ).open('w') as write_handle:
         json.dump(gene_names, write_handle)
@@ -80,7 +80,7 @@ def cis_window_numpy_extractor(
         right_boundary = min(int(end_coord.iloc[0]) + int(cis_window), chrom_len)
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
-        ofile_path = output_path(f'cis_window_files/{version}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed')
+        ofile_path = output_path(f'cis_window_files/{version}/CD4_TCM_permuted/{chromosome}/{gene}_{cis_window}bp.bed')
         # write cis window file to gcp
         pd.DataFrame(data, index=[gene]).to_csv(ofile_path, sep='\t', header=False, index=False)
 
@@ -106,17 +106,11 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
+        #permute the sample IDs
+        gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].sample(frac=1).reset_index(drop=True)
+
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
-
-        # add in cohort as a covariate
-        cohort_cpg_id = adata.obs[['cpg_id', 'cohort']]
-        mapping = {'TOB': 1, 'BioHEART': 2}
-        cohort_cpg_id['cohort'] = cohort_cpg_id['cohort'].map(mapping)
-        cohort_cpg_id.rename(columns={'cpg_id': 'sample_id'}, inplace=True)  # noqa: PD002
-        cohort_cpg_id = cohort_cpg_id.drop_duplicates()
-
-        gene_pheno_cov = gene_pheno_cov.merge(cohort_cpg_id, on='sample_id', how='inner')
 
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
@@ -126,7 +120,7 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov = gene_pheno_cov.to_numpy()
         with hl.hadoop_open(
-            output_path(f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'),
+            output_path(f'pheno_cov_numpy/{version}/CD4_TCM_permuted/{chromosome}/{gene}_pheno_cov.npy'),
             'wb',
         ) as f:
             np.save(f, gene_pheno_cov)

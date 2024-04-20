@@ -1,12 +1,12 @@
 [get_cis_numpy]
 # GCS directory to the input AnnData objects
-input_h5ad_dir = 'gs://cpg-bioheart-test/str/anndata-240/cpg_anndata/cpg_anndata'
+input_h5ad_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_anndata'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/input_files/pseudobulk'
+input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/pseudobulk'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/5_pcs/input_files/covariates/5_rna_pcs'
+input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/covariates/7_rna_pcs'
 chromosomes = 'chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
-cell_types = 'CD8_TEM'
+cell_types = 'CD4_TCM'
 # cis window size in bp
 cis_window = 100000
 version = 'v1'
