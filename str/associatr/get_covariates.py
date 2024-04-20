@@ -3,13 +3,11 @@
 This script calculates cell-type specific PCs from the pseudobulk RNA data (genome-wide),
 merges them with other pre-calculated covariates, and writes the file to GCP.
 
-We include only genotype PC 1 and 6 as covariates and apply thresholds to remove ancestry outliers.
-Thresholds are a temporary solution, awaiting finalization of ancestry results from the LC pipeline.
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --output-dir "str/associatr/input_files/240_libraries_tenk10kp1_v2" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/pseudobulk \
---cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --covariate-file-path=gs://cpg-bioheart-test/str/anndata/saige-qtl/input_files/covariates/sex_age_geno_pcs_tob_bioheart.csv \
---num-pcs=7
+--description "Get covariates" --output-dir "str/associatr/tob_n1055/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/pseudobulk \
+--cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --covariate-file-path=gs://gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/tob_covariates_str_run_v1.csv \
+--num-pcs=20
 
 """
 
@@ -73,15 +71,6 @@ def get_covariates(
 
     # read in covariates
     cov = pd.read_csv(covariate_file_path)
-
-    cov = cov[['sample_id', 'sex', 'age', 'geno_PC1', 'geno_PC6']]
-
-    # cut-offs for geno PCs (filter out ancestry outliers)
-    cov = cov[
-        (cov['geno_PC1'] >= -0.05)
-        & (cov['geno_PC6'] <= 0.05)
-        & (cov['geno_PC6'] >= -0.05)
-    ]
 
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
 
