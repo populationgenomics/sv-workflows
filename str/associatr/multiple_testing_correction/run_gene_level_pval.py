@@ -20,7 +20,7 @@ from scipy.stats import cauchy
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch, output_path, image_path
 
 # store a mapping of the key description to the index
 VALUES_TO_INDEXES = [
@@ -200,13 +200,13 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                 j = b.new_python_job(
                     name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}',
                 )
-                j.image('australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:772ece1280285247acf06ae8826401ea28b4df2a-hail-8f6797b033d2e102575c40166cf0c977e91f834e')
+                j.image(image_path('scanpy'))
 
                 j.cpu(0.25).memory('lowmem')
                 f = b.new_python_job(
                     name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}',
                 )
-                f.image('australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:772ece1280285247acf06ae8826401ea28b4df2a-hail-8f6797b033d2e102575c40166cf0c977e91f834e')
+                f.image(image_path('scanpy'))
 
                 f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:
