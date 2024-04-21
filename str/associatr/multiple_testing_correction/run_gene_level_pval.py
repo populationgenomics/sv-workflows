@@ -15,7 +15,6 @@ analysis-runner --dataset "bioheart" --description "compute gene level pvals" --
 import click
 import numpy as np
 import pandas as pd
-from scipy.stats import cauchy
 
 import hailtop.batch as hb
 
@@ -65,6 +64,7 @@ def cct(
     #' @export
     R code is implemented in python
     """
+    from scipy.stats import cauchy
 
     # remove NA values - associaTR reports pval as NA if locus was thrown out (not tested)
     pvals = pvals[~np.isnan(pvals)]
