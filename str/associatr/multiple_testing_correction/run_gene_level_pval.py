@@ -64,7 +64,8 @@ def cct(
     #' @export
     R code is implemented in python
     """
-    from scipy.stats import cauchy
+    # Import here as a PythonJob's function must stand alone
+    from scipy.stats import cauchy  # noqa: PLC0415
 
     # remove NA values - associaTR reports pval as NA if locus was thrown out (not tested)
     pvals = pvals[~np.isnan(pvals)]
