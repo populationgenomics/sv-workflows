@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# pylint: disable=no-value-for-parameter
 """
 This script extracts the raw p-values from the results of associaTR into one text file per cell type.
 For downstream use to make a QQ plot.
@@ -33,6 +33,9 @@ from cpg_utils import to_path
 )
 @click.command()
 def main(input_dir, cell_types, chromosomes):
+    """
+    Extracts the raw p-values from the results of associaTR into one text file per cell type.
+    """
     for cell_type in cell_types.split(','):
         gcs_output = output_path(
             f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt'
