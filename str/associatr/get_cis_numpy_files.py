@@ -10,7 +10,7 @@ This script aims to:
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/rna_pc_calibration/2_pcs/input_files"  \
+--description "get cis and numpy" --output-dir "str/associatr/tob_n1055/input_files"  \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -108,15 +108,6 @@ def cis_window_numpy_extractor(
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
-
-        # add in cohort as a covariate
-        cohort_cpg_id = adata.obs[['cpg_id', 'cohort']]
-        mapping = {'TOB': 1, 'BioHEART': 2}
-        cohort_cpg_id['cohort'] = cohort_cpg_id['cohort'].map(mapping)
-        cohort_cpg_id.rename(columns={'cpg_id': 'sample_id'}, inplace=True)  # noqa: PD002
-        cohort_cpg_id = cohort_cpg_id.drop_duplicates()
-
-        gene_pheno_cov = gene_pheno_cov.merge(cohort_cpg_id, on='sample_id', how='inner')
 
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
