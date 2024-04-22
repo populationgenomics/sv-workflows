@@ -19,7 +19,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path, image_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 # store a mapping of the key description to the index
 VALUES_TO_INDEXES = [
