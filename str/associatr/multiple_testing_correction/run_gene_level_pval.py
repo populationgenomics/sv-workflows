@@ -81,7 +81,7 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
     from scipy.stats import cauchy  # noqa: PLC0415
 
     from cpg_utils import to_path
-    from cpg_utils.hail_batch import output_path
+    from cpg_utils.config import output_path
 
     for gene_file in gene_files:
         weights = deepcopy(og_weights)
@@ -168,7 +168,7 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
     import pandas as pd
 
     from cpg_utils import to_path
-    from cpg_utils.hail_batch import output_path
+    from cpg_utils.config import output_path
 
     for gene_file in gene_files:
         # read the raw results
