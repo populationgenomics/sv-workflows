@@ -253,7 +253,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
 
                 if acat:
                     j = b.new_python_job(
-                        name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}',
+                        name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job} in {cell_type}:{chromosome}',
                     )
                     j.cpu(0.25).memory('lowmem')
                     j.call(cct, batch_gene_files, cell_type, chromosome)
@@ -261,7 +261,7 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
 
                 if bonferroni:
                     f = b.new_python_job(
-                        name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}',
+                        name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job} in {cell_type}:{chromosome}',
                     )
                     f.cpu(0.25).memory('lowmem')
                     f.call(bonferroni_compute, batch_gene_files, cell_type, chromosome)
