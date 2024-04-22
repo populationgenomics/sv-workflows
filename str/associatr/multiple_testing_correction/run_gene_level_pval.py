@@ -39,6 +39,40 @@ VALUES_TO_INDEXES = [
 ]
 
 
+def process_single_file(gene_file: str):
+    """
+    reads a file, and pulls out all the good stuff
+
+    Args:
+        gene_file (str):
+
+    Returns:
+        pvals, gene_name, row_dict
+    """
+    import pandas as pd
+
+    # read the raw results
+    gene_results = pd.read_csv(gene_file, sep='\t')
+    pvals = gene_results.iloc[:, 5]  # stored in the 6th column
+    # Find and store the attributes of the locus with lowest raw pval
+    # Find the minimum value in column 6
+    min_value = gene_results.iloc[:, 5].min()
+    # Find the rows with the minimum value in column 6
+    min_rows = gene_results[gene_results.iloc[:, 5] == min_value]
+
+    # create a dictionary of {key: list}
+    row_dict: dict[str, list] = {key: [] for key, value in VALUES_TO_INDEXES}
+
+    # populate the dict
+    for _index, row in min_rows.iterrows():
+        for key, value in VALUES_TO_INDEXES:
+            row_dict[key].append(row.iloc[value])
+
+    pvals = np.array(pvals)
+    gene_name = gene_results.columns[5].split('_')[-1]
+    return pvals, gene_name, row_dict
+
+
 def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None):
     """
     takes a list of gene files to process in this job
@@ -77,7 +111,6 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
     R code is implemented in python
     """
     # Import here as a PythonJob's function must stand alone
-    import pandas as pd
     from scipy.stats import cauchy  # noqa: PLC0415
 
     from cpg_utils import to_path
@@ -87,25 +120,7 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
         weights = deepcopy(og_weights)
         print(f'processing {gene_file}')
 
-        # read the raw results
-        gene_results = pd.read_csv(gene_file, sep='\t')
-        pvals = gene_results.iloc[:, 5]  # stored in the 6th column
-        # Find and store the attributes of the locus with lowest raw pval
-        # Find the minimum value in column 6
-        min_value = gene_results.iloc[:, 5].min()
-        # Find the rows with the minimum value in column 6
-        min_rows = gene_results[gene_results.iloc[:, 5] == min_value]
-
-        # create a dictionary of {key: list}
-        row_dict: dict[str, list] = {key: [] for key, value in VALUES_TO_INDEXES}
-
-        # populate the dict
-        for _index, row in min_rows.iterrows():
-            for key, value in VALUES_TO_INDEXES:
-                row_dict[key].append(row.iloc[value])
-
-        pvals = np.array(pvals)
-        gene_name = gene_results.columns[5].split('_')[-1]
+        pvals, gene_name, row_dict = process_single_file(gene_file)
 
         # remove NA values - associaTR reports pval as NA if locus was thrown out (not tested)
         pvals = pvals[~np.isnan(pvals)]
@@ -171,25 +186,8 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
     from cpg_utils.config import output_path
 
     for gene_file in gene_files:
-        # read the raw results
-        gene_results = pd.read_csv(gene_file, sep='\t')
-        pvals = gene_results.iloc[:, 5]  # stored in the 6th column
-        # Find and store the attributes of the locus with lowest raw pval
-        # Find the minimum value in column 6
-        min_value = gene_results.iloc[:, 5].min()
-        # Find the rows with the minimum value in column 6
-        min_rows = gene_results[gene_results.iloc[:, 5] == min_value]
-
-        # create a dictionary of {key: list}
-        row_dict = {key: [] for key, value in VALUES_TO_INDEXES}
-
-        # populate the dict
-        for _index, row in min_rows.iterrows():
-            for key, value in VALUES_TO_INDEXES:
-                row_dict[key].append(row.iloc[value])
-
-        pvals = np.array(pvals)
-        gene_name = gene_results.columns[5].split('_')[-1]
+        # read the raw results from a file
+        pvals, gene_name, row_dict = process_single_file(gene_file)
 
         pval = min(pvals) * len(pvals)
         # write to output
