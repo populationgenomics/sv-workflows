@@ -20,7 +20,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, reset_batch
 
 # store a mapping of the key description to the index
 VALUES_TO_INDEXES = [
@@ -152,15 +152,8 @@ def bonferroni_compute(
         f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
 
 
-@click.option(
-    '--input-dir',
-    help='GCS path to the raw results of associaTR',
-    type=str,
-)
-@click.option(
-    '--cell-types',
-    help='Name of the cell type, comma separated if multiple',
-)
+@click.option('--input-dir', help='GCS path to the raw results of associaTR')
+@click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
 @click.option(
     '--chromosomes',
     help='Chromosome number eg 1, comma separated if multiple',
@@ -171,16 +164,8 @@ def bonferroni_compute(
     default=500,
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
-@click.option(
-    '--acat',
-    is_flag=True,
-    help='Run ACAT method',
-)
-@click.option(
-    '--bonferroni',
-    is_flag=True,
-    help='Run Bonferroni method',
-)
+@click.option('--acat', is_flag=True, help='Run ACAT method')
+@click.option('--bonferroni', is_flag=True, help='Run Bonferroni method')
 @click.command()
 def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni):
     """
@@ -200,8 +185,13 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
     genes_per_job = 70
 
     for cell_type in cell_types.split(','):
+        # run each cell-type batch completely separately to help with job scaling
+        _dependent_jobs = []
+        reset_batch()
+        b = get_batch()
+
         for chromosome in chromosomes.split(','):
-            b = get_batch()
+
             gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
             for i in range(0, len(gene_files), genes_per_job):
                 batch_gene_files = gene_files[i : i + genes_per_job]
@@ -236,26 +226,12 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                     pvals = np.array(pvals)
                     gene_name = gene_results.columns[5].split('_')[-1]
                     if acat:
-                        j.call(
-                            cct,
-                            gene_name,
-                            pvals,
-                            cell_type,
-                            chromosome,
-                            row_dict,
-                        )
+                        j.call(cct, gene_name, pvals, cell_type, chromosome, row_dict)
                     if bonferroni:
-                        f.call(
-                            bonferroni_compute,
-                            gene_name,
-                            pvals,
-                            cell_type,
-                            chromosome,
-                            row_dict,
-                        )
+                        f.call(bonferroni_compute, gene_name, pvals, cell_type, chromosome, row_dict)
                 manage_concurrency_for_job(j)
 
-    b.run(wait=False)
+        b.run(wait=False)
 
 
 if __name__ == '__main__':
