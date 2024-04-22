@@ -13,6 +13,9 @@ analysis-runner --dataset "bioheart" --description "compute gene level pvals" --
     --cell-types=B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,CD4_TCM_permuted,CD4_TCM,gDT,dnT \
     --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --acat
 """
+import logging
+from copy import deepcopy
+
 import click
 import numpy as np
 
@@ -36,16 +39,19 @@ VALUES_TO_INDEXES = [
 ]
 
 
-def cct(gene_files: list[str], cell_type, chromosome, weights=None):
+def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None):
     """
     takes a list of gene files to process in this job
     moves processing out of the driver job
 
+    weights were breaking - this script never supplies a value to weights, but
+    the looping caused weights to be taken from the previous round's value
+
     Args:
-        gene_files ():
-        cell_type ():
-        chromosome ():
-        weights ():
+        gene_files (list): the list of files to process
+        cell_type (str):
+        chromosome (str):
+        og_weights (): None
 
     Returns:
 
@@ -78,6 +84,7 @@ def cct(gene_files: list[str], cell_type, chromosome, weights=None):
     from cpg_utils.hail_batch import output_path
 
     for gene_file in gene_files:
+        weights = deepcopy(og_weights)
         print(f'processing {gene_file}')
 
         # read the raw results
@@ -253,15 +260,16 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                     manage_concurrency_for_job(j)
 
                 if bonferroni:
-                    f.call(bonferroni_compute, batch_gene_files, cell_type, chromosome)
                     f = b.new_python_job(
                         name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}',
                     )
                     f.cpu(0.25).memory('lowmem')
+                    f.call(bonferroni_compute, batch_gene_files, cell_type, chromosome)
                     manage_concurrency_for_job(f)
-
         b.run(wait=False)
 
 
 if __name__ == '__main__':
+    # catch the logging emitted by batch generation
+    logging.basicConfig(level=logging.INFO)
     main()  # pylint: disable=no-value-for-parameter
