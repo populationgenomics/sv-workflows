@@ -33,7 +33,6 @@ from cpg_utils import to_path
 )
 @click.command()
 def main(input_dir, cell_types, chromosomes):
-
     for cell_type in cell_types.split(','):
         gcs_output = output_path(
             f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt'
@@ -49,8 +48,8 @@ def main(input_dir, cell_types, chromosomes):
                     chr = gene_results.iloc[:, 0]
                     pos = gene_results.iloc[:, 1]
                     pvals = gene_results.iloc[:, 5]
-                    for chr1,pos1,pval1 in zip(chr,pos,pvals):
-                        f.write(chr1+'\t'+str(pos1)+'\t'+ str(pval1) + '\n')
+                    for chr1, pos1, pval1 in zip(chr, pos, pvals):
+                        f.write(chr1 + '\t' + str(pos1) + '\t' + str(pval1) + '\n')
 
 
 if __name__ == '__main__':
