@@ -4,8 +4,7 @@
 Converts coordinates in BED file to FASTA sequence
 """
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 CATALOG_PATH = 'gs://cpg-tob-wgs-test/hoptan-str/bed_catalog_without_complex_repeats.bed.txt'
 REF_FASTA = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
