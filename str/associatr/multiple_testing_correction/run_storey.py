@@ -64,7 +64,8 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
 
 
 @click.option(
-    '--input-dir', help='GCS path directory to the input gene-level p-value files',
+    '--input-dir',
+    help='GCS path directory to the input gene-level p-value files',
 )
 @click.option(
     '--gene-level-correction',
