@@ -17,6 +17,8 @@ import numpy as np
 import pandas as pd
 
 import hailtop.batch as hb
+from cpg_utils import to_path
+
 
 from cpg_utils.hail_batch import get_batch, image_path
 
@@ -199,7 +201,6 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
             b = get_batch()
-            b.image(image_path('scanpy'))
             gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
             for i in range(0, len(gene_files), genes_per_job):
                 batch_gene_files = gene_files[i : i + genes_per_job]
