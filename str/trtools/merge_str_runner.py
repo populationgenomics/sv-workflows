@@ -23,7 +23,6 @@ from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path
 
-
 config = get_config()
 
 TRTOOLS_IMAGE = config['images']['trtools']
@@ -37,9 +36,7 @@ TRTOOLS_IMAGE = config['images']['trtools']
     default=1,
     help=('Number of shards per sample to expect (if unsharded, choose 1)'),
 )
-@click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='20G'
-)
+@click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='20G')
 @click.option('--job-memory', help='Memory of the Hail batch job', default='standard')
 @click.option('--job-cpu', help='Number of CPUs of the Hail batch job', default=8)
 # input sample ID
@@ -66,7 +63,7 @@ def main(
                 'vcf': '{root}.vcf',
                 'vcf.gz': '{root}.vcf.gz',
                 'vcf.gz.tbi': '{root}.vcf.gz.tbi',
-            }
+            },
         )
 
         # read in input file paths
@@ -79,16 +76,14 @@ def main(
                 ids = [line.strip() for line in f]
                 cpg_ids.extend(ids)
                 for id in ids:
-                    each_vcf = os.path.join(
-                        input_dir, f'{id}_eh_shard{shard_index}.reheader.vcf.gz'
-                    )
+                    each_vcf = os.path.join(input_dir, f'{id}_eh_shard{shard_index}.reheader.vcf.gz')
                     batch_vcfs.append(
                         b.read_input_group(
                             **{
                                 'vcf.gz': each_vcf,
                                 'vcf.gz.tbi': f'{each_vcf}.tbi',
-                            }
-                        )['vcf.gz']
+                            },
+                        )['vcf.gz'],
                     )
                 num_samples = num_samples + len(ids)
 
@@ -102,16 +97,12 @@ def main(
         mergeSTR --vcfs `(echo {";echo ,".join(batch_vcfs)}) | sed 's|'${{BATCH_TMPDIR}}'/inputs/*||' | tr -d '\\n'` --out {trtools_job.vcf_output} --vcftype eh
         bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
         tabix -f -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
-        """
+        """,
         )
 
-        output_path_name = output_path(
-            f'mergeSTR_{num_samples}_samples_eh_shard{shard_index}', 'analysis'
-        )
+        output_path_name = output_path(f'mergeSTR_{num_samples}_samples_eh_shard{shard_index}', 'analysis')
         b.write_output(trtools_job.vcf_output['vcf.gz'], f'{output_path_name}.vcf.gz')
-        b.write_output(
-            trtools_job.vcf_output['vcf.gz.tbi'], f'{output_path_name}.vcf.gz.tbi'
-        )
+        b.write_output(trtools_job.vcf_output['vcf.gz.tbi'], f'{output_path_name}.vcf.gz.tbi')
 
     b.run(wait=False)
 

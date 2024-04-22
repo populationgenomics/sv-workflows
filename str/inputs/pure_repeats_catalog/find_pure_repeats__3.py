@@ -8,10 +8,10 @@ Required packages: str_analysis
 python3 -m pip install --upgrade str_analysis
 """
 
-from itertools import islice
 import json
-from str_analysis.utils.find_repeat_unit import find_repeat_unit_kmer
+from itertools import islice
 
+from str_analysis.utils.find_repeat_unit import find_repeat_unit_kmer
 from utils import break_coordinate_string
 
 INPUT_FILE = 'intermediate_files/Illumina_catalog_sequences.fasta.txt'
@@ -46,9 +46,7 @@ with open(INPUT_FILE, encoding='utf-8') as handle:
         # impure repeat sequence
         # motifs greater than 6bp (STR definition is 2-6bp motif)
         # manually excluded sites
-        if (
-            (repeat_count == 1) or (len(repeat_unit) == 1) or (len(repeat_unit) > 6)
-        ) or key in manually_excluded_loci:
+        if ((repeat_count == 1) or (len(repeat_unit) == 1) or (len(repeat_unit) > 6)) or key in manually_excluded_loci:
             excluded_dict[key] = (repeat_unit, repeat_count)
         else:
             catalog_dict[key] = (repeat_unit, repeat_count)
@@ -60,9 +58,7 @@ with open(EXCLUDED_LOCUS_FILE, 'w', encoding='utf-8') as handle:
         handle.write(f'{key} {motif} {repeat_count}\n')
 # endregion
 
-print(
-    f'Number of pure repeats: {len(catalog_dict.keys())}'
-)  # expected 164847 pure repeat loci
+print(f'Number of pure repeats: {len(catalog_dict.keys())}')  # expected 164847 pure repeat loci
 
 # region: write out the pure repeat loci to an output file
 with open(PURE_CATALOG_OUTPUT, 'w', encoding='utf-8') as handle:
