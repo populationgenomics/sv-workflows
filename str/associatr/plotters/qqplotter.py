@@ -5,7 +5,7 @@ This script plots a QQ plot of observed vs expected -log10(p-values) for each ce
 analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
     --output-dir "str/associatr/tob_n1055" --memory=64G \
     qqplotter.py \
-    --input-dir=s://cpg-bioheart-test/str/associatr/tob_n1055/results/raw_pval_extractor \
+    --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/raw_pval_extractor \
     --cell-types=CD4_TCM,B_intermediate,Plasmablast
 
 """
@@ -13,6 +13,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import hail as hl
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
@@ -22,6 +23,7 @@ from cpg_utils.hail_batch import output_path
 @click.option('--cell-types', help='Comma-separated list of cell types to plot')
 @click.command()
 def main(input_dir, cell_types):
+    init_batch()
     cell_type_list = cell_types.split(',')
 
     for cell_type in cell_type_list:
@@ -101,7 +103,8 @@ def main(input_dir, cell_types):
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
     gcs_output_path = to_path(output_path('summary_plots/qq_plot.png', 'analysis'))
-    fig.savefig(gcs_output_path)
+    fig.savefig('qqplot.png')
+    hl.hadoop_copy('qqplot.png', gcs_output_path)
 
 
 if __name__ == '__main__':
