@@ -10,7 +10,7 @@ The attributes of the locus with the lowest raw p-value are also stored in the T
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/tob_n1055/results" \
     run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
-    --cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --acat
+    --cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21 --acat
 """
 import click
 import numpy as np
@@ -19,7 +19,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, image_path, output_path
+from cpg_utils.hail_batch import get_batch, output_path, image_path
 
 # store a mapping of the key description to the index
 VALUES_TO_INDEXES = [
@@ -64,8 +64,7 @@ def cct(
     #' @export
     R code is implemented in python
     """
-    # Import here as a PythonJob's function must stand alone
-    from scipy.stats import cauchy  # noqa: PLC0415
+    from scipy.stats import cauchy
 
     # remove NA values - associaTR reports pval as NA if locus was thrown out (not tested)
     pvals = pvals[~np.isnan(pvals)]
@@ -201,12 +200,14 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
                 j = b.new_python_job(
                     name=f'Compute gene-level p-values for genes {i+1}-{i+genes_per_job}',
                 )
-                j.cpu(0.25).memory('lowmem')
                 j.image(image_path('scanpy'))
+
+                j.cpu(0.25).memory('lowmem')
                 f = b.new_python_job(
                     name=f'Compute gene-level Bonferroni p-values for genes {i+1}-{i+genes_per_job}',
                 )
                 f.image(image_path('scanpy'))
+
                 f.cpu(0.25).memory('lowmem')
                 for gene_file in batch_gene_files:
                     # read the raw results
