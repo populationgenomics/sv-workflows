@@ -10,7 +10,8 @@ The attributes of the locus with the lowest raw p-value are also stored in the T
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/tob_n1055/results" \
     run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
-    --cell-types=CD4_TCM --chromosomes=1 --acat
+    --cell-types=B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,CD4_TCM_permuted,CD4_TCM,gDT,dnT \
+    --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --acat
 """
 import click
 import numpy as np
@@ -19,7 +20,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, image_path
+from cpg_utils.hail_batch import get_batch
 
 # store a mapping of the key description to the index
 VALUES_TO_INDEXES = [
