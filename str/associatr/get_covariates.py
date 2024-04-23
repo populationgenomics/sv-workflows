@@ -70,7 +70,7 @@ def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_
     # read in covariates
     cov = pd.read_csv(covariate_file_path)
 
-    merged_df = pd.merge(cov, df_pcs, on='sample_id')
+    merged_df = cov.merge(df_pcs, on='sample_id')
 
     # write to GCP
     merged_df.to_csv(
