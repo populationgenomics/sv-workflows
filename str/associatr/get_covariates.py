@@ -23,10 +23,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 
-def get_covariates(
-    pseudobulk_input_dir, cell_type, chromosomes, covariate_file_path, num_pcs
-):
-
+def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_path, num_pcs):
     """
     Calculates cell-type specific PCs from the pseudobulk data (genome-wide),
     merges them with other pre-calculated covariates, and writes file to GCP
@@ -70,13 +67,10 @@ def get_covariates(
     # rename PC columns: rna_PC{num}
     df_pcs = df_pcs.rename(columns={i: f'rna_PC{i+1}' for i in range(num_pcs)})
 
-
     # read in covariates
     cov = pd.read_csv(covariate_file_path)
 
-
     merged_df = pd.merge(cov, df_pcs, on='sample_id')
-
 
     # write to GCP
     merged_df.to_csv(
@@ -84,10 +78,8 @@ def get_covariates(
         index=False,
     )
 
-@click.option(
-    '--input-dir', help='GCS Path to the input dir storing pseudobulk CSV files'
-)
 
+@click.option('--input-dir', help='GCS Path to the input dir storing pseudobulk CSV files')
 @click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
 @click.option('--chromosomes', help='Chromosome number eg 1, comma separated if multiple')
 @click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
