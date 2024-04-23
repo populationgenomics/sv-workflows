@@ -39,8 +39,8 @@ def main(input_dir, cell_types):
         )
 
     # Create QQ plot
-    plt.figure(figsize=(8, 8))
-    fig, ax = plt.subplots(figsize=(8, 8))
+    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     # Define a list of colors
     colors = [
