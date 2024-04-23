@@ -3,7 +3,6 @@ celltypes='CD8_TEM'
 chromosomes='chr21'
 # gs://... to the chr-specific output of qc_filters_associatr.py
 vcf_file_dir='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific'
-gene_list_dir='gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/scRNA_gene_lists/1_min_pct_cells_expressed'
 cis_window_dir='gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/cis_window_files/v1'
 pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/2_pcs/input_files/pheno_cov_numpy/v1'
 max_parallel_jobs=500
