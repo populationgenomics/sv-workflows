@@ -212,7 +212,7 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
 @click.option(
     '--max-parallel-jobs',
     type=int,
-    default=500,
+    default=18,
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
 @click.option('--acat', is_flag=True, help='Run ACAT method')
