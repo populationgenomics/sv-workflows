@@ -16,7 +16,7 @@ import pandas as pd
 import hail as hl
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path
+from cpg_utils.hail_batch import output_path, init_batch
 
 
 @click.option('--input-dir', help='GCS path directory to the input gene-level p-value files')
