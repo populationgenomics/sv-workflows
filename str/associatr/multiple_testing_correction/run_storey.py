@@ -15,12 +15,12 @@ analysis-runner --dataset "bioheart" --description "compute qvals" --access-leve
 
 """
 
-import pandas as pd
-
 import click
-from cpg_utils.hail_batch import get_batch, output_path
-from cpg_utils import to_path
+import pandas as pd
 import rpy2.robjects as ro
+
+from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
@@ -34,8 +34,8 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
         # read in gene-level p-values
         gene_pval_files = list(
             to_path(
-                f'{input_dir}/{gene_level_correction}/{cell_type}/chr{chromosome}'
-            ).glob('*.tsv')
+                f'{input_dir}/{gene_level_correction}/{cell_type}/chr{chromosome}',
+            ).glob('*.tsv'),
         )
         if first_iteration:
             pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
@@ -64,7 +64,8 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
 
 
 @click.option(
-    '--input-dir', help='GCS path directory to the input gene-level p-value files'
+    '--input-dir',
+    help='GCS path directory to the input gene-level p-value files',
 )
 @click.option(
     '--gene-level-correction',
@@ -80,7 +81,7 @@ def main(input_dir, cell_types, chromosomes, gene_level_correction):
     """
     for cell_type in cell_types.split(','):
         j = get_batch(f'compute_storey {gene_level_correction}').new_python_job(
-            name=f'compute_storey_{cell_type}'
+            name=f'compute_storey_{cell_type}',
         )
         j.cpu(1)
         j.call(compute_storey, input_dir, cell_type, chromosomes, gene_level_correction)
