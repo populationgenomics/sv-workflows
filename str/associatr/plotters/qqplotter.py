@@ -14,22 +14,27 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 import hail as hl
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path, init_batch
+from cpg_utils.hail_batch import init_batch, output_path
+
 
 @click.option('--title', help='Title of the QQ plot')
 @click.option('--input-dir', help='GCS path directory to the input gene-level p-value files')
 @click.option('--cell-types', help='Comma-separated list of cell types to plot')
 @click.command()
-def main(input_dir, cell_types,title):
+def main(input_dir, cell_types, title):
     init_batch()
     cell_type_list = cell_types.split(',')
 
     for cell_type in cell_type_list:
         df = pd.read_csv(
-            f'{input_dir}/{cell_type}_gene_tests_raw_pvals.txt', header=None, names=['CHR', 'BP', 'raw_pval'], sep='\t',
+            f'{input_dir}/{cell_type}_gene_tests_raw_pvals.txt',
+            header=None,
+            names=['CHR', 'BP', 'raw_pval'],
+            sep='\t',
         )
         df = df.dropna()
 
@@ -104,7 +109,7 @@ def main(input_dir, cell_types,title):
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = (output_path('summary_plots/qq_plot.png', 'analysis'))
+    gcs_output_path = output_path('summary_plots/qq_plot.png', 'analysis')
     fig.tight_layout()
     fig.savefig('qqplot.png')
     hl.hadoop_copy('qqplot.png', gcs_output_path)
