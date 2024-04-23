@@ -102,7 +102,7 @@ def main(input_dir, cell_types):
     ax.legend()
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = to_path(output_path('summary_plots/qq_plot.png', 'analysis'))
+    gcs_output_path = (output_path('summary_plots/qq_plot.png', 'analysis'))
     fig.savefig('qqplot.png')
     hl.hadoop_copy('qqplot.png', gcs_output_path)
 
