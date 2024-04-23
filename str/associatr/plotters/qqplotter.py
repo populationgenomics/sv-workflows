@@ -3,10 +3,11 @@
 This script plots a QQ plot of observed vs expected -log10(p-values) for each cell type.
 
 analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055" --memory=64G \
+    --output-dir "str/associatr/bioheart_n990" --memory=32G \
     qqplotter.py \
-    --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/raw_pval_extractor \
-    --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC
+    --input-dir=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/raw_pval_extractor \
+    --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC \
+    --title='associaTR BioHEART'
 
 """
 import click
@@ -18,11 +19,11 @@ import hail as hl
 from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path, init_batch
 
-
+@click.option('--title', help='Title of the QQ plot')
 @click.option('--input-dir', help='GCS path directory to the input gene-level p-value files')
 @click.option('--cell-types', help='Comma-separated list of cell types to plot')
 @click.command()
-def main(input_dir, cell_types):
+def main(input_dir, cell_types,title):
     init_batch()
     cell_type_list = cell_types.split(',')
 
@@ -96,7 +97,7 @@ def main(input_dir, cell_types):
 
     ax.set_xlabel('Expected -log10(p-value)')
     ax.set_ylabel('Observed -log10(p-value)')
-    ax.set_title('QQ Plot of Observed vs Expected -log10(p-values) - associaTR TOB')
+    ax.set_title(f'QQ Plot - {title}')
     ax.set_ylim(0, 335)
 
     ax.grid(True)
