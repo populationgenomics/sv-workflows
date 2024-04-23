@@ -91,6 +91,7 @@ def main(input_dir, cell_types):
             observed_sorted_values[cell_type],
             color=colors[color_index],
             label=cell_type,
+            s=9,
         )
 
     ax.set_xlabel('Expected -log10(p-value)')
