@@ -92,7 +92,7 @@ def main(input_dir, cell_types):
             color=colors[color_index],
             label=cell_type,
         )
-
+    fig, ax = plt.subplots(figsize=(10, 6))
     ax.set_xlabel('Expected -log10(p-value)')
     ax.set_ylabel('Observed -log10(p-value)')
     ax.set_title('QQ Plot of Observed vs Expected -log10(p-values) - associaTR TOB')
