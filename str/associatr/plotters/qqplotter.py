@@ -6,7 +6,7 @@ analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level
     --output-dir "str/associatr/tob_n1055" --memory=64G \
     qqplotter.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/raw_pval_extractor \
-    --cell-types=CD4_TCM,B_intermediate,Plasmablast
+    --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC
 
 """
 import click
@@ -95,11 +95,11 @@ def main(input_dir, cell_types):
 
     ax.set_xlabel('Expected -log10(p-value)')
     ax.set_ylabel('Observed -log10(p-value)')
-    ax.set_title('QQ Plot of Observed vs Expected -log10(p-values)')
+    ax.set_title('QQ Plot of Observed vs Expected -log10(p-values) - associaTR TOB')
     ax.set_ylim(0, 335)
 
     ax.grid(True)
-    ax.legend()
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
     gcs_output_path = (output_path('summary_plots/qq_plot.png', 'analysis'))
