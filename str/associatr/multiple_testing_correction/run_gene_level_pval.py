@@ -242,7 +242,6 @@ def main(input_dir, cell_types, chromosomes, max_parallel_jobs, acat, bonferroni
         b = get_batch()
 
         for chromosome in chromosomes.split(','):
-
             gene_files = list(map(str, to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')))
 
             # split the list of files into chunks

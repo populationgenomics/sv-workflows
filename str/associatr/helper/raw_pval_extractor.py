@@ -11,11 +11,11 @@ analysis-runner --dataset "bioheart" --description "raw pval extractor" --access
 
 """
 
+import click
 import pandas as pd
 
-import click
-from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
+from cpg_utils.hail_batch import output_path
 
 
 @click.option(
@@ -37,14 +37,10 @@ def main(input_dir, cell_types, chromosomes):
     Extracts the raw p-values from the results of associaTR into one text file per cell type.
     """
     for cell_type in cell_types.split(','):
-        gcs_output = output_path(
-            f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt'
-        )
+        gcs_output = output_path(f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt')
         with to_path(gcs_output).open('w') as f:
             for chromosome in chromosomes.split(','):
-                gene_files = list(
-                    to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv')
-                )
+                gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
                 for gene_file in gene_files:
                     # read the raw results
                     gene_results = pd.read_csv(gene_file, sep='\t')
