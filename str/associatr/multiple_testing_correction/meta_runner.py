@@ -9,7 +9,7 @@ analysis-runner --dataset "bioheart" --description "meta results runner" --acces
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM --chromosomes=chr1
+    --cell-types=CD8_TEM --chromosomes=chr22
 """
 import json
 
@@ -158,7 +158,7 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
             intersected_genes = list(set(genes_1) & set(genes_2))
             for gene in intersected_genes:
                 j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
-                j.cpu(1)
+                j.cpu(0.25).memory('lowmem')
                 j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
                 j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
                 manage_concurrency_for_job(j)
