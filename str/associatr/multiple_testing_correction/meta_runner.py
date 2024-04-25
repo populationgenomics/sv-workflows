@@ -10,7 +10,7 @@ analysis-runner --dataset "bioheart" --description "meta results runner" --acces
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
+    --cell-types=CD8_TEM --chromosomes=chr1
 """
 import json
 
@@ -142,9 +142,9 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
                 genes_2 = json.load(g)
             j = get_batch().new_python_job(name=f'compute_meta_{cell_type}_{chromosome}')
             j.cpu(1)
-            for gene in list(set(genes_1) & set(genes_2)):
+            #for gene in list(set(genes_1) & set(genes_2)):
+            for gene in ['ENSG00000000457']:
                 j.call(run_meta_gen, results_dir_1, results_dir_2,cell_type, chromosome, gene)
-
     get_batch().run(wait=False)
 
 
