@@ -130,24 +130,22 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
     """
     Compute meta-analysis using R's meta package
     """
-    j = get_batch().new_python_job(name=f'compute_meta_{cell_types}_{chromosomes}')
-    j.cpu(1)
-    j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
-    j.call(run_meta_gen, results_dir_1, results_dir_2,cell_types, chromosomes, 'ENSG00000000457')
-    #for cell_type in cell_types.split(','):
-    #   for chromosome in chromosomes.split(','):
-            # get the intersection of genes tested in both cohorts
-            #gene_file_path_1 = to_path(f'{gene_list_dir_1}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
-            #gene_file_path_2 = to_path(f'{gene_list_dir_2}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
-            #with open(gene_file_path_1) as f:
-             #   genes_1 = json.load(f)
-            #with open(gene_file_path_2) as g:
-            #    genes_2 = json.load(g)
-            #j = get_batch().new_python_job(name=f'compute_meta_{cell_type}_{chromosome}')
-            #j.cpu(1)
-            #for gene in list(set(genes_1) & set(genes_2)):
-            #for gene in ['ENSG00000000457']:
-                #j.call(run_meta_gen, results_dir_1, results_dir_2,cell_type, chromosome, gene)
+
+    for cell_type in cell_types.split(','):
+       for chromosome in chromosomes.split(','):
+            #get the intersection of genes tested in both cohorts
+            gene_file_path_1 = to_path(f'{gene_list_dir_1}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
+            gene_file_path_2 = to_path(f'{gene_list_dir_2}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
+            with open(gene_file_path_1) as f:
+               genes_1 = json.load(f)
+            with open(gene_file_path_2) as g:
+                genes_2 = json.load(g)
+            j = get_batch().new_python_job(name=f'compute_meta_{cell_type}_{chromosome}')
+            j.cpu(1)
+            j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
+            for gene in list(set(genes_1) & set(genes_2)):
+
+                j.call(run_meta_gen, results_dir_1, results_dir_2,cell_type, chromosome, gene)
     get_batch().run(wait=False)
 
 
