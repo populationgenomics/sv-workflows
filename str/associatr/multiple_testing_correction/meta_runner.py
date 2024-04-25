@@ -10,23 +10,26 @@ analysis-runner --dataset "bioheart" --description "meta results runner" --acces
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
+    --cell-types=CD8_TEM --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
 """
 import json
 
 import click
 import pandas as pd
-import rpy2.robjects as ro
-from rpy2.robjects import pandas2ri
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 
 def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     """
     Run meta-analysis using R's meta package
     """
+    import rpy2.robjects as ro
+    from rpy2.robjects import pandas2ri
+    from cpg_utils.hail_batch import output_path
+
+
     ro.r('library(meta)')
     ro.r('library(tidyverse)')
     d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv')
