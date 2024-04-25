@@ -16,6 +16,8 @@ import json
 import click
 import pandas as pd
 
+import hailtop.batch as hb
+
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
@@ -127,11 +129,22 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 @click.option('--gene-list-dir-2', help='GCS path directory to the gene list for cohort 2')
 @click.option('--cell-types', help='cell type')
 @click.option('--chromosomes', help='chromosomes')
+@click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.command()
-def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes):
+def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes, max_parallel_jobs):
     """
     Compute meta-analysis using R's meta package
     """
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
 
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
@@ -142,12 +155,13 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
                 genes_1 = json.load(f)
             with open(gene_file_path_2) as g:
                 genes_2 = json.load(g)
-            intersected_genes =  list(set(genes_1) & set(genes_2))
+            intersected_genes = list(set(genes_1) & set(genes_2))
             for gene in intersected_genes:
-                j = get_batch(name=f'compute_meta_{cell_type}_{chromosome}_{gene}').new_python_job()
+                j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(1)
                 j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
                 j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
+                manage_concurrency_for_job(j)
     get_batch().run(wait=False)
 
 
