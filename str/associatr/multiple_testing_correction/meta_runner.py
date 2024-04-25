@@ -26,13 +26,13 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     """
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
-    from cpg_utils.hail_batch import output_path
 
+    from cpg_utils.hail_batch import output_path
 
     ro.r('library(meta)')
     ro.r('library(tidyverse)')
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep = '\t')
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep = '\t')
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
@@ -115,7 +115,9 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         pd_meta_df = ro.conversion.get_conversion().rpy2py(ro.r('meta_df'))
 
     pd_meta_df.to_csv(
-        f'{output_path(f"meta_results/{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv")}', sep='\t', index=False,
+        f'{output_path(f"meta_results/{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv")}',
+        sep='\t',
+        index=False,
     )
 
 
@@ -132,20 +134,19 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
     """
 
     for cell_type in cell_types.split(','):
-       for chromosome in chromosomes.split(','):
-            #get the intersection of genes tested in both cohorts
+        for chromosome in chromosomes.split(','):
+            # get the intersection of genes tested in both cohorts
             gene_file_path_1 = to_path(f'{gene_list_dir_1}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
             gene_file_path_2 = to_path(f'{gene_list_dir_2}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
             with open(gene_file_path_1) as f:
-               genes_1 = json.load(f)
+                genes_1 = json.load(f)
             with open(gene_file_path_2) as g:
                 genes_2 = json.load(g)
             j = get_batch().new_python_job(name=f'compute_meta_{cell_type}_{chromosome}')
             j.cpu(1)
             j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
             for gene in list(set(genes_1) & set(genes_2)):
-
-                j.call(run_meta_gen, results_dir_1, results_dir_2,cell_type, chromosome, gene)
+                j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
     get_batch().run(wait=False)
 
 
