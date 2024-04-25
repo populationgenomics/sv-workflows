@@ -2,14 +2,16 @@
 
 """
 This script runs R's meta package to generate pooled effect sizes for each eQTL.
-    --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1 \
+Assumes associaTR was run previously on both cohorts and gene lists were generated for each cell type and chromosome.
+Outputs a TSV file with the meta-analysis results for each gene.
+
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/tob_n1055_and_bioheart_n990" \
     meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM --chromosomes=chr22
+    --cell-types=CD8_TEM --chromosomes=chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21
 """
 import json
 
@@ -24,8 +26,10 @@ from cpg_utils.hail_batch import get_batch
 
 def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     """
-    Run meta-analysis using R's meta package
+    Run meta-analysis (metagen) using R's meta package
     """
+
+    # load packages
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
@@ -33,6 +37,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     ro.r('library(meta)')
     ro.r('library(tidyverse)')
+
+    # read in raw associaTR results for each cohort for a particular gene
     d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
     d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
 
@@ -116,6 +122,7 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     with (ro.default_converter + pandas2ri.converter).context():
         pd_meta_df = ro.conversion.get_conversion().rpy2py(ro.r('meta_df'))
 
+    # write to GCS
     pd_meta_df.to_csv(
         f'{output_path(f"meta_results/{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv")}',
         sep='\t',
@@ -133,8 +140,9 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 @click.command()
 def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes, max_parallel_jobs):
     """
-    Compute meta-analysis using R's meta package
+    Compute meta-analysis pooled results for each gene
     """
+
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -156,12 +164,15 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
             with open(gene_file_path_2) as g:
                 genes_2 = json.load(g)
             intersected_genes = list(set(genes_1) & set(genes_2))
+
+            # run meta-analysis for each gene
             for gene in intersected_genes:
                 j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(0.25)
                 j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
                 j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
                 manage_concurrency_for_job(j)
+
     get_batch().run(wait=False)
 
 
