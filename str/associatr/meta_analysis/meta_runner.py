@@ -6,12 +6,13 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" \
+    --output-dir "str/associatr/tob_n1055_and_bioheart_n990/fixed_model" \
     meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM --chromosomes=chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21
+    --cell-types=CD8_TEM \
+    --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
 """
 import json
 
@@ -100,17 +101,17 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         coeff = df[i, "coeff_2"]
     )
     result_df <- rbind(row_cohort1, row_cohort2)
-    m.gen = metagen(result_df$coeff, result_df$se, method.tau = "REML", random = TRUE,method.random.ci = "HK")
+    m.gen = metagen(result_df$coeff, result_df$se, method.tau = "REML", random = FALSE,method.random.ci = "HK")
 
 
     new_entry = data.frame(
         chr = df[i, "chrom"],
         pos = df[i, "pos"],
-        coeff_meta = m.gen$TE.random,
-        se_meta = m.gen$seTE.random,
-        pval_meta = m.gen$pval.random,
-        lowerCI_meta = m.gen$lower.random,
-        upperCI_meta = m.gen$upper.random
+        coeff_meta = m.gen$TE.fixed,
+        se_meta = m.gen$seTE.fixed,
+        pval_meta = m.gen$pval.fixed,
+        lowerCI_meta = m.gen$lower.fixed,
+        upperCI_meta = m.gen$upper.fixed
     )
 
     meta_df = rbind(meta_df, new_entry)

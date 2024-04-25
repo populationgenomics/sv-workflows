@@ -5,9 +5,9 @@ This script extracts the raw p-values from the results of the meta-analysis outp
 For downstream use to make a QQ plot.
 
 analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "test" \
-    --output-dir "str/associatr/bioheart_n990/EUR_only/results" \
-    raw_pval_extractor.py --input-dir=gs://cpg-bioheart-test-analysis/str/associatr/bioheart_n990/EUR_only/results/v1 \
-    --cell-types=CD4_TCM_permuted --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
+    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" \
+    raw_pval_extractor.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/meta_results \
+    --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
 
 """
 
