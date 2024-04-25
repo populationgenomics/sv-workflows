@@ -5,7 +5,7 @@ This script runs R's meta package to generate pooled effect sizes for each eQTL.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/tob_n1055_and_bioheart_n990" \
-    --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta \
+    --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1 \
     meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
@@ -118,13 +118,13 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
 
 @click.option('--results-dir-1', help='GCS path directory to the raw associatr results for cohort 1')
-@click.option('--results-dir_-1', help='GCS path directory to the raw associatr results for cohort 2')
+@click.option('--results-dir-2', help='GCS path directory to the raw associatr results for cohort 2')
 @click.option('--gene-list-dir-1', help='GCS path directory to the gene list for cohort 1')
 @click.option('--gene-list-dir-2', help='GCS path directory to the gene list for cohort 2')
 @click.option('--cell-types', help='cell type')
 @click.option('--chromosomes', help='chromosomes')
 @click.command()
-def main(input_dir_1, input_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes):
+def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes):
     """
     Compute meta-analysis using R's meta package
     """
@@ -140,7 +140,7 @@ def main(input_dir_1, input_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types,
             for gene in list(set(genes_1) & set(genes_2)):
                 j = get_batch('compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(1)
-                j.call(run_meta_gen, input_dir_1, input_dir_2, cell_type, chromosome, gene)
+                j.call(run_meta_gen, results_dir_1, results_dir_2,cell_type, chromosome, gene)
 
     get_batch().run(wait=False)
 
