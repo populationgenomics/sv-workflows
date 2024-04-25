@@ -141,8 +141,8 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
             with open(gene_file_path_2) as g:
                 genes_2 = json.load(g)
             j = get_batch().new_python_job(name=f'compute_meta_{cell_type}_{chromosome}')
+            j.cpu(1)
             for gene in list(set(genes_1) & set(genes_2)):
-                j.cpu(1)
                 j.call(run_meta_gen, results_dir_1, results_dir_2,cell_type, chromosome, gene)
 
     get_batch().run(wait=False)
