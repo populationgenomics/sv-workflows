@@ -2,10 +2,9 @@
 
 """
 This script runs R's meta package to generate pooled effect sizes for each eQTL.
-
+    --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1 \
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/tob_n1055_and_bioheart_n990" \
-    --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1 \
     meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
@@ -133,6 +132,7 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
     """
     j = get_batch().new_python_job(name=f'compute_meta_{cell_types}_{chromosomes}')
     j.cpu(1)
+    j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
     j.call(run_meta_gen, results_dir_1, results_dir_2,cell_types, chromosomes, 'ENSG00000000457')
     #for cell_type in cell_types.split(','):
     #   for chromosome in chromosomes.split(','):
