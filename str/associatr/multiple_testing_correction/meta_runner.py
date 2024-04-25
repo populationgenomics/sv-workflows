@@ -144,7 +144,7 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
                 genes_2 = json.load(g)
             intersected_genes =  list(set(genes_1) & set(genes_2))
             for gene in intersected_genes:
-                j = get_batch().new_python_job(name=f'compute_meta_{cell_type}_{chromosome}')
+                j = get_batch(name=f'compute_meta_{cell_type}_{chromosome}_{gene}').new_python_job()
                 j.cpu(1)
                 j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
                 j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
