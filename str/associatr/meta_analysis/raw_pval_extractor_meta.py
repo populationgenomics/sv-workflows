@@ -5,8 +5,8 @@ This script extracts the raw p-values from the results of the meta-analysis outp
 For downstream use to make a QQ plot.
 
 analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" \
-    raw_pval_extractor.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/meta_results \
+    --output-dir "str/associatr/tob_n1055_and_bioheart_n990/fixed_model" \
+    raw_pval_extractor_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/fixed_model/meta_results \
     --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
 
 """
@@ -46,7 +46,7 @@ def main(input_dir, cell_types, chromosomes):
                     gene_results = pd.read_csv(gene_file, sep='\t')
                     chr = gene_results.iloc[:, 0]
                     pos = gene_results.iloc[:, 1]
-                    pvals = gene_results.iloc[:, 4]
+                    pvals = gene_results.iloc[:, 7]
                     for chr1, pos1, pval1 in zip(chr, pos, pvals):
                         f.write(chr1 + '\t' + str(pos1) + '\t' + str(pval1) + '\n')
 
