@@ -5,7 +5,7 @@ This script plots a QQ plot of observed vs expected -log10(p-values) for each ce
 analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
     --output-dir "str/associatr/bioheart_n990" --memory=32G \
     qqplotter.py \
-    --input-dir=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/raw_pval_extractor \
+    --input-dir=gs://cpg-bioheart-test/str/associatr//bioheart_n990/results/raw_pval_extractor \
     --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC \
     --title='associaTR BioHEART' --ylim=200
 
@@ -25,18 +25,23 @@ from cpg_utils.hail_batch import init_batch, output_path
 @click.option('--ylim', help='Y-axis limit for the QQ plot', default=335)
 @click.option('--input-dir', help='GCS path directory to the input gene-level p-value files')
 @click.option('--cell-types', help='Comma-separated list of cell types to plot')
+@click.option('--use-q-values', is_flag=True, help='Use q-values instead of p-values for the QQ plot')
 @click.command()
-def main(input_dir, cell_types, title, ylim):
+def main(input_dir, cell_types, title, ylim, use_q_values):
     init_batch()
     cell_type_list = cell_types.split(',')
 
     for cell_type in cell_type_list:
-        df = pd.read_csv(
-            f'{input_dir}/{cell_type}_gene_tests_raw_pvals.txt',
-            header=None,
-            names=['CHR', 'BP', 'raw_pval'],
-            sep='\t',
-        )
+        if use_q_values:
+            df = pd.read_csv(f'{input_dir}/{cell_type}_qval.tsv', sep='\t')
+            df['raw_pval'] = df['qval']
+        else:
+            df = pd.read_csv(
+                f'{input_dir}/{cell_type}_gene_tests_raw_pvals.txt',
+                header=None,
+                names=['CHR', 'BP', 'raw_pval'],
+                sep='\t',
+            )
         df = df.dropna()
 
         globals()[f'observed_log_pvals_{cell_type}'] = -np.log10(df['raw_pval'])
@@ -110,7 +115,10 @@ def main(input_dir, cell_types, title, ylim):
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = output_path('summary_plots/qq_plot.png', 'analysis')
+    if use_q_values:
+        gcs_output_path = output_path('summary_plots/qq_plot_qval.png', 'analysis')
+    else:
+        gcs_output_path = output_path('summary_plots/qq_plot_raw_pval.png', 'analysis')
     fig.tight_layout()
     fig.savefig('qqplot.png')
     hl.hadoop_copy('qqplot.png', gcs_output_path)
