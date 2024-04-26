@@ -11,7 +11,7 @@ analysis-runner --dataset "bioheart" --description "meta results runner" --acces
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM \
+    --cell-types=CD4_TCM \
     --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
 """
 import json
@@ -60,10 +60,10 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     # clean up dfs and merge
     ro.r(
-        f'r_df1 = r_df1 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene}, motif, period, ref_len)',
+        f'r_df1 = r_df1 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene}, motif, period, ref_len,n_samples_tested, `regression_R^2`, allele_frequency)',
     )
     ro.r(
-        f'r_df2 = r_df2 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene}, motif, period, ref_len)',
+        f'r_df2 = r_df2 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene},motif, period, ref_len,n_samples_tested, `regression_R^2`, allele_frequency)',
     )
     ro.r(f'r_df1 = r_df1 %>% rename(coeff_1 =coeff_{cell_type}_{chr}_{gene}, se_1 =se_{cell_type}_{chr}_{gene}  )')
     ro.r(f'r_df2 = r_df2 %>% rename(coeff_2 =coeff_{cell_type}_{chr}_{gene}, se_2 =se_{cell_type}_{chr}_{gene}  )')
@@ -75,12 +75,21 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     meta_df <- data.frame(
     chr = character(),
     pos = numeric(),
+    n_samples_tested_1 = numeric(),
+    n_samples_tested_2 = numeric(),
     coeff_meta = numeric(),
     se_meta = numeric(),
     pval_q_meta = numeric(),
     pval_meta = numeric(),
     lowerCI_meta = numeric(),
-    upperCI_meta = numeric()
+    upperCI_meta = numeric(),
+    r2_1 = numeric(),
+    r2_2 = numeric(),
+    motif = character(),
+    period = numeric(),
+    ref_len = numeric(),
+    allele_frequency_1 = numeric(),
+    allele_frequency_2 = numeric()
     )
     ''',
     )
@@ -109,12 +118,21 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     new_entry = data.frame(
         chr = df[i, "chrom"],
         pos = df[i, "pos"],
+        n_samples_tested_1 = df[i, "n_samples_tested.x"],
+        n_samples_tested_2 = df[i, "n_samples_tested.y"],
         coeff_meta = m.gen$TE.random,
         se_meta = m.gen$seTE.random,
         pval_q_meta = m.gen$pval.Q,
         pval_meta = m.gen$pval.random,
         lowerCI_meta = m.gen$lower.random,
-        upperCI_meta = m.gen$upper.random
+        upperCI_meta = m.gen$upper.random,
+        r2_1 = df[i, "regression_R^2.x"],
+        r2_2 = df[i, "regression_R^2.y"],
+        motif = df[i, "motif"],
+        period = df[i, "period"],
+        ref_len = df[i, "ref_len"],
+        allele_frequency_1 = df[i, "allele_frequency.x"],
+        allele_frequency_2 = df[i, "allele_frequency.y"]
     )
 
     meta_df = rbind(meta_df, new_entry)
