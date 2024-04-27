@@ -49,7 +49,7 @@ def main(input_dir, cell_types, chromosomes):
                     gene_name = str(gene_file).split('/')[-1].split('_')[0]
                     pvals = gene_results.iloc[:, 5]
                     for chr1, pos1, pval1 in zip(chr, pos, pvals):
-                        f.write(chr1 + '\t' + str(pos1) + '\t' + gene_name + '\t'+ str(pval1) + '\n')
+                        f.write(chr1 + '\t' + str(pos1) + '\t' + gene_name + '\t' + str(pval1) + '\n')
 
 
 if __name__ == '__main__':
