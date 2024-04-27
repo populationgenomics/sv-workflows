@@ -9,7 +9,7 @@ The attributes of the locus with the lowest raw p-value are also stored in the T
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results" \
-    run_gene_level_pval.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
+    run_gene_level_pvals_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
     --cell-types=CD4_TCM \
     --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --acat
 """
