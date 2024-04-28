@@ -10,7 +10,7 @@ Outputs a TSV file with the meta-analysis results for each gene.
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/tob_n1055_and_bioheart_n990/DL_random_model" \
     --memory='4G' \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
+    meta_runner_cancelled_jobs.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/v1 \
     --troubleshoot-file=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/meta_cancelled_jobs.csv
 
@@ -175,7 +175,7 @@ def main(results_dir_1, results_dir_2, troubleshoot_file, max_parallel_jobs):
         _dependent_jobs.append(job)
 
     # read in troubleshoot file path
-    troubleshoot_genes = pd.read_csv(troubleshoot_file, sep='\t')
+    troubleshoot_genes = pd.read_csv(troubleshoot_file, sep=',')
     for index, row in troubleshoot_genes.iterrows():
         gene = row['gene']
         cell_type = row['type']
