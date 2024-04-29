@@ -174,7 +174,7 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
         )
         with to_path(gcs_output).open('w') as f:
             f.write(
-                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\pval_q\pval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1tallele_freq_2\n',
+                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\tpval_q\tpval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
             )
             f.write(f'{gene_name}\t{pval}\t')
             f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
@@ -201,7 +201,7 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
         )
         with to_path(gcs_output).open('w') as f:
             f.write(
-                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\pval_q\pval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1tallele_freq_2\n',
+                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\tpval_q\tpval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
             )
             f.write(f'{gene_name}\t{pval}\t')
             f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
