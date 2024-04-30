@@ -37,9 +37,9 @@ def qc_filter(mt_path, version):
     Applies QC filters to the input MT
 
     """
-    from cpg_utils.hail_batch import init_batch,output_path
     import hail as hl
 
+    from cpg_utils.hail_batch import init_batch, output_path
 
     init_batch(worker_memory='highmem')
 
@@ -153,7 +153,9 @@ def qc_filter(mt_path, version):
     # create DS entry field (summed repeat length across both alleles); set to mode*2 if GT is missing
     mt = mt.annotate_entries(
         DS=hl.if_else(
-            hl.is_defined(mt.GT), mt.allele_1_rep_length + mt.allele_2_rep_length, mt.aggregated_info.mode_allele * 2,
+            hl.is_defined(mt.GT),
+            mt.allele_1_rep_length + mt.allele_2_rep_length,
+            mt.aggregated_info.mode_allele * 2,
         ),
     )
 
