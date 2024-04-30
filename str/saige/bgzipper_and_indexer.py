@@ -9,7 +9,7 @@ Input MT should be the output of qc_filters_saige.py
     --description "Hail QC for SAIGE-QTL" \
     --access-level "test" \
     --output-dir "str/saige-qtl/input_files" \
-    qc_filters_saige.py --vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
+    bgzipper_and_indexer.py --vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --version=v1-chr-specific
 
 """
