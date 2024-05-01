@@ -5,7 +5,7 @@ This Hail Query script prints the dimensions of a VDS
     --description "mt_extractor" \
     --access-level "test" \
     --output-dir "str/polymorphic_run/mt/v1" \
-    mt_extractor.py --file-path=gs://cpg-bioheart-test/vds/bioheart1-0.vds
+    vds_counter.py --file-path=gs://cpg-bioheart-test/vds/bioheart1-0.vds
 
 """
 
