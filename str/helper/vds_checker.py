@@ -54,7 +54,7 @@ def main(tenk10k_filepath, bioheart_filepath):
     print(f' BioHEART dense_mt data dimensions: {bioheart_dense.count()}')
 
     # compare vds represenations
-    print(filtered_tenk10k_vds.variant_data._same(bioheart_vds.variant_data))
+    print(f'Variant data VDS same? {filtered_tenk10k_vds.variant_data._same(bioheart_vds.variant_data)}')
 
     # compare dense_mt's
     print(filtered_tenk10k_dense._same(bioheart_dense))
