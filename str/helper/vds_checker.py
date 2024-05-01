@@ -57,7 +57,7 @@ def main(tenk10k_filepath, bioheart_filepath):
     print(f'Variant data VDS same? {filtered_tenk10k_vds.variant_data._same(bioheart_vds.variant_data)}')
 
     # compare dense_mt's
-    print(filtered_tenk10k_dense._same(bioheart_dense))
+    print(f'Dense Matrix Tables same? {filtered_tenk10k_dense._same(bioheart_dense)}')
 
 
 if __name__ == '__main__':
