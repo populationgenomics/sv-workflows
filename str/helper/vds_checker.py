@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-This Hail Query script prints the dimensions of a VDS
+This Hail Query script checks subsetting consistency between multi-cohort VDS and single-cohort VDS.
  analysis-runner --dataset "bioheart" \
     --description "mt_extractor" \
-    --access-level "test" \
-    --output-dir "str/polymorphic_run/mt/v1" \
-    vds_counter.py --file-path=gs://cpg-bioheart-test/vds/bioheart1-0.vds
+    --access-level "full" \
+    --output-dir "str/" \
+    vds_checker.py --tenk10k-filepath=gs://cpg-bioheart-main/vds/tenk10k1-0.vds --bioheart-filepath=gs://cpg-bioheart-main/vds/bioheart1-0.vds
 
 """
 
