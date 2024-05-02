@@ -44,6 +44,8 @@ def main(tenk10k_filepath, bioheart_filepath):
     print(f' VDS variant data dimensions: {bioheart_variant_data_mt.count()}')
 
     bioheart_only_sgids = bioheart_vds.variant_data.s.collect()
+    # randomly sample 15 IDs
+    bioheart_sampled_ids = random.sample(bioheart_only_sgids, k=num_samples)
     # filter to just test subset
     filtered_tenk10k_vds = hl.vds.filter_samples(tenk10k_vds, bioheart_only_sgids)
 
