@@ -57,7 +57,7 @@ def main(tenk10k_filepath, bioheart_filepath, num_samples):
 
     # densify both
     filtered_tenk10k_dense = hl.vds.to_dense_mt(filtered_tenk10k_vds)
-    bioheart_dense = hl.vds.to_dense_mt(bioheart_vds)
+    bioheart_dense = hl.vds.to_dense_mt(filtered_bioheart_vds)
     print(f' Filtered tenk10K dense_mt data dimensions: {filtered_tenk10k_dense.count()}')
     print(f' BioHEART dense_mt data dimensions: {bioheart_dense.count()}')
 
