@@ -30,7 +30,7 @@ from cpg_utils.hail_batch import init_batch
     default=15
 )
 @click.command()
-def main(tenk10k_filepath, bioheart_filepath):
+def main(tenk10k_filepath, bioheart_filepath, num_samples):
     """Check if subsetting VDS is the same as producing VDS from scratch using only subsetted samples"""
 
     init_batch(worker_memory='highmem')
