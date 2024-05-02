@@ -5,12 +5,14 @@ This Hail Query script checks subsetting consistency between multi-cohort VDS an
     --description "mt_extractor" \
     --access-level "full" \
     --output-dir "str/" \
-    vds_checker.py --tenk10k-filepath=gs://cpg-bioheart-main/vds/tenk10k1-0.vds --bioheart-filepath=gs://cpg-bioheart-main/vds/bioheart1-0.vds
+    vds_checker.py --tenk10k-filepath=gs://cpg-bioheart-main/vds/tenk10k1-0.vds --bioheart-filepath=gs://cpg-bioheart-main/vds/bioheart1-0.vds --num-samples=15
 
 """
 
-import click
 import random
+
+import click
+
 import hail as hl
 
 from cpg_utils.hail_batch import init_batch
@@ -27,7 +29,7 @@ from cpg_utils.hail_batch import init_batch
 @click.option(
     '--num-samples',
     help='Number of samples randomly selected to compare ',
-    default=15
+    default=15,
 )
 @click.command()
 def main(tenk10k_filepath, bioheart_filepath, num_samples):
