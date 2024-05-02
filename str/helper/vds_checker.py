@@ -24,6 +24,11 @@ from cpg_utils.hail_batch import init_batch
     '--bioheart-filepath',
     help='GCS file path to VDS.',
 )
+@click.option(
+    '--num-samples',
+    help='Number of samples randomly selected to compare ',
+    default=15
+)
 @click.command()
 def main(tenk10k_filepath, bioheart_filepath):
     """Check if subsetting VDS is the same as producing VDS from scratch using only subsetted samples"""
