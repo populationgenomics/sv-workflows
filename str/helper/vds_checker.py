@@ -47,7 +47,8 @@ def main(tenk10k_filepath, bioheart_filepath):
     # randomly sample 15 IDs
     bioheart_sampled_ids = random.sample(bioheart_only_sgids, k=num_samples)
     # filter to just test subset
-    filtered_tenk10k_vds = hl.vds.filter_samples(tenk10k_vds, bioheart_only_sgids)
+    filtered_tenk10k_vds = hl.vds.filter_samples(tenk10k_vds, bioheart_sampled_ids)
+    filtered_bioheart_vds = hl.vds.filter_samples(bioheart_vds, bioheart_sampled_ids)
 
     # densify both
     filtered_tenk10k_dense = hl.vds.to_dense_mt(filtered_tenk10k_vds)
