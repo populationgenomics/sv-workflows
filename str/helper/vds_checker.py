@@ -10,7 +10,7 @@ This Hail Query script checks subsetting consistency between multi-cohort VDS an
 """
 
 import click
-
+import random
 import hail as hl
 
 from cpg_utils.hail_batch import init_batch
