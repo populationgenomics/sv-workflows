@@ -19,7 +19,7 @@ analysis-runner --dataset "bioheart" \
 
 import click
 import pandas as pd
-from cyVCF2 import VCF
+from cyvcf2 import VCF
 
 from cpg_utils import to_path
 from cpg_utils.config import output_path
