@@ -108,7 +108,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 )
 @click.option(
     '--output-file',
-    help='GCS file path to output CSV file.',
+    help='Output file name with .csv.',
     type=str,
 )
 @click.command()
