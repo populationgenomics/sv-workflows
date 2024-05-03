@@ -113,7 +113,8 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 )
 @click.command()
 def main(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_file: str):
-    ld_parser(snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
+    chr, pos = str_locus.split(':')
+    ld_parser(snp_vcf_path, str_vcf_path, str_locus, window, output_path(f'{chr}_{pos}/{output_file}', 'analysis'))
 
 
 if __name__ == '__main__':
