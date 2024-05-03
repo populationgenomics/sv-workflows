@@ -102,10 +102,11 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 )
 @click.command()
 def main(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_file: str):
-    b = get_batch('Calculate LD between STR and SNPs')
-    ld_job = b.new_python_job(name='LD calculation')
-    ld_job.call(ld_parser, snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
-    b.run(wait=False)
+    #b = get_batch('Calculate LD between STR and SNPs')
+    #l#d_job = b.new_python_job(name='LD calculation')
+    #ld_job.call(ld_parser, snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
+    #b.run(wait=False)
+    ld_parser(snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
 
 
 if __name__ == '__main__':
