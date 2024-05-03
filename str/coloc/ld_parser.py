@@ -8,12 +8,12 @@ Outputs the locus-level LD results as a TSV file.
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
-    --cpu=4 \
+    --cpu=2 \
     --output-dir "str/ld" \
-    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr22_common_variants.vcf.bgz \
-    --str-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr22_common_variants.vcf.bgz \
-    --str-locus=22:10510354 \
-    --window=22:10510212-10514502 \
+    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr20_common_variants.vcf.bgz \
+    --str-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr20_common_variants.vcf.bgz \
+    --str-locus=20:61706 \
+    --window=20:61083-61581 \
     --output-file=ld_results.csv
 
 """
@@ -48,7 +48,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     print('Reading SNP VCF with VCF()')
 
     print('Starting to subset VCF for window...')
-    for variant in vcf:
+    for variant in vcf(window):
         geno = variant.gt_types  # extracts GTs as a numpy array
         locus = variant.CHROM + ':' + str(variant.POS)
         df_to_append = pd.DataFrame(geno, columns=[locus])  # creates a temp df to store the GTs for one locus
@@ -67,12 +67,10 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 
     # cyVCF2 reads the STR VCF
     str_vcf = VCF(local_str_file)
-    for variant in str_vcf:
-        if variant.CHROM + ':' + str(variant.POS) == str_locus:
-            str_geno = variant.gt_types
-            target_data = {'individual': str_vcf.samples, str_locus: str_geno}
-            target_df = pd.DataFrame(target_data)
-            break
+    for variant in str_vcf(str_locus):
+        str_geno = variant.gt_types
+        target_data = {'individual': str_vcf.samples, str_locus: str_geno}
+        target_df = pd.DataFrame(target_data)
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
