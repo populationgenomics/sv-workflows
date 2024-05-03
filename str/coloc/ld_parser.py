@@ -8,6 +8,7 @@ Outputs the locus-level LD results as a TSV file.
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
+    --cpu=4 \
     --output-dir "str/ld" \
     ld_parser.py --snp-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr22_common_variants.vcf.bgz \
     --str-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr22_common_variants.vcf.bgz \
@@ -34,13 +35,19 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     gcp_file = to_path(snp_vcf_path)
     gcp_file_index = to_path(snp_vcf_path + '.csi')
     gcp_file.copy(local_file)
+    print('Copied SNP VCF to local file')
     gcp_file_index.copy(local_file + '.csi')
+    print('Copied SNP VCF index to local file')
 
     # create empty DF to store the relevant GTs (SNPs)
     df = pd.DataFrame(columns=['individual'])
+    print('Created empty dataframe')
 
     # cyVCF2 reads the SNP VCF
     vcf = VCF(local_file)
+    print('Reading SNP VCF with VCF()')
+
+    print('Starting to subset VCF for window...')
     for variant in vcf(window):
         geno = variant.gt_types  # extracts GTs as a numpy array
         locus = variant.CHROM + ':' + str(variant.POS)
@@ -48,6 +55,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 
         # concatenate results to the main df
         df = pd.concat([df, df_to_append], axis=1)
+    print("Finished subsetting VCF for window")
 
     # extract GTs for the one STR
     # start by copying STR VCF to local
