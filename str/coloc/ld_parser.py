@@ -74,6 +74,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
+    merged_df.to_csv(output_path+'.merged', index=False)
 
     # calculate pairwise correlation of every SNP locus with target STR locus
     correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[str_locus])
