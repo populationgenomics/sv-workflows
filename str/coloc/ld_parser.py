@@ -30,7 +30,9 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     # copy SNP VCF local because cyVCF2 can only read from a local file
     local_file = 'local.vcf.bgz'
     gcp_file = to_path(snp_vcf_path)
+    gcp_file_index = to_path(snp_vcf_path + '.csi')
     gcp_file.copy(local_file)
+    gcp_file_index.copy(local_file + '.csi')
 
     # create empty DF to store the relevant GTs (SNPs)
     df = pd.DataFrame(columns=['individual'])
@@ -49,7 +51,9 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     # start by copying STR VCF to local
     local_str_file = 'local_str.vcf.bgz'
     gcp_str_file = to_path(str_vcf_path)
+    gcp_str_file_index = to_path(str_vcf_path + '.csi')
     gcp_str_file.copy(local_str_file)
+    gcp_str_file_index.copy(local_str_file + '.csi')
 
     # cyVCF2 reads the STR VCF
     str_vcf = VCF(local_str_file)
