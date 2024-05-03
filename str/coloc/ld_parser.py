@@ -45,6 +45,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 
     # cyVCF2 reads the SNP VCF
     vcf = VCF(local_file)
+    df['individual'] = vcf.samples
     print('Reading SNP VCF with VCF()')
 
     print('Starting to subset VCF for window...')
