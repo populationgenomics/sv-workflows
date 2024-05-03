@@ -48,7 +48,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     print('Reading SNP VCF with VCF()')
 
     print('Starting to subset VCF for window...')
-    for variant in vcf(window):
+    for variant in vcf:
         geno = variant.gt_types  # extracts GTs as a numpy array
         locus = variant.CHROM + ':' + str(variant.POS)
         df_to_append = pd.DataFrame(geno, columns=[locus])  # creates a temp df to store the GTs for one locus
@@ -67,10 +67,12 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 
     # cyVCF2 reads the STR VCF
     str_vcf = VCF(local_str_file)
-    for variant in str_vcf(str_locus):
-        str_geno = variant.gt_types
-        target_data = {'individual': str_vcf.samples, str_locus: str_geno}
-        target_df = pd.DataFrame(target_data)
+    for variant in str_vcf:
+        if variant.CHROM + ':' + str(variant.POS) == str_locus:
+            str_geno = variant.gt_types
+            target_data = {'individual': str_vcf.samples, str_locus: str_geno}
+            target_df = pd.DataFrame(target_data)
+            break
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
