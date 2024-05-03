@@ -18,15 +18,17 @@ analysis-runner --dataset "bioheart" \
 """
 
 import click
-import pandas as pd
-from cyvcf2 import VCF
 
-from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
 
 
 def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_path: str):
+
+    import pandas as pd
+    from cyvcf2 import VCF
+    from cpg_utils import to_path
+
     # copy SNP VCF local because cyVCF2 can only read from a local file
     local_file = 'local.vcf.bgz'
     gcp_file = to_path(snp_vcf_path)
