@@ -12,7 +12,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/ld/test-run" \
     ld_parser.py --snp-vcf-path=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0/chr20_common_variants.vcf.bgz \
     --str-vcf-path=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific/hail_filtered_chr22.vcf.bgz \
-    --str-locus=22:10515024 \
+    --str-locus=22:10515024-10515025 \
     --window=22:10510212-10511391 \
     --output-file=ld_results.csv
 
@@ -71,6 +71,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     # cyVCF2 reads the STR VCF
     str_vcf = VCF(local_str_file)
     for variant in str_vcf(str_locus):
+        print(f'Captured STR with POS:{variant.POS}')
         ds = variant.format('DS')
         ds_list = []
         for i in range(len(ds)):
