@@ -21,13 +21,12 @@ analysis-runner --dataset "bioheart" \
 import click
 
 from cpg_utils.config import output_path
-from cpg_utils.hail_batch import get_batch
 
 
 def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_path: str):
-
     import pandas as pd
     from cyvcf2 import VCF
+
     from cpg_utils import to_path
 
     # copy SNP VCF local because cyVCF2 can only read from a local file
@@ -69,15 +68,15 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     # cyVCF2 reads the STR VCF
     str_vcf = VCF(local_str_file)
     for variant in str_vcf(str_locus):
-        str_geno = variant.gt_types
-        target_data = {'individual': str_vcf.samples, str_locus: str_geno}
+        ds = variant.foramt('DS')
+        ds_list = []
+        for i in range(len(ds)):
+            ds_list.append(ds[i][0])
+        target_data = {'individual': str_vcf.samples, str_locus: ds_list}
         target_df = pd.DataFrame(target_data)
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
-    df.to_csv(output_path+'.df', index=False)
-    target_df.to_csv(output_path+'.target', index=False)
-    merged_df.to_csv(output_path+'.merged', index=False)
 
     # calculate pairwise correlation of every SNP locus with target STR locus
     correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[str_locus])
@@ -114,10 +113,6 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 )
 @click.command()
 def main(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_file: str):
-    #b = get_batch('Calculate LD between STR and SNPs')
-    #l#d_job = b.new_python_job(name='LD calculation')
-    #ld_job.call(ld_parser, snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
-    #b.run(wait=False)
     ld_parser(snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
 
 
