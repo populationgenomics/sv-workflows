@@ -25,9 +25,9 @@ def main(input_h5ad_file_path: str, version: str):
     expression_h5ad_path = to_path(input_h5ad_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path, backed = 'r')
 
-    output_gcs = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_obs.csv'
+    output_gcs = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv'
     # write to CSV
-    adata.obs.to_csv(output_gcs)
+    adata.var.to_csv(output_gcs)
 
 
 if __name__ == '__main__':
