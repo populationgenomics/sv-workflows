@@ -33,7 +33,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     from cpg_utils.hail_batch import output_path
 
     ro.r('library(coloc)')
-    ro.r('library(todyverse)')
+    ro.r('library(tidyverse)')
 
     with (ro.default_converter + pandas2ri.converter).context():
         gwas_r = ro.conversion.get_conversion().py2rpy(gwas)
