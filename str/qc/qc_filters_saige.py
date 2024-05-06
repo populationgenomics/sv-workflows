@@ -57,7 +57,7 @@ def qc_filter(mt_path, version):
 
 
     # create DS entry field - random 0,1,2 (for dummy testing)
-    mt = mt.annotate_rows(DS=random.uniform(0, 2))
+    mt = mt.annotate_entries(DS=random.uniform(0, 2))
 
 
     # wrangle mt, prepare for export_vcf():
