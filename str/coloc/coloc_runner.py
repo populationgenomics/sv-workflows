@@ -49,6 +49,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     gwas_r$snp = paste('s', gwas_r$BP, sep = '')
 
     gwas_r = gwas_r %>% select(beta, varbeta, position,snp,MAF)
+    gwas_r = gwas_r %>% distinct(position, .keep_all = TRUE)
     gwas_r = gwas_r%>% as.list()
     gwas_r$type = 'cc'
     gwas_r$N = 34652
