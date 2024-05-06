@@ -138,6 +138,9 @@ def main(snp_cis_dir, egenes, celltype):
             hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
             hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
             hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
+            if hg38_map_chr_start_end.empty:
+                print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                continue
             print('Extracted SNP GWAS data for ' + gene)
 
             # run coloc
