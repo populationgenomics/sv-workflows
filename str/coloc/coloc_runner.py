@@ -108,6 +108,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/snp_cis',
 )
 @click.option('--celltype', help='Cell type for which the eGenes were identified', default='CD4_TCM')
+@click.command()
 def main(snp_cis_dir, egenes, celltype):
     # read in gene annotation file
     var_table = pd.read_csv(
