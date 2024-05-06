@@ -95,7 +95,7 @@ def qc_filter(mt_path, version):
     mt = mt.annotate_rows(str_array_field=["A", "C"])
     mt = mt.key_rows_by(locus=mt['locus'], alleles=mt['str_array_field'])
 
-    for chr_index in range(22):  # iterate over chr1-22
+    for chr_index in [21]:  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         hl.export_vcf(
