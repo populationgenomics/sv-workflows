@@ -7,13 +7,13 @@ Outputs the locus-level LD results as a TSV file.
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "test" \
-    --cpu=2 \
-    --output-dir "str/ld" \
-    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr20_common_variants.vcf.bgz \
-    --str-vcf-path=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0/chr20_common_variants.vcf.bgz \
-    --str-locus=20:61706 \
-    --window=20:61083-61581 \
+    --access-level "full" \
+    --cpu=4 \
+    --output-dir "str/ld/test-run" \
+    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0/chr20_common_variants.vcf.bgz \
+    --str-vcf-path=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific/hail_filtered_chr22.vcf.bgz \
+    --str-locus=22:10515024-10515025 \
+    --window=22:10510212-10511391 \
     --output-file=ld_results.csv
 
 """
@@ -63,12 +63,16 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     gcp_str_file = to_path(str_vcf_path)
     gcp_str_file_index = to_path(str_vcf_path + '.csi')
     gcp_str_file.copy(local_str_file)
+    print('Copied STR VCF to local file')
+
     gcp_str_file_index.copy(local_str_file + '.csi')
+    print('Copied STR VCF index to local file')
 
     # cyVCF2 reads the STR VCF
     str_vcf = VCF(local_str_file)
     for variant in str_vcf(str_locus):
-        ds = variant.foramt('DS')
+        print(f'Captured STR with POS:{variant.POS}')
+        ds = variant.format('DS')
         ds_list = []
         for i in range(len(ds)):
             ds_list.append(ds[i][0])
@@ -108,12 +112,13 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 )
 @click.option(
     '--output-file',
-    help='GCS file path to output CSV file.',
+    help='Output file name with .csv.',
     type=str,
 )
 @click.command()
 def main(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_file: str):
-    ld_parser(snp_vcf_path, str_vcf_path, str_locus, window, output_path(output_file))
+    chr, pos = str_locus.split(':')
+    ld_parser(snp_vcf_path, str_vcf_path, str_locus, window, output_path(f'{chr}_{pos}/{output_file}', 'analysis'))
 
 
 if __name__ == '__main__':
