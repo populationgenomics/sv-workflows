@@ -42,7 +42,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
         '''
     gwas_r$MAF = (gwas_r$FRQ_A_12882*12882 + gwas_r$FRQ_U_21770*21770)/(12882+21770)
     gwas_r$pvalues = gwas_r$P
-    gwas_r$or = ggwas_rwas$OR
+    gwas_r$or = gwas_r$OR
     gwas_r$beta = log(gwas_r$or)
     gwas_r$varbeta = (gwas_r$SE/gwas$or)**2
     gwas_r$position = gwas_r$BP
