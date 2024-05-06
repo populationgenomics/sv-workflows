@@ -44,7 +44,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     gwas_r$pvalues = gwas_r$P
     gwas_r$or = gwas_r$OR
     gwas_r$beta = log(gwas_r$or)
-    gwas_r$varbeta = (gwas_r$SE/gwas$or)**2
+    gwas_r$varbeta = (gwas_r$SE/gwas_r$or)**2
     gwas_r$position = gwas_r$BP
     gwas_r$snp = paste('s', gwas_r$BP, sep = '')
 
