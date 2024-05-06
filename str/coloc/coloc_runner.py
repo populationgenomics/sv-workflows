@@ -82,7 +82,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
                     dataset2=eqtl_r)
 
     p_df <- data.frame(gene, my.res$summary[6])
-    rownames(p_df) <- c('gene', 'PP.H4.abf')
+    names(p_df) <- c('gene', 'PP.H4.abf')
     '''
     )
 
