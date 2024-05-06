@@ -20,11 +20,12 @@ Applied filters:
     --access-level "test" \
     --output-dir "str/saige-qtl/input_files" \
     qc_filters_saige.py --mt-path=gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
-    --version=v1-chr-specific
+    --version=v2-dummy
 
 """
 
 import click
+import random
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch
@@ -54,110 +55,10 @@ def qc_filter(mt_path, version):
     # set sample level call rate >=0.99
     mt = mt.filter_cols(mt.sample_qc.call_rate >= 0.99)
 
-    # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
-    condition_allele_1 = (mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)
-    mt = mt.annotate_entries(
-        GT=hl.if_else(
-            condition_allele_1,
-            hl.missing('call'),
-            mt.GT,
-        ),
-        ADFL=hl.if_else(
-            condition_allele_1,
-            hl.missing('str'),
-            mt.ADFL,
-        ),
-        ADIR=hl.if_else(
-            condition_allele_1,
-            hl.missing('str'),
-            mt.ADIR,
-        ),
-        ADSP=hl.if_else(
-            condition_allele_1,
-            hl.missing('str'),
-            mt.ADSP,
-        ),
-        LC=hl.if_else(
-            condition_allele_1,
-            hl.missing('float64'),
-            mt.LC,
-        ),
-        REPCI=hl.if_else(
-            condition_allele_1,
-            hl.missing('str'),
-            mt.REPCI,
-        ),
-        REPCN=hl.if_else(
-            condition_allele_1,
-            hl.missing('str'),
-            mt.REPCN,
-        ),
-        SO=hl.if_else(
-            condition_allele_1,
-            hl.missing('str'),
-            mt.SO,
-        ),
-    )
-    condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
 
-    mt = mt.annotate_entries(
-        GT=hl.if_else(
-            condition_allele_2,
-            hl.missing('call'),
-            mt.GT,
-        ),
-        ADFL=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.ADFL,
-        ),
-        ADIR=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.ADIR,
-        ),
-        ADSP=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.ADSP,
-        ),
-        LC=hl.if_else(
-            condition_allele_2,
-            hl.missing('float64'),
-            mt.LC,
-        ),
-        REPCI=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.REPCI,
-        ),
-        REPCN=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.REPCN,
-        ),
-        SO=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.SO,
-        ),
-    )
+    # create DS entry field - random 0,1,2 (for dummy testing)
+    mt = mt.annotate_rows(DS=random.uniform(0, 2))
 
-    # calculate proportion of GTs that are defined per locus (after applying call-level filters, variant_qc.call_rate is not accurate anymore)
-    mt = mt.annotate_rows(
-        prop_GT_exists=hl.agg.count_where(hl.is_defined(mt.GT)) / (mt.variant_qc.n_called + mt.variant_qc.n_not_called),
-    )
-    # re-enforce locus level call rate >=0.9
-    mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
-
-    # create DS entry field (summed repeat length across both alleles); set to mode*2 if GT is missing
-    mt = mt.annotate_entries(
-        DS=hl.if_else(
-            hl.is_defined(mt.GT),
-            mt.allele_1_rep_length + mt.allele_2_rep_length,
-            mt.aggregated_info.mode_allele * 2,
-        ),
-    )
 
     # wrangle mt, prepare for export_vcf():
 
