@@ -144,7 +144,7 @@ def main(snp_cis_dir, egenes, celltype):
             coloc_job = b.new_python_job(
                 f'Coloc for {gene}: {celltype}',
             )
-            coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:latest')
+            coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
             coloc_job.call(
                 coloc_runner, hg38_map_chr_start_end, snp_cis_dir + '/' + celltype + '_' + gene + '_cis', celltype
             )
