@@ -115,7 +115,7 @@ def main(snp_cis_dir, egenes, celltype):
         'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv'
     )
     hg38_map = pd.read_csv(
-        'hg38.EUR.IBD.gwas_info03_filtered.assoc',
+        'gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc',
         sep='\t',
         header=None,
         names=['CHR', 'BP', 'END', 'FRQ_A_12882', 'FRQ_U_21770', 'OR', 'SE', 'P'],
