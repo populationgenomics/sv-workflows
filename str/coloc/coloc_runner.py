@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr" \
     coloc_runner.py --egenes "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/CD4_TCM_qval.tsv" \
-    --snp-cis-dir "gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v1" \
+    --snp-cis-dir "gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v2/output_files/output_files" \
     --celltype "CD4_TCM"
 
 
@@ -58,7 +58,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
      '''
     )
     eqtl = pd.read_csv(eqtl_file_path, sep='\t')
-    gene = eqtl_file_path.split('/')[-1].split('_')[1]
+    gene = eqtl_file_path.split('/')[-1].split('_')[2]
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     ro.globalenv['eqtl_r'] = eqtl_r
