@@ -9,7 +9,7 @@ Input MT should be the output of qc_filters_saige.py
     --description "Hail QC for SAIGE-QTL" \
     --access-level "test" \
     --output-dir "str/saige-qtl/input_files" \
-    bgzipper_and_indexer.py --vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific
+    bgzipper_and_indexer.py --vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v2-dummy
 
 """
 import logging
@@ -68,7 +68,7 @@ def main(vcf_dir):
     Runner to bgzip and tabix
     """
 
-    for chr_index in range(22):  # iterate over chr1-22
+    for chr_index in [21]:  # iterate over chr1-22
         vcf_path = f'{vcf_dir}/hail_filtered_chr{chr_index+1}.vcf.bgz'
         add_remove_chr_and_index_job(vcf_path)
 
