@@ -57,7 +57,11 @@ def qc_filter(mt_path, version):
 
 
     # create DS entry field - random 0,1,2 (for dummy testing)
-    mt = mt.annotate_entries(DS=random.uniform(0, 2))
+    # Define the condition to assign values to DS
+    condition = hl.cond(mt.allele_1_rep_length == mt.allele_2_rep_length, 0, 1)
+
+    # Annotate entries with DS based on the condition
+    mt = mt.annotate_entries(DS=condition)
 
 
     # wrangle mt, prepare for export_vcf():
