@@ -69,7 +69,7 @@ def main(vcf_dir):
     """
 
     for chr_index in range(22):  # iterate over chr1-22
-        vcf_path = f'{vcf_dir}/hail_filtered_chr{chr_index+1}.vcf'
+        vcf_path = f'{vcf_dir}/hail_filtered_chr{chr_index+1}.vcf.bgz'
         add_remove_chr_and_index_job(vcf_path)
 
     get_batch().run(wait=False)
