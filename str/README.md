@@ -21,6 +21,11 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
 - Prepare necessary inputs for associaTR: 1) covariates using `get_covariates.py` and 2) numpy objects containing the covariates and phenotypes (pseudobulked expression) using `get_cis_numpy_files.py`.
 - Annotate and apply QC filters to the STR genotypes matrix table using `qc/qc_annotator.py` and subsequently `qc/qc_filters_associatr.py`. The latter produces chromosome-specific VCFs for input into associaTR.
 - Run associaTR with `associatr_runner.py`
+- Optional: Meta-analysis runner
 - Perform multiple testing correction:
   - at the gene-level using ACAT correction with `run_acat.py`.
   - control for FDR using Storey q-values with `run_storey.py`.
+ 
+## eSTR analysis 
+- Colocalisation scripts
+- STR LD with colocalised loci
