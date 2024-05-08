@@ -29,4 +29,3 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
 ## eSTR analysis 
 - Colocalisation scripts: 1) `coloc_runner_{phenotype}.py` and 2) `coloc_results_parser.py` which consolidates the outputs from 1) into one file. 
 - If colocalisation was done using SNP data, then we check whether the lead eSTR associated with the colocalized locus is in LD with at least one SNP in the GWAS catalog using 1) `ld_runner.py` and 2) `ld_results_parser.py` which consoldiates the outputs from 1) into one file. 
-- STR LD with colocalised loci
