@@ -141,7 +141,7 @@ def main(snp_cis_dir, egenes, celltype):
             hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
             hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
             hg38_map_chr_start_end['locus'] = hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
-            hg38_map_chr_start_end[['locus']].to_csv(output_path('coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index = False)
+            hg38_map_chr_start_end[['locus']].to_csv(output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index = False)
             if hg38_map_chr_start_end.empty:
                 print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                 continue
