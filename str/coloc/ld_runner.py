@@ -100,6 +100,7 @@ def ld_parser(
             ds_list.append(ds[i][0])
         target_data = {'individual': str_vcf.samples, str_locus: ds_list}
         target_df = pd.DataFrame(target_data)
+        break # take the first STR locus
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
