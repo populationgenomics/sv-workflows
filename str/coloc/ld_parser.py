@@ -35,12 +35,18 @@ import ast
 import click
 import pandas as pd
 
-from cpg_utils.hail_batch import get_batch
 from cpg_utils.config import output_path
+from cpg_utils.hail_batch import get_batch
 
 
 def ld_parser(
-    snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_path: str, gwas_snp_path: str, gene: str,
+    snp_vcf_path: str,
+    str_vcf_path: str,
+    str_locus: str,
+    window: str,
+    output_path: str,
+    gwas_snp_path: str,
+    gene: str,
 ):
     import pandas as pd
     from cyvcf2 import VCF
@@ -117,7 +123,7 @@ def ld_parser(
 
     # find the SNP with the highest absolute correlation
     max_correlation_index = correlation_df['correlation'].abs().idxmax()
-    max_correlation_df = correlation_df[correlation_df['locus'] ==max_correlation_index]
+    max_correlation_df = correlation_df[correlation_df['locus'] == max_correlation_index]
 
     # add some attributes
     max_correlation_df['gene'] = gene
@@ -136,7 +142,6 @@ def ld_parser(
     help='GCS file dir to STR VCF files.',
     type=str,
 )
-
 @click.option('--coloc-dir', help='GCS file path to coloc results', type=str)
 @click.option('--phenotype', help='Phenotype to use for coloc', type=str)
 @click.option('--celltypes', help='Cell types to use for coloc', type=str)
@@ -172,9 +177,9 @@ def main(
         coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
 
         # obtain inputs for LD parsing for each entry in `coloc_results`:
-        #for index, row in coloc_results.iterrows():
-        for gene in ['ENSG00000196421']:# for testing
-            #gene = row['gene']
+        # for index, row in coloc_results.iterrows():
+        for gene in ['ENSG00000196421']:  # for testing
+            # gene = row['gene']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
@@ -186,15 +191,16 @@ def main(
             snp_window = f'{chr}:{start_snp_window}-{end_snp_window}'
             print('Obtained SNP window coordinates')
 
-
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
-            for estr in zip(ast.literal_eval(str_fdr_gene['chr'].iloc[0]), ast.literal_eval(str_fdr_gene['pos'].iloc[0])):
+            for estr in zip(
+                ast.literal_eval(str_fdr_gene['chr'].iloc[0]), ast.literal_eval(str_fdr_gene['pos'].iloc[0]),
+            ):
                 chr_num = estr[0][3:]
                 pos = estr[1]
                 end = str(int(pos) + 1)
                 str_locus = f'{chr_num}:{pos}-{end}'
-                #for testing only
+                # for testing only
                 str_locus = '22:10515024-10515025'
                 chr_num = '22'
                 print(f'Running LD for {gene} and {str_locus}')
@@ -207,13 +213,14 @@ def main(
                     f'LD calc for {gene} and STR: {str_locus}; {celltype}',
                 )
                 ld_job(
-                ld_parser,
+                    ld_parser,
                     snp_vcf_path,
                     str_vcf_path,
                     str_locus,
                     snp_window,
                     output_path(
-                        f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv', 'analysis',
+                        f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv',
+                        'analysis',
                     ),
                     gwas_snp_path,
                     gene,
