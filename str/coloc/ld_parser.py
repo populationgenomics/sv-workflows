@@ -7,13 +7,13 @@ Outputs the locus-level LD results as a TSV file.
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "full" \
+    --access-level "test" \
     --cpu=4 \
     --output-dir "str/ld/test-run" \
-    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0/chr20_common_variants.vcf.bgz \
+    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-test/str/dummy_snp_vcf/chr20_common_variants_renamed.vcf.bgz \
     --str-vcf-path=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific/hail_filtered_chr22.vcf.bgz \
     --str-locus=22:10515024-10515025 \
-    --window=22:10510212-10511391 \
+    --window=20:10000000-10511391 \
     --output-file=ld_results.csv
 
 """
@@ -55,6 +55,7 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
 
         # concatenate results to the main df
         df = pd.concat([df, df_to_append], axis=1)
+        df.to_csv(output_path+'snp', index=False)
     print("Finished subsetting VCF for window")
 
     # extract GTs for the one STR
@@ -78,9 +79,11 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
             ds_list.append(ds[i][0])
         target_data = {'individual': str_vcf.samples, str_locus: ds_list}
         target_df = pd.DataFrame(target_data)
+        target_df.to_csv(output_path+'str', index=False)
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
+    merged_df.to_csv(output_path+'merged', index=False)
 
     # calculate pairwise correlation of every SNP locus with target STR locus
     correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[str_locus])
