@@ -24,7 +24,7 @@ import pandas as pd
 from cpg_utils.config import output_path
 
 
-def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_path: str, gwas_snp_path: str):
+def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str, output_path: str, gwas_snp_path: str, gene:str):
     import pandas as pd
     from cyvcf2 import VCF
 
@@ -89,9 +89,25 @@ def ld_parser(snp_vcf_path: str, str_vcf_path: str, str_locus: str, window: str,
     # calculate pairwise correlation of every SNP locus with target STR locus
     correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[str_locus])
 
-    correlation_df = pd.DataFrame(correlation_series, columns=[f'{str_locus}_correlation'])
+
+    correlation_df = pd.DataFrame(correlation_series, columns=['correlation'])
     correlation_df['locus'] = correlation_df.index
-    correlation_df.to_csv(output_path, index=False)
+    # drop the STR locus from the list of SNPs (it will automatically have a correlation of 1)
+    correlation_df = correlation_df[correlation_df['locus'] != str_locus]
+
+    #keep only the SNPs that are in the GWAS catalog
+    gwas_snps = pd.read_csv(gwas_snp_path)
+    filtered_df = correlation_df[correlation_df['locus'].isin(gwas_snps['locus'])]
+
+    #find the SNP with the highest absolute correlation
+    max_correlation_index = filtered_df[f'correlation'].abs().idxmax()
+    max_correlation_df = filtered_df.loc[filtered_df.loc[[max_correlation_index]]]
+
+    # add some attributes
+    max_correlation_df['gene'] = gene
+    max_correlation_df['str_locus'] = str_locus
+
+    max_correlation_df.to_csv(output_path, index=False)
 
 
 @click.option(
