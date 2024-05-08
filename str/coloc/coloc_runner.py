@@ -94,7 +94,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
 
     # write to GCS
     pd_p4_df.to_csv(
-        f'{output_path(f"coloc/{celltype}/{gene}_100kb.tsv")}',
+        f'{output_path(f"coloc/ibd/{celltype}/{gene}_100kb.tsv")}',
         sep='\t',
         index=False,
     )
