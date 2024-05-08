@@ -100,6 +100,7 @@ def ld_parser(
             ds_list.append(ds[i][0])
         target_data = {'individual': str_vcf.samples, str_locus: ds_list}
         target_df = pd.DataFrame(target_data)
+        target_df.to_csv(f'{output_path}.target.{variant.POS}', index=False)
         break # take the first STR locus
 
     # merge the two dataframes
@@ -196,8 +197,8 @@ def main(
             ):
                 chr_num = estr[0][3:]
                 pos = estr[1]
-                #end = str(int(pos) + 1)
-                #str_locus = f'{chr_num}:{pos}-{end}'
+                end = str(int(pos) + 1)
+                str_locus = f'{chr_num}:{pos}-{end}'
                 str_locus=f'{chr_num}:{pos}'
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
