@@ -196,8 +196,9 @@ def main(
             ):
                 chr_num = estr[0][3:]
                 pos = estr[1]
-                end = str(int(pos) + 1)
-                str_locus = f'{chr_num}:{pos}-{end}'
+                #end = str(int(pos) + 1)
+                #str_locus = f'{chr_num}:{pos}-{end}'
+                str_locus=f'{chr_num}:{pos}'
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
                 snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
