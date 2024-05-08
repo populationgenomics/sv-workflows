@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
 
 """
-This script calculates pairwise LD (correlation coefficient) between one STR locus and all SNPs in a specified window.
 
-Outputs the locus-level LD results as a TSV file.
+Assumes coloc_runner.py and coloc_results_parser.py have been run previously.
+
+This script calculates pairwise LD (correlation coefficient) between one STR locus and all SNPs in a colocalised locus.
+
+Workflow:
+1)Extract genes that have >50% posterior probability of a shared causal variant from coloc results.
+2) Extract the coordinates of the cis-window (gene +/- 100kB) for each gene using a gene annotation file.
+3) Extract the top STR locus (ie passed FDR 5% threshold) for each gene in 1). May be multiple STRs per gene (if tied for smallest ACAT-corrected p-value).
+4) Run LD parser() which:
+- Extracts GTs for all SNPs (from a chr-specific VCF) in the cis-window for a gene.
+- Extracts GTs for the specified STR locus associated with the gene.
+- Calculates pairwise correlation of every SNP locus with the target STR locus.
+- Save the SNP with the highest absolute correlation to a TSV file. Output to GCP
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
     --cpu=1 \
     --output-dir "str/ld/test-run" \
-    ld_parser.py --snp-vcf-path=gs://cpg-bioheart-test/str/dummy_snp_vcf/chr20_common_variants_renamed.vcf.bgz \
-    --str-vcf-path=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific/hail_filtered_chr22.vcf.bgz \
-    --output-file=ld_results.csv \
+    ld_parser.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
+    --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
     --phenotype=ibd \
     --celltypes=CD4_TCM
@@ -101,8 +111,8 @@ def ld_parser(
     correlation_df = correlation_df[correlation_df['locus'] != str_locus]
 
     # keep only the SNPs that are in the GWAS catalog
-    # gwas_snps = pd.read_csv(gwas_snp_path)
-    # correlation_df = correlation_df[correlation_df['locus'].isin(gwas_snps['locus'])]
+    gwas_snps = pd.read_csv(gwas_snp_path)
+    correlation_df = correlation_df[correlation_df['locus'].isin(gwas_snps['locus'])]
 
     # find the SNP with the highest absolute correlation
     max_correlation_index = correlation_df['correlation'].abs().idxmax()
@@ -116,20 +126,16 @@ def ld_parser(
 
 
 @click.option(
-    '--snp-vcf-path',
-    help='GCS file path to SNP VCF file.',
+    '--snp-vcf-dir',
+    help='GCS file dir to SNP VCF files.',
     type=str,
 )
 @click.option(
-    '--str-vcf-path',
-    help='GCS file path to STR VCF file.',
+    '--str-vcf-dir',
+    help='GCS file dir to STR VCF files.',
     type=str,
 )
-@click.option(
-    '--output-file',
-    help='Output file name with .csv.',
-    type=str,
-)
+
 @click.option('--coloc-dir', help='GCS file path to coloc results', type=str)
 @click.option('--phenotype', help='Phenotype to use for coloc', type=str)
 @click.option('--celltypes', help='Cell types to use for coloc', type=str)
@@ -145,9 +151,8 @@ def ld_parser(
 )
 @click.command()
 def main(
-    snp_vcf_path: str,
-    str_vcf_path: str,
-    output_file: str,
+    snp_vcf_dir: str,
+    str_vcf_dir: str,
     coloc_dir: str,
     phenotype: str,
     celltypes: str,
@@ -166,9 +171,9 @@ def main(
         coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
 
         # obtain inputs for LD parsing for each entry in `coloc_results`:
-        # for index, row in coloc_results.iterrows():
-        for gene in ['ENSG00000079691']:
-            # gene = row['gene']
+        #for index, row in coloc_results.iterrows():
+        for gene in ['ENSG00000196421']:# for testing
+            #gene = row['gene']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
@@ -178,25 +183,27 @@ def main(
             end_snp_window = float(gene_table['end'].astype(float)) + 100000  # +-100kB window around gene
             chr = gene_table['chr'].iloc[0][3:]
             snp_window = f'{chr}:{start_snp_window}-{end_snp_window}'
-            snp_window = '20:10500000-10511391'
+
 
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
             for estr in zip(ast.literal_eval(str_fdr_gene['chr'].iloc[0]), ast.literal_eval(str_fdr_gene['pos'].iloc[0])):
                 chr_num = estr[0][3:]
                 pos = estr[1]
-                end = int(pos) + 1
+                end = str(int(pos) + 1)
                 str_locus = f'{chr_num}:{pos}-{end}'
                 str_locus = '22:10515024-10515025'
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chr_num}_common_variants_renamed.vcf.bgz'
+                str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 ld_parser(
                     snp_vcf_path,
                     str_vcf_path,
                     str_locus,
                     snp_window,
                     output_path(
-                        f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}/{output_file}', 'analysis',
+                        f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv', 'analysis',
                     ),
                     gwas_snp_path,
                     gene,
