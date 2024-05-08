@@ -21,7 +21,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --cpu=1 \
     --output-dir "str/ld/test-run" \
-    ld_parser.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
+    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
     --phenotype=ibd \
@@ -63,7 +63,6 @@ def ld_parser(
 
     # create empty DF to store the relevant GTs (SNPs)
     df = pd.DataFrame(columns=['individual'])
-    print('Created empty dataframe')
 
     # cyVCF2 reads the SNP VCF
     vcf = VCF(local_file)
@@ -78,7 +77,6 @@ def ld_parser(
 
         # concatenate results to the main df
         df = pd.concat([df, df_to_append], axis=1)
-        df.to_csv(output_path + 'snp', index=False)
     print("Finished subsetting VCF for window")
 
     # extract GTs for the one STR
@@ -102,11 +100,9 @@ def ld_parser(
             ds_list.append(ds[i][0])
         target_data = {'individual': str_vcf.samples, str_locus: ds_list}
         target_df = pd.DataFrame(target_data)
-        target_df.to_csv(output_path + 'str', index=False)
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
-    merged_df.to_csv(output_path + 'merged', index=False)
 
     # calculate pairwise correlation of every SNP locus with target STR locus
     correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[str_locus])
