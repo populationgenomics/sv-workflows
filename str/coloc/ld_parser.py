@@ -35,6 +35,7 @@ import ast
 import click
 import pandas as pd
 
+from cpg_utils.hail_batch import get_batch
 from cpg_utils.config import output_path
 
 
@@ -183,6 +184,7 @@ def main(
             end_snp_window = float(gene_table['end'].astype(float)) + 100000  # +-100kB window around gene
             chr = gene_table['chr'].iloc[0][3:]
             snp_window = f'{chr}:{start_snp_window}-{end_snp_window}'
+            print('Obtained SNP window coordinates')
 
 
             # obtain top STR locus for the gene
@@ -192,12 +194,20 @@ def main(
                 pos = estr[1]
                 end = str(int(pos) + 1)
                 str_locus = f'{chr_num}:{pos}-{end}'
+                #for testing only
                 str_locus = '22:10515024-10515025'
+                chr_num = '22'
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
                 snp_vcf_path = f'{snp_vcf_dir}/chr{chr_num}_common_variants_renamed.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
-                ld_parser(
+                # run coloc
+                b = get_batch()
+                ld_job = b.new_python_job(
+                    f'LD calc for {gene} and STR: {str_locus}; {celltype}',
+                )
+                ld_job(
+                ld_parser,
                     snp_vcf_path,
                     str_vcf_path,
                     str_locus,
