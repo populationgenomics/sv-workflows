@@ -224,6 +224,7 @@ def main(
                     gwas_snp_path,
                     gene,
                 )
+            b.run(wait=False)
 
 
 if __name__ == '__main__':
