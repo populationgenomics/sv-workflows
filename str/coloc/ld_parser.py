@@ -106,7 +106,7 @@ def ld_parser(
 
     # find the SNP with the highest absolute correlation
     max_correlation_index = correlation_df['correlation'].abs().idxmax()
-    max_correlation_df = correlation_df.loc[correlation_df.loc[[max_correlation_index]]]
+    max_correlation_df = correlation_df[correlation_df['locus'] ==max_correlation_index]
 
     # add some attributes
     max_correlation_df['gene'] = gene
@@ -183,7 +183,7 @@ def main(
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
             for estr in zip(ast.literal_eval(str_fdr_gene['chr'].iloc[0]), ast.literal_eval(str_fdr_gene['pos'].iloc[0])):
-                chr_num = estr[0][3:0]
+                chr_num = estr[0][3:]
                 pos = estr[1]
                 end = int(pos) + 1
                 str_locus = f'{chr_num}:{pos}-{end}'
