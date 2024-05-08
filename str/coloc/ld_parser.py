@@ -160,7 +160,7 @@ def main(
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
-        coloc_result_file = f'{coloc_dir}/{phenotype}/{celltype}_coloc_results.csv'
+        coloc_result_file = f'{coloc_dir}/{phenotype}/{celltype}/gene_summary_result.csv'
         coloc_results = pd.read_csv(coloc_result_file)
         # subset results for posterior probability of a shared causal variant >=0.5
         coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
