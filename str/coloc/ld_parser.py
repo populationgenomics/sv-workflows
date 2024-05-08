@@ -212,8 +212,7 @@ def main(
                 ld_job = b.new_python_job(
                     f'LD calc for {gene} and STR: {str_locus}; {celltype}',
                 )
-                ld_job(
-                    ld_parser,
+                ld_job.call(ld_parser,
                     snp_vcf_path,
                     str_vcf_path,
                     str_locus,
