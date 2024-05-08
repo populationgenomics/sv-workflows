@@ -27,7 +27,6 @@ analysis-runner --dataset "bioheart" \
     --phenotype=ibd \
     --celltypes=CD4_TCM
 
-
 """
 
 import ast
@@ -114,6 +113,7 @@ def ld_parser(
 
     correlation_df = pd.DataFrame(correlation_series, columns=['correlation'])
     correlation_df['locus'] = correlation_df.index
+
     # drop the STR locus from the list of SNPs (it will automatically have a correlation of 1)
     correlation_df = correlation_df[correlation_df['locus'] != str_locus]
 
@@ -177,9 +177,8 @@ def main(
         coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
 
         # obtain inputs for LD parsing for each entry in `coloc_results`:
-        # for index, row in coloc_results.iterrows():
-        for gene in ['ENSG00000196421']:  # for testing
-            # gene = row['gene']
+        for index, row in coloc_results.iterrows():
+            gene = row['gene']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
@@ -194,15 +193,13 @@ def main(
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
             for estr in zip(
-                ast.literal_eval(str_fdr_gene['chr'].iloc[0]), ast.literal_eval(str_fdr_gene['pos'].iloc[0]),
+                ast.literal_eval(str_fdr_gene['chr'].iloc[0]),
+                ast.literal_eval(str_fdr_gene['pos'].iloc[0]),
             ):
                 chr_num = estr[0][3:]
                 pos = estr[1]
                 end = str(int(pos) + 1)
                 str_locus = f'{chr_num}:{pos}-{end}'
-                # for testing only
-                str_locus = '22:10515024-10515025'
-                chr_num = '22'
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
                 snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
@@ -212,7 +209,8 @@ def main(
                 ld_job = b.new_python_job(
                     f'LD calc for {gene} and STR: {str_locus}; {celltype}',
                 )
-                ld_job.call(ld_parser,
+                ld_job.call(
+                    ld_parser,
                     snp_vcf_path,
                     str_vcf_path,
                     str_locus,
