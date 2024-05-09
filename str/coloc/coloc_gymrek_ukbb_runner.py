@@ -19,7 +19,10 @@ import gzip
 import click
 import pandas as pd
 
+import hailtop.batch as hb
+
 from cpg_utils import to_path
+from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch
 
 
@@ -111,13 +114,27 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     default='gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
 )
 @click.option('--pheno', help='Phenotype to use for coloc', default='alanine_aminotransferase')
+@click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
 @click.command()
-def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
+def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_parallel_jobs):
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     # read in gene annotation file
     var_table = pd.read_csv(var_annotation_file)
 
     for phenotype in pheno.split(','):
-        gwas_file = to_path(f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz')
+        gwas_file = to_path(
+            f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
+        )
         with gzip.open(gwas_file, 'rb') as f:
             gwas = pd.read_csv(
                 f,
@@ -131,8 +148,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
             egenes = pd.read_csv(egenes_file_path, sep='\t')
             egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
-            #for gene in egenes['gene_name']:
-            for gene in ['ENSG00000107771']:
+            for gene in egenes['gene_name']:
                 # extract the coordinates for the cis-window (gene +/- 100kB)
                 gene_table = var_table[var_table['gene_ids'] == gene]
                 start = float(gene_table['start'].astype(float)) - 100000
@@ -149,7 +165,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
                 print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
-                b = get_batch()
+                b = get_batch(name='Run coloc')
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
@@ -161,6 +177,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
                     celltype,
                     phenotype,
                 )
+                manage_concurrency_for_job(coloc_job)
 
     b.run(wait=False)
 
