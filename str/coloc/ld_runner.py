@@ -34,39 +34,29 @@ import ast
 import click
 import pandas as pd
 
+from hailtop.batch import ResourceGroup
+
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
 
 
 def ld_parser(
-    snp_vcf_path: str,
-    str_vcf_path: str,
+    snp_vcf_path: ResourceGroup,
+    str_vcf_path: ResourceGroup,
     str_locus: str,
     window: str,
-    output_path: str,
     gwas_snp_path: str,
     gene: str,
     celltype: str,
-):
+) -> str:
     import pandas as pd
     from cyvcf2 import VCF
-
-    from cpg_utils import to_path
-
-    # copy SNP VCF local because cyVCF2 can only read from a local file
-    local_file = 'local.vcf.bgz'
-    gcp_file = to_path(snp_vcf_path)
-    gcp_file_index = to_path(snp_vcf_path + '.csi')
-    gcp_file.copy(local_file)
-    print('Copied SNP VCF to local file')
-    gcp_file_index.copy(local_file + '.csi')
-    print('Copied SNP VCF index to local file')
 
     # create empty DF to store the relevant GTs (SNPs)
     df = pd.DataFrame(columns=['individual'])
 
     # cyVCF2 reads the SNP VCF
-    vcf = VCF(local_file)
+    vcf = VCF(snp_vcf_path['vcf'])
     df['individual'] = vcf.samples
     print('Reading SNP VCF with VCF()')
 
@@ -81,18 +71,7 @@ def ld_parser(
     print("Finished subsetting VCF for window")
 
     # extract GTs for the one STR
-    # start by copying STR VCF to local
-    local_str_file = 'local_str.vcf.bgz'
-    gcp_str_file = to_path(str_vcf_path)
-    gcp_str_file_index = to_path(str_vcf_path + '.csi')
-    gcp_str_file.copy(local_str_file)
-    print('Copied STR VCF to local file')
-
-    gcp_str_file_index.copy(local_str_file + '.csi')
-    print('Copied STR VCF index to local file')
-
-    # cyVCF2 reads the STR VCF
-    str_vcf = VCF(local_str_file)
+    str_vcf = VCF(str_vcf_path['vcf'])
     for variant in str_vcf(str_locus):
         print(f'Captured STR with POS:{variant.POS}')
         ds = variant.format('DS')
@@ -128,7 +107,8 @@ def ld_parser(
     max_correlation_df['str_locus'] = str_locus
     max_correlation_df['celltype'] = celltype
 
-    max_correlation_df.to_csv(output_path, index=False)
+    # return the df as a String
+    return max_correlation_df.to_csv(index=False)
 
 
 @click.option(
@@ -214,21 +194,25 @@ def main(
                 )
                 ld_job.cpu(job_cpu)
                 ld_job.storage(job_storage)
+                snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
+                str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'csi': str_vcf_path + '.csi'})
 
-                ld_job.call(
+                result = ld_job.call(
                     ld_parser,
-                    snp_vcf_path,
-                    str_vcf_path,
+                    snp_input,
+                    str_input,
                     str_locus,
                     snp_window,
-                    output_path(
-                        f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv',
-                        'analysis',
-                    ),
                     gwas_snp_path,
                     gene,
                     celltype,
                 )
+
+                write_path = output_path(
+                    f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv',
+                    'analysis',
+                )
+                b.write_output(result.as_str(), write_path)
 
             b.run(wait=False)
 
