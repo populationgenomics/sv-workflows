@@ -20,8 +20,8 @@ analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
     --cpu=1 \
-    --output-dir "str/ld/test-run" \
-    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
+    --output-dir "str/associatr/freeze_1/coloc_ld/bioheart-only-snps" \
+    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
     --phenotype=ibd \
