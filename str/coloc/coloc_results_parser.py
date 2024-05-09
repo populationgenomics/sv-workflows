@@ -1,33 +1,58 @@
 #!/usr/bin/env python3
 """
 analysis-runner --dataset "bioheart" \
-    --memory='16G'
     --description "Parse coloc results" \
     --access-level "test" \
-    --output-dir "str/associatr/coloc/CD4_TCM" \
-    coloc_results_parser.py
+    --output-dir "str/associatr/coloc" \
+    coloc_results_parser.py \
+    --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
+    --celltypes=CD4_TCM \
+    --phenos=ibd
 
 
 """
-from cpg_utils import to_path
-import pandas as pd
+import click
 
-def main():
-    files = list(to_path(f'gs://cpg-bioheart-test/str/associatr/coloc/CD4_TCM').glob('*.tsv'))
+from cpg_utils.hail_batch import get_batch
+
+
+def coloc_results_combiner(coloc_dir, pheno, celltype):
+    import pandas as pd
+
+    from cpg_utils import to_path
+
+    files = list(to_path(f'{coloc_dir}/{pheno}/{celltype}').glob('*.tsv'))
     # List to store DataFrames
     dfs = []
 
     # Iterate over each file path
     for file_path in files:
         # Read file into a DataFrame
-        df = pd.read_csv(file_path, sep = '\t')
+        df = pd.read_csv(file_path, sep='\t')
         # Append DataFrame to the list
         dfs.append(df)
 
     # Concatenate DataFrames row-wise
     result_df = pd.concat(dfs, ignore_index=True)
     # Write the result to a CSV file
-    result_df.to_csv('gs://cpg-bioheart-test/str/associatr/coloc/CD4_TCM/gene_summary_result.csv', index=False)
+    result_df.to_csv(f'{coloc_dir}/{pheno}/{celltype}/gene_summary_result.csv', index=False)
+
+
+@click.command()
+@click.option('--coloc-dir', help='Path to the directory containing coloc results')
+@click.option('--celltypes', help='Cell type (can be multiple)')
+@click.option('--phenos', help='Phenotype (can be multiple)')
+def main(coloc_dir, celltypes, phenos):
+    for celltype in celltypes.split(','):
+        for pheno in phenos.split(','):
+            b = get_batch()
+            combiner_job = b.new_python_job(
+                f'Coloc combiner for {celltype}:{pheno}',
+            )
+            combiner_job.call(coloc_results_combiner, coloc_dir, pheno, celltype)
+
+    b.run(wait=False)
+
 
 if __name__ == '__main__':
     main()
