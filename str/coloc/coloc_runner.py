@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This script performs colocalisation analysis betweeen eGenes identified by pseudobulk STR analysis and GWAS signals.
+This script performs colocalisation analysis betweeen eGenes identified by pseudobulk STR analysis and GWAS signals from IBD meta-analysis.
 
 1) Identify eGenes (FDR <5%) from the STR analysis
 2) Extract the SNP GWAS data for the cis-window (gene +/- 100kB)
@@ -12,7 +12,7 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
-    coloc_runner.py --egenes "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/CD4_TCM_qval.tsv" \
+    coloc_ibd_runner.py --egenes "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/CD4_TCM_qval.tsv" \
     --snp-cis-dir "gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v2/output_files/output_files" \
     --celltype "CD4_TCM"
 
@@ -101,66 +101,68 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
 
 
 @click.option(
-    '--egenes',
-    help='Path to the eGenes file',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/CD4_TCM_qval.tsv',
+    '--egenes-dir',
+    help='Path to the eGenes dir',
+    default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/snp_cis',
+    default='gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v2/output_files/output_files',
 )
-@click.option('--celltype', help='Cell type for which the eGenes were identified', default='CD4_TCM')
+@click.option('--celltypes', help='Cell type for which the eGenes were identified', default='CD4_TCM')
+@click.option('--var-annotation-file', help = 'Gene annotation file path', default = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv')
+@click.option('gwas-file', help = 'Path to the GWAS file', default = 'gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc')
 @click.command()
-def main(snp_cis_dir, egenes, celltype):
+def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file,gwas_file):
     # read in gene annotation file
-    var_table = pd.read_csv(
-        'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv'
-    )
-    hg38_map = pd.read_csv(
-        'gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc',
+    var_table = pd.read_csv(var_annotation_file)
+
+    hg38_map = pd.read_csv(gwas_file,
         sep='\t',
         header=None,
         names=['CHR', 'BP', 'END', 'FRQ_A_12882', 'FRQ_U_21770', 'OR', 'SE', 'P'],
     )
 
-    # read in eGenes file
-    egenes = pd.read_csv(egenes, sep='\t')
-    egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
+    for celltype in celltypes.split(','):
+        egenes_file_path = egenes_dir/{celltype}.tsv
+        # read in eGenes file
+        egenes = pd.read_csv(egenes_file_path, sep='\t')
+        egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
-    for gene in egenes['gene_name']:
-        if to_path(snp_cis_dir + '/' + celltype + '_' + gene + '_cis').exists():
-            print('Cis results for ' + gene + ' exist: proceed with coloc')
+        for gene in egenes['gene_name']:
+            if to_path(snp_cis_dir + '/' + celltype + '_' + gene + '_cis').exists():
+                print('Cis results for ' + gene + ' exist: proceed with coloc')
 
-            # extract the coordinates for the cis-window (gene +/- 100kB)
-            gene_table = var_table[var_table['gene_ids'] == gene]
-            start = float(gene_table['start'].astype(float)) - 100000
-            end = float(gene_table['end'].astype(float)) + 100000
-            chr = gene_table['chr'].iloc[0][3:]
-            hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
-            hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
-            hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
-            hg38_map_chr_start_end['locus'] = hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
-            hg38_map_chr_start_end[['locus']].to_csv(output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index = False)
-            if hg38_map_chr_start_end.empty:
-                print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                continue
-            print('Extracted SNP GWAS data for ' + gene)
+                # extract the coordinates for the cis-window (gene +/- 100kB)
+                gene_table = var_table[var_table['gene_ids'] == gene]
+                start = float(gene_table['start'].astype(float)) - 100000
+                end = float(gene_table['end'].astype(float)) + 100000
+                chr = gene_table['chr'].iloc[0][3:]
+                hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
+                hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
+                hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
+                hg38_map_chr_start_end['locus'] = hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
+                hg38_map_chr_start_end[['locus']].to_csv(output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index = False)
+                if hg38_map_chr_start_end.empty:
+                    print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                    continue
+                print('Extracted SNP GWAS data for ' + gene)
 
-            # run coloc
-            b = get_batch()
-            coloc_job = b.new_python_job(
-                f'Coloc for {gene}: {celltype}',
-            )
-            coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
-            coloc_job.call(
-                coloc_runner, hg38_map_chr_start_end, snp_cis_dir + '/' + celltype + '_' + gene + '_cis', celltype
-            )
+                # run coloc
+                b = get_batch()
+                coloc_job = b.new_python_job(
+                    f'Coloc for {gene}: {celltype}',
+                )
+                coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
+                coloc_job.call(
+                    coloc_runner, hg38_map_chr_start_end, snp_cis_dir + '/' + celltype + '_' + gene + '_cis', celltype
+                )
 
-        else:
-            print('No cis results for ' + gene + ' exist: skipping....')
+            else:
+                print('No cis results for ' + gene + ' exist: skipping....')
 
-        b.run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
