@@ -12,7 +12,7 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
-    coloc_ibd_runner.py --egenes "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat/CD4_TCM_qval.tsv" \
+    coloc_ibd_runner.py --egenes_dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
     --snp-cis-dir "gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v2/output_files/output_files" \
     --celltype "CD4_TCM"
 
@@ -23,9 +23,7 @@ import click
 import pandas as pd
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch
-from cpg_utils.hail_batch import output_path
-
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 def coloc_runner(gwas, eqtl_file_path, celltype):
@@ -57,7 +55,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     gwas_r$N = 34652
     gwas_r$s = 0.33
 
-     '''
+     ''',
     )
     eqtl = pd.read_csv(eqtl_file_path, sep='\t')
     gene = eqtl_file_path.split('/')[-1].split('_')[2]
@@ -85,7 +83,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
 
     p_df <- data.frame(gene, my.res$summary[6])
     names(p_df) <- c('gene', 'PP.H4.abf')
-    '''
+    ''',
     )
 
     # convert to pandas df
@@ -111,21 +109,30 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     default='gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v2/output_files/output_files',
 )
 @click.option('--celltypes', help='Cell type for which the eGenes were identified', default='CD4_TCM')
-@click.option('--var-annotation-file', help = 'Gene annotation file path', default = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv')
-@click.option('gwas-file', help = 'Path to the GWAS file', default = 'gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc')
+@click.option(
+    '--var-annotation-file',
+    help='Gene annotation file path',
+    default='gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
+)
+@click.option(
+    'gwas-file',
+    help='Path to the GWAS file',
+    default='gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc',
+)
 @click.command()
-def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file,gwas_file):
+def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
     # read in gene annotation file
     var_table = pd.read_csv(var_annotation_file)
 
-    hg38_map = pd.read_csv(gwas_file,
+    hg38_map = pd.read_csv(
+        gwas_file,
         sep='\t',
         header=None,
         names=['CHR', 'BP', 'END', 'FRQ_A_12882', 'FRQ_U_21770', 'OR', 'SE', 'P'],
     )
 
     for celltype in celltypes.split(','):
-        egenes_file_path = egenes_dir/{celltype}.tsv
+        egenes_file_path = egenes_dir / {celltype}.tsv
         # read in eGenes file
         egenes = pd.read_csv(egenes_file_path, sep='\t')
         egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
@@ -142,8 +149,12 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file,gwas_file):
                 hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
                 hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
                 hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
-                hg38_map_chr_start_end['locus'] = hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
-                hg38_map_chr_start_end[['locus']].to_csv(output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index = False)
+                hg38_map_chr_start_end['locus'] = (
+                    hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
+                )
+                hg38_map_chr_start_end[['locus']].to_csv(
+                    output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index=False,
+                )
                 if hg38_map_chr_start_end.empty:
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
@@ -156,7 +167,7 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file,gwas_file):
                 )
                 coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
                 coloc_job.call(
-                    coloc_runner, hg38_map_chr_start_end, snp_cis_dir + '/' + celltype + '_' + gene + '_cis', celltype
+                    coloc_runner, hg38_map_chr_start_end, snp_cis_dir + '/' + celltype + '_' + gene + '_cis', celltype,
                 )
 
             else:
