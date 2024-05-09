@@ -36,6 +36,7 @@ import pandas as pd
 
 from hailtop.batch import ResourceGroup
 
+from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
 
@@ -148,6 +149,7 @@ def main(
     job_cpu: int,
     job_storage: str,
 ):
+    b = get_batch()
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
@@ -183,12 +185,20 @@ def main(
                 pos = estr[1]
                 end = str(int(pos) + 1)
                 str_locus = f'{chr_num}:{pos}-{end}'
+                write_path = output_path(
+                    f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv',
+                    'analysis',
+                )
+
+                if to_path(write_path).exists():
+                    print(f'LD for {gene} and {str_locus} already exists. Skipping...')
+                    continue
+
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
                 snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 # run coloc
-                b = get_batch()
                 ld_job = b.new_python_job(
                     f'LD calc for {gene} and STR: {str_locus}; {celltype}',
                 )
@@ -208,13 +218,9 @@ def main(
                     celltype,
                 )
 
-                write_path = output_path(
-                    f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv',
-                    'analysis',
-                )
                 b.write_output(result.as_str(), write_path)
 
-            b.run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
