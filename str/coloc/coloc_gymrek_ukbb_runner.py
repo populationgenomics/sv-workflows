@@ -13,6 +13,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
     --celltypes "CD4_TCM"
+    --pheno 'albumin'
 """
 import gzip
 
@@ -75,16 +76,17 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     eqtl_r = eqtl_r %>% as.list()
     eqtl_r$type = 'quant'
     eqtl_r$sdY = 1
-    my.res <- tryCatch({
+    p4 <- tryCatch({
 
     my.res <- coloc.abf(dataset1=gwas_r,
                         dataset2=eqtl_r)
+    p4 = my.res$summary[6]
     }, error = function(e) {
 
     print(paste("An error occurred:", e))
-    NULL
+    0
     })
-    p_df <- data.frame(gene, my.res$summary[6])
+    p_df <- data.frame(gene, p4)
     names(p_df) <- c('gene', 'PP.H4.abf')
     ''',
     )
@@ -180,6 +182,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
+                coloc_job.cpu(0.25)
                 coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
                 coloc_job.call(
                     coloc_runner,
