@@ -18,7 +18,7 @@ Workflow:
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "test" \
+    --access-level "full" \
     --cpu=1 \
     --output-dir "str/associatr/freeze_1/coloc_ld/bioheart-only-snps" \
     ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
@@ -154,6 +154,8 @@ def ld_parser(
     help='Path to STR FDR dir',
     default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
+@click.option('--job-cpu', default=1)
+@click.option('--job-storage', default='20G')
 @click.command()
 def main(
     snp_vcf_dir: str,
@@ -163,6 +165,8 @@ def main(
     celltypes: str,
     gene_annotation_file: str,
     str_fdr_dir: str,
+    job_cpu: int,
+    job_storage: str,
 ):
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
@@ -208,6 +212,9 @@ def main(
                 ld_job = b.new_python_job(
                     f'LD calc for {gene} and STR: {str_locus}; {celltype}',
                 )
+                ld_job.cpu(job_cpu)
+                ld_job.storage(job_storage)
+
                 ld_job.call(
                     ld_parser,
                     snp_vcf_path,
@@ -222,6 +229,7 @@ def main(
                     gene,
                     celltype,
                 )
+
             b.run(wait=False)
 
 
