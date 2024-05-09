@@ -22,8 +22,9 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import output_path
+
 
 
 def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
@@ -149,6 +150,9 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
             egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
             for gene in egenes['gene_name']:
+                if to_path(f'{output_path(f"coloc/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv")}',).exists():
+                    print('Coloc results already processed for ' + gene + ': skipping....')
+                    continue
                 # extract the coordinates for the cis-window (gene +/- 100kB)
                 gene_table = var_table[var_table['gene_ids'] == gene]
                 start = float(gene_table['start'].astype(float)) - 100000
