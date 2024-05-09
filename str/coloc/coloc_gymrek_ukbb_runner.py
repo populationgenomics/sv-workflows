@@ -41,7 +41,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     print(names(gwas_r))
     gwas_r$pvalues = gwas_r$p_value
     gwas_r$varbeta = (gwas_r$standard_error)**2
-    gwas_r$position = gwas_r$start_pos..hg38. -1
+    gwas_r$position = gwas_r$pos -1
     gwas_r$snp = paste('s', gwas_r$position, sep = '')
 
     gwas_r = gwas_r %>% select(beta, varbeta, position,snp)
@@ -141,6 +141,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
                 hg38_map_chr = gwas[gwas['chromosome'] == int(chrom)]
                 hg38_map_chr_start = hg38_map_chr[hg38_map_chr['start_pos (hg38)'] >= start]
                 hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['start_pos (hg38)'] <= end]
+                hg38_map_chr_start_end['pos'] = hg38_map_chr_start_end['start_pos (hg38)']
 
                 if hg38_map_chr_start_end.empty:
                     print('No STR GWAS data for ' + gene + ' in the cis-window: skipping....')
