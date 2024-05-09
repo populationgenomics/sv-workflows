@@ -38,7 +38,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     ro.globalenv['gwas_r'] = gwas_r
     ro.r(
         '''
-    names(gwas_r)
+    print(names(gwas_r))
     gwas_r$pvalues = gwas_r$p_value
     gwas_r$varbeta = (gwas_r$standard_error)**2
     gwas_r$position = gwas_r$start_pos..hg38. -1
