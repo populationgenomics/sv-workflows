@@ -90,6 +90,9 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     with (ro.default_converter + pandas2ri.converter).context():
         pd_p4_df = ro.conversion.get_conversion().rpy2py(ro.r('p_df'))
 
+    # add cell type annotation to df
+    pd_p4_df['celltype'] = celltype
+
     # write to GCS
     pd_p4_df.to_csv(
         f'{output_path(f"coloc/ibd/{celltype}/{gene}_100kb.tsv")}',
@@ -153,7 +156,8 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                     hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
                 )
                 hg38_map_chr_start_end[['locus']].to_csv(
-                    output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'), index=False,
+                    output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
+                    index=False,
                 )
                 if hg38_map_chr_start_end.empty:
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
@@ -167,7 +171,10 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                 )
                 coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
                 coloc_job.call(
-                    coloc_runner, hg38_map_chr_start_end, snp_cis_dir + '/' + celltype + '_' + gene + '_cis', celltype,
+                    coloc_runner,
+                    hg38_map_chr_start_end,
+                    snp_cis_dir + '/' + celltype + '_' + gene + '_cis',
+                    celltype,
                 )
 
             else:
