@@ -22,6 +22,7 @@ def coloc_results_combiner(coloc_dir, pheno, celltype):
     import pandas as pd
 
     from cpg_utils import to_path
+    from cpg_utils.config import output_path
 
     files = list(to_path(f'{coloc_dir}/{pheno}/{celltype}').glob('*.tsv'))
     # List to store DataFrames
@@ -37,7 +38,7 @@ def coloc_results_combiner(coloc_dir, pheno, celltype):
     # Concatenate DataFrames row-wise
     result_df = pd.concat(dfs, ignore_index=True)
     # Write the result to a CSV file
-    result_df.to_csv(f'{coloc_dir}/{pheno}/{celltype}/gene_summary_result.csv', index=False)
+    result_df.to_csv(output_path(f'coloc/{pheno}/{celltype}/gene_summary_result.csv', 'analysis'), index=False)
 
 
 @click.command()
