@@ -19,6 +19,7 @@ import gzip
 import click
 import pandas as pd
 
+from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
 
@@ -112,7 +113,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
     var_table = pd.read_csv(var_annotation_file)
 
     for phenotype in pheno.split(','):
-        gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz'
+        gwas_file = to_path(f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz')
         with gzip.open(gwas_file, 'rb') as f:
             gwas = pd.read_csv(
                 f,
