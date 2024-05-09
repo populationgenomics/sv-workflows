@@ -46,6 +46,7 @@ def ld_parser(
     output_path: str,
     gwas_snp_path: str,
     gene: str,
+    celltype: str,
 ):
     import pandas as pd
     from cyvcf2 import VCF
@@ -125,6 +126,7 @@ def ld_parser(
     # add some attributes
     max_correlation_df['gene'] = gene
     max_correlation_df['str_locus'] = str_locus
+    max_correlation_df['celltype'] = celltype
 
     max_correlation_df.to_csv(output_path, index=False)
 
@@ -218,6 +220,7 @@ def main(
                     ),
                     gwas_snp_path,
                     gene,
+                    celltype,
                 )
             b.run(wait=False)
 
