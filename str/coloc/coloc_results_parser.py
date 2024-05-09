@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+This script concatenates the results of running `coloc_runner.py` (output is per gene) into a single CSV file.
+
 analysis-runner --dataset "bioheart" \
     --description "Parse coloc results" \
     --access-level "test" \
