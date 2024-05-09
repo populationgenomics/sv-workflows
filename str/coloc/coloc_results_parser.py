@@ -5,7 +5,7 @@ This script concatenates the results of running `coloc_runner.py` (output is per
 analysis-runner --dataset "bioheart" \
     --description "Parse coloc results" \
     --access-level "test" \
-    --output-dir "str/associatr/coloc" \
+    --output-dir "str/associatr" \
     coloc_results_parser.py \
     --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
     --celltypes=CD4_TCM \
