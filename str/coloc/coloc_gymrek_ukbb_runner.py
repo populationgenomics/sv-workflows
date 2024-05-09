@@ -34,6 +34,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
 
     with (ro.default_converter + pandas2ri.converter).context():
         gwas_r = ro.conversion.get_conversion().py2rpy(gwas)
+    print('loaded in gwas_r')
     ro.globalenv['gwas_r'] = gwas_r
     ro.r(
         '''
@@ -53,6 +54,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     gene = eqtl_file_path.split('/')[-1].split('_')[0]
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
+    print('loaded in eqtl_r')
     ro.globalenv['eqtl_r'] = eqtl_r
     ro.globalenv['gene'] = gene
     ro.r(
@@ -78,6 +80,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     # convert to pandas df
     with (ro.default_converter + pandas2ri.converter).context():
         pd_p4_df = ro.conversion.get_conversion().rpy2py(ro.r('p_df'))
+    print('converted back to pandas df')
 
     # add cell type annotation to df
     pd_p4_df['celltype'] = celltype
@@ -127,7 +130,8 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
             egenes = pd.read_csv(egenes_file_path, sep='\t')
             egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
-            for gene in egenes['gene_name']:
+            #for gene in egenes['gene_name']:
+            for gene in ['ENSG00000107771']:
                 # extract the coordinates for the cis-window (gene +/- 100kB)
                 gene_table = var_table[var_table['gene_ids'] == gene]
                 start = float(gene_table['start'].astype(float)) - 100000
