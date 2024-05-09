@@ -20,8 +20,8 @@ analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
     --cpu=1 \
-    --output-dir "str/ld/test-run" \
-    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
+    --output-dir "str/associatr/freeze_1/coloc_ld/bioheart-only-snps" \
+    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
     --phenotype=ibd \
@@ -201,7 +201,7 @@ def main(
                 str_locus = f'{chr_num}:{pos}-{end}'
                 print(f'Running LD for {gene} and {str_locus}')
                 gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
-                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 # run coloc
                 b = get_batch()
