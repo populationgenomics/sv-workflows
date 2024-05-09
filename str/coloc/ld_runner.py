@@ -100,8 +100,7 @@ def ld_parser(
             ds_list.append(ds[i][0])
         target_data = {'individual': str_vcf.samples, str_locus: ds_list}
         target_df = pd.DataFrame(target_data)
-        target_df.to_csv(f'{output_path}.target.{variant.POS}', index=False)
-        break # take the first STR locus
+        break  # take the first STR locus
 
     # merge the two dataframes
     merged_df = df.merge(target_df, on='individual')
@@ -175,9 +174,8 @@ def main(
         coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
 
         # obtain inputs for LD parsing for each entry in `coloc_results`:
-        #for index, row in coloc_results.iterrows():
-        for gene in ['ENSG00000196421','ENSG00000197457']:
-            #gene = row['gene']
+        for index, row in coloc_results.iterrows():
+            gene = row['gene']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
