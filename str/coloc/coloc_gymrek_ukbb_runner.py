@@ -75,8 +75,15 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     eqtl_r = eqtl_r %>% as.list()
     eqtl_r$type = 'quant'
     eqtl_r$sdY = 1
+    my.res <- tryCatch({
+
     my.res <- coloc.abf(dataset1=gwas_r,
-                    dataset2=eqtl_r)
+                        dataset2=eqtl_r)
+    }, error = function(e) {
+
+    print(paste("An error occurred:", e))
+    NULL
+    })
     p_df <- data.frame(gene, my.res$summary[6])
     names(p_df) <- c('gene', 'PP.H4.abf')
     ''',
