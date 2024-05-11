@@ -10,10 +10,13 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
+    --memory = '16G' \
+    --storage = '10G'\
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
     --celltypes "gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive" \
-    --pheno 'c_reactive_protein'
+    --pheno 'c_reactive_protein' \
+    --max-parallel-jobs 100
 """
 import gzip
 
@@ -152,9 +155,6 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
 
         for celltype in celltypes.split(','):
             # run each unique cell-type-pheno combination batch completely separately to help with job scaling
-            _dependent_jobs = []
-            reset_batch()
-            b = get_batch()
             egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
             # read in eGenes file
             egenes = pd.read_csv(egenes_file_path, sep='\t')
@@ -197,7 +197,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 )
                 manage_concurrency_for_job(coloc_job)
 
-            b.run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
