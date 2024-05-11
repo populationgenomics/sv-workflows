@@ -12,8 +12,8 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
-    --celltypes "CD4_TCM"
-    --pheno 'albumin'
+    --celltypes "gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive" \
+    --pheno 'c_reactive_protein'
 """
 import gzip
 
@@ -23,9 +23,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch
-from cpg_utils.hail_batch import output_path
-
+from cpg_utils.hail_batch import get_batch, output_path, reset_batch
 
 
 def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
@@ -153,13 +151,19 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
             )
 
         for celltype in celltypes.split(','):
+            # run each unique cell-type-pheno combination batch completely separately to help with job scaling
+            _dependent_jobs = []
+            reset_batch()
+            b = get_batch()
             egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
             # read in eGenes file
             egenes = pd.read_csv(egenes_file_path, sep='\t')
             egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
             for gene in egenes['gene_name']:
-                if to_path(f'{output_path(f"coloc/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv")}',).exists():
+                if to_path(
+                    f'{output_path(f"coloc/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv")}',
+                ).exists():
                     print('Coloc results already processed for ' + gene + ': skipping....')
                     continue
                 # extract the coordinates for the cis-window (gene +/- 100kB)
@@ -193,7 +197,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 )
                 manage_concurrency_for_job(coloc_job)
 
-    b.run(wait=False)
+            b.run(wait=False)
 
 
 if __name__ == '__main__':
