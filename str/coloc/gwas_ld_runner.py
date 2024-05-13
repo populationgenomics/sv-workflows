@@ -29,9 +29,8 @@ import ast
 import click
 import pandas as pd
 
-from hailtop.batch import ResourceGroup
 import hailtop.batch as hb
-
+from hailtop.batch import ResourceGroup
 
 from cpg_utils import to_path
 from cpg_utils.config import output_path
@@ -181,6 +180,9 @@ def main(
             gwas_catalog = gwas_catalog[gwas_catalog['CHR'] == int(chr)]
             gwas_catalog = gwas_catalog[gwas_catalog['BP'] >= start_snp_window]
             gwas_catalog = gwas_catalog[gwas_catalog['BP'] <= end_snp_window]
+            if gwas_catalog.empty:
+                print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                continue
 
             # obtain lead SNP (lowest p-value) in the snp_window
             lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
