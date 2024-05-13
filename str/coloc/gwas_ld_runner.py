@@ -3,6 +3,7 @@
 """
 
 This script calculates pairwise LD (correlation coefficient) between the top eSTR and the lead SNP (per gene) in the GWAS.
+(DOES NOT REQUIRE coloc_runner.py and coloc_results_parser.py to be run previously, nor does it run `coloc`.)
 
 Workflow:
 1) Extract genes that are associated with the eSTRs (FDR <5%)
@@ -151,9 +152,8 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
         # obtain inputs for LD parsing for each entry in `str_fdr`:
-        #for index, row in str_fdr.iterrows():
-        for gene in ['ENSG00000277301']:
-            #gene = row['gene_name']
+        for index, row in str_fdr.iterrows():
+            gene = row['gene_name']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
@@ -198,7 +198,7 @@ def main(
                     continue
 
                 print(f'Running LD for {gene} and {str_locus}')
-                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 # run ld
                 ld_job = b.new_python_job(
