@@ -2,29 +2,22 @@
 
 """
 
-Assumes coloc_runner.py and coloc_results_parser.py have been run previously.
-
-This script calculates pairwise LD (correlation coefficient) between one STR locus and all SNPs in a colocalised locus.
+This script calculates pairwise LD (correlation coefficient) between the top eSTR and the lead SNP (per gene) in the GWAS.
 
 Workflow:
-1)Extract genes that have >50% posterior probability of a shared causal variant from coloc results.
-2) Extract the coordinates of the cis-window (gene +/- 100kB) for each gene using a gene annotation file.
-3) Extract the top STR locus (ie passed FDR 5% threshold) for each gene in 1). May be multiple STRs per gene (if tied for smallest ACAT-corrected p-value).
-4) Run LD parser() which:
-- Extracts GTs for all SNPs (from a chr-specific VCF) in the cis-window for a gene.
-- Extracts GTs for the specified STR locus associated with the gene.
-- Calculates pairwise correlation of every SNP locus with the target STR locus.
-- Save the SNP with the highest absolute correlation to a TSV file. Output to GCP
+1) Extract genes that are associated with the eSTRs (FDR <5%)
+2) Extract the SNP GWAS data for the cis-window (gene +/- 100kB)
+3) Select the lead SNP from 2) (ie SNP with the lowest p-value)
+4) Calculate pairwise correlation of the lead eSTR locus with the lead SNP.
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "full" \
     --cpu=1 \
-    --output-dir "str/associatr/freeze_1/coloc_ld/bioheart-only-snps" \
-    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
+    --output-dir "str/associatr/freeze_1/gwas_ld/bioheart-only-snps" \
+    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
-    --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
-    --phenotype=ibd \
+    --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc
     --celltypes=CD4_TCM
 
 """
@@ -45,11 +38,11 @@ def ld_parser(
     snp_vcf_path: ResourceGroup,
     str_vcf_path: ResourceGroup,
     str_locus: str,
-    window: str,
-    gwas_snp_path: str,
+    lead_snp_locus: str,
     gene: str,
     celltype: str,
 ) -> str:
+
     import pandas as pd
     from cyvcf2 import VCF
 
@@ -62,7 +55,7 @@ def ld_parser(
     print('Reading SNP VCF with VCF()')
 
     print('Starting to subset VCF for window...')
-    for variant in vcf(window):
+    for variant in vcf(lead_snp_locus):
         geno = variant.gt_types  # extracts GTs as a numpy array
         locus = variant.CHROM + ':' + str(variant.POS)
         df_to_append = pd.DataFrame(geno, columns=[locus])  # creates a temp df to store the GTs for one locus
@@ -95,21 +88,13 @@ def ld_parser(
     # drop the STR locus from the list of SNPs (it will automatically have a correlation of 1)
     correlation_df = correlation_df[correlation_df['locus'] != str_locus]
 
-    # keep only the SNPs that are in the GWAS catalog
-    gwas_snps = pd.read_csv(gwas_snp_path)
-    correlation_df = correlation_df[correlation_df['locus'].isin(gwas_snps['locus'])]
-
-    # find the SNP with the highest absolute correlation
-    max_correlation_index = correlation_df['correlation'].abs().idxmax()
-    max_correlation_df = correlation_df[correlation_df['locus'] == max_correlation_index]
-
     # add some attributes
-    max_correlation_df['gene'] = gene
-    max_correlation_df['str_locus'] = str_locus
-    max_correlation_df['celltype'] = celltype
+    correlation_df['gene'] = gene
+    correlation_df['str_locus'] = str_locus
+    correlation_df['celltype'] = celltype
 
     # return the df as a String
-    return max_correlation_df.to_csv(index=False)
+    return correlation_df.to_csv(index=False)
 
 
 @click.option(
@@ -135,35 +120,38 @@ def ld_parser(
     help='Path to STR FDR dir',
     default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
+@click.option(
+    '--gwas-file',
+    help='Path to GWAS catalog (ensure only three columns CHR, BP, and P)',
+)
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
 @click.command()
 def main(
     snp_vcf_dir: str,
     str_vcf_dir: str,
-    coloc_dir: str,
+    gwas_snp_dir: str,
     phenotype: str,
     celltypes: str,
     gene_annotation_file: str,
     str_fdr_dir: str,
     job_cpu: int,
     job_storage: str,
+    gwas_file: str,
 ):
     b = get_batch()
+    #read in gwas catalog file
+    gwas_catalog = pd.read_csv(gwas_file)
+
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
-        coloc_result_file = f'{coloc_dir}/{phenotype}/{celltype}/gene_summary_result.csv'
-        coloc_results = pd.read_csv(coloc_result_file)
-        # subset results for posterior probability of a shared causal variant >=0.5
-        coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
-
-        # obtain inputs for LD parsing for each entry in `coloc_results`:
-        for index, row in coloc_results.iterrows():
-            gene = row['gene']
+        # obtain inputs for LD parsing for each entry in `str_fdr`:
+        for index, row in str_fdr.iterrows():
+            gene = row['gene_name']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
@@ -172,8 +160,20 @@ def main(
             start_snp_window = float(gene_table['start'].astype(float)) - 100000  # +-100kB window around gene
             end_snp_window = float(gene_table['end'].astype(float)) + 100000  # +-100kB window around gene
             chr = gene_table['chr'].iloc[0][3:]
-            snp_window = f'{chr}:{start_snp_window}-{end_snp_window}'
             print('Obtained SNP window coordinates')
+
+
+            #subset the gwas catalog to the snp_window
+            gwas_catalog = gwas_catalog[gwas_catalog['CHR'] == int(chr)]
+            gwas_catalog = gwas_catalog[gwas_catalog['BP'] >= start_snp_window]
+            gwas_catalog = gwas_catalog[gwas_catalog['BP'] <= end_snp_window]
+
+            # obtain lead SNP (lowest p-value) in the snp_window
+            lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
+            lead_snp_chr = lowest_p_row['CHR']
+            lead_snp_bp = lowest_p_row['BP']
+            lead_snp_locus = f'{lead_snp_chr}:{lead_snp_bp}'
+
 
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
@@ -186,19 +186,18 @@ def main(
                 end = str(int(pos) + 1)
                 str_locus = f'{chr_num}:{pos}-{end}'
                 write_path = output_path(
-                    f'coloc_str_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_ld_results.csv',
+                    f'gwas_ld/{phenotype}/{celltype}/{gene}_chr{chr_num}_{pos}_gwas_ld_results.csv',
                     'analysis',
                 )
 
                 if to_path(write_path).exists():
-                    print(f'LD for {gene} and {str_locus} already exists. Skipping...')
+                    print(f'GWAS LD for {gene} and {str_locus} already exists. Skipping...')
                     continue
 
                 print(f'Running LD for {gene} and {str_locus}')
-                gwas_snp_path = f'{coloc_dir}/{phenotype}/{celltype}/{gene}_snp_gwas_list.csv'
                 snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
-                # run coloc
+                # run ld
                 ld_job = b.new_python_job(
                     f'LD calc for {gene} and STR: {str_locus}; {celltype}',
                 )
@@ -212,8 +211,7 @@ def main(
                     snp_input,
                     str_input,
                     str_locus,
-                    snp_window,
-                    gwas_snp_path,
+                    lead_snp_locus,
                     gene,
                     celltype,
                 )
