@@ -17,8 +17,9 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr/freeze_1/gwas_ld/bioheart-only-snps" \
     gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
-    --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv
-    --celltypes=CD4_TCM
+    --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
+    --celltypes=CD4_TCM \
+    --phenotype=ibd
 
 """
 
@@ -54,7 +55,8 @@ def ld_parser(
     df['individual'] = vcf.samples
     print('Reading SNP VCF with VCF()')
 
-    print('Starting to subset VCF for window...')
+
+    print(f'Starting to subset VCF for the lead SNP {lead_snp_locus}')
     for variant in vcf(lead_snp_locus):
         geno = variant.gt_types  # extracts GTs as a numpy array
         locus = variant.CHROM + ':' + str(variant.POS)
@@ -62,7 +64,8 @@ def ld_parser(
 
         # concatenate results to the main df
         df = pd.concat([df, df_to_append], axis=1)
-    print("Finished subsetting VCF for window")
+        break # take the first SNP locus
+    print("Finished subsetting VCF for lead SNP")
 
     # extract GTs for the one STR
     str_vcf = VCF(str_vcf_path['vcf'])
@@ -171,7 +174,8 @@ def main(
             lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
             lead_snp_chr = lowest_p_row['CHR']
             lead_snp_bp = lowest_p_row['BP']
-            lead_snp_locus = f'{lead_snp_chr}:{lead_snp_bp}'
+            lead_snp_end = lowest_p_row['BP']+1
+            lead_snp_locus = f'{lead_snp_chr}:{lead_snp_bp}-{lead_snp_end}'
 
 
             # obtain top STR locus for the gene
