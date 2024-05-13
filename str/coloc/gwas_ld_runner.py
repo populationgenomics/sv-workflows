@@ -107,7 +107,6 @@ def ld_parser(
     help='GCS file dir to STR VCF files.',
     type=str,
 )
-@click.option('--coloc-dir', help='GCS file path to coloc results', type=str)
 @click.option('--phenotype', help='Phenotype to use for coloc', type=str)
 @click.option('--celltypes', help='Cell types to use for coloc', type=str)
 @click.option(
@@ -130,7 +129,6 @@ def ld_parser(
 def main(
     snp_vcf_dir: str,
     str_vcf_dir: str,
-    gwas_snp_dir: str,
     phenotype: str,
     celltypes: str,
     gene_annotation_file: str,
