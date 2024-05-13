@@ -13,10 +13,10 @@ Workflow:
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "test" \
+    --access-level "full" \
     --cpu=1 \
     --output-dir "str/associatr/freeze_1/gwas_ld/bioheart-only-snps" \
-    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
+    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
     --celltypes=CD4_TCM \
@@ -30,6 +30,8 @@ import click
 import pandas as pd
 
 from hailtop.batch import ResourceGroup
+import hailtop.batch as hb
+
 
 from cpg_utils import to_path
 from cpg_utils.config import output_path
@@ -127,6 +129,7 @@ def ld_parser(
 )
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
+@click.option('--max-parallel-jobs', default=500)
 @click.command()
 def main(
     snp_vcf_dir: str,
@@ -138,7 +141,19 @@ def main(
     job_cpu: int,
     job_storage: str,
     gwas_file: str,
+    max_parallel_jobs: int,
 ):
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     b = get_batch()
     # read in gwas catalog file
     gwas_catalog = pd.read_csv(gwas_file)
@@ -216,6 +231,7 @@ def main(
                 )
 
                 b.write_output(result.as_str(), write_path)
+                manage_concurrency_for_job(ld_job)
 
     b.run(wait=False)
 
