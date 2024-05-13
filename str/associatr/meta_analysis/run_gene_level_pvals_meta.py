@@ -121,10 +121,18 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
     from cpg_utils.config import output_path
 
     for gene_file in gene_files:
+        pvals, gene_name, row_dict = process_single_file(gene_file)
+
+        # specify output path
+        gcs_output = output_path(
+            f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
+            'analysis',
+        )
+        if gcs_output.exists():
+            print(f'{gene_file} already processed. Skipping...')
+            continue
         weights = deepcopy(og_weights)
         print(f'processing {gene_file}')
-
-        pvals, gene_name, row_dict = process_single_file(gene_file)
 
         # remove NA values - associaTR reports pval as NA if locus was thrown out (not tested)
         pvals = pvals[~np.isnan(pvals)]
@@ -167,11 +175,6 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
         else:
             pval = 1 - cauchy.cdf(cct_stat)
 
-        # write to output
-        gcs_output = output_path(
-            f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
-            'analysis',
-        )
         with to_path(gcs_output).open('w') as f:
             f.write(
                 'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\tpval_q\tpval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
@@ -193,12 +196,17 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
         # read the raw results from a file
         pvals, gene_name, row_dict = process_single_file(gene_file)
 
-        pval = min(pvals) * len(pvals)
         # write to output
         gcs_output = output_path(
             f'gene_level_pvals/bonferroni/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
             'analysis',
         )
+        if gcs_output.exists():
+            print(f'{gene_file} already processed. Skipping...')
+            continue
+
+        pval = min(pvals) * len(pvals)
+
         with to_path(gcs_output).open('w') as f:
             f.write(
                 'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\tpval_q\tpval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
