@@ -12,12 +12,12 @@ Workflow:
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "full" \
+    --access-level "test" \
     --cpu=1 \
     --output-dir "str/associatr/freeze_1/gwas_ld/bioheart-only-snps" \
-    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
+    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
-    --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc
+    --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv
     --celltypes=CD4_TCM
 
 """
@@ -150,8 +150,9 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
         # obtain inputs for LD parsing for each entry in `str_fdr`:
-        for index, row in str_fdr.iterrows():
-            gene = row['gene_name']
+        #for index, row in str_fdr.iterrows():
+        for gene in ['ENSG00000277301']:
+            #gene = row['gene_name']
             # obtain snp cis-window coordinates for the gene
             gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
@@ -195,7 +196,7 @@ def main(
                     continue
 
                 print(f'Running LD for {gene} and {str_locus}')
-                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 # run ld
                 ld_job = b.new_python_job(
