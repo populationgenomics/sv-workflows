@@ -22,7 +22,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, image_path
 
 
 def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
@@ -191,7 +191,7 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
             for gene in intersected_genes:
                 j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(0.25)
-                j.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:v1')
+                j.image(image_path('r-meta'))
                 j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
                 manage_concurrency_for_job(j)
 
