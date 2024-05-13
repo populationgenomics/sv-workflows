@@ -23,7 +23,7 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
 - Run associaTR with `associatr_runner.py`
 - Optional: Meta-analysis runner scripts in `associatr/meta_analysis`
 - Perform multiple testing correction (`associatr/multiple_testing_correction`)
-  - at the gene-level using ACAT correction with `run_gene_level_pval.py`. Option to use Bonferroni correction.
+  - at the gene-level using ACAT correction with `run_gene_level_pval.py`. Option to use Bonferroni correction instead.
   - control for FDR using Storey q-values with `run_storey.py`.
  
 ## Downstream analysis
