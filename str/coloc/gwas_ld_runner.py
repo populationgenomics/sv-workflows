@@ -44,7 +44,6 @@ def ld_parser(
     gene: str,
     celltype: str,
 ) -> str:
-
     import pandas as pd
     from cyvcf2 import VCF
 
@@ -56,7 +55,6 @@ def ld_parser(
     df['individual'] = vcf.samples
     print('Reading SNP VCF with VCF()')
 
-
     print(f'Starting to subset VCF for the lead SNP {lead_snp_locus}')
     for variant in vcf(lead_snp_locus):
         geno = variant.gt_types  # extracts GTs as a numpy array
@@ -65,7 +63,7 @@ def ld_parser(
 
         # concatenate results to the main df
         df = pd.concat([df, df_to_append], axis=1)
-        break # take the first SNP locus
+        break  # take the first SNP locus
     print("Finished subsetting VCF for lead SNP")
 
     # extract GTs for the one STR
@@ -142,7 +140,7 @@ def main(
     gwas_file: str,
 ):
     b = get_batch()
-    #read in gwas catalog file
+    # read in gwas catalog file
     gwas_catalog = pd.read_csv(gwas_file)
 
     for celltype in celltypes.split(','):
@@ -164,8 +162,7 @@ def main(
             chr = gene_table['chr'].iloc[0][3:]
             print('Obtained SNP window coordinates')
 
-
-            #subset the gwas catalog to the snp_window
+            # subset the gwas catalog to the snp_window
             gwas_catalog = gwas_catalog[gwas_catalog['CHR'] == int(chr)]
             gwas_catalog = gwas_catalog[gwas_catalog['BP'] >= start_snp_window]
             gwas_catalog = gwas_catalog[gwas_catalog['BP'] <= end_snp_window]
@@ -174,9 +171,8 @@ def main(
             lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
             lead_snp_chr = lowest_p_row['CHR']
             lead_snp_bp = lowest_p_row['BP']
-            lead_snp_end = lowest_p_row['BP']+1
+            lead_snp_end = lowest_p_row['BP'] + 1
             lead_snp_locus = f'{lead_snp_chr}:{lead_snp_bp}-{lead_snp_end}'
-
 
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
