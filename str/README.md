@@ -23,12 +23,12 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
 - Run associaTR with `associatr_runner.py`
 - Optional: Meta-analysis runner scripts in `associatr/meta_analysis`
 - Perform multiple testing correction (`associatr/multiple_testing_correction`)
-  - at the gene-level using ACAT correction with `run_gene_level_pval.py`. Option to use Bonferroni correction. 
+  - at the gene-level using ACAT correction with `run_gene_level_pval.py`. Option to use Bonferroni correction.
   - control for FDR using Storey q-values with `run_storey.py`.
  
 ## Downstream analysis
 
-### Colocalisation 
+### Colocalisation
 
-- Runner scripts stored in `coloc`: 1) `coloc_runner_{phenotype}.py` and 2) `coloc_results_parser.py` which consolidates the outputs from 1) into one file. 
-- If colocalisation was done using SNP data, then we check whether the lead eSTR associated with the colocalized locus is in LD with at least one SNP in the GWAS catalog using 1) `ld_runner.py` and 2) `ld_results_parser.py` which consolidates the outputs from 1) into one file. 
+- Runner scripts stored in `coloc`: 1) `coloc_runner_{phenotype}.py` and 2) `coloc_results_parser.py` which consolidates the outputs from 1) into one file.
+- If colocalisation was done using SNP data, then we check whether the lead eSTR associated with the colocalized locus is in LD with at least one SNP in the GWAS catalog using 1) `ld_runner.py` and 2) `ld_results_parser.py` which consolidates the outputs from 1) into one file.
