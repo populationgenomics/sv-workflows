@@ -31,7 +31,6 @@ import click
 import pandas as pd
 
 import hailtop.batch as hb
-from hailtop.batch import ResourceGroup
 
 from cpg_utils import to_path
 from cpg_utils.config import output_path
@@ -51,6 +50,7 @@ def ld_parser(
 
     import pandas as pd
     from cyvcf2 import VCF
+    from cpg_utils import to_path
 
     # read in gwas catalog file
     gwas_catalog_orig = pd.read_csv(gwas_file)
@@ -114,7 +114,16 @@ def ld_parser(
         df = pd.DataFrame(columns=['individual'])
 
         # cyVCF2 reads the SNP VCF
-        vcf = VCF(snp_vcf_path)
+        # copy SNP VCF local because cyVCF2 can only read from a local file
+        local_file = 'local.vcf.bgz'
+        gcp_file = to_path(snp_vcf_path)
+        gcp_file_index = to_path(snp_vcf_path + '.csi')
+        gcp_file.copy(local_file)
+        print('Copied SNP VCF to local file')
+        gcp_file_index.copy(local_file + '.csi')
+        print('Copied SNP VCF index to local file')
+
+        vcf = VCF(local_file)
         df['individual'] = vcf.samples
         print('Reading SNP VCF with VCF()')
 
@@ -130,7 +139,17 @@ def ld_parser(
         print("Finished subsetting VCF for lead SNP")
 
         # extract GTs for the one STR
-        str_vcf = VCF(str_vcf_path)
+        # start by copying STR VCF to local
+        local_str_file = 'local_str.vcf.bgz'
+        gcp_str_file = to_path(str_vcf_path)
+        gcp_str_file_index = to_path(str_vcf_path + '.csi')
+        gcp_str_file.copy(local_str_file)
+        print('Copied STR VCF to local file')
+
+        gcp_str_file_index.copy(local_str_file + '.csi')
+        print('Copied STR VCF index to local file')
+
+        str_vcf = VCF(local_str_file)
         for variant in str_vcf(str_locus):
             print(f'Captured STR with POS:{variant.POS}')
             ds = variant.format('DS')
