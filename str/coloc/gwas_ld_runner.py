@@ -59,7 +59,7 @@ def ld_parser(
 
     if gwas_catalog.empty:
         print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-        return
+        return None
 
     # obtain lead SNP (lowest p-value) in the snp_window
     lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
