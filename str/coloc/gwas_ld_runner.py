@@ -178,7 +178,7 @@ def ld_parser(
         correlation_df['celltype'] = celltype
 
         # write to output_path
-        correlation_df.to_csv(output_path, index=False)
+        correlation_df.to_csv(write_path, index=False)
 
 
 @click.option(
