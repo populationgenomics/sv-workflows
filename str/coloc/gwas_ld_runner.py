@@ -32,7 +32,6 @@ import pandas as pd
 
 import hailtop.batch as hb
 
-from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
 
@@ -47,9 +46,9 @@ def ld_parser(
     gwas_file,
     gene,
 ):
-
     import pandas as pd
     from cyvcf2 import VCF
+
     from cpg_utils import to_path
 
     # read in gwas catalog file
@@ -57,10 +56,8 @@ def ld_parser(
     # read in gene_annotation_table
     gene_annotation_table = pd.read_csv(gene_annotation_file)
 
-     # obtain snp cis-window coordinates for the gene
-    gene_table = gene_annotation_table[
-        gene_annotation_table['gene_ids'] == gene
-    ]  # subset to particular ENSG ID
+    # obtain snp cis-window coordinates for the gene
+    gene_table = gene_annotation_table[gene_annotation_table['gene_ids'] == gene]  # subset to particular ENSG ID
     start_snp_window = float(gene_table['start'].astype(float)) - 100000  # +-100kB window around gene
     end_snp_window = float(gene_table['end'].astype(float)) + 100000  # +-100kB window around gene
     chrom = gene_table['chr'].iloc[0][3:]
@@ -86,7 +83,6 @@ def ld_parser(
     str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
     str_fdr = pd.read_csv(str_fdr_file, sep='\t')
 
-
     # obtain top STR locus for the gene (if multiple are tied - iterate over each)
     str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
     for estr in zip(
@@ -107,7 +103,7 @@ def ld_parser(
             continue
 
         print(f'Running LD for {gene} and {str_locus}')
-        snp_vcf_path = f'{snp_vcf_dir}/chr{chr_num}_common_variants_renamed.vcf.bgz'
+        snp_vcf_path = f'{snp_vcf_dir}/chr{chr_num}_common_variants.vcf.bgz'
         str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
 
         # create empty DF to store the relevant GTs (SNPs)
@@ -236,7 +232,6 @@ def main(
 
     b = get_batch()
 
-
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
@@ -244,10 +239,8 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
         # obtain inputs for LD parsing for each entry in `str_fdr`:
-        #for index, row in str_fdr.iterrows():
-        for gene in ['ENSG00000277301']:
-            #gene = row['gene_name']
-
+        for index, row in str_fdr.iterrows():
+            gene = row['gene_name']
 
             # run ld
             ld_job = b.new_python_job(
