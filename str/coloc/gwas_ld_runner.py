@@ -114,7 +114,7 @@ def ld_parser(
         df = pd.DataFrame(columns=['individual'])
 
         # cyVCF2 reads the SNP VCF
-        vcf = VCF(snp_vcf_path['vcf'])
+        vcf = VCF(snp_vcf_path)
         df['individual'] = vcf.samples
         print('Reading SNP VCF with VCF()')
 
@@ -130,7 +130,7 @@ def ld_parser(
         print("Finished subsetting VCF for lead SNP")
 
         # extract GTs for the one STR
-        str_vcf = VCF(str_vcf_path['vcf'])
+        str_vcf = VCF(str_vcf_path)
         for variant in str_vcf(str_locus):
             print(f'Captured STR with POS:{variant.POS}')
             ds = variant.format('DS')
