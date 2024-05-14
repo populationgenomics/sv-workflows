@@ -21,6 +21,7 @@ analysis-runner --dataset "bioheart" \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
     --celltypes=CD4_TCM \
     --phenotype=ibd
+    --max-parallel-jobs 250
 
 """
 
@@ -41,12 +42,31 @@ def ld_parser(
     snp_vcf_path: ResourceGroup,
     str_vcf_path: ResourceGroup,
     str_locus: str,
-    lead_snp_locus: str,
+    gwas_catalog_orig: pd.DataFrame,
+    start_snp_window: float,
+    end_snp_window: float,
+    chrom: str,
     gene: str,
     celltype: str,
 ) -> str:
     import pandas as pd
     from cyvcf2 import VCF
+
+    # subset the gwas catalog to the snp_window
+    gwas_catalog = gwas_catalog_orig[gwas_catalog_orig['CHR'] == int(chrom)]
+    gwas_catalog = gwas_catalog[gwas_catalog['BP'] >= start_snp_window]
+    gwas_catalog = gwas_catalog[gwas_catalog['BP'] <= end_snp_window]
+
+    if gwas_catalog.empty:
+        print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+        return
+
+    # obtain lead SNP (lowest p-value) in the snp_window
+    lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
+    lead_snp_chr = lowest_p_row['CHR']
+    lead_snp_bp = lowest_p_row['BP']
+    lead_snp_end = lowest_p_row['BP'] + 1
+    lead_snp_locus = f'{lead_snp_chr}:{lead_snp_bp}-{lead_snp_end}'
 
     # create empty DF to store the relevant GTs (SNPs)
     df = pd.DataFrame(columns=['individual'])
@@ -155,7 +175,9 @@ def main(
 
     b = get_batch()
     # read in gwas catalog file
-    gwas_catalog = pd.read_csv(gwas_file)
+    gwas_catalog_orig = pd.read_csv(gwas_file)
+    # read in gene_annotation_table
+    gene_annotation_table = pd.read_csv(gene_annotation_file)
 
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
@@ -164,10 +186,11 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
         # obtain inputs for LD parsing for each entry in `str_fdr`:
-        for index, row in str_fdr.iterrows():
-            gene = row['gene_name']
+        #for index, row in str_fdr.iterrows():
+        for gene in ['ENSG00000277301']:
+            #gene = row['gene_name']
+
             # obtain snp cis-window coordinates for the gene
-            gene_annotation_table = pd.read_csv(gene_annotation_file)
             gene_table = gene_annotation_table[
                 gene_annotation_table['gene_ids'] == gene
             ]  # subset to particular ENSG ID
@@ -175,21 +198,6 @@ def main(
             end_snp_window = float(gene_table['end'].astype(float)) + 100000  # +-100kB window around gene
             chr = gene_table['chr'].iloc[0][3:]
             print('Obtained SNP window coordinates')
-
-            # subset the gwas catalog to the snp_window
-            gwas_catalog = gwas_catalog[gwas_catalog['CHR'] == int(chr)]
-            gwas_catalog = gwas_catalog[gwas_catalog['BP'] >= start_snp_window]
-            gwas_catalog = gwas_catalog[gwas_catalog['BP'] <= end_snp_window]
-            if gwas_catalog.empty:
-                print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                continue
-
-            # obtain lead SNP (lowest p-value) in the snp_window
-            lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
-            lead_snp_chr = lowest_p_row['CHR']
-            lead_snp_bp = lowest_p_row['BP']
-            lead_snp_end = lowest_p_row['BP'] + 1
-            lead_snp_locus = f'{lead_snp_chr}:{lead_snp_bp}-{lead_snp_end}'
 
             # obtain top STR locus for the gene
             str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
@@ -211,7 +219,7 @@ def main(
                     continue
 
                 print(f'Running LD for {gene} and {str_locus}')
-                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 # run ld
                 ld_job = b.new_python_job(
@@ -227,7 +235,10 @@ def main(
                     snp_input,
                     str_input,
                     str_locus,
-                    lead_snp_locus,
+                    gwas_catalog_orig,
+                    start_snp_window,
+                    end_snp_window,
+                    chr,
                     gene,
                     celltype,
                 )
