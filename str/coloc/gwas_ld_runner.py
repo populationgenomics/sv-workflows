@@ -20,7 +20,7 @@ analysis-runner --dataset "bioheart" \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
     --celltypes=CD4_TCM \
-    --phenotype=ibd
+    --phenotype=ibd \
     --max-parallel-jobs 250
 
 """
@@ -186,9 +186,8 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < 0.05]  # subset to eGenes passing FDR 5% threshold
 
         # obtain inputs for LD parsing for each entry in `str_fdr`:
-        #for index, row in str_fdr.iterrows():
-        for gene in ['ENSG00000277301']:
-            #gene = row['gene_name']
+        for index, row in str_fdr.iterrows():
+            gene = row['gene_name']
 
             # obtain snp cis-window coordinates for the gene
             gene_table = gene_annotation_table[
@@ -219,7 +218,7 @@ def main(
                     continue
 
                 print(f'Running LD for {gene} and {str_locus}')
-                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants_renamed.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chr}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
                 # run ld
                 ld_job = b.new_python_job(
