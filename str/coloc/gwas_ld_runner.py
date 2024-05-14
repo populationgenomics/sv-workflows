@@ -48,7 +48,8 @@ def ld_parser(
     chrom: str,
     gene: str,
     celltype: str,
-) -> str:
+    output_path: str,
+):
     import pandas as pd
     from cyvcf2 import VCF
 
@@ -59,7 +60,7 @@ def ld_parser(
 
     if gwas_catalog.empty:
         print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-        return None
+        return
 
     # obtain lead SNP (lowest p-value) in the snp_window
     lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
@@ -116,8 +117,8 @@ def ld_parser(
     correlation_df['str_locus'] = str_locus
     correlation_df['celltype'] = celltype
 
-    # return the df as a String
-    return correlation_df.to_csv(index=False)
+    # write to output_path
+    correlation_df.to_csv(output_path, index=False)
 
 
 @click.option(
@@ -229,7 +230,7 @@ def main(
                 snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
                 str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'csi': str_vcf_path + '.csi'})
 
-                result = ld_job.call(
+                ld_job.call(
                     ld_parser,
                     snp_input,
                     str_input,
@@ -240,9 +241,8 @@ def main(
                     chr,
                     gene,
                     celltype,
+                    write_path,
                 )
-
-                b.write_output(result.as_str(), write_path)
                 manage_concurrency_for_job(ld_job)
 
     b.run(wait=False)
