@@ -20,8 +20,7 @@ analysis-runner --dataset "bioheart" \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
     --celltypes=CD4_TCM \
-    --phenotype=ibd \
-    --max-parallel-jobs 250
+    --phenotype=ibd
 
 """
 
@@ -94,7 +93,7 @@ def ld_parser(
 
         if gwas_catalog.empty:
             print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-            return
+            continue
 
         # obtain lead SNP (lowest p-value) in the snp_window of the GWAS
         lowest_p_row = gwas_catalog.loc[gwas_catalog['P'].idxmin()]
