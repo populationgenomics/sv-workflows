@@ -13,10 +13,10 @@ Workflow:
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "full" \
+    --access-level "test" \
     --cpu=1 \
     --output-dir "str/associatr/freeze_1/gwas_ld/bioheart-only-snps" \
-    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
+    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
     --celltypes=CD4_TCM \
@@ -216,17 +216,17 @@ def main(
     job_storage: str,
     gwas_file: str,
 ):
-    b = get_batch()
+    b = get_batch(name = 'GWAS LD runner')
 
     for celltype in celltypes.split(','):
-        for chromosome in range(1, 23):
+        for chromosome in [20]:
             ld_job = b.new_python_job(
                 f'LD calc for chr{chromosome}; {celltype}',
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
 
-            snp_vcf_path = f'{snp_vcf_dir}/chr{chromosome}_common_variants.vcf.bgz'
+            snp_vcf_path = f'{snp_vcf_dir}/chr{chromosome}_common_variants_renamed.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chromosome}.vcf.bgz'
 
             snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
