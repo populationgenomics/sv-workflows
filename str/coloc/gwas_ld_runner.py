@@ -83,6 +83,28 @@ def ld_parser(
     str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
     str_fdr = pd.read_csv(str_fdr_file, sep='\t')
 
+    snp_vcf_path = f'{snp_vcf_dir}/chr{chrom}_common_variants.vcf.bgz'
+    str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+
+    # copy SNP VCF local because cyVCF2 can only read from a local file
+    local_file = 'local.vcf.bgz'
+    gcp_file = to_path(snp_vcf_path)
+    gcp_file_index = to_path(snp_vcf_path + '.csi')
+    gcp_file.copy(local_file)
+    print('Copied SNP VCF to local file')
+    gcp_file_index.copy(local_file + '.csi')
+    print('Copied SNP VCF index to local file')
+
+    # start by copying STR VCF to local
+    local_str_file = 'local_str.vcf.bgz'
+    gcp_str_file = to_path(str_vcf_path)
+    gcp_str_file_index = to_path(str_vcf_path + '.csi')
+    gcp_str_file.copy(local_str_file)
+    print('Copied STR VCF to local file')
+
+    gcp_str_file_index.copy(local_str_file + '.csi')
+    print('Copied STR VCF index to local file')
+
     # obtain top STR locus for the gene (if multiple are tied - iterate over each)
     str_fdr_gene = str_fdr[str_fdr['gene_name'] == gene]
     for estr in zip(
@@ -103,22 +125,11 @@ def ld_parser(
             continue
 
         print(f'Running LD for {gene} and {str_locus}')
-        snp_vcf_path = f'{snp_vcf_dir}/chr{chr_num}_common_variants.vcf.bgz'
-        str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chr_num}.vcf.bgz'
 
         # create empty DF to store the relevant GTs (SNPs)
         df = pd.DataFrame(columns=['individual'])
 
         # cyVCF2 reads the SNP VCF
-        # copy SNP VCF local because cyVCF2 can only read from a local file
-        local_file = 'local.vcf.bgz'
-        gcp_file = to_path(snp_vcf_path)
-        gcp_file_index = to_path(snp_vcf_path + '.csi')
-        gcp_file.copy(local_file)
-        print('Copied SNP VCF to local file')
-        gcp_file_index.copy(local_file + '.csi')
-        print('Copied SNP VCF index to local file')
-
         vcf = VCF(local_file)
         df['individual'] = vcf.samples
         print('Reading SNP VCF with VCF()')
@@ -135,16 +146,6 @@ def ld_parser(
         print("Finished subsetting VCF for lead SNP")
 
         # extract GTs for the one STR
-        # start by copying STR VCF to local
-        local_str_file = 'local_str.vcf.bgz'
-        gcp_str_file = to_path(str_vcf_path)
-        gcp_str_file_index = to_path(str_vcf_path + '.csi')
-        gcp_str_file.copy(local_str_file)
-        print('Copied STR VCF to local file')
-
-        gcp_str_file_index.copy(local_str_file + '.csi')
-        print('Copied STR VCF index to local file')
-
         str_vcf = VCF(local_str_file)
         for variant in str_vcf(str_locus):
             print(f'Captured STR with POS:{variant.POS}')
