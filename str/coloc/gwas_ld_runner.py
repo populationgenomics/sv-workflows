@@ -35,6 +35,7 @@ import hailtop.batch as hb
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
 
+
 # Function to process each element in the 'chr' column
 def process_chr_element(element):
     try:
@@ -59,7 +60,6 @@ def ld_parser(
     gwas_file,
     chromosome,
 ):
-    import pandas as pd
     from cyvcf2 import VCF
 
     from cpg_utils import to_path
@@ -75,7 +75,7 @@ def ld_parser(
 
     # Apply the function to the 'chr' column and create a new 'chrom' column
     str_fdr['chrom_num'] = str_fdr['chr'].apply(process_chr_element)
-    str_fdr = str_fdr[str_fdr['chrom_num'] == str(chromosome)] # subset to the chromosome
+    str_fdr = str_fdr[str_fdr['chrom_num'] == str(chromosome)]  # subset to the chromosome
 
     for gene in str_fdr['gene_name']:
         print(f'Processing gene: {gene}')
@@ -216,7 +216,6 @@ def main(
     job_storage: str,
     gwas_file: str,
 ):
-
     b = get_batch()
 
     for celltype in celltypes.split(','):
@@ -226,7 +225,6 @@ def main(
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
-
 
             snp_vcf_path = f'{snp_vcf_dir}/chr{chromosome}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chromosome}.vcf.bgz'
