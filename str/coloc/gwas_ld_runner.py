@@ -81,8 +81,8 @@ def ld_parser(
 
         # obtain snp cis-window coordinates for the gene
         gene_table = gene_annotation_table[gene_annotation_table['gene_ids'] == gene]  # subset to particular ENSG ID
-        start_snp_window = float(gene_table['start'].astype(float)) - 100000  # +-100kB window around gene
-        end_snp_window = float(gene_table['end'].astype(float)) + 100000  # +-100kB window around gene
+        start_snp_window = float(gene_table['start'].iloc[0]) - 100000  # +-100kB window around gene
+        end_snp_window = float(gene_table['end'].iloc[0]) + 100000
         chrom = gene_table['chr'].iloc[0][3:]
         print('Obtained SNP window coordinates')
 
