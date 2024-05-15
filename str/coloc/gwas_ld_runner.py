@@ -219,17 +219,17 @@ def main(
     job_storage: str,
     gwas_file: str,
 ):
-    b = get_batch(name = 'GWAS LD runner')
+    b = get_batch(name='GWAS LD runner')
 
     for celltype in celltypes.split(','):
-        for chromosome in [20]:
+        for chromosome in range(1, 23):
             ld_job = b.new_python_job(
                 f'LD calc for chr{chromosome}; {celltype}',
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
 
-            snp_vcf_path = f'{snp_vcf_dir}/chr{chromosome}_common_variants_renamed.vcf.bgz'
+            snp_vcf_path = f'{snp_vcf_dir}/chr{chromosome}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chromosome}.vcf.bgz'
 
             snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
