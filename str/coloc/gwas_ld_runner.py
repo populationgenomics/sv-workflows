@@ -136,10 +136,14 @@ def ld_parser(
                 geno = variant.gt_types  # extracts GTs as a numpy array
                 locus = variant.CHROM + ':' + str(variant.POS)
                 df_to_append = pd.DataFrame(geno, columns=[locus])  # creates a temp df to store the GTs for one locus
-
-                # concatenate results to the main df
-                df = pd.concat([df, df_to_append], axis=1)
                 break  # take the first SNP locus
+
+            if df_to_append.empty:
+                print(f'No GTs for SNP {locus} in the VCF, skipping...')
+                continue
+
+            # concatenate results to the main df
+            df = pd.concat([df, df_to_append], axis=1)
             print("Finished subsetting VCF for lead SNP")
 
             # extract GTs for the one STR
