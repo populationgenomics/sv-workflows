@@ -13,10 +13,10 @@ Workflow:
 
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
-    --access-level "test" \
+    --access-level "full" \
     --cpu=1 \
     --output-dir "str/associatr/freeze_1/gwas_ld/bioheart-only-snps" \
-    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf \
+    gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
     --celltypes=CD4_TCM \
