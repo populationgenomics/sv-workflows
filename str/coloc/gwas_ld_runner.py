@@ -207,6 +207,11 @@ def ld_parser(
     '--gwas-file',
     help='Path to GWAS catalog (ensure only three columns CHR, BP, and P)',
 )
+@click.option(
+    '--chromosomes',
+    default='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22',
+)
+@click.option('--max-parallel-jobs', default=22)
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
 @click.command()
@@ -220,11 +225,25 @@ def main(
     job_cpu: int,
     job_storage: str,
     gwas_file: str,
+    chromosomes: str,
+    max_parallel_jobs: int,
 ):
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     b = get_batch(name='GWAS LD runner')
 
     for celltype in celltypes.split(','):
-        for chromosome in range(1, 23):
+        for chr_string in chromosomes.split(','):
+            chromosome = int(chr_string)
             ld_job = b.new_python_job(
                 f'LD calc for chr{chromosome}; {celltype}',
             )
@@ -248,6 +267,7 @@ def main(
                 gwas_file,
                 chromosome,
             )
+            manage_concurrency_for_job(ld_job)
 
     b.run(wait=False)
 
