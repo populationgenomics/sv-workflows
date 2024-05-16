@@ -40,7 +40,7 @@ def coloc_results_combiner(coloc_dir, pheno, celltype):
     # Concatenate DataFrames row-wise
     result_df = pd.concat(dfs, ignore_index=True)
     # Write the result to a CSV file
-    result_df.to_csv(output_path(f'{coloc_dir}/{pheno}/{celltype}/gene_summary_result.csv'), index=False)
+    result_df.to_csv(f'{coloc_dir}/{pheno}/{celltype}/gene_summary_result.csv', index=False)
 
 
 @click.command()
