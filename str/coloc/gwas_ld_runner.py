@@ -201,7 +201,7 @@ def ld_parser(
 @click.option(
     '--str-fdr-dir',
     help='Path to STR FDR dir',
-    default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
+    default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
 @click.option(
     '--gwas-file',
