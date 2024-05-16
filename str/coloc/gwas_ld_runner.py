@@ -19,7 +19,7 @@ analysis-runner --dataset "bioheart" \
     gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
-    --celltypes=CD4_TCM \
+    --celltypes=gdT,B_intermediate,ILC,Plasmablast,dnT \
     --phenotype=ibd
 
 """
@@ -141,7 +141,7 @@ def ld_parser(
                 break  # take the first SNP locus
 
             if snp_in_vcf_flag == 0:
-                print(f'No GTs for SNP {locus} in the VCF, skipping...')
+                print(f'No GTs for SNP {lead_snp_locus} in the VCF, skipping...')
                 continue
 
             # concatenate results to the main df
@@ -201,12 +201,17 @@ def ld_parser(
 @click.option(
     '--str-fdr-dir',
     help='Path to STR FDR dir',
-    default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
+    default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
 @click.option(
     '--gwas-file',
     help='Path to GWAS catalog (ensure only three columns CHR, BP, and P)',
 )
+@click.option(
+    '--chromosomes',
+    default='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22',
+)
+@click.option('--max-parallel-jobs', default=22)
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
 @click.command()
@@ -220,11 +225,25 @@ def main(
     job_cpu: int,
     job_storage: str,
     gwas_file: str,
+    chromosomes: str,
+    max_parallel_jobs: int,
 ):
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     b = get_batch(name='GWAS LD runner')
 
     for celltype in celltypes.split(','):
-        for chromosome in range(1, 23):
+        for chr_string in chromosomes.split(','):
+            chromosome = int(chr_string)
             ld_job = b.new_python_job(
                 f'LD calc for chr{chromosome}; {celltype}',
             )
@@ -248,6 +267,7 @@ def main(
                 gwas_file,
                 chromosome,
             )
+            manage_concurrency_for_job(ld_job)
 
     b.run(wait=False)
 
