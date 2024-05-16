@@ -135,6 +135,11 @@ def ld_parser(
     help='Path to STR FDR dir',
     default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
+@click.option(
+    '--pp-h4-cutoff',
+    help='Posterior probability of a shared causal variant cutoff',
+    default=0.9,
+)
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
 @click.command()
@@ -148,6 +153,7 @@ def main(
     str_fdr_dir: str,
     job_cpu: int,
     job_storage: str,
+    pp_h4_cutoff: float,
 ):
     b = get_batch()
     for celltype in celltypes.split(','):
@@ -158,8 +164,8 @@ def main(
 
         coloc_result_file = f'{coloc_dir}/{phenotype}/{celltype}/gene_summary_result.csv'
         coloc_results = pd.read_csv(coloc_result_file)
-        # subset results for posterior probability of a shared causal variant >=0.5
-        coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= 0.5]
+        # subset results for posterior probability of a shared causal variant >=pp_h4_cutoff
+        coloc_results = coloc_results[coloc_results['PP.H4.abf'] >= pp_h4_cutoff]
 
         # obtain inputs for LD parsing for each entry in `coloc_results`:
         for index, row in coloc_results.iterrows():
