@@ -19,7 +19,7 @@ analysis-runner --dataset "bioheart" \
     gwas_ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990/input_files/genotypes/vds-bioheart1-0 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/hg38.EUR.IBD.gwas_info03_filtered.assoc_for_gwas_ld.csv \
-    --celltypes=CD4_TCM \
+    --celltypes=gdT,B_intermediate,ILC,Plasmablast,dnT \
     --phenotype=ibd
 
 """
@@ -141,7 +141,7 @@ def ld_parser(
                 break  # take the first SNP locus
 
             if snp_in_vcf_flag == 0:
-                print(f'No GTs for SNP {locus} in the VCF, skipping...')
+                print(f'No GTs for SNP {lead_snp_locus} in the VCF, skipping...')
                 continue
 
             # concatenate results to the main df
