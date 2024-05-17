@@ -1,4 +1,4 @@
-##!/usr/bin/env python3
+#!/usr/bin/env python3
 
 """
 This script is used to convert existing SNP VCF files (chromosome-specific) into a mock ExpansionHunter-style VCF for direct use with associaTR.
