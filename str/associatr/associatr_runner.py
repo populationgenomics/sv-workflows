@@ -10,8 +10,9 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
-    --access-level "test" \
-    --output-dir "str/associatr/rna_pc_calibration/2_pcs" \
+    --access-level "full" \
+    --memory "16G" \
+    --output-dir "str/associatr/common_variants_snps/tob_n1055" \
      python3 associatr_runner.py
 
 
@@ -67,6 +68,13 @@ def main():
             for gene in pseudobulk_gene_names:
                 cis_window_dir = get_config()['associatr']['cis_window_dir']
                 cis_window_size = get_config()['associatr']['cis_window_size']
+                version = get_config()['associatr']['version']
+
+                if output_path(
+                    f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp', 'analysis',
+                ).exists():
+                    continue
+
                 gene_cis_window_file = f'{cis_window_dir}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
                 # need to extract the gene start and end from the cis window file for input into 'region'
                 cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
@@ -75,6 +83,7 @@ def main():
 
                 # run associaTR job on the gene
                 associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
+                associatr_job.always_run()
                 associatr_job.image(get_config()['images']['trtools'])
                 associatr_job.storage(get_config()['associatr']['job_storage'])
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
@@ -82,7 +91,6 @@ def main():
                 associatr_job.command(
                     f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.base} {celltype}_{chromosome}_{gene} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh",
                 )
-                version = get_config()['associatr']['version']
                 b.write_output(
                     associatr_job.association_results,
                     output_path(
