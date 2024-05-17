@@ -11,10 +11,11 @@ pip install sample-metadata hail click
 
 """
 import os
+
 import click
 
-from cpg_utils.config import get_config
 from cpg_utils import to_path
+from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path, reference_path
 
 config = get_config()
@@ -36,9 +37,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
 @click.command()
-def main(
-    caller, input_dir, internal_wgs_ids: list[str], sharded
-):  # pylint: disable=missing-function-docstring
+def main(caller, input_dir, internal_wgs_ids: list[str], sharded):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
 
@@ -47,24 +46,19 @@ def main(
         **dict(
             base=REF_FASTA,
             fai=REF_FASTA + '.fai',
-            dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-            + '.dict',
-        )
+            dict=REF_FASTA.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
+        ),
     )
 
     input_vcf_dict = {}
 
     if sharded:
         input_vcf_dict = {
-            id: [str(gspath) for gspath in to_path(f'{input_dir}/{id}').glob('*.vcf')]
-            for id in internal_wgs_ids
+            id: [str(gspath) for gspath in to_path(f'{input_dir}/{id}').glob('*.vcf')] for id in internal_wgs_ids
         }
 
     else:
-        input_vcf_dict = {
-            id: [os.path.join(input_dir, f'{id}_{caller}.vcf')]
-            for id in internal_wgs_ids
-        }
+        input_vcf_dict = {id: [os.path.join(input_dir, f'{id}_{caller}.vcf')] for id in internal_wgs_ids}
 
     for id in list(input_vcf_dict.keys()):
         for vcf_file in input_vcf_dict[id]:
@@ -79,7 +73,7 @@ def main(
                     vcf_sorted={
                         'reheader.vcf.gz': '{root}.reheader.vcf.gz',
                         'reheader.vcf.gz.tbi': '{root}.reheader.vcf.gz.tbi',
-                    }
+                    },
                 )
                 bcftools_job.command(
                     f"""
@@ -88,7 +82,7 @@ def main(
 
                     tabix -f -p vcf {bcftools_job.vcf_sorted['reheader.vcf.gz']}
 
-                    """
+                    """,
                 )
                 # Output writing
                 output_file_name = (vcf_file.split('/')[-1]).split('.')[0]
@@ -100,7 +94,7 @@ def main(
                     vcf_sorted={
                         'vcf.gz': '{root}.vcf.gz',
                         'vcf.gz.tbi': '{root}.vcf.gz.tbi',
-                    }
+                    },
                 )
                 bcftools_job.command(
                     f"""
@@ -109,7 +103,7 @@ def main(
 
                     tabix -p vcf {bcftools_job.vcf_sorted['vcf.gz']}
 
-                    """
+                    """,
                 )
                 # Output writing
                 output_path_gangstr = output_path(f'{id}_gangstr', 'analysis')

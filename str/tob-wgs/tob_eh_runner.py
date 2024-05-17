@@ -14,16 +14,16 @@ pip install sample-metadata hail click
 import os
 
 import click
-import hailtop.batch as hb
-
-from sample_metadata.model.analysis_type import AnalysisType
-from sample_metadata.model.analysis_query_model import AnalysisQueryModel
 from sample_metadata.apis import AnalysisApi
+from sample_metadata.model.analysis_query_model import AnalysisQueryModel
+from sample_metadata.model.analysis_type import AnalysisType
 from sample_metadata.models import AnalysisStatus
+
+import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import remote_tmpdir, output_path
+from cpg_utils.hail_batch import output_path, remote_tmpdir
 
 config = get_config()
 
@@ -35,9 +35,7 @@ EH_IMAGE = config['images']['expansionhunter']
 # variant catalog
 @click.option('--variant-catalog', help='Full path to Illumina Variants catalog')
 # sample id and sex mapping file
-@click.option(
-    '--sample-id-file', help='Full path to mapping of CPG id, TOB id, and sex'
-)
+@click.option('--sample-id-file', help='Full path to mapping of CPG id, TOB id, and sex')
 @click.option(
     '--max-parallel-jobs',
     type=int,
@@ -45,9 +43,7 @@ EH_IMAGE = config['images']['expansionhunter']
     help=('To avoid exceeding Google Cloud quotas, set this concurrency as a limit.'),
 )
 @click.command()
-def main(
-    variant_catalog, sample_id_file, max_parallel_jobs
-):  # pylint: disable=missing-function-docstring
+def main(variant_catalog, sample_id_file, max_parallel_jobs):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     backend = hb.ServiceBackend(
         billing_project=get_config()['hail']['billing_project'],
@@ -89,7 +85,7 @@ def main(
                 **{
                     'cram': cram_path[0]['output'],
                     'cram.crai': cram_path[0]['output'] + '.crai',
-                }
+                },
             )
 
             # Working with CRAM files requires the reference fasta
@@ -98,7 +94,7 @@ def main(
                     base=ref_fasta,
                     fai=ref_fasta + '.fai',
                     dict=ref_fasta.replace('.fasta', '.dict'),
-                )
+                ),
             )
 
             # ExpansionHunter job initialisation
@@ -116,7 +112,7 @@ def main(
                     'vcf': '{root}.vcf',
                     'json': '{root}.json',
                     'realigned.bam': '{root}_realigned.bam',
-                }
+                },
             )
 
             eh_job.command(
@@ -127,7 +123,7 @@ def main(
             --threads 16 --analysis-mode streaming \\
             --output-prefix {eh_job.eh_output} \\
             --sex {sex_param}
-            """
+            """,
             )
             # ExpansionHunter output writing
             eh_output_path = output_path(f'{cpg_id}_eh')

@@ -12,8 +12,8 @@ analysis-runner --access-level test --dataset tob-wgs --description \
 """
 import click
 
-from cpg_utils.config import get_config
 from cpg_utils import to_path
+from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
@@ -45,11 +45,7 @@ def combine_vcf_files(cpg_id, input_dir, gcs_out_path):
                 if line.startswith('##fileformat'):
                     if file_index == 0:
                         fileformat_line = line
-                elif (
-                    line.startswith('##INFO')
-                    or line.startswith('##FILTER')
-                    or line.startswith('##FORMAT')
-                ):
+                elif line.startswith('##INFO') or line.startswith('##FILTER') or line.startswith('##FORMAT'):
                     if file_index == 0:
                         info_lines.append(line)
                 elif line.startswith('##ALT'):

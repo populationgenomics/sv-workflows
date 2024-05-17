@@ -14,12 +14,10 @@ import logging
 
 import click
 
-from metamist.graphql import gql, query
-from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_utils.hail_batch import get_batch
 from cpg_utils import to_path
-
+from cpg_utils.config import get_config
+from cpg_utils.hail_batch import get_batch, output_path
+from metamist.graphql import gql, query
 
 config = get_config()
 
@@ -48,7 +46,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
     }
 
     }
-        """
+        """,
     )
     response = query(
         cram_retrieval_query,
@@ -68,9 +66,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 
     if len(crams_by_id) != len(input_cpg_sids):
         cpg_sids_without_crams = set(input_cpg_sids) - set(crams_by_id.keys())
-        logging.warning(
-            f'There were some samples without CRAMs: {cpg_sids_without_crams}'
-        )
+        logging.warning(f'There were some samples without CRAMs: {cpg_sids_without_crams}')
 
     # Create string containing paths based on /cramfuse
     cramfuse_path = []
@@ -82,9 +78,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 
 
 # inputs:
-@click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='30G'
-)
+@click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='30G')
 @click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.option(
     '--variant-catalog',
@@ -109,9 +103,8 @@ def main(
         **dict(
             base=ref_fasta,
             fai=ref_fasta + '.fai',
-            dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-            + '.dict',
-        )
+            dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
+        ),
     )
 
     catalog_files = list(to_path(variant_catalog).glob('*.bed'))
@@ -131,7 +124,7 @@ def main(
                 'vcf.gz': '{root}.vcf.gz',
                 'viz.gz': '{root}.viz.gz',
                 'log.txt': '{root}.log.txt',
-            }
+            },
         )
         hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
 
@@ -148,12 +141,10 @@ def main(
             --viz-out {hipstr_job.hipstr_output['viz.gz']} \\
             --log {hipstr_job.hipstr_output['log.txt']} \\
             --output-filters
-        """
+        """,
         )
         # HipSTR output writing
-        hipstr_output_path_name = output_path(
-            f'{output_file_name}_shard{index+1}', 'analysis'
-        )
+        hipstr_output_path_name = output_path(f'{output_file_name}_shard{index+1}', 'analysis')
         b.write_output(hipstr_job.hipstr_output, hipstr_output_path_name)
 
     b.run(wait=False)

@@ -8,6 +8,7 @@ analysis-runner --access-level test --dataset tob-wgs --description 'bcftools me
 
 """
 import os
+
 import click
 
 from cpg_utils.config import get_config
@@ -23,9 +24,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option('--input-dir', help='gs://...')
 # input sample ID
 @click.argument('internal-wgs-ids', nargs=-1)
-@click.option(
-    '--job-storage', help='Storage of the Hail batch job eg 30G', default='50G'
-)
+@click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='50G')
 @click.command()
 def main(input_dir, job_storage, internal_wgs_ids: list[str]):
     """Merge sample VCFs using bcftools merge"""
@@ -42,12 +41,12 @@ def main(input_dir, job_storage, internal_wgs_ids: list[str]):
                 **{
                     'vcf.gz': each_vcf,
                     'vcf.gz.tbi': f'{each_vcf}.tbi',
-                }
-            )['vcf.gz']
+                },
+            )['vcf.gz'],
         )
     num_samples = len(internal_wgs_ids)
 
-    bcftools_job = b.new_job(name=f'Bcftools merge job')
+    bcftools_job = b.new_job(name='Bcftools merge job')
     bcftools_job.image(BCFTOOLS_IMAGE)
     bcftools_job.cpu(4)
     bcftools_job.storage(job_storage)
@@ -58,7 +57,7 @@ def main(input_dir, job_storage, internal_wgs_ids: list[str]):
 
         bcftools merge -m both -o {bcftools_job.vcf_out['vcf.gz']} -O z --threads 4 {" ".join(batch_vcfs)}
 
-        """
+        """,
     )
     # Output writing
     output_path_eh = output_path(f'merged_{num_samples}_eh', 'analysis')

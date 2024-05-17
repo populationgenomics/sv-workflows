@@ -86,16 +86,16 @@ def main(
                 'sample-callnum.pdf': '{root}-sample-callnum.pdf',
                 'chrom-callnum.pdf': '{root}-chrom-callnum.pdf',
                 'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
-                'diffref-bias.pdf': '{root}-diffref-bias.pdf'
+                'diffref-bias.pdf': '{root}-diffref-bias.pdf',
                 # EH does not have quality plots
-            }
+            },
         )
         trtools_job.command(
             f"""
         set -ex;
         qcSTR --vcf {vcf_input} --vcftype {caller} --refbias-binsize {refbias_binsize} --refbias-metric {refbias_metric} --refbias-mingts {refbias_mingts} --refbias-xrange-min {refbias_xrange_min} --refbias-xrange-max {refbias_xrange_max} --out {trtools_job.ofile}
 
-        """
+        """,
         )
 
     elif caller == 'gangstr':
@@ -108,14 +108,14 @@ def main(
                 'quality-per-locus.pdf': '{root}-quality-per-locus.pdf',
                 'quality-sample-stratified.pdf': '{root}-quality-sample-stratified.pdf',
                 'quality-per-sample.pdf': '{root}-quality-per-sample.pdf',
-            }
+            },
         )
         trtools_job.command(
             f"""
         set -ex;
         qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --refbias-binsize {refbias_binsize} --refbias-metric {refbias_metric} --refbias-mingts {refbias_mingts} --refbias-xrange-min {refbias_xrange_min} --refbias-xrange-max {refbias_xrange_max} --out {trtools_job.ofile}
 
-        """
+        """,
         )
     else:
         raise ValueError('Invalid caller')
