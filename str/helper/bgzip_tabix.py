@@ -4,7 +4,7 @@
 This script receives a gzipped VCF file and performs BGZIP, writing files to output (prep files for Hail Query).
 
 analysis-runner --access-level test --dataset bioheart --description  \
-    'VCF combiner' --memory 32G --storage 50G --output-dir 'str/associatr/common_variant_snps' \
+    'VCF combiner'  --output-dir 'str/associatr/common_variant_snps' \
     bzip.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/common_variants_snps \
     --chromosomes=20
@@ -25,9 +25,9 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option(
     '--chromosomes', default='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22', help='Chromosome number',
 )
-@click.option('--job-memory', default='8G', help='Job memory')
-@click.option('--job-storage', default='8G', help='Job storage')
-@click.option('--job-cpu', default=4, help='Job CPU')
+@click.option('--job-memory', default='4G', help='Job memory')
+@click.option('--job-storage', default='10G', help='Job storage')
+@click.option('--job-cpu', default=1, help='Job CPU')
 def main(input_dir, chromosomes, job_memory, job_storage, job_cpu):
     """
     BGZIPs and TABIX a GZIPPED/unzipped VCF input file and writes it to a GCS bucket
