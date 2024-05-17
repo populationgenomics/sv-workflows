@@ -31,9 +31,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 # caller-2
 @click.option('--caller-2', help='gangstr or eh')
 @click.command()
-def main(
-    file_path_1, file_path_2, caller_1, caller_2
-):  # pylint: disable=missing-function-docstring
+def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
 
@@ -48,10 +46,10 @@ def main(
 
     # declare resource groups, including extensions
     bcftools_job.declare_resource_group(
-        vcf_1={'vcf.gz': '{root}.vcf_1.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_1.vcf.gz.tbi'}
+        vcf_1={'vcf.gz': '{root}.vcf_1.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_1.vcf.gz.tbi'},
     )
     bcftools_job.declare_resource_group(
-        vcf_2={'vcf.gz': '{root}.vcf_2.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_2.vcf.gz.tbi'}
+        vcf_2={'vcf.gz': '{root}.vcf_2.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_2.vcf.gz.tbi'},
     )
 
     bcftools_job.command(
@@ -69,10 +67,10 @@ def main(
 
     echo "indexing {bcftools_job.vcf_2['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_2['vcf.gz']};
-    """
+    """,
     )
 
-    trtools_job = b.new_job(name=f'compareSTR')
+    trtools_job = b.new_job(name='compareSTR')
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.depends_on(bcftools_job)
     trtools_job.storage('20G')
@@ -86,7 +84,7 @@ def main(
             'locuscompare.pdf': '{root}-locuscompare.pdf',
             'samplecompare.tab': '{root}-samplecompare.tab',
             'samplecompare.pdf': '{root}-samplecompare.pdf',
-        }
+        },
     )
 
     trtools_job.command(
@@ -94,11 +92,9 @@ def main(
     set -ex;
     compareSTR --vcf1 {bcftools_job.vcf_1['vcf.gz']} --vcf2 {bcftools_job.vcf_2['vcf.gz']} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
 
-    """
+    """,
     )
-    output_path_vcf = output_path(
-        f'compareSTR_samples_{caller_1}_{caller_2}', 'analysis'
-    )
+    output_path_vcf = output_path(f'compareSTR_samples_{caller_1}_{caller_2}', 'analysis')
     b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)

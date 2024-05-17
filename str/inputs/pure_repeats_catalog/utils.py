@@ -2,7 +2,6 @@
 utils script to prevent code repetiition
 """
 
-
 from itertools import islice
 
 

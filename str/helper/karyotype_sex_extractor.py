@@ -11,10 +11,11 @@ This Hail Query script outputs a CSV file containing the CPG ID, external ID, an
 
 """
 
-import hail as hl
 import click
 
-from cpg_utils.hail_batch import output_path, init_batch
+import hail as hl
+
+from cpg_utils.hail_batch import init_batch, output_path
 
 
 def karyotype_sex_extractor(file_path, gcs_path):
@@ -22,9 +23,7 @@ def karyotype_sex_extractor(file_path, gcs_path):
     sample_qc_table = hl.read_table(file_path)
 
     # select CPG ID, external ID, and sex karyotype (CPG ID is the key, so don't need to explicitly select)
-    karyotype_sex_table = sample_qc_table.select(
-        sample_qc_table.external_id, sample_qc_table.sex_karyotype
-    )
+    karyotype_sex_table = sample_qc_table.select(sample_qc_table.external_id, sample_qc_table.sex_karyotype)
 
     # output writing
     karyotype_sex_table.export(gcs_path, delimiter=',')
@@ -37,7 +36,7 @@ def karyotype_sex_extractor(file_path, gcs_path):
 )
 @click.command()
 def main(file_path):
-    gcs_output_path = output_path(f'sample_karyotype_sex_mapping.csv', 'analysis')
+    gcs_output_path = output_path('sample_karyotype_sex_mapping.csv', 'analysis')
     karyotype_sex_extractor(file_path, gcs_output_path)
 
 

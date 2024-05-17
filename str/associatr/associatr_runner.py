@@ -88,6 +88,7 @@ def main():
                 associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}]')
                 if get_config()['associatr']['always_run']:
                     associatr_job.always_run()
+
                 associatr_job.image(get_config()['images']['trtools'])
                 associatr_job.storage(get_config()['associatr']['job_storage'])
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
