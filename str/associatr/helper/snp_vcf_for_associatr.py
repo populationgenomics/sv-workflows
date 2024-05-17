@@ -98,7 +98,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
 @click.option('--job-cpu', default=1)
 @click.command()
 def main(vcf_dir, chromosomes, job_storage, job_cpu):
-    b = get_batch(name = f'SNP VCF maker for associaTR')
+    b = get_batch(name='SNP VCF maker for associaTR')
     for chrom in chromosomes.split(','):
         snp_vcf = f'{vcf_dir}/chr{chrom}_common_variants.vcf.bgz'
         output_file = output_path(f'common_variants_snps/hail_filtered_chr{chrom}.vcf')
