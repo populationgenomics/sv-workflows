@@ -70,9 +70,12 @@ def main():
                 cis_window_size = get_config()['associatr']['cis_window_size']
                 version = get_config()['associatr']['version']
 
-                if to_path(output_path(
-                    f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp', 'analysis',
-                )).exists():
+                if to_path(
+                    output_path(
+                        f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp',
+                        'analysis',
+                    ),
+                ).exists():
                     continue
 
                 gene_cis_window_file = f'{cis_window_dir}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.bed'
