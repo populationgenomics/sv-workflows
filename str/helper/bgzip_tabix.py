@@ -56,7 +56,7 @@ def main(input_dir, chromosomes, job_memory, job_storage, job_cpu):
             f"""
 
             bcftools view {vcf_input} | bgzip -c >  {bcftools_job.vcf_output['vcf.bgz']}
-            tabix -f -p vcf {bcftools_job.vcf_output['vcf.bgz']}  > {bcftools_job.vcf_output['vcf.gz.tbi']}
+            tabix -f -p vcf {bcftools_job.vcf_output['vcf.bgz']}  > {bcftools_job.vcf_output['vcf.bgz.tbi']}
 
             """,
         )
