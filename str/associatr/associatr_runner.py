@@ -11,7 +11,7 @@ Ensure prior scripts have been run to generate dependent files, particularly:
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
     --access-level "full" \
-    --memory "16G" \
+    --memory "8G" \
     --output-dir "str/associatr/common_variants_snps/tob_n1055" \
      python3 associatr_runner.py
 
@@ -70,8 +70,11 @@ def main():
                 cis_window_size = get_config()['associatr']['cis_window_size']
                 version = get_config()['associatr']['version']
 
-                if output_path(
-                    f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp', 'analysis',
+                if to_path(
+                    output_path(
+                        f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp',
+                        'analysis',
+                    ),
                 ).exists():
                     continue
 
