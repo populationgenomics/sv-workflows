@@ -5,7 +5,7 @@ This script is used to convert existing SNP VCF files (chromosome-specific) into
 Also performs bgzipping and tabixing of the output VCF file.
 
 analysis-runner --dataset bioheart --access-level test --output-dir str/associatr --description "snp vcf for associatr" \
-snp_vcf_for_associatr.py --chromosomes=20 --vcf-dir=gs://cpg-bioheart-test/saige-qtl/input_files/genotypes/vds1-0
+snp_vcf_for_associatr.py --chromosomes=20 --vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf
 
 """
 
@@ -26,7 +26,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
             if line.startswith('##hailversion'):
                 # Write header line and update FORMAT column
                 fout.write(line)
-                # Add new FORMAT fields to the header
+                # Add new FORMAT fields to the header (ExpansionHunter style)
                 fout.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="">\n')
                 fout.write('##FORMAT=<ID=ADFL,Number=1,Type=String,Description="">\n')
                 fout.write('##FORMAT=<ID=ADIR,Number=1,Type=String,Description="">\n')
@@ -48,6 +48,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 # Write meta-information lines as they are
                 fout.write(line)
             elif line.startswith('#CHROM'):
+                # associaTR requires sample IDS to be strictly numeric so we remove 'CPG' prefix
                 fout.write(line.replace('CPG', ''))
 
             else:
@@ -62,9 +63,9 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 pid_index = format_field.split(':').index('PID') if 'PID' in format_field.split(':') else None
                 pid = sample_data[0].split(':')[pid_index] if pid_index is not None else '.'
 
-                # Update INFO field
+                # Update INFO field (add new fields required by ExpansionHunter, filler fields eg REF and RU are a constant 3)
                 new_info_fields = [f'END={parts[1]}', 'REF=3', f'REPID={pid}', 'RL=0', 'RU=3', f'VARID={pid}']
-                updated_info_field = info_field + ';' + ';'.join(new_info_fields)
+                updated_info_field = ';'.join(new_info_fields)
 
                 # Update FORMAT field
                 updated_format_field = 'GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO:QUAL'
@@ -97,7 +98,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
 @click.option('--job-cpu', default=1)
 @click.command()
 def main(vcf_dir, chromosomes, job_storage, job_cpu):
-    b = get_batch(name='SNP VCF maker for associaTR')
+    b = get_batch(name = f'SNP VCF maker for associaTR')
     for chrom in chromosomes.split(','):
         snp_vcf = f'{vcf_dir}/chr{chrom}_common_variants.vcf.bgz'
         output_file = output_path(f'common_variants_snps/hail_filtered_chr{chrom}.vcf')
