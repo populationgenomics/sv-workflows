@@ -21,7 +21,7 @@ from cpg_utils.hail_batch import get_batch
 def reformat_vcf(vcf_file_path, output_file_path):
     vcf_file = to_path(vcf_file_path)
     output_file = to_path(output_file_path)
-    with gzip.open(vcf_file, 'rt') as fin, open(output_file, 'w') as fout:
+    with gzip.open(vcf_file, 'rt') as fin, open('temporary_gt_file.txt', 'w') as fout:
         for line in fin:
             if line.startswith('##hailversion'):
                 # Write header line and update FORMAT column
@@ -83,6 +83,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 # Write the updated line to the output file
                 updated_line = '\t'.join(parts[:7] + [updated_info_field, updated_format_field] + updated_sample_data)
                 fout.write(updated_line + '\n')
+    output_file.upload_from('temporary_gt_file.txt')
 
 
 @click.option('--vcf-dir', required=True, help='Input VCF file')
