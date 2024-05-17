@@ -5,7 +5,7 @@ This script receives a gzipped VCF file and performs BGZIP, writing files to out
 
 analysis-runner --access-level test --dataset bioheart --description  \
     'VCF combiner'  --output-dir 'str/associatr/common_variant_snps' \
-    bzip.py \
+    bgzip_tabix.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/common_variants_snps \
     --chromosomes=20
 """
