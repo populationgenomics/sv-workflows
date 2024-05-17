@@ -72,7 +72,7 @@ def main():
 
                 if to_path(
                     output_path(
-                        f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp',
+                        f'results/{version}/{celltype}/{chromosome}/{gene}_{cis_window_size}bp.tsv',
                         'analysis',
                     ),
                 ).exists():
