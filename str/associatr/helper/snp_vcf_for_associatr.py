@@ -4,8 +4,9 @@
 This script is used to convert existing SNP VCF files (chromosome-specific) into a mock ExpansionHunter-style VCF for direct use with associaTR.
 Also performs bgzipping and tabixing of the output VCF file.
 
-analysis-runner --dataset bioheart --access-level test --output-dir str/associatr --description "snp vcf for associatr" \
-snp_vcf_for_associatr.py --chromosomes=20 --vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf
+analysis-runner --dataset bioheart --access-level standard --output-dir str/associatr --description "snp vcf for associatr" \
+snp_vcf_for_associatr.py --vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990_and_tob_n1055/input_files/genotypes/vds-tenk10k1-0 \
+--chromosomes=11,12,13,14,16,6,9 --job-storage=100G --job-cpu=8
 
 """
 
@@ -69,6 +70,11 @@ def reformat_vcf(vcf_file_path, output_file_path):
 
                 # Update FORMAT field
                 updated_format_field = 'GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO:QUAL'
+
+                # Check if all GT values are the same across all samples
+                gt_values = [sample.split(':')[0].replace('|', '/') for sample in sample_data]
+                if all(gt == gt_values[0] for gt in gt_values):
+                    continue  # Skip writing this line if all GT values are the same
 
                 # Update sample data
                 updated_sample_data = []
