@@ -98,7 +98,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
 def main(vcf_dir, chromosomes, job_storage, job_cpu):
     b = get_batch()
     for chrom in chromosomes.split(','):
-        snp_vcf = f'{vcf_dir}/chr{chrom}_common_variants.vcf.gz'
+        snp_vcf = f'{vcf_dir}/chr{chrom}_common_variants.vcf.bgz'
         output_file = output_path(f'common_variants_snps/hail_filtered_chr{chrom}.vcf')
         reformatting_job = b.new_python_job(name=f'Reformating chr{chrom} VCF')
         reformatting_job.storage(job_storage)
