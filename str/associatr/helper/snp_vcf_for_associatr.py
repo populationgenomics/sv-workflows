@@ -104,7 +104,7 @@ def main(vcf_dir, chromosomes, job_storage, job_cpu):
         reformatting_job.storage(job_storage)
         reformatting_job.cpu(job_cpu)
         reformatting_job.call(reformat_vcf, snp_vcf, output_file)
-    batch.run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
