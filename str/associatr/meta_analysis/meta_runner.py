@@ -201,7 +201,7 @@ def main(
             for gene in intersected_genes:
                 j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(0.25)
-                if output_path(f"meta_results/{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv", "analysis").exists():
+                if output_path(f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv", "analysis").exists():
                     continue
                 if always_run:
                     j.always_run()
