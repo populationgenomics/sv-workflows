@@ -25,6 +25,8 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
 - Perform multiple testing correction (`associatr/multiple_testing_correction`)
   - at the gene-level using ACAT correction with `run_gene_level_pval.py`. Option to use Bonferroni correction instead.
   - control for FDR using Storey q-values with `run_storey.py`.
+
+- Note: to run SNPs using the associaTR pipeline, please 1) subset the SNP VCF to target samples using `vcf_sample_subsetter.py` 2) Format the SNP VCF into an EH-style VCF using `snp_vcf_for_associatr.py` and then finally 3) Bgzip and tabix the VCFs with `bgzip_tabix.py` before using these input VCF files with `associatr_runner.py`.
  
 ## Downstream analysis
 
