@@ -21,9 +21,8 @@ import pandas as pd
 
 import hailtop.batch as hb
 
-from cpg_utils import to_path
+from cpg_utils import output_path, to_path
 from cpg_utils.hail_batch import get_batch, image_path
-from cpg_utils  import output_path
 
 
 def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
@@ -162,7 +161,16 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--always-run', is_flag=True, help='Set job to always run')
 @click.command()
-def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes, max_parallel_jobs, always_run):
+def main(
+    results_dir_1,
+    results_dir_2,
+    gene_list_dir_1,
+    gene_list_dir_2,
+    cell_types,
+    chromosomes,
+    max_parallel_jobs,
+    always_run,
+):
     """
     Compute meta-analysis pooled results for each gene
     """
