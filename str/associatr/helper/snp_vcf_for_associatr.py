@@ -64,8 +64,9 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 pid_index = format_field.split(':').index('PID') if 'PID' in format_field.split(':') else None
                 pid = sample_data[0].split(':')[pid_index] if pid_index is not None else '.'
 
-                # Update INFO field (add new fields required by ExpansionHunter, filler fields eg REF and RU are a constant 3)
-                new_info_fields = [f'END={parts[1]}', 'REF=3', f'REPID={pid}', 'RL=0', 'RU=3', f'VARID={pid}']
+                # Update INFO field (add new fields required by ExpansionHunter, filler fields eg REF =0)
+                # RU stores the alt_allele; this will allow us to discriminate between loci with the same POS
+                new_info_fields = [f'END={parts[1]}', 'REF=3', f'REPID={pid}', 'RL=0', f'RU={parts[4]}', f'VARID={pid}']
                 updated_info_field = ';'.join(new_info_fields)
 
                 # Update FORMAT field
