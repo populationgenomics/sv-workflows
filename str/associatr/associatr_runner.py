@@ -10,11 +10,10 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
-    --access-level "full" \
+    --access-level "test" \
     --memory "8G" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055" \
+    --output-dir "str/associatr/tester_run" \
      python3 associatr_runner.py
-
 
 """
 import json
@@ -89,7 +88,8 @@ def main():
                 if get_config()['associatr']['always_run']:
                     associatr_job.always_run()
 
-                associatr_job.image(get_config()['images']['trtools'])
+                #associatr_job.image(get_config()['images']['trtools'])
+                associatr_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/trtools_hope_version:latest')
                 associatr_job.storage(get_config()['associatr']['job_storage'])
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
                 associatr_job.declare_resource_group(association_results={'tsv': '{root}.tsv'})
