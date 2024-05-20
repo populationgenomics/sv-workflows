@@ -5,14 +5,14 @@ This script runs R's meta package to generate pooled effect sizes for each eQTL.
 Assumes associaTR was run previously on both cohorts and gene lists were generated for each cell type and chromosome.
 Outputs a TSV file with the meta-analysis results for each gene.
 
-analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "full" \
+analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/tob_n1055/results/v4 \
-    --results-dir-2=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/bioheart_n990/results/v4 \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055/results/v4 \
+    --results-dir-2=gs://cpg-bioheart-test/str/associatr/common_variants_snps/bioheart_n990/results/v4 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_Naive \
-    --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
+    --cell-types=B_intermediate \
+    --chromosomes=chr1
 """
 import json
 
