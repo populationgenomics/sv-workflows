@@ -21,8 +21,8 @@ import pandas as pd
 
 import hailtop.batch as hb
 
-from cpg_utils import output_path, to_path
-from cpg_utils.hail_batch import get_batch, image_path
+from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
 def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
