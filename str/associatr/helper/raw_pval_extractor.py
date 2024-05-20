@@ -37,7 +37,7 @@ def main(input_dir, cell_types, chromosomes):
     Extracts the raw p-values from the results of associaTR into one text file per cell type.
     """
     for cell_type in cell_types.split(','):
-        gcs_output = output_path(f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt')
+        gcs_output = output_path(f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt', 'analysis')
         with to_path(gcs_output).open('w') as f:
             for chromosome in chromosomes.split(','):
                 gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
