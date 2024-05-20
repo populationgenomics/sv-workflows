@@ -71,10 +71,19 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 # Update FORMAT field
                 updated_format_field = 'GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO:QUAL'
 
-                # Check if all GT values are the same across all samples
-                gt_values = [sample.split(':')[0].replace('|', '/') for sample in sample_data]
-                if all(gt == gt_values[0] for gt in gt_values):
-                    continue  # Skip writing this line if all GT values are the same
+                # Check if all GT sums are the same across all samples, excluding missing GT values
+                summed_gt_values = []
+                for sample in sample_data:
+                    gt = sample.split(':')[0].replace('|', '/')
+                    if gt != './.':
+                        alleles = gt.split('/')
+                        if alleles[0] != '.' and alleles[1] != '.':
+                            gt_sum = int(alleles[0]) + int(alleles[1])
+                            summed_gt_values.append(gt_sum)
+
+                # Skip writing this line if all summed GT values are the same or if all GT values are missing
+                if len(summed_gt_values) == 0 or all(sum_gt == summed_gt_values[0] for sum_gt in summed_gt_values):
+                    continue
 
                 # Update sample data
                 updated_sample_data = []
