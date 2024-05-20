@@ -45,7 +45,9 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 fout.write('##INFO=<ID=REF,Number=1,Type=Integer,Description="">\n')
                 fout.write('##INFO=<ID=REPID,Number=1,Type=String,Description="">\n')
                 fout.write('##INFO=<ID=RL,Number=1,Type=Integer,Description="">\n')
-                fout.write('##INFO=<ID=RU,Number=1,Type=String,Description="Storing the REF/ALT info instead of Repeat Unit to retain the REF/ALT info in the association output files, which is crucial where there are multiple variants with the same CHR:POS coordinates (eg multi allelic loci)">\n')
+                fout.write(
+                    '##INFO=<ID=RU,Number=1,Type=String,Description="Storing the REF/ALT info instead of Repeat Unit to retain the REF/ALT info in the association output files, which is crucial where there are multiple variants with the same CHR:POS coordinates (eg multi allelic loci)">\n',
+                )
                 fout.write('##INFO=<ID=SVTYPE,Number=1,Type=String,Description="">\n')
                 fout.write('##INFO=<ID=VARID,Number=1,Type=String,Description="">\n')
                 fout.write('##ALT=<ID=STR1>\n')
