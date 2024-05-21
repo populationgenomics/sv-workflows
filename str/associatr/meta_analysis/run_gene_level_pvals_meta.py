@@ -199,10 +199,10 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
         pvals, gene_name, row_dict = process_single_file(gene_file)
 
         # write to output
-        gcs_output = output_path(
+        gcs_output = to_path(output_path(
             f'gene_level_pvals/bonferroni/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
             'analysis',
-        )
+        ))
         if gcs_output.exists():
             print(f'{gene_file} already processed. Skipping...')
             continue
