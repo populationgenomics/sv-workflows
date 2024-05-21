@@ -8,10 +8,10 @@ Output is multiple gene-specific TSV files with the gene name in the first colum
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, pooled _beta, pooled_se, pooled_pval,pooled_pval_q, motif, ref_len).
 
 analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results" \
-    run_gene_level_pvals_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
-    --cell-types=CD4_TCM \
-    --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --acat
+    --output-dir "str/associatr/tester/cp" \
+    run_gene_level_pvals_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990\\meta_results \
+    --cell-types=B_intermediate \
+    --chromosomes=1 --acat
 """
 import logging
 from copy import deepcopy
@@ -124,9 +124,11 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
         pvals, gene_name, row_dict = process_single_file(gene_file)
 
         # specify output path
-        gcs_output = output_path(
-            f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
-            'analysis',
+        gcs_output = to_path(
+            output_path(
+                f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
+                'analysis',
+            )
         )
         if gcs_output.exists():
             print(f'{gene_file} already processed. Skipping...')
@@ -197,10 +199,10 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
         pvals, gene_name, row_dict = process_single_file(gene_file)
 
         # write to output
-        gcs_output = output_path(
+        gcs_output = to_path(output_path(
             f'gene_level_pvals/bonferroni/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
             'analysis',
-        )
+        ))
         if gcs_output.exists():
             print(f'{gene_file} already processed. Skipping...')
             continue
