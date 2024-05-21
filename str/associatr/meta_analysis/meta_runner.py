@@ -200,9 +200,12 @@ def main(
 
             # run meta-analysis for each gene
             for gene in intersected_genes:
-                if to_path(output_path(
-                    f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv", "analysis",
-                )).exists():
+                if to_path(
+                    output_path(
+                        f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
+                        "analysis",
+                    )
+                ).exists():
                     continue
                 j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(0.25)
