@@ -5,14 +5,15 @@ This script runs R's meta package to generate pooled effect sizes for each eQTL.
 Assumes associaTR was run previously on both cohorts and gene lists were generated for each cell type and chromosome.
 Outputs a TSV file with the meta-analysis results for each gene.
 
-analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "full" \
+analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/tob_n1055/results/v3 \
-    --results-dir-2=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/bioheart_n990/results/v3 \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055/results/v4 \
+    --results-dir-2=gs://cpg-bioheart-test/str/associatr/common_variants_snps/bioheart_n990/results/v4 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD8_TEM \
-    --chromosomes=chr22
+    --cell-types=B_intermediate \
+    --chromosomes=chr1 \
+    --always-run
 """
 import json
 
@@ -22,7 +23,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, image_path
+from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
 def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
@@ -159,8 +160,18 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 @click.option('--cell-types', help='cell type')
 @click.option('--chromosomes', help='chromosomes')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
+@click.option('--always-run', is_flag=True, help='Set job to always run')
 @click.command()
-def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_types, chromosomes, max_parallel_jobs):
+def main(
+    results_dir_1,
+    results_dir_2,
+    gene_list_dir_1,
+    gene_list_dir_2,
+    cell_types,
+    chromosomes,
+    max_parallel_jobs,
+    always_run,
+):
     """
     Compute meta-analysis pooled results for each gene
     """
@@ -189,8 +200,17 @@ def main(results_dir_1, results_dir_2, gene_list_dir_1, gene_list_dir_2, cell_ty
 
             # run meta-analysis for each gene
             for gene in intersected_genes:
+                if to_path(
+                    output_path(
+                        f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
+                        "analysis",
+                    )
+                ).exists():
+                    continue
                 j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chromosome}_{gene}')
                 j.cpu(0.25)
+                if always_run:
+                    j.always_run()
                 j.image(image_path('r-meta'))
                 j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, chromosome, gene)
                 manage_concurrency_for_job(j)
