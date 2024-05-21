@@ -12,7 +12,8 @@ analysis-runner --dataset "bioheart" --description "meta results runner" --acces
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --cell-types=B_intermediate \
-    --chromosomes=chr1
+    --chromosomes=chr1 \
+    --always-run
 """
 import json
 
