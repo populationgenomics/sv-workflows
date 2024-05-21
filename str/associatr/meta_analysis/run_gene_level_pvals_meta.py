@@ -124,10 +124,12 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
         pvals, gene_name, row_dict = process_single_file(gene_file)
 
         # specify output path
-        gcs_output = to_path(output_path(
-            f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
-            'analysis',
-        ))
+        gcs_output = to_path(
+            output_path(
+                f'gene_level_pvals/acat/{cell_type}/chr{chromosome}/{gene_name}_gene_level_pval.tsv',
+                'analysis',
+            )
+        )
         if gcs_output.exists():
             print(f'{gene_file} already processed. Skipping...')
             continue
