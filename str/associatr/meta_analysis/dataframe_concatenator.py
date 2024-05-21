@@ -14,7 +14,8 @@ analysis-runner --dataset "bioheart" --description "concatenate meta-analysis re
     --input-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results \
     --input-dir-2=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
     --celltypes=B_intermediate \
-    --chromosomes=chr1
+    --chromosomes=chr1 \
+    --max-parallel-jobs=10
 
 """
 
@@ -43,12 +44,12 @@ def run_concatenator(input_dir_1, input_dir_2, celltype, chromosome, gene_file):
     df.to_csv(output_path(f'{celltype}/{chromosome}/{gene_file}', 'analysis'), sep='\t', index=False)
 
 
-@click.command('--input-dir-1', help='Input directory for the first collection of dataframes')
-@click.command('--input-dir-2', help='Input directory for the second collection of dataframes')
-@click.commmand('--celltypes', help='comma-separated list of cell types')
-@click.command('--chromosomes', help='comma-separated list of chromosomes')
-@click.command('--max-parallel-jobs', help='Maximum number of jobs to run in parallel', default=500)
-@click.command('--always-run', help='Job set to always run', is_flag=True)
+@click.option('--input-dir-1', help='Input directory for the first collection of dataframes')
+@click.option('--input-dir-2', help='Input directory for the second collection of dataframes')
+@click.option('--celltypes', help='comma-separated list of cell types')
+@click.option('--chromosomes', help='comma-separated list of chromosomes')
+@click.option('--max-parallel-jobs', help='Maximum number of jobs to run in parallel', default=500)
+@click.option('--always-run', help='Job set to always run', is_flag=True)
 @click.command()
 def main(input_dir_1, input_dir_2, celltypes, chromosomes, max_parallel_jobs, always_run):
     """
