@@ -76,7 +76,7 @@ def main(input_dir_1, input_dir_2, celltypes, chromosomes, max_parallel_jobs, al
                 file_name = gene_file.split('/')[-1]
                 if to_path(f'{input_dir_2}/{celltype}/{chromosome}/{file_name}').exists():
                     # see if output file exists. If it does, skip this job
-                    if to_path(output_path(f'{celltype}/{chromosome}/{gene_file}', 'analysis')).exists():
+                    if to_path(output_path(f'{celltype}/{chromosome}/{file_name}', 'analysis')).exists():
                         continue
                     j = b.new_python_job(name=f'concatenate_{celltype}_{chromosome}_{file_name}')
                     j.cpu(0.25)
