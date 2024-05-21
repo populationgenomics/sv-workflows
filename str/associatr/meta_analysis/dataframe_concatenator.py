@@ -78,7 +78,7 @@ def main(input_dir_1, input_dir_2, celltypes, chromosomes, max_parallel_jobs, al
                     j = b.new_python_job(name=f'concatenate_{celltype}_{chromosome}_{file_name}')
                     if always_run:
                         j.always_run()
-                    j.call(run_concatenator, input_dir_1, input_dir_2, celltype, chromosome, gene_file)
+                    j.call(run_concatenator, input_dir_1, input_dir_2, celltype, chromosome, file_name)
                     manage_concurrency_for_job(j)
     b.run(wait=False)
 
