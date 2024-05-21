@@ -7,9 +7,9 @@ Assumed input files follow the format of output TSV files from meta_runner.py (i
 Output is multiple gene-specific TSV files with the gene name in the first column, and gene-level p-value in the second column.
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, pooled _beta, pooled_se, pooled_pval,pooled_pval_q, motif, ref_len).
 
-analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "full" \
+analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
     --output-dir "str/associatr/tester/cp" \
-    run_gene_level_pvals_meta.py --input-dir=gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990\\meta_results \
+    run_gene_level_pvals_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990\\meta_results \
     --cell-types=B_intermediate \
     --chromosomes=1 --acat
 """
