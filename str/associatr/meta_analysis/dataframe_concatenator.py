@@ -74,7 +74,7 @@ def main(input_dir_1, input_dir_2, celltypes, chromosomes, max_parallel_jobs, al
             for gene_file in gene_files:
                 # see if the gene file exists in input dir 2. If it does, concatenate the two files together.
                 file_name = gene_file.split('/')[-1]
-                if to_path(f'{input_dir_2}/{celltype}/{chromosome}/{gene_file}').exists():
+                if to_path(f'{input_dir_2}/{celltype}/{chromosome}/{file_name}').exists():
                     j = b.new_python_job(name=f'concatenate_{celltype}_{chromosome}_{file_name}')
                     if always_run:
                         j.always_run()
