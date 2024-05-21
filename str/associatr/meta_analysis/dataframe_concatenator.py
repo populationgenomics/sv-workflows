@@ -11,10 +11,10 @@ Only common genes between the two datasets will be concatenated.
 analysis-runner --dataset "bioheart" --description "concatenate meta-analysis results" --access-level "test" \
     --output-dir "str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990\meta_results" \
     dataframe_concatenator.py \
-    --input-dir-1=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/tob_n1055/meta_results/v3 \
-    --input-dir-2=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/bioheart_n990/meta_results/v3 \
-    --celltypes=CD8_TEM \
-    --chromosomes=chr22
+    --input-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results \
+    --input-dir-2=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
+    --celltypes=B_intermediate \
+    --chromosomes=chr1
 
 """
 
@@ -31,6 +31,7 @@ def run_concatenator(input_dir_1, input_dir_2, celltype, chromosome, gene_file):
     Concatenate two dataframes together.
     """
     import pandas as pd
+
     from cpg_utils.hail_batch import output_path
 
     # read input files
@@ -41,14 +42,14 @@ def run_concatenator(input_dir_1, input_dir_2, celltype, chromosome, gene_file):
     # write results as a tsv file to gcp
     df.to_csv(output_path(f'{celltype}/{chromosome}/{gene_file}', 'analysis'), sep='\t', index=False)
 
+
 @click.command('--input-dir-1', help='Input directory for the first collection of dataframes')
 @click.command('--input-dir-2', help='Input directory for the second collection of dataframes')
-@click.commmand('--celltypes', help= 'comma-separated list of cell types')
+@click.commmand('--celltypes', help='comma-separated list of cell types')
 @click.command('--chromosomes', help='comma-separated list of chromosomes')
 @click.command('--max-parallel-jobs', help='Maximum number of jobs to run in parallel', default=500)
 @click.command('--always-run', help='Job set to always run', is_flag=True)
 @click.command()
-
 def main(input_dir_1, input_dir_2, celltypes, chromosomes, max_parallel_jobs, always_run):
     """
     Runner script to concatenate two dataframes together.
@@ -80,10 +81,6 @@ def main(input_dir_1, input_dir_2, celltypes, chromosomes, max_parallel_jobs, al
                     manage_concurrency_for_job(j)
     b.run(wait=False)
 
+
 if __name__ == '__main__':
     main()
-
-
-
-
-
