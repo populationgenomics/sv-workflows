@@ -4,10 +4,18 @@
 This script extracts the raw p-values from the results of the meta-analysis output files.
 For downstream use to make a QQ plot.
 
-analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990/DL_random_model" \
-    raw_pval_extractor_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
-    --cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
+analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "full" \
+    --output-dir "str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990" \
+    --memory="16G" --storage="20G" \
+    raw_pval_extractor_meta.py --input-dir=gs://cpg-bioheart-main-analysis/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
+    --cell-types=B_memory,B_intermediate --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
+
+
+    analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "full" \
+    --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
+    --memory="16G" --storage="20G" \
+    raw_pval_extractor_meta.py --input-dir=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results \
+    --cell-types=CD4_TCM,B_intermediate --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
 
 """
 
@@ -37,7 +45,7 @@ def main(input_dir, cell_types, chromosomes):
     Extracts the raw p-values from the results of associaTR into one text file per cell type.
     """
     for cell_type in cell_types.split(','):
-        gcs_output = output_path(f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt')
+        gcs_output = output_path(f'raw_pval_extractor/{cell_type}_gene_tests_raw_pvals.txt', 'analysis')
         with to_path(gcs_output).open('w') as f:
             for chromosome in chromosomes.split(','):
                 gene_files = list(to_path(f'{input_dir}/{cell_type}/chr{chromosome}').glob('*.tsv'))
