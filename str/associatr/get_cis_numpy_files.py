@@ -21,6 +21,7 @@ from ast import literal_eval
 import numpy as np
 import pandas as pd
 import scanpy as sc
+from cyvcf2 import VCF
 from scipy.stats import norm
 
 import hail as hl
@@ -30,7 +31,6 @@ from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
-from cyvcf2 import VCF
 
 def extract_genotypes(vcf_file, loci):
     """
@@ -149,9 +149,8 @@ def cis_window_numpy_extractor(
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
         # add SNP genotypes we would like to condition on
-        snp_genotype_df = extract_genotypes(snp_input['vcf'],snp_loci)
+        snp_genotype_df = extract_genotypes(snp_input['vcf'], snp_loci)
         gene_pheno_cov = gene_pheno_cov.merge(snp_genotype_df, on='sample_id', how='inner')
-
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
