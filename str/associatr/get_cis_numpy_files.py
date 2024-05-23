@@ -203,7 +203,7 @@ def main():
                 snp_vcf_dir = get_config()['get_cis_numpy']['snp_vcf_dir']
                 snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
                 snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
-            else: # no SNP VCF provided
+            else:  # no SNP VCF provided
                 snp_input = None
             j.call(
                 cis_window_numpy_extractor,
