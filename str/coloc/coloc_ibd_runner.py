@@ -13,9 +13,12 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py \
-    --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
-    --celltypes "ASDC"
+    --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results" \
+    --celltypes CD8_TEM"
 
+    ,NK,CD8_TEM,CD4_Naive,B_naive
+"
+,,CD4_Naive,B_naive
 
 """
 
@@ -160,11 +163,13 @@ def main(snp_cis_dir, celltypes, var_annotation_file, gwas_file):
         estrs = pd.read_csv('gs://cpg-bioheart-test/str/associatr/eSTRs_from_joint_analysis.csv')
         #subset to cell type
         estrs = estrs[estrs['cell_type']==celltype]
-        for gene in estrs['gene_name']:
+        #for gene in estrs['gene_name']:
+        for gene in ['ENSG00000136273','ENSG00000136758','ENSG00000151576','ENSG00000048162']:
             # run coloc
             coloc_job = b.new_python_job(
                 f'Coloc for {gene}: {celltype}',
             )
+            coloc_job.cpu(2)
             coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
             coloc_job.call(
                 coloc_runner,
