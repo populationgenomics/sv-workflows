@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py --egenes_dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
-    --snp-cis-dir "gs://cpg-bioheart-test/saige-qtl/bioheart_n990/v2/output_files/output_files" \
+    --snp-cis-dir "gs://cpg-bioheart-test//str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
     --celltype "CD4_TCM"
 
 
@@ -58,18 +58,18 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
      ''',
     )
     eqtl = pd.read_csv(eqtl_file_path, sep='\t')
-    gene = eqtl_file_path.split('/')[-1].split('_')[2]
+    gene = eqtl_file_path.split('/')[-1].split('_')[0]
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     ro.globalenv['eqtl_r'] = eqtl_r
     ro.globalenv['gene'] = gene
     ro.r(
         '''
-    eqtl_r = eqtl_r %>% filter(!is.na(BETA))
-    eqtl_r = eqtl_r %>% distinct(POS, .keep_all = TRUE)
-    eqtl_r$beta = eqtl_r$BETA
-    eqtl_r$varbeta = eqtl_r$SE**2
-    eqtl_r$position = eqtl_r$POS
+    eqtl_r = eqtl_r %>% filter(!is.na(coeff_meta))
+    eqtl_r = eqtl_r %>% distinct(pos, .keep_all = TRUE)
+    eqtl_r$beta = eqtl_r$coeff_meta
+    eqtl_r$varbeta = eqtl_r$se_meta**2
+    eqtl_r$position = eqtl_r$pos
     eqtl_r$snp = paste('s', eqtl_r$position, sep = '')
     eqtl_r = eqtl_r %>% select(beta, varbeta, position, snp)
 
@@ -95,7 +95,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
 
     # write to GCS
     pd_p4_df.to_csv(
-        f'{output_path(f"coloc/ibd/{celltype}/{gene}_100kb.tsv")}',
+        f'{output_path(f"coloc-snp-only/ibd/{celltype}/{gene}_100kb.tsv")}',
         sep='\t',
         index=False,
     )
@@ -135,20 +135,20 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
     )
 
     for celltype in celltypes.split(','):
-        egenes_file_path = egenes_dir / {celltype}.tsv
+        egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
         # read in eGenes file
         egenes = pd.read_csv(egenes_file_path, sep='\t')
         egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
         for gene in egenes['gene_name']:
-            if to_path(snp_cis_dir + '/' + celltype + '_' + gene + '_cis').exists():
+            gene_table = var_table[var_table['gene_ids'] == gene]
+            chr = gene_table['chr'].iloc[0][3:]
+            if to_path(f'{snp_cis_dir}/{celltype}/chr{chr}/{gene}_100000bp_meta_results.tsv').exists():
                 print('Cis results for ' + gene + ' exist: proceed with coloc')
 
                 # extract the coordinates for the cis-window (gene +/- 100kB)
-                gene_table = var_table[var_table['gene_ids'] == gene]
                 start = float(gene_table['start'].astype(float)) - 100000
                 end = float(gene_table['end'].astype(float)) + 100000
-                chr = gene_table['chr'].iloc[0][3:]
                 hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
                 hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
                 hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
@@ -156,7 +156,7 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                     hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
                 )
                 hg38_map_chr_start_end[['locus']].to_csv(
-                    output_path(f'coloc/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
+                    output_path(f'coloc-snp-only/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
                     index=False,
                 )
                 if hg38_map_chr_start_end.empty:
@@ -169,11 +169,11 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
-                coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
+                coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
                 coloc_job.call(
                     coloc_runner,
                     hg38_map_chr_start_end,
-                    snp_cis_dir + '/' + celltype + '_' + gene + '_cis',
+                    f'{snp_cis_dir}/{celltype}/chr{chr}/{gene}_100000bp_meta_results.tsv',
                     celltype,
                 )
 
