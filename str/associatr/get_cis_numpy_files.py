@@ -30,6 +30,46 @@ from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
+from cyvcf2 import VCF
+
+def extract_genotypes(vcf_file, loci):
+    """
+    Helper function to extract genotypes (SNPs) from a VCF file; target loci specified as a list (can be single or multiple)
+
+    """
+    # Read the VCF file
+    vcf_reader = VCF(vcf_file)
+
+    # Initialize a dictionary to store the results
+    results = {'sample_id': vcf_reader.samples}
+
+    # Initialize results dictionary with empty lists for each locus
+    for locus in loci:
+        results[locus] = ["." for _ in vcf_reader.samples]
+
+    # Iterate through the records in the VCF file for each locus
+    for locus in loci:
+        chrom, pos = locus.split(':')
+        pos = int(pos)
+
+        for record in vcf_reader(f'{chrom}:{pos}-{pos}'):
+            if record.CHROM == chrom and record.POS == pos:
+                for idx, sample in enumerate(record.genotypes):
+                    genotype_call = sample[0] + sample[1]
+                    if genotype_call == 0:
+                        genotype = "0"  # HOM REF
+                    elif genotype_call == 1:
+                        genotype = "1"  # HET
+                    elif genotype_call == 2:
+                        genotype = "2"  # HOM ALT
+                    else:
+                        genotype = "."
+                    results[locus][idx] = genotype
+                break
+
+    # Convert results to a DataFrame
+    return pd.DataFrame(results)
+
 
 def cis_window_numpy_extractor(
     input_h5ad_dir,
@@ -42,6 +82,8 @@ def cis_window_numpy_extractor(
     chrom_len,
     min_pct,
     remove_samples_file,
+    snp_input,
+    snp_loci,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -106,6 +148,11 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
+        # add SNP genotypes we would like to condition on
+        snp_genotype_df = extract_genotypes(snp_input['vcf'],snp_loci)
+        gene_pheno_cov = gene_pheno_cov.merge(snp_genotype_df, on='sample_id', how='inner')
+
+
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
 
@@ -151,6 +198,9 @@ def main():
             j.cpu(get_config()['get_cis_numpy']['job_cpu'])
             j.memory(get_config()['get_cis_numpy']['job_memory'])
             j.storage(get_config()['get_cis_numpy']['job_storage'])
+
+            snp_vcf_path = f'{snp_vcf_dir}/chr{chromosome}_common_variants.vcf.bgz'
+            snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
             j.call(
                 cis_window_numpy_extractor,
                 get_config()['get_cis_numpy']['input_h5ad_dir'],
@@ -163,6 +213,8 @@ def main():
                 chrom_len,
                 get_config()['get_cis_numpy']['min_pct'],
                 get_config()['get_cis_numpy']['remove_samples_file'],
+                snp_input,
+                get_config()['get_cis_numpy']['snp_loci'],
             )
 
             manage_concurrency_for_job(j)
