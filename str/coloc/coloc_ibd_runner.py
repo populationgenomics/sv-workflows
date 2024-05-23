@@ -118,7 +118,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
     default='gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
 )
 @click.option(
-    'gwas-file',
+    '--gwas-file',
     help='Path to the GWAS file',
     default='gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc',
 )
