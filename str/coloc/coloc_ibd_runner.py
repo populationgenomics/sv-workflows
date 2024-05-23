@@ -12,9 +12,9 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
-    coloc_ibd_runner.py --egenes-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
+    coloc_ibd_runner.py \
     --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
-    --celltypes "CD4_TCM"
+    --celltypes "ASDC"
 
 
 """
@@ -134,12 +134,6 @@ def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
         index=False,
     )
 
-
-@click.option(
-    '--egenes-dir',
-    help='Path to the eGenes dir',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
-)
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
@@ -157,34 +151,29 @@ def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
     default='gs://cpg-bioheart-test/str/gwas_catalog/g38.EUR.IBD.gwas_info03_filtered.assoc',
 )
 @click.command()
-def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
+def main(snp_cis_dir, celltypes, var_annotation_file, gwas_file):
     b = get_batch()
 
     for celltype in celltypes.split(','):
-        egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
-        # read in eGenes file
-        egenes = pd.read_csv(egenes_file_path, sep='\t')
-        egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
         # read in significant eSTRs file (joint analysis
         estrs = pd.read_csv('gs://cpg-bioheart-test/str/associatr/eSTRs_from_joint_analysis.csv')
         #subset to cell type
         estrs = estrs[estrs['cell_type']==celltype]
-        for gene in egenes['gene_name']:
-                if gene in set(estrs['gene_name']):
-                    # run coloc
-                    coloc_job = b.new_python_job(
-                        f'Coloc for {gene}: {celltype}',
-                    )
-                    coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
-                    coloc_job.call(
-                        coloc_runner,
-                        gene,
-                        snp_cis_dir,
-                        var_annotation_file,
-                        gwas_file,
-                        celltype,
-                    )
+        for gene in estrs['gene_name']:
+            # run coloc
+            coloc_job = b.new_python_job(
+                f'Coloc for {gene}: {celltype}',
+            )
+            coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
+            coloc_job.call(
+                coloc_runner,
+                gene,
+                snp_cis_dir,
+                var_annotation_file,
+                gwas_file,
+                celltype,
+            )
 
     b.run(wait=False)
 
