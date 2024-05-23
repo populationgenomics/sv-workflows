@@ -14,7 +14,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py \
     --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results" \
-    --celltypes CD8_TEM"
+    --celltypes "NK"
 
     ,NK,CD8_TEM,CD4_Naive,B_naive
 "
@@ -164,7 +164,7 @@ def main(snp_cis_dir, celltypes, var_annotation_file, gwas_file):
         #subset to cell type
         estrs = estrs[estrs['cell_type']==celltype]
         #for gene in estrs['gene_name']:
-        for gene in ['ENSG00000136273','ENSG00000136758','ENSG00000151576','ENSG00000048162']:
+        for gene in ['ENSG00000245849']:
             # run coloc
             coloc_job = b.new_python_job(
                 f'Coloc for {gene}: {celltype}',
