@@ -176,7 +176,6 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                     coloc_job = b.new_python_job(
                         f'Coloc for {gene}: {celltype}',
                     )
-                    coloc_job.cpu(0.5)
                     coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
                     coloc_job.call(
                         coloc_runner,
