@@ -171,7 +171,7 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
         #subset to cell type
         estrs = estrs[estrs['cell_type']==celltype]
         for gene in egenes['gene_name']:
-                if gene in estrs['gene_name']:
+                if gene in set(estrs['gene_name']):
                     # run coloc
                     coloc_job = b.new_python_job(
                         f'Coloc for {gene}: {celltype}',
