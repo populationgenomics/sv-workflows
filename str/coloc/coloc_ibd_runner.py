@@ -14,7 +14,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py --egenes-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
     --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
-    --celltypes "CD4_TCM"
+    --celltypes "ASDC"
 
 
 """
@@ -172,6 +172,7 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
+                coloc_job.cpu(0.5)
                 coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
                 coloc_job.call(
                     coloc_runner,
