@@ -43,10 +43,6 @@ def extract_genotypes(vcf_file, loci):
     results = pd.DataFrame()
     results['sample_id'] = vcf_reader.samples
 
-    # Initialize results dictionary with empty lists for each locus
-    for locus in loci:
-        results[locus] = ["." for _ in vcf_reader.samples]
-
     # Iterate through the records in the VCF file for each locus
     for locus in loci:
         chrom, pos = locus.split(':')
