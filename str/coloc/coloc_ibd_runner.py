@@ -5,7 +5,7 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 
 1) Identify eGenes (FDR <5%) from the STR analysis
 2) Extract the SNP GWAS data for the cis-window (gene +/- 100kB)
-3) Run coloc for each eGene (if SNP eQTL data is available
+3) Run coloc for each eGene - only do this if STR is still the lead signal in the joint SNP+STR eQTL analysis.
 4) Write the results to a TSV file
 
 analysis-runner --dataset "bioheart" \
@@ -14,7 +14,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py --egenes-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
     --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
-    --celltypes "ASDC"
+    --celltypes "CD4_TCM"
 
 
 """
@@ -56,7 +56,7 @@ def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
             hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
         )
         hg38_map_chr_start_end[['locus']].to_csv(
-            output_path(f'coloc-snp-only/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
+            output_path(f'coloc-snp-only/lead-str-signal/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
             index=False,
         )
         if hg38_map_chr_start_end.empty:
@@ -129,7 +129,7 @@ def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
 
     # write to GCS
     pd_p4_df.to_csv(
-        f'{output_path(f"coloc-snp-only/ibd/{celltype}/{gene}_100kb.tsv")}',
+        f'{output_path(f"coloc-snp-only/lead-str-signal/ibd/{celltype}/{gene}_100kb.tsv")}',
         sep='\t',
         index=False,
     )
@@ -165,23 +165,27 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
         egenes = pd.read_csv(egenes_file_path, sep='\t')
         egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
+        # read in significant eSTRs file (joint analysis
+        estrs = pd.read_csv('gs://cpg-bioheart-test/str/associatr/eSTRs_from_joint_analysis.csv')
+        #subset to cell type
+        estrs = estrs[estrs['cell_type']==celltype]
         for gene in egenes['gene_name']:
-
-                # run coloc
-                b = get_batch()
-                coloc_job = b.new_python_job(
-                    f'Coloc for {gene}: {celltype}',
-                )
-                coloc_job.cpu(0.5)
-                coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
-                coloc_job.call(
-                    coloc_runner,
-                    gene,
-                    snp_cis_dir,
-                    var_annotation_file,
-                    gwas_file,
-                    celltype,
-                )
+                if gene in estrs['gene_name']:
+                    # run coloc
+                    b = get_batch()
+                    coloc_job = b.new_python_job(
+                        f'Coloc for {gene}: {celltype}',
+                    )
+                    coloc_job.cpu(0.5)
+                    coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
+                    coloc_job.call(
+                        coloc_runner,
+                        gene,
+                        snp_cis_dir,
+                        var_annotation_file,
+                        gwas_file,
+                        celltype,
+                    )
 
     b.run(wait=False)
 
