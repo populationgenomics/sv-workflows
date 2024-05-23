@@ -50,7 +50,9 @@ def extract_genotypes(vcf_file, loci):
 
         for record in vcf_reader(f'{chrom}:{pos}-{pos}'):
             if record.CHROM == chrom and record.POS == pos:
-                results[locus] = record.gt_types
+                gt = record.gt_types
+                gt[gt == 3] = 2 #HOM ALT is coded as 3; change it to 2
+                results[locus] = gt
                 break
 
     # Convert results to a DataFrame
