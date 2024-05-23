@@ -158,6 +158,7 @@ def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
 )
 @click.command()
 def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
+    b = get_batch()
 
     for celltype in celltypes.split(','):
         egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
@@ -172,7 +173,6 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
         for gene in egenes['gene_name']:
                 if gene in estrs['gene_name']:
                     # run coloc
-                    b = get_batch()
                     coloc_job = b.new_python_job(
                         f'Coloc for {gene}: {celltype}',
                     )
