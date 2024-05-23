@@ -11,6 +11,7 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
+    --memory="16G" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py --egenes-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
     --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
@@ -25,11 +26,21 @@ import pandas as pd
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
 
-def coloc_runner(gene, snp_cis_dir, var_table, hg38_map, celltype):
+def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
     from cpg_utils.hail_batch import output_path
+
+    # read in gene annotation file
+    var_table = pd.read_csv(var_annotation_file)
+
+    hg38_map = pd.read_csv(
+        gwas_file,
+        sep='\t',
+        header=None,
+        names=['CHR', 'BP', 'END', 'FRQ_A_12882', 'FRQ_U_21770', 'OR', 'SE', 'P'],
+    )
 
     gene_table = var_table[var_table['gene_ids'] == gene]
     chr = gene_table['chr'].iloc[0][3:]
@@ -148,15 +159,6 @@ def coloc_runner(gene, snp_cis_dir, var_table, hg38_map, celltype):
 )
 @click.command()
 def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
-    # read in gene annotation file
-    var_table = pd.read_csv(var_annotation_file)
-
-    hg38_map = pd.read_csv(
-        gwas_file,
-        sep='\t',
-        header=None,
-        names=['CHR', 'BP', 'END', 'FRQ_A_12882', 'FRQ_U_21770', 'OR', 'SE', 'P'],
-    )
 
     for celltype in celltypes.split(','):
         egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
@@ -176,8 +178,8 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                     coloc_runner,
                     gene,
                     snp_cis_dir,
-                    var_table,
-                    hg38_map,
+                    var_annotation_file,
+                    gwas_file,
                     celltype,
                 )
 
