@@ -156,8 +156,6 @@ def cis_window_numpy_extractor(
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
 
-        gene_pheno_cov.to_csv(output_path(f'pheno_cov_numpy/{version}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv'), index=False)
-
         gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
             3:
         ]  # remove CPG prefix because associatr expects id to be numeric
@@ -205,7 +203,7 @@ def main():
                 snp_vcf_dir = get_config()['get_cis_numpy']['snp_vcf_dir']
                 snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
                 snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
-            else: # no SNP VCF provided
+            else:  # no SNP VCF provided
                 snp_input = None
             j.call(
                 cis_window_numpy_extractor,
