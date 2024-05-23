@@ -40,8 +40,8 @@ def extract_genotypes(vcf_file, loci):
     # Read the VCF file
     vcf_reader = VCF(vcf_file)
 
-    # Initialize a dictionary to store the results
-    results = {'sample_id': vcf_reader.samples}
+    results = pd.DataFrame()
+    results['sample_id'] = vcf_reader.samples
 
     # Initialize results dictionary with empty lists for each locus
     for locus in loci:
@@ -54,21 +54,11 @@ def extract_genotypes(vcf_file, loci):
 
         for record in vcf_reader(f'{chrom}:{pos}-{pos}'):
             if record.CHROM == chrom and record.POS == pos:
-                for idx, sample in enumerate(record.genotypes):
-                    genotype_call = sample[0] + sample[1]
-                    if genotype_call == 0:
-                        genotype = "0"  # HOM REF
-                    elif genotype_call == 1:
-                        genotype = "1"  # HET
-                    elif genotype_call == 2:
-                        genotype = "2"  # HOM ALT
-                    else:
-                        genotype = "."
-                    results[locus][idx] = genotype
+                results[locus] = record.gt_types
                 break
 
     # Convert results to a DataFrame
-    return pd.DataFrame(results)
+    return results
 
 
 def cis_window_numpy_extractor(
