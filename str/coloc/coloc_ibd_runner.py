@@ -12,9 +12,9 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
-    coloc_ibd_runner.py --egenes_dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
-    --snp-cis-dir "gs://cpg-bioheart-test//str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
-    --celltype "CD4_TCM"
+    coloc_ibd_runner.py --egenes-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
+    --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
+    --celltypes "CD4_TCM"
 
 
 """
@@ -25,12 +25,37 @@ import pandas as pd
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
 
-
-def coloc_runner(gwas, eqtl_file_path, celltype):
+def coloc_runner(gene, snp_cis_dir, var_table, hg38_map, celltype):
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
     from cpg_utils.hail_batch import output_path
+
+    gene_table = var_table[var_table['gene_ids'] == gene]
+    chr = gene_table['chr'].iloc[0][3:]
+    if to_path(f'{snp_cis_dir}/{celltype}/chr{chr}/{gene}_100000bp_meta_results.tsv').exists():
+        print('Cis results for ' + gene + ' exist: proceed with coloc')
+
+        # extract the coordinates for the cis-window (gene +/- 100kB)
+        start = float(gene_table['start'].astype(float)) - 100000
+        end = float(gene_table['end'].astype(float)) + 100000
+        hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
+        hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
+        hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
+        hg38_map_chr_start_end['locus'] = (
+            hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
+        )
+        hg38_map_chr_start_end[['locus']].to_csv(
+            output_path(f'coloc-snp-only/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
+            index=False,
+        )
+        if hg38_map_chr_start_end.empty:
+            print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+            return
+        print('Extracted SNP GWAS data for ' + gene)
+    else:
+        print('No cis results for ' + gene + ' exist: skipping....')
+        return
 
     ro.r('library(coloc)')
     ro.r('library(tidyverse)')
@@ -57,8 +82,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype):
 
      ''',
     )
-    eqtl = pd.read_csv(eqtl_file_path, sep='\t')
-    gene = eqtl_file_path.split('/')[-1].split('_')[0]
+    eqtl = pd.read_csv(f'{snp_cis_dir}/{celltype}/chr{chr}/{gene}_100000bp_meta_results.tsv', sep='\t')
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     ro.globalenv['eqtl_r'] = eqtl_r
@@ -141,28 +165,6 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
         egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
 
         for gene in egenes['gene_name']:
-            gene_table = var_table[var_table['gene_ids'] == gene]
-            chr = gene_table['chr'].iloc[0][3:]
-            if to_path(f'{snp_cis_dir}/{celltype}/chr{chr}/{gene}_100000bp_meta_results.tsv').exists():
-                print('Cis results for ' + gene + ' exist: proceed with coloc')
-
-                # extract the coordinates for the cis-window (gene +/- 100kB)
-                start = float(gene_table['start'].astype(float)) - 100000
-                end = float(gene_table['end'].astype(float)) + 100000
-                hg38_map_chr = hg38_map[hg38_map['CHR'] == int(chr)]
-                hg38_map_chr_start = hg38_map_chr[hg38_map_chr['BP'] >= start]
-                hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['BP'] <= end]
-                hg38_map_chr_start_end['locus'] = (
-                    hg38_map_chr_start_end['CHR'].astype(str) + ':' + hg38_map_chr_start_end['BP'].astype(str)
-                )
-                hg38_map_chr_start_end[['locus']].to_csv(
-                    output_path(f'coloc-snp-only/ibd/{celltype}/{gene}_snp_gwas_list.csv'),
-                    index=False,
-                )
-                if hg38_map_chr_start_end.empty:
-                    print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                    continue
-                print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
                 b = get_batch()
@@ -172,13 +174,12 @@ def main(snp_cis_dir, egenes_dir, celltypes, var_annotation_file, gwas_file):
                 coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:7.0.0')
                 coloc_job.call(
                     coloc_runner,
-                    hg38_map_chr_start_end,
-                    f'{snp_cis_dir}/{celltype}/chr{chr}/{gene}_100000bp_meta_results.tsv',
+                    gene,
+                    snp_cis_dir,
+                    var_table,
+                    hg38_map,
                     celltype,
                 )
-
-            else:
-                print('No cis results for ' + gene + ' exist: skipping....')
 
     b.run(wait=False)
 
