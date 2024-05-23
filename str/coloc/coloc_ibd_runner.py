@@ -11,7 +11,6 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory="16G" \
     --output-dir "str/associatr" \
     coloc_ibd_runner.py --egenes-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat" \
     --snp-cis-dir "gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results" \
@@ -72,7 +71,7 @@ def coloc_runner(gene, snp_cis_dir, var_annotation_file, gwas_file, celltype):
     ro.r('library(tidyverse)')
 
     with (ro.default_converter + pandas2ri.converter).context():
-        gwas_r = ro.conversion.get_conversion().py2rpy(gwas)
+        gwas_r = ro.conversion.get_conversion().py2rpy(hg38_map_chr_start_end)
     ro.globalenv['gwas_r'] = gwas_r
     ro.r(
         '''
