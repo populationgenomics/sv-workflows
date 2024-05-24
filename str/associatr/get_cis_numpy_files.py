@@ -186,6 +186,8 @@ def cis_window_numpy_extractor(
         # add STR genotypes we would like to condition on
         if str_input is not None:
             str_genotype_df = extract_str_genotypes(str_input['vcf'], str_loci, str_motifs)
+            # append 'CPG' prefix to 'id' column
+            str_genotype_df['sample_id'] = str_genotype_df['sample_id'].apply(lambda x: 'CPG' + x)
             gene_pheno_cov = gene_pheno_cov.merge(str_genotype_df, on='sample_id', how='inner')
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
