@@ -10,7 +10,7 @@ This script aims to:
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/tob_n1055/tester" \
+--description "get cis and numpy" --output-dir "str/associatr/cond_str_tester" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -32,7 +32,7 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
 
-def extract_genotypes(vcf_file, loci):
+def extract_snp_genotypes(vcf_file, loci):
     """
     Helper function to extract genotypes (SNPs) from a VCF file; target loci specified as a list (can be single or multiple)
 
@@ -51,11 +51,50 @@ def extract_genotypes(vcf_file, loci):
         for record in vcf_reader(f'{chrom}:{pos}-{pos}'):
             if record.CHROM == chrom and record.POS == pos:
                 gt = record.gt_types
-                gt[gt == 3] = 2 #HOM ALT is coded as 3; change it to 2
+                gt[gt == 3] = 2  # HOM ALT is coded as 3; change it to 2
                 results[locus] = gt
                 break
 
     # Convert results to a DataFrame
+    return results
+
+
+def extract_str_genotypes(vcf_file, loci, motifs):
+    """
+    Helper function to extract genotypes (STRs) from a VCF file; target loci specified as a list (can be single or multiple)
+
+    """
+    # Read the VCF file
+    vcf_reader = VCF(vcf_file)
+
+    results = pd.DataFrame()
+    results['sample_id'] = vcf_reader.samples
+
+    for locus, motif in zip(loci, motifs):
+        chrom, pos = locus.split(':')
+        pos = int(pos)
+
+        for record in vcf_reader(f'{chrom}:{pos}-{pos}'):
+            # check motif as well because two STRs can have same coord but different motif
+            if record.CHROM == chrom and record.POS == pos and record.INFO.get('RU') == motif:
+                genotypes = record.format('REPCN')
+                # Replace '.' with '-99/-99' to handle missing values
+                genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
+
+                # Split each element by '/'
+                split_genotypes = [genotype.split('/') for genotype in genotypes]
+
+                # Convert split_genotypes into a numpy array for easier manipulation
+                split_genotypes_array = np.array(split_genotypes)
+
+                # Convert the strings to integers and sum them row-wise
+                sums = np.sum(split_genotypes_array.astype(int), axis=1)
+                # set dummy -198 value to np.nan
+                sums = np.where(sums == -198, np.nan, sums)
+
+                results[locus] = sums
+                break
+
     return results
 
 
@@ -72,6 +111,9 @@ def cis_window_numpy_extractor(
     remove_samples_file,
     snp_input,
     snp_loci,
+    str_input,
+    str_loci,
+    str_motifs,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -138,8 +180,13 @@ def cis_window_numpy_extractor(
 
         # add SNP genotypes we would like to condition on
         if snp_input is not None:
-            snp_genotype_df = extract_genotypes(snp_input['vcf'], snp_loci)
+            snp_genotype_df = extract_snp_genotypes(snp_input['vcf'], snp_loci)
             gene_pheno_cov = gene_pheno_cov.merge(snp_genotype_df, on='sample_id', how='inner')
+
+        # add STR genotypes we would like to condition on
+        if str_input is not None:
+            str_genotype_df = extract_str_genotypes(str_input['vcf'], str_loci, str_motifs)
+            gene_pheno_cov = gene_pheno_cov.merge(str_genotype_df, on='sample_id', how='inner')
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
@@ -193,6 +240,12 @@ def main():
                 snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
             else:  # no SNP VCF provided
                 snp_input = None
+            if get_config()['get_cis_numpy']['str_vcf_dir'] is not None:
+                str_vcf_dir = get_config()['get_cis_numpy']['str_vcf_dir']
+                str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
+                str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
+            else:  # no STR VCF provided
+                str_input = None
             j.call(
                 cis_window_numpy_extractor,
                 get_config()['get_cis_numpy']['input_h5ad_dir'],
@@ -207,6 +260,9 @@ def main():
                 get_config()['get_cis_numpy']['remove_samples_file'],
                 snp_input,
                 get_config()['get_cis_numpy']['snp_loci'],
+                str_input,
+                get_config()['get_cis_numpy']['str_loci'],
+                get_config()['get_cis_numpy']['str_motifs'],
             )
 
             manage_concurrency_for_job(j)
