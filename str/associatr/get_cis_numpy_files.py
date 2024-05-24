@@ -234,13 +234,13 @@ def main():
             j.memory(get_config()['get_cis_numpy']['job_memory'])
             j.storage(get_config()['get_cis_numpy']['job_storage'])
 
-            if get_config()['get_cis_numpy']['snp_vcf_dir'] is not 'None':
+            if get_config()['get_cis_numpy']['snp_vcf_dir'] is not 'gs://None':
                 snp_vcf_dir = get_config()['get_cis_numpy']['snp_vcf_dir']
                 snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
                 snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
             else:  # no SNP VCF provided
                 snp_input = None
-            if get_config()['get_cis_numpy']['str_vcf_dir'] is not 'None':
+            if get_config()['get_cis_numpy']['str_vcf_dir'] is not 'gs://None':
                 str_vcf_dir = get_config()['get_cis_numpy']['str_vcf_dir']
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
                 str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})

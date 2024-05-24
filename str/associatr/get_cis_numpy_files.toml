@@ -21,7 +21,7 @@ min_pct = 1
 remove_samples_file = 'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
 # SNP loci to condition on
 #note chrom for snp loci is strictly numeric eg 20:...
-snp_vcf_dir = 'None'
+snp_vcf_dir = 'gs://None'
 snp_loci=[]
 # STR loci to condition on
 str_vcf_dir = 'gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific'
