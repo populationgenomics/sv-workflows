@@ -5,11 +5,11 @@ input_h5ad_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_annd
 input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/pseudobulk'
 # GCS directory to the input covariate CSV files
 input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/covariates/7_rna_pcs'
-chromosomes = 'chr22'
-cell_types = 'MAIT'
+chromosomes = 'chr11'
+cell_types = 'B_intermediate'
 # cis window size in bp
 cis_window = 100000
-version = 'v1'
+version = 'v1-cond-analysis/chr11_128509550'
 job_cpu = 2
 job_memory = 'standard'
 job_storage = '15G'
@@ -22,11 +22,12 @@ remove_samples_file = 'gs://cpg-bioheart-test/str/associatr/input_files/remove-s
 # SNP loci to condition on
 #note chrom for snp loci is strictly numeric eg 20:...
 # set snp_vcf_dir == 'gs//cpg-bioheart-test' if no SNP loci to condition on
+# snp_vcf_dir = 'gs://cpg-bioheart-main/saige-qtl/bioheart_n990_and_tob_n1055/input_files/genotypes/vds-tenk10k1-0'
 snp_vcf_dir = 'gs://cpg-bioheart-test'
 snp_loci=[]
 # STR loci to condition on
 # set str_vcf_dir == 'gs//cpg-bioheart-test' if no STR loci to condition on
 str_vcf_dir = 'gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific'
 # note chrom for STR loci has the chr prefix
-str_loci =['chr22:17030269','chr22:15248403']
-str_motifs = ['ATA','AAAC']
+str_loci =['chr11:128509550']
+str_motifs = ['T']
