@@ -86,7 +86,10 @@ def main(
     b = get_batch()
 
     # Reference fasta
-    ref_fasta = str(reference_path('broad/ref_fasta'))
+    if dataset == 'hgdp':
+        ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
+    else:
+        ref_fasta = str(reference_path('broad/ref_fasta'))
     ref = b.read_input_group(
         **dict(
             base=ref_fasta,
