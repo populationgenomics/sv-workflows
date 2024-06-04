@@ -115,6 +115,7 @@ def main(
             split_line = line.split(',')
             cpg_id = split_line[0]
             sex = split_line[2]
+            sex = sex.replace('\n', '')
             if cpg_id == 's':  # header line
                 continue
             if sex == 'XY':
