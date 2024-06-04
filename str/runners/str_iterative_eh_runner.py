@@ -86,7 +86,7 @@ def main(
     b = get_batch()
 
     # Reference fasta
-    if dataset == 'hgdp-test':
+    if 'hgdp' in dataset:
         ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
     else:
         ref_fasta = str(reference_path('broad/ref_fasta'))
