@@ -93,8 +93,8 @@ def ld_parser(
 
     # calculate pairwise correlation of every variant
     corr_matrix = merged_df.drop(columns='individual').corr()
-    corr_matrix.to_csv(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', sep='\t')
-    corr_matrix.columns.to_csv(f'correlation_matrix/{celltype}/{gene}_correlation_matrix_variants.tsv', sep='\t')
+    corr_matrix.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t')
+    corr_matrix.columns.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix_variants.tsv','analysis'), sep='\t')
 
     print("Wrote correlation matrix to bucket")
 
