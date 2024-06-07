@@ -25,8 +25,9 @@ association-runner --dataset "bioheart" \
 """
 
 import ast
-import numpy as np
+
 import click
+import numpy as np
 import pandas as pd
 
 from hailtop.batch import ResourceGroup
@@ -34,6 +35,7 @@ from hailtop.batch import ResourceGroup
 from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
+
 
 def ld_parser(
     snp_vcf_path: ResourceGroup,
@@ -58,14 +60,14 @@ def ld_parser(
     for index, row in associatr_results.iterrows():
         pos = row['pos']
         motif = row['motif']
-        if '-' in row['motif']: # SNP
+        if '-' in row['motif']:  # SNP
             chr_num = row['chr'][3:]
             for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
                 gt = variant.gt_types
                 gt[gt == 3] = 2
                 snp_vcf[f'chr{chr_num}:{pos}_{motif}'] = gt
                 break
-        else: # STR
+        else:  # STR
             chrom = row['chr']
             for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
                 if str(variant.INFO.get('RU')) == motif:
@@ -96,6 +98,7 @@ def ld_parser(
 
     print("Wrote correlation matrix to bucket")
 
+
 @click.option(
     '--snp-vcf-dir',
     help='GCS file dir to SNP VCF files.',
@@ -110,22 +113,24 @@ def ld_parser(
     '--fdr-cutoff',
     help='FDR cutoff to use for eGene selection',
     type=float,
-    default=0.05,)
+    default=0.05,
+)
 @click.option(
     '--pval-cutoff',
     help='P-value cutoff to use for associatr results (reduce finemapping computational burden)',
     default=4e-4,
 )
 @click.option('--celltypes', help='Cell types to use for coloc', type=str)
-
 @click.option(
     '--str-fdr-dir',
     help='Path to STR FDR dir',
     default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
-
-@click.option('--associatr-dir', help='Path to STR-SNP associatr results', default = 'gs://cpg-bioheart-main-analysis/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results')
-
+@click.option(
+    '--associatr-dir',
+    help='Path to STR-SNP associatr results',
+    default='gs://cpg-bioheart-main-analysis/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results',
+)
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
 @click.command()
@@ -149,13 +154,13 @@ def main(
         for index, row in str_fdr.iterrows():
             gene = row['gene_name']
             chrom = ast.literal_eval(row['chr'].iloc[0])
-            #test only
-            if chrom!= 'chr20':
+            # test only
+            if chrom != 'chr20':
                 continue
             try:
                 associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 associatr = pd.read_csv(associatr_file, sep='\t')
-            except:
+            except FileNotFoundError:
                 f'No associatr results for this gene: {gene}'
                 continue
             associatr = associatr[associatr['pval_meta'] < pval_cutoff]
@@ -183,5 +188,7 @@ def main(
             )
 
     b.run(wait=False)
+
+
 if __name__ == '__main__':
     main()
