@@ -56,8 +56,9 @@ def ld_parser(
     snp_df['individual'] = snp_vcf.samples
     str_vcf = VCF(str_vcf_path['vcf'])
     str_df['individual'] = str_vcf.samples
-    str_df['individual'] = str_df['individual'].apply(lambda x: f"CPG{x}") #add CPG prefix to match SNP individual names
-
+    str_df['individual'] = str_df['individual'].apply(
+        lambda x: f"CPG{x}",
+    )  # add CPG prefix to match SNP individual names
 
     for index, row in associatr_results.iterrows():
         pos = row['pos']
@@ -92,18 +93,16 @@ def ld_parser(
                     break
     # merge the two dataframes
     merged_df = str_df.merge(snp_df, on='individual')
-    print(str_df)
-    str_df.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_str_df.tsv', 'analysis'), sep='\t')
-    print(snp_df)
-    snp_df.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_snp_df.tsv', 'analysis'), sep='\t')
 
     # calculate pairwise correlation of every variant
     merged_df = merged_df.drop(columns='individual')
-    merged_df = merged_df.fillna(merged_df.mean(), inplace=True) # fill missing values with mean to avoid NAs
+    merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean to avoid NAs
     corr_matrix = merged_df.corr()
 
     print(corr_matrix)
-    corr_matrix.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t')
+    corr_matrix.to_csv(
+        output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t',
+    )
     print("Wrote correlation matrix to bucket")
 
 
@@ -153,7 +152,7 @@ def main(
     associatr_dir: str,
     pval_cutoff: float,
 ):
-    b = get_batch(name = 'Correlation matrix runner')
+    b = get_batch(name='Correlation matrix runner')
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
@@ -162,9 +161,7 @@ def main(
         for index, row in str_fdr.iterrows():
             gene = row['gene_name']
             chrom = ast.literal_eval(row['chr'])[0]
-            # test only
-            if chrom != 'chr20':
-                continue
+
             try:
                 associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 associatr = pd.read_csv(associatr_file, sep='\t')
