@@ -86,7 +86,7 @@ def ld_parser(
                     # set dummy -198 value to np.nan
                     sums = np.where(sums == -198, np.nan, sums)
 
-                    str_df[f'chr{chr_num}:{pos}_{motif}'] = sums
+                    str_df[f'{chrom}:{pos}_{motif}'] = sums
                     break
     # merge the two dataframes
     merged_df = str_df.merge(snp_df, on='individual')
