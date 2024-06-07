@@ -175,7 +175,7 @@ def main(
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
             snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
-            str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'csi': str_vcf_path + '.csi'})
+            str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'csi': str_vcf_path + '.tbi'})
 
             ld_job.call(
                 ld_parser,
