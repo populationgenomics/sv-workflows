@@ -89,7 +89,7 @@ def ld_parser(
                     str_df[f'chr{chr_num}:{pos}_{motif}'] = sums
                     break
     # merge the two dataframes
-    merged_df = str_vcf.merge(snp_vcf, on='individual')
+    merged_df = str_df.merge(snp_df, on='individual')
 
     # calculate pairwise correlation of every variant
     corr_matrix = merged_df.drop(columns='individual').corr()
