@@ -93,7 +93,9 @@ def ld_parser(
     # merge the two dataframes
     merged_df = str_df.merge(snp_df, on='individual')
     print(str_df)
+    str_df.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_str_df.tsv', 'analysis'), sep='\t')
     print(snp_df)
+    snp_df.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_snp_df.tsv', 'analysis'), sep='\t')
 
     # calculate pairwise correlation of every variant
     merged_df = merged_df.drop(columns='individual')
