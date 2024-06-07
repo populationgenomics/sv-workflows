@@ -17,7 +17,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr/fine_mapping/prep_files/test" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
-    --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
+    --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
     --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results
 
@@ -65,7 +65,7 @@ def ld_parser(
             for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
                 gt = variant.gt_types
                 gt[gt == 3] = 2
-                snp_vcf[f'chr{chr_num}:{pos}_{motif}'] = gt
+                snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt
                 break
         else:  # STR
             chrom = row['chr']
