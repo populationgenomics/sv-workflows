@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This file is used to create a correlation matrix between STR and SNP genotypes, which is required by fine-mapping methods.
+This script is used to create a correlation matrix between STR and SNP genotypes, which is required by fine-mapping methods.
 
 Output: Correlation matrix, and list of variants (as appears in the matrix)
 
@@ -96,10 +96,11 @@ def ld_parser(
     print(snp_df)
 
     # calculate pairwise correlation of every variant
+    merged_df = merged_df.fillna(merged_df.mean()) # fill missing values with mean to avoid NAs
     corr_matrix = merged_df.drop(columns='individual').corr()
+
     print(corr_matrix)
     corr_matrix.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t')
-    pd.Series(corr_matrix.columns).to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix_variants.tsv','analysis'), sep='\t', index=False)
     print("Wrote correlation matrix to bucket")
 
 
@@ -149,7 +150,7 @@ def main(
     associatr_dir: str,
     pval_cutoff: float,
 ):
-    b = get_batch()
+    b = get_batch(name = 'Correlation matrix runner')
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
