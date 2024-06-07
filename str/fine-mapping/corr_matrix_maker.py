@@ -90,9 +90,12 @@ def ld_parser(
                     break
     # merge the two dataframes
     merged_df = str_df.merge(snp_df, on='individual')
+    print(str_df)
+    print(snp_df)
 
     # calculate pairwise correlation of every variant
     corr_matrix = merged_df.drop(columns='individual').corr()
+    print(corr_matrix)
     corr_matrix.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t')
     pd.Series(corr_matrix.columns).to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix_variants.tsv','analysis'), sep='\t', index=False)
     print("Wrote correlation matrix to bucket")
