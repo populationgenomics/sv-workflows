@@ -12,11 +12,11 @@ For each gene,
 3) Obtain the genotypes for each extracted STR and SNP in 2)
 4) Calculate the correlation matrix between STR and SNP genotypes.
 
-association-runner --dataset "bioheart" \
+analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
-    --output-dir "str/associatr/fine_mapping/prep_files" \
-    ld_runner.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
+    --output-dir "str/associatr/fine_mapping/prep_files/test" \
+    corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
     --str-vcf-dir=gs://cpg-bioheart-test/str/saige-qtl/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
     --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results
@@ -153,7 +153,7 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eGenes passing FDR 5% threshold by default
         for index, row in str_fdr.iterrows():
             gene = row['gene_name']
-            chrom = ast.literal_eval(row['chr'].iloc[0])
+            chrom = ast.literal_eval(row['chr'])[0]
             # test only
             if chrom != 'chr20':
                 continue
