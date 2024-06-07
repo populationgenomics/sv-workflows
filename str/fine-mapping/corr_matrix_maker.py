@@ -56,6 +56,8 @@ def ld_parser(
     snp_df['individual'] = snp_vcf.samples
     str_vcf = VCF(str_vcf_path['vcf'])
     str_df['individual'] = str_vcf.samples
+    str_df['individual'] = str_df['individual'].apply(lambda x: f"CPG{x}") #add CPG prefix to match SNP individual names
+
 
     for index, row in associatr_results.iterrows():
         pos = row['pos']
