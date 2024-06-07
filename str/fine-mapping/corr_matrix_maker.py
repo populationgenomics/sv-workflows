@@ -96,8 +96,9 @@ def ld_parser(
     print(snp_df)
 
     # calculate pairwise correlation of every variant
+    merged_df = merged_df.drop(columns='individual')
     merged_df = merged_df.fillna(merged_df.mean()) # fill missing values with mean to avoid NAs
-    corr_matrix = merged_df.drop(columns='individual').corr()
+    corr_matrix = merged_df.corr()
 
     print(corr_matrix)
     corr_matrix.to_csv(output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t')
