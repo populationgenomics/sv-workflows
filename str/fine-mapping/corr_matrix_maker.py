@@ -19,7 +19,6 @@ analysis-runner --dataset "bioheart" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
-    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
     --chromosomes=chr20
 
 
@@ -49,16 +48,17 @@ def ld_parser(
     import pandas as pd
     from cyvcf2 import VCF
 
-    for index, row in str_fdr.iterrows():
+    for index, row in str_fdr.iterrows(): #iterate over each gene
         gene = row['gene_name']
         chrom = ast.literal_eval(row['chr'])[0]
-
+        # obtain raw associaTR results for this gene
         try:
             associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
             associatr = pd.read_csv(associatr_file, sep='\t')
         except FileNotFoundError:
             print(f'FileNotFound for this gene: {gene}')
             continue
+        # apply p-value cutoff (mostly to reduce computational burden for fine-mapper later)
         associatr = associatr[associatr['pval_meta'] < pval_cutoff]
         if associatr.empty:
             print(f'No associatr results for this gene: {gene}')
@@ -77,20 +77,20 @@ def ld_parser(
             lambda x: f"CPG{x}",
         )  # add CPG prefix to match SNP individual names
 
-        for index, row in associatr.iterrows():
+        for index, row in associatr.iterrows(): #obtain GTs for each STR/SNP listed in the raw associatr file
             pos = row['pos']
             motif = row['motif']
             if '-' in row['motif']:  # SNP
-                chr_num = row['chr'][3:]
+                chr_num = row['chr'][3:] #SNP VCF chromosome is strictly numeric
                 for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
                     gt = variant.gt_types
-                    gt[gt == 3] = 2
-                    snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt
+                    gt[gt == 3] = 2 # HOM ALT should be 2, not the default 3
+                    snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt # save GT into snp_df
                     break
             else:  # STR
                 chrom = row['chr']
                 for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
-                    if str(variant.INFO.get('RU')) == motif:
+                    if str(variant.INFO.get('RU')) == motif: #check if the motif matches
                         genotypes = variant.format('REPCN')
                         # Replace '.' with '-99/-99' to handle missing values
                         genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
@@ -113,11 +113,12 @@ def ld_parser(
 
         # calculate pairwise correlation of every variant
         merged_df = merged_df.drop(columns='individual')
-        merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean to avoid NAs
+        merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean of the column (variant) to avoid NAs
         corr_matrix = merged_df.corr()
 
+        # write to bucket
         corr_matrix.to_csv(
-            output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'),
+            output_path(f'correlation_matrix/{celltype}/{chrom}/{gene}_correlation_matrix.tsv', 'analysis'),
             sep='\t',
         )
         print(f"Wrote correlation matrix for {gene}")
@@ -191,16 +192,17 @@ def main(
 
     b = get_batch(name='Correlation matrix runner')
     for celltype in celltypes.split(','):
-        # read in STR eGene annotation file
+        # read in eSTR file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
-        str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eGenes passing FDR 5% threshold by default
+        str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
         for chrom in chromosomes.split(','):
+            #filter eSTRs by chromosome
             str_fdr = str_fdr[str_fdr['chr'].str.contains(chrom)]
-
+            # read in STR and SNP VCFs for this chromosome
             snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
-            # run coloc
+            # run LD calculation for each chrom-celltype combination
             ld_job = b.new_python_job(
                 f'LD calc for {celltype}:{chrom}',
             )
