@@ -108,7 +108,7 @@ def ld_parser(
         #merged_df = str_df.merge(snp_df, on='individual')
 
         # calculate pairwise correlation of every variant
-        #merged_df = merged_df.drop(columns='individual')
+        str_df = str_df.drop(columns='individual')
         str_df = str_df.fillna(str_df.mean())  # fill missing values with mean of the column (variant) to avoid NAs
         corr_matrix = str_df.corr()
 
