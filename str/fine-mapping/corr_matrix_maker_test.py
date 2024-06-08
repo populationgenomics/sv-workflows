@@ -194,13 +194,13 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
         for chrom in chromosomes.split(','):
             #filter eSTRs by chromosome
-            str_fdr = str_fdr[str_fdr['chr'].str.contains(chrom)]
+            str_fdr = str_fdr[str_fdr['chr'].str.contains("'"+chrom+"'")]
             # read in STR and SNP VCFs for this chromosome
             snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
             # run LD calculation for each chrom-celltype combination
             ld_job = b.new_python_job(
-                f'LD calc for {celltype}:{"'"+chrom+"'"}',
+                f'LD calc for {celltype}:{chrom}',
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
