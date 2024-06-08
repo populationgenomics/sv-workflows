@@ -56,8 +56,8 @@ def ld_parser(
         try:
             associatr_file = f'{associatr_dir}/{celltype}/{chrom}/lol/{gene}_100000bp_meta_results.tsv'
             associatr = pd.read_csv(associatr_file, sep='\t')
-        except FileNotFoundError:
-            f'No associatr results for this gene: {gene}'
+        except:
+            f'FileNotFound for this gene: {gene}'
             continue
         associatr = associatr[associatr['pval_meta'] < pval_cutoff]
         if associatr.empty:
@@ -120,7 +120,7 @@ def ld_parser(
             output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'),
             sep='\t',
         )
-        print(f"Wrote correlation matrix for{gene}")
+        print(f"Wrote correlation matrix for {gene}")
     return
 
 
