@@ -19,7 +19,8 @@ analysis-runner --dataset "bioheart" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
-    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results
+    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
+    --chromosomes=chr20
 
 
 """
@@ -30,9 +31,9 @@ import click
 import numpy as np
 import pandas as pd
 
+import hailtop.batch as hb
 from hailtop.batch import ResourceGroup
 
-from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
 
@@ -40,70 +41,88 @@ from cpg_utils.hail_batch import get_batch
 def ld_parser(
     snp_vcf_path: ResourceGroup,
     str_vcf_path: ResourceGroup,
-    associatr_results: pd.DataFrame,
-    gene: str,
+    str_fdr: pd.DataFrame,
     celltype: str,
+    pval_cutoff: float,
+    associatr_dir: str,
 ) -> str:
     import pandas as pd
     from cyvcf2 import VCF
 
-    # create empty DF to store the relevant GTs (SNPs, STRs)
-    snp_df = pd.DataFrame(columns=['individual'])
-    str_df = pd.DataFrame(columns=['individual'])
+    for index, row in str_fdr.iterrows():
+        gene = row['gene_name']
+        chrom = ast.literal_eval(row['chr'])[0]
 
-    # cyVCF2 reads the SNP,STR VCF
-    snp_vcf = VCF(snp_vcf_path['vcf'])
-    snp_df['individual'] = snp_vcf.samples
-    str_vcf = VCF(str_vcf_path['vcf'])
-    str_df['individual'] = str_vcf.samples
-    str_df['individual'] = str_df['individual'].apply(
-        lambda x: f"CPG{x}",
-    )  # add CPG prefix to match SNP individual names
+        try:
+            associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
+            associatr = pd.read_csv(associatr_file, sep='\t')
+        except FileNotFoundError:
+            f'No associatr results for this gene: {gene}'
+            continue
+        associatr = associatr[associatr['pval_meta'] < pval_cutoff]
+        if associatr.empty:
+            f'No associatr results for this gene: {gene}'
+            continue
 
-    for index, row in associatr_results.iterrows():
-        pos = row['pos']
-        motif = row['motif']
-        if '-' in row['motif']:  # SNP
-            chr_num = row['chr'][3:]
-            for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
-                gt = variant.gt_types
-                gt[gt == 3] = 2
-                snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt
-                break
-        else:  # STR
-            chrom = row['chr']
-            for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
-                if str(variant.INFO.get('RU')) == motif:
-                    genotypes = variant.format('REPCN')
-                    # Replace '.' with '-99/-99' to handle missing values
-                    genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
+        # create empty DF to store the relevant GTs (SNPs, STRs)
+        snp_df = pd.DataFrame(columns=['individual'])
+        str_df = pd.DataFrame(columns=['individual'])
 
-                    # Split each element by '/'
-                    split_genotypes = [genotype.split('/') for genotype in genotypes]
+        # cyVCF2 reads the SNP,STR VCF
+        snp_vcf = VCF(snp_vcf_path['vcf'])
+        snp_df['individual'] = snp_vcf.samples
+        str_vcf = VCF(str_vcf_path['vcf'])
+        str_df['individual'] = str_vcf.samples
+        str_df['individual'] = str_df['individual'].apply(
+            lambda x: f"CPG{x}",
+        )  # add CPG prefix to match SNP individual names
 
-                    # Convert split_genotypes into a numpy array for easier manipulation
-                    split_genotypes_array = np.array(split_genotypes)
-
-                    # Convert the strings to integers and sum them row-wise
-                    sums = np.sum(split_genotypes_array.astype(int), axis=1)
-                    # set dummy -198 value to np.nan
-                    sums = np.where(sums == -198, np.nan, sums)
-
-                    str_df[f'{chrom}:{pos}_{motif}'] = sums
+        for index, row in associatr.iterrows():
+            pos = row['pos']
+            motif = row['motif']
+            if '-' in row['motif']:  # SNP
+                chr_num = row['chr'][3:]
+                for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
+                    gt = variant.gt_types
+                    gt[gt == 3] = 2
+                    snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt
                     break
-    # merge the two dataframes
-    merged_df = str_df.merge(snp_df, on='individual')
+            else:  # STR
+                chrom = row['chr']
+                for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
+                    if str(variant.INFO.get('RU')) == motif:
+                        genotypes = variant.format('REPCN')
+                        # Replace '.' with '-99/-99' to handle missing values
+                        genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
 
-    # calculate pairwise correlation of every variant
-    merged_df = merged_df.drop(columns='individual')
-    merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean to avoid NAs
-    corr_matrix = merged_df.corr()
+                        # Split each element by '/'
+                        split_genotypes = [genotype.split('/') for genotype in genotypes]
 
-    print(corr_matrix)
-    corr_matrix.to_csv(
-        output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'), sep='\t',
-    )
-    print("Wrote correlation matrix to bucket")
+                        # Convert split_genotypes into a numpy array for easier manipulation
+                        split_genotypes_array = np.array(split_genotypes)
+
+                        # Convert the strings to integers and sum them row-wise
+                        sums = np.sum(split_genotypes_array.astype(int), axis=1)
+                        # set dummy -198 value to np.nan
+                        sums = np.where(sums == -198, np.nan, sums)
+
+                        str_df[f'{chrom}:{pos}_{motif}'] = sums
+                        break
+        # merge the two dataframes
+        merged_df = str_df.merge(snp_df, on='individual')
+
+        # calculate pairwise correlation of every variant
+        merged_df = merged_df.drop(columns='individual')
+        merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean to avoid NAs
+        corr_matrix = merged_df.corr()
+
+        print(corr_matrix)
+        corr_matrix.to_csv(
+            output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'),
+            sep='\t',
+        )
+        print("Wrote correlation matrix to bucket")
+    return
 
 
 @click.option(
@@ -138,8 +157,14 @@ def ld_parser(
     help='Path to STR-SNP associatr results',
     default='gs://cpg-bioheart-main-analysis/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results',
 )
+@click.option(
+    '--chromosomes',
+    help='Chromosomes to use',
+    default='chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22',
+)
 @click.option('--job-cpu', default=1)
 @click.option('--job-storage', default='20G')
+@click.option('--max-parallel-jobs', default=22)
 @click.command()
 def main(
     snp_vcf_dir: str,
@@ -151,32 +176,34 @@ def main(
     job_storage: str,
     associatr_dir: str,
     pval_cutoff: float,
+    chromosomes: str,
+    max_parallel_jobs: int,
 ):
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     b = get_batch(name='Correlation matrix runner')
     for celltype in celltypes.split(','):
         # read in STR eGene annotation file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eGenes passing FDR 5% threshold by default
-        for index, row in str_fdr.iterrows():
-            gene = row['gene_name']
-            chrom = ast.literal_eval(row['chr'])[0]
+        for chrom in chromosomes.split(','):
+            str_fdr = str_fdr[str_fdr['chr'].str.contains(chrom)]
 
-            try:
-                associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
-                associatr = pd.read_csv(associatr_file, sep='\t')
-            except FileNotFoundError:
-                f'No associatr results for this gene: {gene}'
-                continue
-            associatr = associatr[associatr['pval_meta'] < pval_cutoff]
-            if associatr.empty:
-                f'No associatr results for this gene: {gene}'
-                continue
             snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
             # run coloc
             ld_job = b.new_python_job(
-                f'LD calc for {gene}: {celltype}',
+                f'LD calc for {celltype}:{chrom}',
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
@@ -187,10 +214,12 @@ def main(
                 ld_parser,
                 snp_input,
                 str_input,
-                associatr,
-                gene,
+                str_fdr,
                 celltype,
+                pval_cutoff,
+                associatr_dir,
             )
+            manage_concurrency_for_job(ld_job)
 
     b.run(wait=False)
 
