@@ -49,6 +49,10 @@ def ld_parser(
     import pandas as pd
     from cyvcf2 import VCF
 
+    if str_fdr.empty:
+        print(f'No eSTRs for this celltype: {celltype}')
+        return
+
     for index, row in str_fdr.iterrows(): #iterate over each gene
         gene = row['gene_name']
         chrom = ast.literal_eval(row['chr'])[0]
@@ -194,7 +198,7 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
         for chrom in chromosomes.split(','):
             #filter eSTRs by chromosome
-            str_fdr = str_fdr[str_fdr['chr'].str.contains("'"+chrom+"'")]
+            str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'"+chrom+"'")]
             # read in STR and SNP VCFs for this chromosome
             snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
@@ -211,7 +215,7 @@ def main(
                 ld_parser,
                 #snp_input,
                 str_input,
-                str_fdr,
+                str_fdr_chrom,
                 celltype,
                 pval_cutoff,
                 associatr_dir,
