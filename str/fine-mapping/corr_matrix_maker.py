@@ -54,7 +54,7 @@ def ld_parser(
         chrom = ast.literal_eval(row['chr'])[0]
 
         try:
-            associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
+            associatr_file = f'{associatr_dir}/{celltype}/{chrom}/lol/{gene}_100000bp_meta_results.tsv'
             associatr = pd.read_csv(associatr_file, sep='\t')
         except FileNotFoundError:
             f'No associatr results for this gene: {gene}'
@@ -116,12 +116,11 @@ def ld_parser(
         merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean to avoid NAs
         corr_matrix = merged_df.corr()
 
-        print(corr_matrix)
         corr_matrix.to_csv(
             output_path(f'correlation_matrix/{celltype}/{gene}_correlation_matrix.tsv', 'analysis'),
             sep='\t',
         )
-        print("Wrote correlation matrix to bucket")
+        print(f"Wrote correlation matrix for{gene}")
     return
 
 
