@@ -54,7 +54,7 @@ def ld_parser(
         chrom = ast.literal_eval(row['chr'])[0]
 
         try:
-            associatr_file = f'{associatr_dir}/{celltype}/{chrom}/lol/{gene}_100000bp_meta_results.tsv'
+            associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
             associatr = pd.read_csv(associatr_file, sep='\t')
         except FileNotFoundError:
             print(f'FileNotFound for this gene: {gene}')
