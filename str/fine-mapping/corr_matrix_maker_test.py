@@ -200,7 +200,7 @@ def main(
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
             # run LD calculation for each chrom-celltype combination
             ld_job = b.new_python_job(
-                f'LD calc for {celltype}:{chrom}',
+                f'LD calc for {celltype}:{"'"+chrom+"'"}',
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)

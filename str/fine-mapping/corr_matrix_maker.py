@@ -19,6 +19,7 @@ analysis-runner --dataset "bioheart" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
+    --associatr-dir=gs://cpg-bioheart-test/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
     --chromosomes=chr20
 
 
@@ -198,7 +199,7 @@ def main(
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
         for chrom in chromosomes.split(','):
             #filter eSTRs by chromosome
-            str_fdr = str_fdr[str_fdr['chr'].str.contains(chrom)]
+            str_fdr = str_fdr[str_fdr['chr'].str.contains("'"+chrom+"'")]
             # read in STR and SNP VCFs for this chromosome
             snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
