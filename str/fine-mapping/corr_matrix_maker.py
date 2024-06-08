@@ -56,12 +56,12 @@ def ld_parser(
         try:
             associatr_file = f'{associatr_dir}/{celltype}/{chrom}/lol/{gene}_100000bp_meta_results.tsv'
             associatr = pd.read_csv(associatr_file, sep='\t')
-        except:
-            f'FileNotFound for this gene: {gene}'
+        except FileNotFoundError:
+            print(f'FileNotFound for this gene: {gene}')
             continue
         associatr = associatr[associatr['pval_meta'] < pval_cutoff]
         if associatr.empty:
-            f'No associatr results for this gene: {gene}'
+            print(f'No associatr results for this gene: {gene}')
             continue
 
         # create empty DF to store the relevant GTs (SNPs, STRs)
