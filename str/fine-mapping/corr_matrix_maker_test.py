@@ -16,7 +16,7 @@ analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
     --output-dir "str/associatr/fine_mapping/prep_files/test-str-only" \
-    corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
+    corr_matrix_maker_test.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=CD4_TCM,ASDC \
     --associatr-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
@@ -109,8 +109,8 @@ def ld_parser(
 
         # calculate pairwise correlation of every variant
         #merged_df = merged_df.drop(columns='individual')
-        str_vcf = str_vcf.fillna(str_vcf.mean())  # fill missing values with mean of the column (variant) to avoid NAs
-        corr_matrix = str_vcf.corr()
+        str_df = str_df.fillna(str_df.mean())  # fill missing values with mean of the column (variant) to avoid NAs
+        corr_matrix = str_df.corr()
 
         # write to bucket
         corr_matrix.to_csv(
