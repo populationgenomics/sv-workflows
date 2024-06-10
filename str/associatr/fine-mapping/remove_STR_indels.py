@@ -95,6 +95,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
     for gene_file in gene_files:
         data = pd.read_csv(str(gene_file), sep='\t')
         gene_file_name = str(gene_file).split('/')[-1]
+        print(f'Processing {gene_file_name}...')
 
         # Find duplicate eSTRs and remove all but the one with the lowest p-value
         duplicates = data[data.duplicated(subset=['chr', 'pos', 'motif'], keep=False)]
@@ -133,7 +134,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
                     if (indel == str_motif) or (
                         reverse_complement(indel) == str_motif
                     ):  # straightforward case where (reverse complement of) indel matches STR motif exactly
-                        print(f"Indel: {row1['motif']} {indel} matches motif {str_motif}")
+                        #print(f"Indel: {row1['motif']} {indel} matches motif {str_motif}")
                         indices_to_delete.append(i)
                         found = True
                         break
@@ -146,16 +147,16 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
                             if (indel in cyclical_shifts(truncated_motif)) or (
                                 reverse_complement(indel) in cyclical_shifts(truncated_motif)
                             ):
-                                print(
-                                    f"Indel: {row1['motif']} matches truncated motif: {truncated_motif}; [original motif: {str_motif}]",
-                                )
+                                #print(
+                                #    f"Indel: {row1['motif']} matches truncated motif: {truncated_motif}; [original motif: {str_motif}]",
+                                #)
                                 indices_to_delete.append(i)
                                 found = True
                                 break
-                        if found == False:
-                            print(
-                                f"Indel: {row1['motif']} {indel}, doesn't match {str_motif} or {truncated_motif}, position: {row2['pos']}",
-                            )
+                        #if found == False:
+                            #print(
+                            #    f"Indel: {row1['motif']} {indel}, doesn't match {str_motif} or {truncated_motif}, position: {row2['pos']}",
+                            #)
 
                     else:  # case when indel is longer than the STR motif so we need to elongate the motif for checking equivalency
                         elongated_motif = (
@@ -164,18 +165,18 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
                         if (indel in cyclical_shifts(elongated_motif)) or (
                             reverse_complement(indel) in cyclical_shifts(elongated_motif)
                         ):
-                            print(
-                                f"Indel: {row1['motif']}, matches elongated motif: {elongated_motif};[original motif: {str_motif}]",
-                            )
+                            #print(
+                            #    f"Indel: {row1['motif']}, matches elongated motif: {elongated_motif};[original motif: {str_motif}]",
+                            #)
                             indices_to_delete.append(i)
                             found = True
                             break
-                        print(f"Indel: {row1['motif']} doesn't match {str_motif}, position: {row2['pos']}")
+                        #print(f"Indel: {row1['motif']} doesn't match {str_motif}, position: {row2['pos']}")
                     found = True
                     break
-            if not found:
-                print("Indel not in STR interval")
-        # Drop the rows representing STRs
+            #if not found:
+                # print("Indel not in STR interval")
+        # Drop the rows where indels are representing STRs
         result_df = result_df.drop(indices_to_delete)
         result_df.to_csv(output_path(f'{celltype}/{chrom}/{gene_file_name}'), sep='\t', index=False)
 
