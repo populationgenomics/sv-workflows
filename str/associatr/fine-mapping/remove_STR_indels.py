@@ -108,7 +108,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
 
         # get df containing only STRs
         result_df_str = result_df[result_df['motif'].apply(check_str)]
-        result_df_str['end'] = result_df_str['pos'] + result_df_str['ref_len'] * result_df_str['period']
+        result_df_str.loc[:, 'end'] = result_df_str['pos'] + result_df_str['ref_len'] * result_df_str['period']
 
         indices_to_delete = []  # store indices of indels representing STRs (to drop later)
         for i, row1 in result_df.iterrows():  # iterate through every variant record in df
@@ -191,8 +191,8 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
     help='Maximum number of jobs to run in parallel.',
     default=50,
 )
-@click.option('--job-cpu', required=False, type=int, help='Number of CPUs to use per job.', default=2)
-@click.option('--job-storage', required=False, type=str, help='Storage to use per job.', default='5G')
+@click.option('--job-cpu', required=False, type=int, help='Number of CPUs to use per job.', default=0.25)
+@click.option('--job-storage', required=False, type=str, help='Storage to use per job.', default='0G')
 @click.command()
 def main(
     associatr_dir: str,
