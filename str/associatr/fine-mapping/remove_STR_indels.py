@@ -180,7 +180,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
             # print("Indel not in STR interval")
         # Drop the rows where indels are representing STRs
         result_df = result_df.drop(indices_to_delete)
-        result_df.to_csv(output_path(f'{celltype}/{chrom}/{gene_file_name}'), sep='\t', index=False)
+        result_df.to_csv(output_path(f'{celltype}/{chrom}/{gene_file_name}', 'analysis'), sep='\t', index=False)
 
 
 @click.option('--associatr-dir', required=True, type=str, help='Directory containing associaTR outputs.')
