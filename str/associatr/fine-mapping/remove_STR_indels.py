@@ -191,7 +191,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
     help='Maximum number of jobs to run in parallel.',
     default=50,
 )
-@click.option('--job-cpu', required=False, type=int, help='Number of CPUs to use per job.', default=0.25)
+@click.option('--job-cpu', required=False, type=float, help='Number of CPUs to use per job.', default=0.25)
 @click.option('--job-storage', required=False, type=str, help='Storage to use per job.', default='0G')
 @click.command()
 def main(
