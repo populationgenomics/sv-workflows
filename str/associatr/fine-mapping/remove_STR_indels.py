@@ -108,7 +108,9 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
 
         # get df containing only STRs
         result_df_str = result_df[result_df['motif'].apply(check_str)]
-        result_df_str.loc[:, 'end'] = result_df_str.loc[:, 'pos'] + result_df_str.loc[:, 'ref_len'] * result_df_str.loc[:, 'period']
+        result_df_str.loc[:, 'end'] = (
+            result_df_str.loc[:, 'pos'] + result_df_str.loc[:, 'ref_len'] * result_df_str.loc[:, 'period']
+        )
 
         indices_to_delete = []  # store indices of indels representing STRs (to drop later)
         for i, row1 in result_df.iterrows():  # iterate through every variant record in df
