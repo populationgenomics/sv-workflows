@@ -188,6 +188,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
 )
 @click.option('--job-cpu', required=False, type=int, help='Number of CPUs to use per job.', default=2)
 @click.option('--job-storage', required=False, type=str, help='Storage to use per job.', default='5G')
+@click.command()
 def main(
     associatr_dir: str,
     celltypes: str,
