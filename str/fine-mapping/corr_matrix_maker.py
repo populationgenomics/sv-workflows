@@ -8,7 +8,7 @@ Output: Correlation matrix, and list of variants (as appears in the matrix)
 Workflow (for each cell type):
 1) Extract genes where the eSTR is significant (default = FDR<0.05).
 For each gene,
-2) Extract the STR and SNP coordinates where the association signal is p < 4e-4, to reduce computational burden of fine-mapper.
+2) Extract the STR and SNP coordinates where the association signal is p < 5e-4, to reduce computational burden of fine-mapper.
 3) Obtain the genotypes for each extracted STR and SNP in 2)
 4) Calculate the correlation matrix between STR and SNP genotypes.
 
@@ -19,7 +19,7 @@ analysis-runner --dataset "bioheart" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
-    --associatr-dir=gs://cpg-bioheart-test/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
+    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
     --chromosomes=chr20
 
 
@@ -94,8 +94,9 @@ def ld_parser(
                     break
             else:  # STR
                 chrom = row['chr']
+                end = int(pos +row['ref_len']*row['period'])
                 for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
-                    if str(variant.INFO.get('RU')) == motif: #check if the motif matches
+                    if (str(variant.INFO.get('RU')) == motif) and (int(variant.INFO.get('END'))== end): #check if the motif and end coordinate matches
                         genotypes = variant.format('REPCN')
                         # Replace '.' with '-99/-99' to handle missing values
                         genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
@@ -149,7 +150,7 @@ def ld_parser(
 @click.option(
     '--pval-cutoff',
     help='P-value cutoff to use for associatr results (reduce finemapping computational burden)',
-    default=4e-4,
+    default=5e-4,
 )
 @click.option('--celltypes', help='Cell types to use for coloc', type=str)
 @click.option(
