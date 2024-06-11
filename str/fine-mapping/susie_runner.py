@@ -36,7 +36,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
     from cpg_utils.hail_batch import output_path
 
 
-    ro.r('library(coloc)')
+    ro.r('library(susieR)')
     ro.r('library(tidyverse)')
 
     # load in LD matrix and associatr file into R environment
