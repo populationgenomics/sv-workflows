@@ -29,11 +29,10 @@ import hailtop.batch as hb
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path, reset_batch
 
-def susie_runner(ld_path,associatr_path,celltype,chrom):
+
+def susie_runner(ld_path, associatr_path, celltype, chrom):
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
-
-    from cpg_utils.hail_batch import output_path
 
     ro.r('library(coloc)')
     ro.r('library(tidyverse)')
@@ -76,7 +75,8 @@ def susie_runner(ld_path,associatr_path,celltype,chrom):
     # Append SusieR results to dataframe
     df_ordered$susie_pip = susie_get_pip(fitted_rss1, prune_by_cs = TRUE)
 
-    ''')
+    '''
+    )
 
     # convert to pandas df
     with (ro.default_converter + pandas2ri.converter).context():
@@ -85,18 +85,19 @@ def susie_runner(ld_path,associatr_path,celltype,chrom):
 
     # write to GCS
     susie_associatr_df.to_csv(
-        f'{output_path(f"susie/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis')}',
+        output_path(f"susie/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
 
-@click.option('--celltypes', help = 'Cell types comma separated')
-@click.option('--chromosomes', help = 'Chromosomes comma separated')
-@click.option('--ld-dir', help = 'Directory to LD correlation matrices')
-@click.option('--associatr-dir', help = 'Directory to associatr outputs')
+
+@click.option('--celltypes', help='Cell types comma separated')
+@click.option('--chromosomes', help='Chromosomes comma separated')
+@click.option('--ld-dir', help='Directory to LD correlation matrices')
+@click.option('--associatr-dir', help='Directory to associatr outputs')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
 @click.command()
-def main(celltypes,chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
+def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -113,7 +114,7 @@ def main(celltypes,chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
     for celltype in celltypes.split(','):
         for chrom in chromosomes.split(','):
             ld_files = list(to_path(f'{associatr_dir}/{celltype}/{chrom}').glob('*.tsv'))
-            for ld_file in ld_files: # for each gene (each has its own LD file)
+            for ld_file in ld_files:  # for each gene (each has its own LD file)
                 ld_file = str(ld_file)
                 gene = ld_file.split('/')[-1].split('_')[0]
                 print(f'Processing {gene}...')
@@ -124,10 +125,10 @@ def main(celltypes,chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
                 )
                 susie_job.cpu(0.25)
                 susie_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:susie')
-                susie_job.call(susie_runner,ld_file,associatr_path,celltype,chrom)
+                susie_job.call(susie_runner, ld_file, associatr_path, celltype, chrom)
                 manage_concurrency_for_job(susie_job)
     b.run(wait=False)
 
+
 if __name__ == '__main__':
     main()
-
