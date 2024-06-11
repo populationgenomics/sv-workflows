@@ -53,7 +53,7 @@ def ld_parser(
         print(f'No eSTRs for {celltype}')
         return
 
-    for index, row in str_fdr.iterrows(): #iterate over each gene
+    for index, row in str_fdr.iterrows():  # iterate over each gene
         gene = row['gene_name']
         chrom = ast.literal_eval(row['chr'])[0]
         # obtain raw associaTR results for this gene
@@ -82,21 +82,23 @@ def ld_parser(
             lambda x: f"CPG{x}",
         )  # add CPG prefix to match SNP individual names
 
-        for index, row in associatr.iterrows(): #obtain GTs for each STR/SNP listed in the raw associatr file
+        for index, row in associatr.iterrows():  # obtain GTs for each STR/SNP listed in the raw associatr file
             pos = row['pos']
             motif = row['motif']
             if '-' in row['motif']:  # SNP
-                chr_num = row['chr'][3:] #SNP VCF chromosome is strictly numeric
+                chr_num = row['chr'][3:]  # SNP VCF chromosome is strictly numeric
                 for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
                     gt = variant.gt_types
-                    gt[gt == 3] = 2 # HOM ALT should be 2, not the default 3
-                    snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt # save GT into snp_df
+                    gt[gt == 3] = 2  # HOM ALT should be 2, not the default 3
+                    snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt  # save GT into snp_df
                     break
             else:  # STR
                 chrom = row['chr']
-                end = int(pos +row['ref_len']*row['period'])
+                end = int(pos + row['ref_len'] * row['period'])
                 for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
-                    if (str(variant.INFO.get('RU')) == motif) and (int(variant.INFO.get('END'))== end): #check if the motif and end coordinate matches
+                    if (str(variant.INFO.get('RU')) == motif) and (
+                        int(variant.INFO.get('END')) == end
+                    ):  # check if the motif and end coordinate matches
                         genotypes = variant.format('REPCN')
                         # Replace '.' with '-99/-99' to handle missing values
                         genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
@@ -119,7 +121,9 @@ def ld_parser(
 
         # calculate pairwise correlation of every variant
         merged_df = merged_df.drop(columns='individual')
-        merged_df = merged_df.fillna(merged_df.mean())  # fill missing values with mean of the column (variant) to avoid NAs
+        merged_df = merged_df.fillna(
+            merged_df.mean(),
+        )  # fill missing values with mean of the column (variant) to avoid NAs
         corr_matrix = merged_df.corr()
 
         # write to bucket
@@ -203,8 +207,8 @@ def main(
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
         for chrom in chromosomes.split(','):
-            #filter eSTRs by chromosome
-            str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'"+chrom+"'")]
+            # filter eSTRs by chromosome
+            str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'" + chrom + "'")]
             # read in STR and SNP VCFs for this chromosome
             snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
