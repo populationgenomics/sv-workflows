@@ -19,6 +19,7 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
 
 - Perform pseudobulking (mean aggregation) of scRNA data using `pseudobulk.py`.
 - Prepare necessary inputs for associaTR: 1) covariates using `get_covariates.py` and 2) numpy objects containing the covariates and phenotypes (pseudobulked expression) using `get_cis_numpy_files.py`.
+- Note: Conditional analysis (where one conditions on the lead STR or SNP signal) is specified in `get_cis_numpy_files.py`. 
 - Annotate and apply QC filters to the STR genotypes matrix table using `qc/qc_annotator.py` and subsequently `qc/qc_filters_associatr.py`. The latter produces chromosome-specific VCFs for input into associaTR.
 - Run associaTR with `associatr_runner.py`
 - Optional: Meta-analysis runner scripts in `associatr/meta_analysis`
@@ -26,11 +27,18 @@ Assumes scRNA raw data have been processed and cells have been typed using the P
   - at the gene-level using ACAT correction with `run_gene_level_pval.py`. Option to use Bonferroni correction instead.
   - control for FDR using Storey q-values with `run_storey.py`.
 
-- Note: to run SNPs using the associaTR pipeline, please 1) subset the SNP VCF to target samples using `vcf_sample_subsetter.py` 2) Format the SNP VCF into an EH-style VCF using `snp_vcf_for_associatr.py` and then finally 3) Bgzip and tabix the VCFs with `bgzip_tabix.py` before using these input VCF files with `associatr_runner.py`.
+- Note: to run SNPs using the associaTR pipeline, please 1) subset the SNP VCF to target samples using `vcf_sample_subsetter.py` 2) Format the SNP VCF into an EH-style VCF using `snp_vcf_for_associatr.py` and then finally 3) Bgzip and tabix the VCFs with `bgzip_tabix.py` before using these input VCF files with `associatr_runner.py`. As a final step, combine the eSTR and eSNP associaTR results using `dataframe_concatenator.py`. 
  
 ## Downstream analysis
 
-### Colocalisation
+### Finemapping (`fine-mapping`)
 
-- Runner scripts stored in `coloc`: 1) `coloc_runner_{phenotype}.py` and 2) `coloc_results_parser.py` which consolidates the outputs from 1) into one file.
-- If colocalisation was done using SNP data, then we check whether the lead eSTR associated with the colocalized locus is in LD with at least one SNP in the GWAS catalog using 1) `ld_runner.py` and 2) `ld_results_parser.py` which consolidates the outputs from 1) into one file.
+- Run `remove_STR_indels.py` to remove indels that represent STRs, as well as duplicate eSTRs in the associaTR outputs. 
+- Use `corr_matrix_maker.py` to make the LD matrix. 
+- Run SusieR with `susie_runner.py`. 
+
+
+### Colocalisation (`coloc`)
+
+- Various runner scripts stored in format of `coloc_runner_{phenotype}.py`. Run `coloc_results_parser.py` to consolidates the outputs from runner script into one file.
+- If colocalisation was done using SNP data, then we check whether the lead eSTR associated with the colocalized locus is in LD with at least one SNP in the GWAS catalog using `coloc_ld_runner.py`.
