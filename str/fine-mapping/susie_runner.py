@@ -19,20 +19,21 @@ analysis-runner --dataset "bioheart" \
     --max-parallel-jobs 100
 """
 
-import gzip
-
 import click
-import pandas as pd
 
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path, reset_batch
+from cpg_utils.hail_batch import get_batch
 
 
 def susie_runner(ld_path, associatr_path, celltype, chrom):
+
     import rpy2.robjects as ro
+    import pandas as pd
     from rpy2.robjects import pandas2ri
+    from cpg_utils.hail_batch import output_path
+
 
     ro.r('library(coloc)')
     ro.r('library(tidyverse)')
@@ -113,7 +114,7 @@ def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
 
     for celltype in celltypes.split(','):
         for chrom in chromosomes.split(','):
-            ld_files = list(to_path(f'{associatr_dir}/{celltype}/{chrom}').glob('*.tsv'))
+            ld_files = list(to_path(f'{ld_dir}/{celltype}/{chrom}').glob('*.tsv'))
             for ld_file in ld_files:  # for each gene (each has its own LD file)
                 ld_file = str(ld_file)
                 gene = ld_file.split('/')[-1].split('_')[0]
