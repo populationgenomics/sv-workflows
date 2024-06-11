@@ -89,8 +89,9 @@ def ld_parser(
                 continue
             else:  # STR
                 chrom = row['chr']
+                end = int(pos +row['ref_len']*row['period'])
                 for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
-                    if str(variant.INFO.get('RU')) == motif: #check if the motif matches
+                    if (str(variant.INFO.get('RU')) == motif) and (int(variant.INFO.get('END'))== end):
                         genotypes = variant.format('REPCN')
                         # Replace '.' with '-99/-99' to handle missing values
                         genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
