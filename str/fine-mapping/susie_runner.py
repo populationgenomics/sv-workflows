@@ -41,6 +41,8 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
 
     # load in LD matrix and associatr file into R environment
     ld_matrix = pd.read_csv(ld_path, sep='\t')
+    ld_matrix.rename(columns={'Unnamed: 0': 'X'}, inplace=True)
+
     gene = ld_path.split('/')[-1].split('_')[0]
     with (ro.default_converter + pandas2ri.converter).context():
         ld_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
