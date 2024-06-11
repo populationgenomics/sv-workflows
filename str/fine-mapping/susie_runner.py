@@ -128,7 +128,7 @@ def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
                     f'SusieR for {chrom}:{gene}: {celltype}',
                 )
                 susie_job.cpu(0.25)
-                susie_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:susie')
+                #susie_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:susie')
                 susie_job.call(susie_runner, ld_file, associatr_path, celltype, chrom)
                 manage_concurrency_for_job(susie_job)
     b.run(wait=False)
