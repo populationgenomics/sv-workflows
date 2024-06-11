@@ -10,6 +10,7 @@ Required inputs:
 analysis-runner --dataset "bioheart" \
     --description "Run susieR for eGenes identified by STR analysis" \
     --access-level "test" \
+    --image "australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:susie" \
     --output-dir "str/associatr/test-only" \
     susie_runner.py \
     --celltypes "ASDC" \
@@ -54,7 +55,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
 
     ro.r(
         '''
-    df_subset <- subset(ld_matrix, select = -X)
+    df_subset <- subset(ld_r, select = -X)
     corr_x = as.matrix(df_subset)
     rownames(corr_x) <- NULL
     colnames(corr_x) <- NULL
@@ -64,7 +65,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
     associatr_r$varid <- paste(associatr_r$varid, associatr_r$motif, sep = "_")
 
     # Create an index based on the order vector
-    index <- match(ld_matrix$X, associatr_r$varid)
+    index <- match(ld_r$X, associatr_r$varid)
 
     # Reorder the associatr data frame using the index
     df_ordered <- associatr_r[index, ]
