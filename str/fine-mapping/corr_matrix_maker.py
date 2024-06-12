@@ -15,12 +15,15 @@ For each gene,
 analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
-    --output-dir "str/associatr/fine_mapping/prep_files/test" \
-    corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/dummy_snp_vcf\
+    --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
+    --output-dir "str/associatr/fine_mapping/prep_files/v2" \
+    corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
     --celltypes=ASDC \
-    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results \
-    --chromosomes=chr20
+    --job-storage=10G \
+    --max-parallel-jobs=50 \
+    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results \
+    --chromosomes=chr22
 
 
 """
@@ -77,6 +80,9 @@ def ld_parser(
         snp_vcf = VCF(snp_vcf_path['vcf'])
         snp_df['individual'] = snp_vcf.samples
         str_vcf = VCF(str_vcf_path['vcf'])
+        snp_df['individual'] = snp_df['individual'].apply(
+            lambda x: f"CPG{x}",
+        )
         str_df['individual'] = str_vcf.samples
         str_df['individual'] = str_df['individual'].apply(
             lambda x: f"CPG{x}",
@@ -86,12 +92,13 @@ def ld_parser(
             pos = row['pos']
             motif = row['motif']
             if '-' in row['motif']:  # SNP
-                chr_num = row['chr'][3:]  # SNP VCF chromosome is strictly numeric
-                for variant in snp_vcf(f'{chr_num}:{pos}-{pos}'):
-                    gt = variant.gt_types
-                    gt[gt == 3] = 2  # HOM ALT should be 2, not the default 3
-                    snp_df[f'chr{chr_num}:{pos}_{motif}'] = gt  # save GT into snp_df
-                    break
+                for variant in snp_vcf(f'{chrom}:{pos}-{pos}'):
+                    if str(variant.INFO.get('RU')) == motif:
+                        gt = variant.gt_types
+                        gt[gt == 3] = 2  # convert HOM ALT 3 encoding into a 2
+
+                        snp_df[f'{chrom}:{pos}_{motif}'] = gt
+                        break
             else:  # STR
                 chrom = row['chr']
                 end = int(pos + row['ref_len'] * row['period'])
@@ -210,7 +217,7 @@ def main(
             # filter eSTRs by chromosome
             str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'" + chrom + "'")]
             # read in STR and SNP VCFs for this chromosome
-            snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
+            snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
             # run LD calculation for each chrom-celltype combination
             ld_job = b.new_python_job(
@@ -218,8 +225,8 @@ def main(
             )
             ld_job.cpu(job_cpu)
             ld_job.storage(job_storage)
-            snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
-            str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'csi': str_vcf_path + '.tbi'})
+            snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
+            str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
 
             ld_job.call(
                 ld_parser,
