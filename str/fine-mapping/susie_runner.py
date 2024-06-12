@@ -28,7 +28,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
 
-def susie_runner(ld_path, associatr_path, celltype, chrom):
+def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations):
     import pandas as pd
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
@@ -53,6 +53,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
     ro.globalenv['associatr_r'] = associatr_r
     ro.globalenv['ld_r'] = ld_r
     ro.globalenv['gene'] = gene
+    ro.globalenv['num_iterations'] = num_iterations
 
     ro.r(
         '''
@@ -73,7 +74,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
 
     # Run SusieR
     fitted_rss1 <- susie_rss(bhat = df_ordered$coeff_meta, shat = df_ordered$se_meta, n = df_ordered$n_samples_tested_1[1]+df_ordered$n_samples_tested_2[1], R = corr_x, var_y = 1, L = 10,
-                         estimate_residual_variance = TRUE)
+    max_iter =num_iterations)
 
     # Append SusieR results to dataframe
     df_ordered$susie_pip = susie_get_pip(fitted_rss1, prune_by_cs = TRUE)
@@ -99,8 +100,9 @@ def susie_runner(ld_path, associatr_path, celltype, chrom):
 @click.option('--ld-dir', help='Directory to LD correlation matrices')
 @click.option('--associatr-dir', help='Directory to associatr outputs')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
+@click.option('--num_iterations', help='Number of iterations for SusieR', default=100)
 @click.command()
-def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
+def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs, num_iterations):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -127,7 +129,7 @@ def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs):
                     f'SusieR for {chrom}:{gene}: {celltype}',
                 )
                 susie_job.cpu(0.25)
-                susie_job.call(susie_runner, ld_file, associatr_path, celltype, chrom)
+                susie_job.call(susie_runner, ld_file, associatr_path, celltype, chrom, num_iterations)
                 manage_concurrency_for_job(susie_job)
     b.run(wait=False)
 
