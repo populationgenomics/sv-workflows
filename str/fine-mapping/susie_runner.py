@@ -10,13 +10,13 @@ Required inputs:
 analysis-runner --dataset "bioheart" \
     --description "Run susieR for eGenes identified by STR analysis" \
     --access-level "test" \
-    --image "australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:susie" \
-    --output-dir "str/associatr/test-only" \
+    --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" \
+    --output-dir "str/associatr/fine_mapping/v2" \
     susie_runner.py \
     --celltypes "ASDC" \
-    --chromosomes "chr1" \
-    --ld-dir "gs://cpg-bioheart-test/str/associatr/fine_mapping/prep_files/test-str-only" \
-    --associatr-dir "gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results" \
+    --chromosomes "chr22" \
+    --ld-dir "gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/prep_files/v2/correlation_matrix" \
+    --associatr-dir "gs://cpg-bioheart-test/str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results" \
     --max-parallel-jobs 100
 """
 
