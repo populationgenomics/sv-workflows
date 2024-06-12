@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" \
     --output-dir "str/associatr/fine_mapping/v2" \
     susie_runner.py \
-    --celltypes "ASDC" \
+    --celltypes "gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive" \
     --chromosomes "chr22" \
     --ld-dir "gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/prep_files/v2/correlation_matrix" \
     --associatr-dir "gs://cpg-bioheart-test/str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results" \
@@ -25,7 +25,7 @@ import click
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations):
@@ -101,8 +101,9 @@ def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations):
 @click.option('--associatr-dir', help='Directory to associatr outputs')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
 @click.option('--num_iterations', help='Number of iterations for SusieR', default=100)
+@click.option('--susie-cpu', help='CPU for SusieR job', default=0.25)
 @click.command()
-def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs, num_iterations):
+def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs, num_iterations, susie_cpu):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -123,12 +124,16 @@ def main(celltypes, chromosomes, ld_dir, associatr_dir, max_parallel_jobs, num_i
                 ld_file = str(ld_file)
                 gene = ld_file.split('/')[-1].split('_')[0]
                 print(f'Processing {gene}...')
+                if to_path(
+                    output_path(f"susie/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis'),
+                ).exists():
+                    continue
                 associatr_path = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
 
                 susie_job = b.new_python_job(
                     f'SusieR for {chrom}:{gene}: {celltype}',
                 )
-                susie_job.cpu(0.25)
+                susie_job.cpu(susie_cpu)
                 susie_job.call(susie_runner, ld_file, associatr_path, celltype, chrom, num_iterations)
                 manage_concurrency_for_job(susie_job)
     b.run(wait=False)
