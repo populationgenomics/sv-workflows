@@ -19,9 +19,10 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr/fine_mapping/prep_files/v2" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
-    --celltypes=ASDC \
+    --celltypes=gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive \
     --job-storage=10G \
     --max-parallel-jobs=50 \
+    --str-fdr-dir=gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat \
     --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results \
     --chromosomes=chr22
 
@@ -101,7 +102,7 @@ def ld_parser(
                         break
             else:  # STR
                 chrom = row['chr']
-                end = int(pos + row['ref_len'] * row['period'])
+                end = round(pos + row['ref_len'] * row['period'])
                 for variant in str_vcf(f'{chrom}:{pos}-{pos}'):
                     if (str(variant.INFO.get('RU')) == motif) and (
                         int(variant.INFO.get('END')) == end
