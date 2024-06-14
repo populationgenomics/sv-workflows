@@ -36,7 +36,7 @@ def main():
                 echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
                 echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;{eh_job.ofile['data.log']};{data_in.k};5363" >> $temp_file
                 chmod +x $temp_file
-                finemap --sss --in-files $temp_file --dataset 1
+                finemap --sss --in-files $temp_file --dataset 1 --log
                 """,
                 )
 
