@@ -9,9 +9,9 @@ This is necessary to improve the accuracy of fine-mapping.
 Indels are considered STRs (and subsequently removed) if:
 
 - they overlap with an STR region, specified by an eSTR in the associaTR output; and
-- the (reverse complement) sequence of the indel is a whole/partial copy of at least one cyclical representation of the STR motif.
+- the (reverse complement) sequence of the indel is a whole copy of at least one cyclical representation of the STR motif.
 e.g. a 'TAT' insertion overlapping with a 'ATT' STR would be considered an STR as 'TAT' is a cyclical representation of 'ATT'.
-Similarly, a 'GC' insertion overlapping with a 'CAG' STR would be considered an STR, as 'GC' is a partial copy of 'GCA', a cyclical representation of 'CAG'.
+ a 'GC' insertion overlapping with a 'CAG' STR would not be considered an STR, as 'GC' is a partial copy of 'GCA', a cyclical representation of 'CAG'.
 
 Note that impure indels are conservatively not considered STRs. For example, a 'GCCGCA' insertion overlapping a 'GCC' STR would not be considered an STR.
 
@@ -66,23 +66,6 @@ def cyclical_shifts(s):
     Generate all cyclical shifts of a string.
     """
     return [s[i:] + s[:i] for i in range(len(s))]
-
-
-def generate_truncated_motifs(indel, motif2):
-    """
-    Generate all possible truncated motifs of a given length from a motif.
-
-    e.g. motif 'ATCC' with indel 'GT' should return 'AT', 'TC', 'CC', 'CA'.
-
-    """
-    truncated_motifs = []
-    indel_size = len(indel)
-    motif2_size = len(motif2)
-    for i in range(motif2_size):
-        truncated_motif = motif2[i:] + motif2[:i]  # Wrap around if necessary
-        truncated_motif = truncated_motif[:indel_size]  # Truncate to match indel size
-        truncated_motifs.append(truncated_motif)
-    return truncated_motifs
 
 
 def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
@@ -141,39 +124,15 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
                         found = True
                         break
 
-                    if len(indel) < len(
-                        str_motif,
-                    ):  # case when indel is shorter than the STR motif so we need to truncate the motif to check for equivalency
-                        truncated_motifs = generate_truncated_motifs(indel, str_motif)
-                        for truncated_motif in truncated_motifs:
-                            if (indel in cyclical_shifts(truncated_motif)) or (
-                                reverse_complement(indel) in cyclical_shifts(truncated_motif)
-                            ):
-                                # print(
-                                #    f"Indel: {row1['motif']} matches truncated motif: {truncated_motif}; [original motif: {str_motif}]",
-                                # )
-                                indices_to_delete.append(i)
-                                found = True
-                                break
-                        # if found == False:
-                        # print(
-                        #    f"Indel: {row1['motif']} {indel}, doesn't match {str_motif} or {truncated_motif}, position: {row2['pos']}",
-                        # )
-
-                    else:  # case when indel is longer than the STR motif so we need to elongate the motif for checking equivalency
-                        elongated_motif = (
-                            str_motif * (len(indel) // len(str_motif)) + str_motif[: len(indel) % len(str_motif)]
-                        )
+                    if len(indel) % len(str_motif) == 0:  # check if len(indel) is a multiple of len(str_motif)
+                        elongated_motif = str_motif * (len(indel) // len(str_motif))
                         if (indel in cyclical_shifts(elongated_motif)) or (
                             reverse_complement(indel) in cyclical_shifts(elongated_motif)
                         ):
-                            # print(
-                            #    f"Indel: {row1['motif']}, matches elongated motif: {elongated_motif};[original motif: {str_motif}]",
-                            # )
                             indices_to_delete.append(i)
                             found = True
                             break
-                        # print(f"Indel: {row1['motif']} doesn't match {str_motif}, position: {row2['pos']}")
+
                     found = True
                     break
             # if not found:
