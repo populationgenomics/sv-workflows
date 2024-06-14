@@ -11,7 +11,7 @@ def main():
     eh_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/finemap:1.4.2')
     eh_job.command(
                     f"""
-                finemap
+                potato
                 """,
                 )
     b.run(wait=False)
