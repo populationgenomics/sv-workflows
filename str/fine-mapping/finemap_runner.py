@@ -3,7 +3,7 @@
 analysis-runner --dataset "bioheart" --access-level "test" --description "Run finemap" --output-dir "str/finemap" finemap_runner.py
 
 """
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 def main():
     b = get_batch()
@@ -31,6 +31,17 @@ def main():
                 finemap --sss --in-files $temp_file --dataset 1
                 """,
                 )
+
+    eh_job.declare_resource_group(
+            ofile={
+                'data.snp': '{root}.data.snp',
+                'data.cred': '{root}.data.cred',
+                'data.config': '{root}.data.config',
+                'data.log': '{root}.data.log',
+            },
+        )
+    output_path_vcf = output_path(f'finemap/example/ofiles')
+    b.write_output(eh_job.ofile, output_path_vcf)
     b.run(wait=False)
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
