@@ -44,6 +44,8 @@ def main():
 
     output_path_vcf = output_path(f'finemap/example/ofiles')
     b.write_output(eh_job.ofile['data.snp'], output_path_vcf+'data.snp')
+    b.write_output(eh_job.ofile['data.config'], output_path_vcf+'data.config')
+    b.write_output(eh_job.ofile['data.real_log'], output_path_vcf+'data.log')
     b.run(wait=False)
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
