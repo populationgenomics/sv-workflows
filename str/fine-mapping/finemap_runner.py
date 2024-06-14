@@ -25,12 +25,10 @@ def main():
 
                 ls -d ${{BATCH_TMPDIR}}/inputs/*/
 
-                #input_dir=$(ls -d ${{BATCH_TMPDIR}}/inputs/*/)
-
                 # Write the required format to the file
-                echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
-                echo '${{input_dir}}data.z;${{input_dir}}data.ld;${{input_dir}}data.snp;data.config;data.cred;data.log;/data.k;5363' >> $temp_file
-                finemap --sss --in-files temp_file --dataset 1
+                #echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
+                #echo '${BATCH_TMPDIR}/inputs/gr8i3/;example/data.ld;example/data.snp;example/data.config;example/data.cred;example/data.log;example/data.k;5363' >> $temp_file
+                finemap --sss --in-files {data_in['master']} --dataset 1
                 """,
                 )
     b.run(wait=False)
