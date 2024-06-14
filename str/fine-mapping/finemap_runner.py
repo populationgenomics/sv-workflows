@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-analysis-runner --dataset "bioheart" --access-level "test" --description "Run finemap" --output-dir "str/finemap" finemap_runner.py
+analysis-runner --dataset "bioheart" --access-level "test" --description "Run finemap" --output-dir "str/finemapping" finemap_runner.py
 
 """
 from cpg_utils.hail_batch import get_batch, output_path
@@ -18,6 +18,14 @@ def main():
 
     eh_job = b.new_job(name=f'Run finemap')
     eh_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/finemap:1.4.2')
+    eh_job.declare_resource_group(
+            ofile={
+                'data.snp': '{root}.data.snp',
+                #'data.cred': '{root}.data.cred',
+                'data.config': '{root}.data.config',
+                'data.log': '{root}.data.log',
+            },
+        )
     eh_job.command(
                     f"""
                 # Create a temporary file
@@ -26,20 +34,13 @@ def main():
 
                 # Write the required format to the file
                 echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
-                echo "{data_in.z};{data_in.ld};data.snp;data.config;data.cred;data.log;{data_in.k};5363" >> $temp_file
+                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;{eh_job.ofile['data.log']};{data_in.k};5363" >> $temp_file
                 chmod +x $temp_file
                 finemap --sss --in-files $temp_file --dataset 1
                 """,
                 )
 
-    eh_job.declare_resource_group(
-            ofile={
-                'data.snp': '{root}.data.snp',
-                'data.cred': '{root}.data.cred',
-                'data.config': '{root}.data.config',
-                'data.log': '{root}.data.log',
-            },
-        )
+
     output_path_vcf = output_path(f'finemap/example/ofiles')
     b.write_output(eh_job.ofile, output_path_vcf)
     b.run(wait=False)
