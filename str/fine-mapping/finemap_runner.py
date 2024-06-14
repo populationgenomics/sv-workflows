@@ -23,7 +23,9 @@ def main():
                 # Create a temporary file
                 temp_file=$(mktemp)
 
-                input_dir=$(ls -d ${{BATCH_TMPDIR}}/inputs/*/)
+                ls -d ${{BATCH_TMPDIR}}/inputs/*/
+
+                #input_dir=$(ls -d ${{BATCH_TMPDIR}}/inputs/*/)
 
                 # Write the required format to the file
                 echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
