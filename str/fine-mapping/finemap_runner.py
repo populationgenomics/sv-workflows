@@ -20,6 +20,14 @@ def main():
     eh_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/finemap:1.4.2')
     eh_job.command(
                     f"""
+                # Create a temporary file
+                temp_file=$(mktemp)
+
+                ls -d ${{BATCH_TMPDIR}}/inputs/*/
+
+                # Write the required format to the file
+                #echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
+                #echo '${BATCH_TMPDIR}/inputs/gr8i3/;example/data.ld;example/data.snp;example/data.config;example/data.cred;example/data.log;example/data.k;5363' >> $temp_file
                 finemap --sss --in-files {data_in['master']} --dataset 1
                 """,
                 )
