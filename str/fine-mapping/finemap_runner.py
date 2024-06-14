@@ -23,7 +23,7 @@ def main():
                 'data.snp': '{root}.data.snp',
                 #'data.cred': '{root}.data.cred',
                 'data.config': '{root}.data.config',
-                'data.log_sss': '{root}.data.log_sss',
+                'data.log': '{root}.data.log_sss',
             },
         )
     eh_job.command(
@@ -34,7 +34,7 @@ def main():
 
                 # Write the required format to the file
                 echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
-                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;{eh_job.ofile['data.log_sss']};{data_in.k};5363" >> $temp_file
+                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;{eh_job.ofile['data.log']};{data_in.k};5363" >> $temp_file
                 chmod +x $temp_file
                 finemap --sss --in-files $temp_file --dataset 1 --log
                 """,
