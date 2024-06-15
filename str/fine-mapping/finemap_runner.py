@@ -25,6 +25,7 @@ def main():
                 'data.config': '{root}.data.config',
                 'data.fake_log': '{root}.data.log',
                 'data.log_sss': '{root}.data.log_sss',
+                'data.cred': '{root}.data.cred',
             },
         )
     eh_job.command(
@@ -38,6 +39,10 @@ def main():
                 echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;{eh_job.ofile['data.fake_log']};{data_in.k};5363" >> $temp_file
                 chmod +x $temp_file
                 finemap --sss --in-files $temp_file --dataset 1 --log
+
+                # Concatenate all files with data.cred* into a single file
+                cat data.cred* > {eh_job.ofile['data.cred']}
+
                 """,
                 )
 
@@ -45,7 +50,8 @@ def main():
     output_path_vcf = output_path(f'finemap/example/ofiles')
     b.write_output(eh_job.ofile['data.snp'], output_path_vcf+'data.snp')
     b.write_output(eh_job.ofile['data.config'], output_path_vcf+'data.config')
-    b.write_output(eh_job.ofile['data.fake_log']+'_sss', output_path_vcf+'data.log_sss')
+    #b.write_output(eh_job.ofile['data.fake_log']+'_sss', output_path_vcf+'data.log_sss')
+    b.write_output(eh_job.ofile['data.cred'], output_path_vcf+'data.cred')
     b.run(wait=False)
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
