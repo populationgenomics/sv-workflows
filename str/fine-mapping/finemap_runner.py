@@ -23,8 +23,7 @@ def main():
                 'data.snp': '{root}.data.snp',
                 #'data.cred': '{root}.data.cred',
                 'data.config': '{root}.data.config',
-                'data.fake_log': '{root}.data.log',
-                'data.log_sss': '{root}.data.log_sss',
+                'data.log': '{root}.data.log',
                 'data.cred': '{root}.data.cred',
             },
         )
@@ -36,12 +35,18 @@ def main():
 
                 # Write the required format to the file
                 echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
-                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;{eh_job.ofile['data.fake_log']};{data_in.k};5363" >> $temp_file
+                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;data.log;{data_in.k};5363" >> $temp_file
                 chmod +x $temp_file
                 finemap --sss --in-files $temp_file --dataset 1 --log
 
                 # Concatenate all files with data.cred* into a single file
                 cat data.cred* > {eh_job.ofile['data.cred']}
+
+                # Cat data.log* into a single file
+                cat data.log* > {eh_job.ofile['data.log']}
+
+
+
 
                 """,
                 )
@@ -50,7 +55,7 @@ def main():
     output_path_vcf = output_path(f'finemap/example/ofiles')
     b.write_output(eh_job.ofile['data.snp'], output_path_vcf+'data.snp')
     b.write_output(eh_job.ofile['data.config'], output_path_vcf+'data.config')
-    #b.write_output(eh_job.ofile['data.fake_log']+'_sss', output_path_vcf+'data.log_sss')
+    b.write_output(eh_job.ofile['data.log'], output_path_vcf+'data.log')
     b.write_output(eh_job.ofile['data.cred'], output_path_vcf+'data.cred')
     b.run(wait=False)
 if __name__ == '__main__':
