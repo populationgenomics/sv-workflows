@@ -16,16 +16,15 @@ analysis-runner --dataset "bioheart" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/fine_mapping/prep_files/v2" \
+    --output-dir "str/associatr/fine_mapping/prep_files/v2-whole-copies-debug" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4 \
     --str-vcf-dir=gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific \
-    --celltypes=gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive \
+    --celltypes=CD4_TCM \
     --job-storage=10G \
     --max-parallel-jobs=50 \
     --str-fdr-dir=gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat \
-    --associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results \
+    --associatr-dir=gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results \
     --chromosomes=chr22
-
 
 """
 
@@ -59,6 +58,8 @@ def ld_parser(
 
     for index, row in str_fdr.iterrows():  # iterate over each gene
         gene = row['gene_name']
+        if gene is not 'ENSG00000100003':
+            continue
         chrom = ast.literal_eval(row['chr'])[0]
         # obtain raw associaTR results for this gene
         try:
