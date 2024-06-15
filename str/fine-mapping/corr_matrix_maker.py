@@ -58,8 +58,6 @@ def ld_parser(
 
     for index, row in str_fdr.iterrows():  # iterate over each gene
         gene = row['gene_name']
-        if gene is not 'ENSG00000100003':
-            continue
         chrom = ast.literal_eval(row['chr'])[0]
         # obtain raw associaTR results for this gene
         try:
