@@ -34,8 +34,8 @@ def main():
 
 
                 # Write the required format to the file
-                echo 'z;ld;snp;config;cred;log;k;n_samples' > $temp_file
-                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;data.log;{data_in.k};5363" >> $temp_file
+                echo 'z;ld;snp;config;cred;log;n_samples' > $temp_file
+                echo "{data_in.z};{data_in.ld};{eh_job.ofile['data.snp']};{eh_job.ofile['data.config']};data.cred;data.log;5363" >> $temp_file
                 chmod +x $temp_file
                 finemap --sss --in-files $temp_file --dataset 1 --log
 
