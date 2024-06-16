@@ -39,7 +39,7 @@ def z_file_maker(gene_name, ld_file, associatr_dir, celltype, chrom):
     """
 
     # Load the TSV file
-    df = pd.read_csv(f'{associatr_dir}/{gene_name}_100000bp_meta_results.tsv', sep='\t')
+    df = pd.read_csv(f'{associatr_dir}/{celltype}/{chrom}/{gene_name}_100000bp_meta_results.tsv', sep='\t')
 
     # Create the 'rsid' column
     df['rsid'] = df['chr'].astype(str) + ':' + df['pos'].astype(str) + '_' + df['motif']
