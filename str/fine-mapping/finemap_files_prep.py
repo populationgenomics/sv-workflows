@@ -27,9 +27,9 @@ import pandas as pd
 
 import hailtop.batch as hb
 
+from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
-from cpg_utils import to_path
 
 
 def z_file_maker(gene_name, ld_file, associatr_dir, celltype, chrom):
@@ -45,7 +45,7 @@ def z_file_maker(gene_name, ld_file, associatr_dir, celltype, chrom):
     df['rsid'] = df['chr'].astype(str) + ':' + df['pos'].astype(str) + '_' + df['motif']
 
     # Rename the 'chr' and 'pos' columns
-    df.rename(columns={'chr': 'chromosome', 'pos': 'position', 'coeff_meta': 'beta', 'se_meta': 'se'}, inplace=True)
+    df = df.rename(columns={'chr': 'chromosome', 'pos': 'position', 'coeff_meta': 'beta', 'se_meta': 'se'})
 
     # Create the 'allele1', 'allele2', 'maf' columns with NaN values
     df['allele1'] = 'nan'
@@ -59,18 +59,19 @@ def z_file_maker(gene_name, ld_file, associatr_dir, celltype, chrom):
     df_index = pd.read_csv(ld_file, sep='\t')
 
     # Set the index of df to be 'rsid'
-    df.set_index('rsid', inplace=True)
+    df = df.set_index('rsid')
 
     # Reindex df according to the order of 'rsid' in df_index
     df = df.reindex(df_index['Unnamed: 0'])
 
     # Reset the index of df
-    df.reset_index(inplace=True)
-    df.rename(columns={'Unnamed: 0': 'rsid'}, inplace = True)
+    df = df.reset_index()
+    df = df.rename(columns={'Unnamed: 0': 'rsid'})
 
     output_file_path = output_path(f'finemap_prep/{celltype}/{chrom}/{gene_name}.z', 'analysis')
     # Save the DataFrame to a space-delimited file
     df.to_csv(output_file_path, sep=' ', index=False)
+
 
 def ld_file_maker(gene_name, ld_file, celltype, chrom):
     """
@@ -91,6 +92,7 @@ def ld_file_maker(gene_name, ld_file, celltype, chrom):
     # Save the DataFrame to a space-delimited file without index
     df.to_csv(output_file_path, sep=' ', index=False, header=False)
 
+
 @click.option('--ld-dir', required=True, help='Path to the directory containing the LD files')
 @click.option('--associatr-dir', required=True, help='Path to the directory containing the associatr files')
 @click.option('--celltypes', required=True, help='Cell type')
@@ -99,9 +101,7 @@ def ld_file_maker(gene_name, ld_file, celltype, chrom):
 @click.option('--z-job-cpu', help='CPU for Z job', default=0.25)
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.command()
-
 def main(ld_dir, associatr_dir, celltypes, chroms, ld_job_cpu, z_job_cpu, max_parallel_jobs):
-
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -113,20 +113,23 @@ def main(ld_dir, associatr_dir, celltypes, chroms, ld_job_cpu, z_job_cpu, max_pa
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    b = get_batch(name = f'FINEMAP prep for {celltypes}: {chroms}')
+    b = get_batch(name=f'FINEMAP prep for {celltypes}: {chroms}')
     for celltype in celltypes.split(','):
         for chrom in chroms.split(','):
             ld_files = list(to_path(f'{ld_dir}/{celltype}/{chrom}').glob('*.tsv'))
             for ld_file in ld_files:
-                gene_name = str(ld_file).split('/')[-1].split('_')[0] #ENSG ID
+                gene_name = str(ld_file).split('/')[-1].split('_')[0]  # ENSG ID
 
-                if to_path(
-                    output_path(f'finemap_prep/{celltype}/{chrom}/{gene_name}.ld', 'analysis'),
-                ).exists() and to_path(output_path(f'finemap_prep/{celltype}/{chrom}/{gene_name}.z', 'analysis')).exists():
+                if (
+                    to_path(
+                        output_path(f'finemap_prep/{celltype}/{chrom}/{gene_name}.ld', 'analysis'),
+                    ).exists()
+                    and to_path(output_path(f'finemap_prep/{celltype}/{chrom}/{gene_name}.z', 'analysis')).exists()
+                ):
                     continue
                 ld_job = b.new_python_job(
-                f'LD file maker for {celltype}:{chrom} {gene_name}',
-            )
+                    f'LD file maker for {celltype}:{chrom} {gene_name}',
+                )
                 ld_job.cpu(ld_job_cpu)
                 ld_job.call(ld_file_maker, gene_name, ld_file, celltype, chrom)
                 manage_concurrency_for_job(ld_job)
@@ -136,6 +139,7 @@ def main(ld_dir, associatr_dir, celltypes, chroms, ld_job_cpu, z_job_cpu, max_pa
                 manage_concurrency_for_job(z_job)
 
     b.run(wait=False)
+
 
 if __name__ == '__main__':
     main()
