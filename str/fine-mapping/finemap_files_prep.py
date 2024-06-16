@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr/fine_mapping" \
     finemap_files_prep.py \
     --ld-dir "gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/prep_files/v2-whole-copies-only/correlation_matrix" \
-    --associatr-dir "gs://cpg-test-main-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results" \
+    --associatr-dir "gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results" \
     --celltypes "ASDC" \
     --chroms "chr22"
 
