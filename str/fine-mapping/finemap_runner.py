@@ -32,6 +32,9 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
             input_files = list(to_path(f'{input_file_dir}/{celltype}/{chrom}').glob('*.z'))
             genes = [str(f).split('/')[-1].split('.')[0] for f in input_files]
             for gene in genes:  # run FINEMAP for each gene
+                if to_path(output_path(f'finemap/ofiles/{celltype}/{chrom}/{gene}.snp', 'analysis')).exists():
+                    continue
+                n_casual_snps_gene = n_causal_snps
                 # load in the associaTR file to extract n_samples tested - used as a FINEMAP command line arg
                 associatr_sum_stats = pd.read_csv(
                     f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv', sep='\t',
@@ -41,7 +44,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                 n_samples_total = n_samples_tested_1 + n_samples_tested_2
                 num_rows = associatr_sum_stats.shape[0]
                 if num_rows < n_causal_snps:
-                    n_causal_snps = num_rows
+                    n_casual_snps_gene = num_rows
 
                 # load in the z and ld files required for FINEMAP
                 data_in = b.read_input_group(
@@ -73,7 +76,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                             chmod +x $temp_file
 
                             # Run FINEMAP
-                            finemap --sss --in-files $temp_file --log --n-causal-snps {n_causal_snps}
+                            finemap --sss --in-files $temp_file --log --n-causal-snps {n_casual_snps_gene}
 
                             # Concatenate all files with data.cred* into a single file
                             cat data.cred* > {finemap_job.ofile['data.cred']}
