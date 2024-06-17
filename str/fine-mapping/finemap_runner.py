@@ -3,10 +3,10 @@
 This script runs FINEMAP.
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "Run finemap" --output-dir "str/associatr/fine_mapping" finemap_runner.py \
-    --input-dir=gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/finemap_prep \
+    --input-file-dir=gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/finemap_prep \
     --associatr-dir=gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results \
     --celltypes="ASDC" \
-    --chroms="chr22"
+    --chroms="chr1,chr2,chr3,chr4,chr5,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22" \
 
 """
 import click
@@ -21,8 +21,9 @@ from cpg_utils.hail_batch import get_batch, image_path, output_path
 @click.option('--celltypes')
 @click.option('--chroms')
 @click.option('--n-causal-snps', help='Number of causal SNPs to be used in the FINEMAP analysis', default=10)
+@click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.command()
-def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps):
+def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cpu):
     b = get_batch(name=f'Run FINEMAP on {celltypes}:{chroms}')
     for celltype in celltypes.split(','):
         for chrom in chroms.split(','):
@@ -47,6 +48,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps):
 
                 finemap_job = b.new_job(name=f'Run finemap on {celltype}:{chrom} {gene}')
                 finemap_job.image(image_path('finemap'))
+                finemap_job.cpu(job_cpu)
                 finemap_job.declare_resource_group(
                     ofile={
                         'data.snp': '{root}.data.snp',
