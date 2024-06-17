@@ -2,7 +2,9 @@
 """
 This script runs FINEMAP.
 
-analysis-runner --dataset "bioheart" --access-level "test" --description "Run finemap" --output-dir "str/associatr/fine_mapping" finemap_runner.py \
+analysis-runner --dataset "bioheart" --access-level "test" --description "Run finemap" --output-dir "str/associatr/fine_mapping" \
+     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
+     finemap_runner.py \
     --input-file-dir=gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/finemap_prep \
     --associatr-dir=gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results \
     --celltypes="ASDC" \
@@ -37,6 +39,9 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                 n_samples_tested_1 = associatr_sum_stats.loc[0, 'n_samples_tested_1']
                 n_samples_tested_2 = associatr_sum_stats.loc[0, 'n_samples_tested_2']
                 n_samples_total = n_samples_tested_1 + n_samples_tested_2
+                num_rows = associatr_sum_stats.shape[0]
+                if num_rows < n_causal_snps:
+                    n_causal_snps = num_rows
 
                 # load in the z and ld files required for FINEMAP
                 data_in = b.read_input_group(
