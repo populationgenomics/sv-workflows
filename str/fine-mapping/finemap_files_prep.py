@@ -82,6 +82,12 @@ def ld_file_maker(gene_name, ld_file, celltype, chrom):
     df = pd.read_csv(ld_file, sep='\t')
     df = df.drop(columns=['Unnamed: 0'])
 
+    # Convert the data type of the DataFrame to np.float64
+    df = df.astype(np.float64)
+
+    # Rounding to prevent float representation errors by FINEMAP
+    df = df.round(4)
+
     # Remove column names
     df.columns = ['' for _ in df.columns]
 
