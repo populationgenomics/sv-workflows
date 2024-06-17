@@ -43,9 +43,6 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                 n_samples_tested_1 = associatr_sum_stats.loc[0, 'n_samples_tested_1']
                 n_samples_tested_2 = associatr_sum_stats.loc[0, 'n_samples_tested_2']
                 n_samples_total = n_samples_tested_1 + n_samples_tested_2
-                num_rows = associatr_sum_stats.shape[0]
-                if num_rows < n_causal_snps:
-                    n_casual_snps_gene = num_rows
 
                 # load in the z and ld files required for FINEMAP
                 data_in = b.read_input_group(
@@ -54,6 +51,11 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                         'z': f'{input_file_dir}/{celltype}/{chrom}/{gene}.z',
                     },
                 )
+
+                data_z = pd.read_csv(data_in.z, sep=' ')
+                num_rows = data_z.shape[0]
+                if num_rows < n_causal_snps:
+                    n_casual_snps_gene = num_rows
 
                 finemap_job = b.new_job(name=f'Run finemap on {celltype}:{chrom} {gene}')
                 finemap_job.image(image_path('finemap'))
