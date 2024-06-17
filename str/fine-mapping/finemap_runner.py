@@ -52,7 +52,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                     },
                 )
 
-                data_z = pd.read_csv(data_in.z, sep=' ')
+                data_z = pd.read_csv(f'{input_file_dir}/{celltype}/{chrom}/{gene}.z', sep=' ')
                 num_rows = data_z.shape[0]
                 if num_rows < n_causal_snps:
                     n_casual_snps_gene = num_rows
