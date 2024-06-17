@@ -37,7 +37,8 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                 n_casual_snps_gene = n_causal_snps
                 # load in the associaTR file to extract n_samples tested - used as a FINEMAP command line arg
                 associatr_sum_stats = pd.read_csv(
-                    f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv', sep='\t',
+                    f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
+                    sep='\t',
                 )
                 n_samples_tested_1 = associatr_sum_stats.loc[0, 'n_samples_tested_1']
                 n_samples_tested_2 = associatr_sum_stats.loc[0, 'n_samples_tested_2']
