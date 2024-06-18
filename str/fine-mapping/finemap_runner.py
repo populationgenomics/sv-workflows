@@ -54,8 +54,8 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
 
                 data_z = pd.read_csv(f'{input_file_dir}/{celltype}/{chrom}/{gene}.z', sep=' ')
                 num_rows = data_z.shape[0]
-                #if num_rows == 1:
-                    #continue
+                if num_rows == 1:
+                    continue
                 if num_rows < n_causal_snps:
                     n_casual_snps_gene = num_rows
 
@@ -84,9 +84,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                             finemap --sss --in-files $temp_file --log --n-causal-snps {n_casual_snps_gene}
 
                             # Concatenate all files with data.cred* into a single file
-                            # Check if data.cred* files exist before concatenating
-                            if ls data.cred* 1> /dev/null 2>&1; then
-                                cat data.cred* > {finemap_job.ofile['data.cred']}
+                            cat data.cred* > {finemap_job.ofile['data.cred']}
 
                             # Cat data.log* into a single file
                             cat data.log* > {finemap_job.ofile['data.log']}
