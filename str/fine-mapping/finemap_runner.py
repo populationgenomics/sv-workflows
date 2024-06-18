@@ -7,12 +7,16 @@ analysis-runner --dataset "bioheart" --access-level "test" --description "Run fi
      finemap_runner.py \
     --input-file-dir=gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/finemap_prep \
     --associatr-dir=gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results \
-    --celltypes="ASDC" \
-    --chroms="chr1,chr2,chr3,chr4,chr5,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22" \
+    --celltypes="gdT,B_intermediate,ILC" \
+    --chroms="chr6"
 
+    chr1,chr2,chr3,chr4,chr5,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
+
+"gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive
 """
 import click
 import pandas as pd
+import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, image_path, output_path
@@ -24,8 +28,20 @@ from cpg_utils.hail_batch import get_batch, image_path, output_path
 @click.option('--chroms')
 @click.option('--n-causal-snps', help='Number of causal SNPs to be used in the FINEMAP analysis', default=10)
 @click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
+@click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=1000)
 @click.command()
-def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cpu):
+def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cpu,max_parallel_jobs):
+     # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     b = get_batch(name=f'Run FINEMAP on {celltypes}:{chroms}')
     for celltype in celltypes.split(','):
         for chrom in chroms.split(','):
@@ -143,6 +159,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
 
                             """,
                 )
+                manage_concurrency_for_job(finemap_job)
 
                 output_path_vcf = output_path(f'finemap/ofiles/{celltype}/{chrom}/{gene}', 'analysis')
                 b.write_output(finemap_job.ofile['data.snp'], output_path_vcf + '.snp')
