@@ -16,6 +16,7 @@ analysis-runner --dataset "bioheart" --access-level "test" --description "Run fi
 """
 import click
 import pandas as pd
+
 import hailtop.batch as hb
 
 from cpg_utils import to_path
@@ -30,8 +31,8 @@ from cpg_utils.hail_batch import get_batch, image_path, output_path
 @click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=1000)
 @click.command()
-def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cpu,max_parallel_jobs):
-     # Setup MAX concurrency by genes
+def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cpu, max_parallel_jobs):
+    # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
     def manage_concurrency_for_job(job: hb.batch.job.Job):
@@ -123,7 +124,9 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                     # Append the new row to the output DataFrame
                     output_data = pd.concat([output_data, pd.DataFrame(new_row).T], ignore_index=True)
                     output_data.to_csv(
-                        output_path(f'finemap/ofiles/{celltype}/{chrom}/{gene}.snp', 'analysis'), sep=' ', index=False,
+                        output_path(f'finemap/ofiles/{celltype}/{chrom}/{gene}.snp', 'analysis'),
+                        sep=' ',
+                        index=False,
                     )
                     continue
 
