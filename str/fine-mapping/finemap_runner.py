@@ -54,10 +54,62 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
 
                 data_z = pd.read_csv(f'{input_file_dir}/{celltype}/{chrom}/{gene}.z', sep=' ')
                 num_rows = data_z.shape[0]
-                if num_rows == 1:
-                    continue
                 if num_rows < n_causal_snps:
                     n_casual_snps_gene = num_rows
+                if num_rows == 1:
+                    # read in z file
+                    data_z = pd.read_csv(f'{input_file_dir}/{celltype}/{chrom}/{gene}.z', sep=' ')
+
+                    # Create a new DataFrame with the desired headers
+                    output_data = pd.DataFrame(
+                        columns=[
+                            'index',
+                            'rsid',
+                            'chromosome',
+                            'position',
+                            'allele1',
+                            'allele2',
+                            'maf',
+                            'beta',
+                            'se',
+                            'z',
+                            'prob',
+                            'log10bf',
+                            'mean',
+                            'sd',
+                            'mean_incl',
+                            'sd_incl',
+                        ],
+                    )
+
+                    # Create a new row with NA values
+                    new_row = pd.Series(
+                        {
+                            'index': 'NA',
+                            'rsid': data_z['rsid'][0],
+                            'chromosome': data_z['chromosome'][0],
+                            'position': data_z['position'][0],
+                            'allele1': 'NA',
+                            'allele2': 'NA',
+                            'maf': 'NA',
+                            'beta': data_z['beta'][0],
+                            'se': data_z['se'][0],
+                            'z': 'NA',
+                            'prob': 1,
+                            'log10bf': 'NA',
+                            'mean': 'NA',
+                            'sd': 'NA',
+                            'mean_incl': 'NA',
+                            'sd_incl': 'NA',
+                        },
+                    )
+
+                    # Append the new row to the output DataFrame
+                    output_data = output_data.append(new_row, ignore_index=True)
+                    output_data.to_csv(
+                        output_path(f'finemap/ofiles/{celltype}/{chrom}/{gene}.snp', 'analysis'), sep=' ', index=False,
+                    )
+                    continue
 
                 finemap_job = b.new_job(name=f'Run finemap on {celltype}:{chrom} {gene}')
                 finemap_job.image(image_path('finemap'))
