@@ -105,7 +105,7 @@ def main(input_file_dir, celltypes, chroms, associatr_dir, n_causal_snps, job_cp
                     )
 
                     # Append the new row to the output DataFrame
-                    output_data = output_data.append(new_row, ignore_index=True)
+                    output_data = pd.concat([output_data, pd.DataFrame(new_row).T], ignore_index=True)
                     output_data.to_csv(
                         output_path(f'finemap/ofiles/{celltype}/{chrom}/{gene}.snp', 'analysis'), sep=' ', index=False,
                     )
