@@ -20,7 +20,8 @@ Applied filters:
     --access-level "test" \
     --output-dir "str/saige-qtl/input_files" \
     qc_filters_saige.py --mt-path=gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
-    --version=v1-chr-specific
+    --version=v1-chr-specific-rescaled \
+    --rescaled
 
 """
 
@@ -32,7 +33,7 @@ from cpg_utils.hail_batch import get_batch
 config = get_config()
 
 
-def qc_filter(mt_path, version):
+def qc_filter(mt_path, version, rescaled):
     """
     Applies QC filters to the input MT
 
@@ -158,6 +159,16 @@ def qc_filter(mt_path, version):
             mt.aggregated_info.mode_allele * 2,
         ),
     )
+    if rescaled:
+        # rescale DS so that it is in range (0,2)
+        mt = mt.annotate_rows(min_DS=hl.agg.min(mt.DS), max_DS=hl.agg.max(mt.DS))
+        mt = mt.annotate_entries(DS_rescaled=(mt.DS - mt.min_DS) / (mt.max_DS - mt.min_DS) * 2)
+        # clean up mt (drop unnecessary fields)
+        mt = mt.drop('DS', 'min_DS', 'max_DS')
+
+        # rename DS_rescaled as DS
+        mt = mt.annotate_entries(DS=mt.DS_rescaled)
+        mt = mt.drop('DS_rescaled')
 
     # wrangle mt, prepare for export_vcf():
 
@@ -194,7 +205,8 @@ def qc_filter(mt_path, version):
     mt = mt.annotate_rows(str_array_field=["A", "C"])
     mt = mt.key_rows_by(locus=mt['locus'], alleles=mt['str_array_field'])
 
-    for chr_index in range(22):  # iterate over chr1-22
+    # for chr_index in range(22):  # iterate over chr1-22
+    for chr_index in [21]:
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         hl.export_vcf(
@@ -209,10 +221,12 @@ def qc_filter(mt_path, version):
     type=str,
 )
 @click.option('--version', help='version of the output files', type=str, default='v1')
+@click.option('--rescaled', help='rescale DS to (0,2)', is_flag=True)
 @click.command()
 def main(
     mt_path,
     version,
+    rescaled,
 ):
     """
     Runner to apply QC filters to input MT, and bgzip and tabix.
@@ -222,7 +236,7 @@ def main(
 
     hail_job = b.new_python_job(name='QC filters')
     hail_job.image(config['workflow']['driver_image'])
-    hail_job.call(qc_filter, mt_path, version)
+    hail_job.call(qc_filter, mt_path, version, rescaled)
 
     b.run(wait=False)
 
