@@ -174,7 +174,13 @@ def main(
                 if always_run:
                     susie_job.always_run()
                 susie_job.call(
-                    susie_runner, ld_file, associatr_path, celltype, chrom, num_iterations, num_causal_variants,
+                    susie_runner,
+                    ld_file,
+                    associatr_path,
+                    celltype,
+                    chrom,
+                    num_iterations,
+                    num_causal_variants,
                 )
                 manage_concurrency_for_job(susie_job)
     b.run(wait=False)
