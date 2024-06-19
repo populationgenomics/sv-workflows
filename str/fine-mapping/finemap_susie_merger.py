@@ -3,6 +3,7 @@
 This script merges the output of FINEMAP and SUSIE into a single file per gene-celltype combination.
 
 analysis-runner --dataset "bioheart" --access-level 'test' --description "Merge FINEMAP and SUSIE results" \
+--image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/fine_mapping" \
     finemap_susie_merger.py \
     --finemap-dir "gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/finemap/ofiles" \
@@ -31,7 +32,7 @@ def run_concatenator(finemap_dir, susie_dir, celltype, chromosome, gene):
     from cpg_utils.hail_batch import output_path
 
     # read input files
-    finemap_df = pd.read_csv(f'{finemap_dir}/{celltype}/{chromosome}/{gene}.snp', sep='\t')
+    finemap_df = pd.read_csv(f'{finemap_dir}/{celltype}/{chromosome}/{gene}.snp', sep=' ')
     finemap_df = finemap_df[['rsid', 'beta', 'se', 'prob', 'log10bf']]
     finemap_df = finemap_df.rename(columns={'prob': 'finemap_prob', 'log10bf': 'finemap_log10bf'})
     susie_df = pd.read_csv(f'{susie_dir}/{celltype}/{chromosome}/{gene}_100kb.tsv', sep='\t')
