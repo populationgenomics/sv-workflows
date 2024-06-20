@@ -45,11 +45,12 @@ def main():
 
     # Split the string into a list of characters
     cell_type_list = cell_types.split(',')
-    b = get_batch()
+    dfs = []
     for cell in cell_type_list:
-        j = b.new_python_job(name=f'concatenate {cell}')
-        j.call(run_concatenator, cell)
-    b.run(wait=False)
+        data = pd.read_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/{cell}/all_genes.tsv', sep = '\t')
+        dfs.append(data)
+    result_df = pd.concat(dfs, ignore_index=True)
+    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes.tsv', sep = '\t', index = False)
 
 
 
