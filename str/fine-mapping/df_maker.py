@@ -50,7 +50,8 @@ def main():
         data = pd.read_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/{cell}/all_genes.tsv', sep = '\t')
         dfs.append(data)
     result_df = pd.concat(dfs, ignore_index=True)
-    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes.tsv', sep = '\t', index = False)
+    result_df = result_df[result_df['pval_meta'] < 5e-8]
+    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv', sep = '\t', index = False)
 
 
 
