@@ -14,6 +14,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr" \
     coloc_runner.py
+    --celltypes "CD4_TCM"
 
 """
 
@@ -190,7 +191,7 @@ def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
             else:
                 print('No cis results for ' + gene + ' exist: skipping....')
 
-        b.run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
