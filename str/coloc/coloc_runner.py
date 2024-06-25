@@ -106,7 +106,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 
 
 @click.option(
-    '--egenes',
+    '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
     default='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv',
 )
@@ -123,7 +123,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
 @click.command()
-def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
+def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name):
     # read in gene annotation file
     var_table = pd.read_csv(
         'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
@@ -135,7 +135,7 @@ def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
 
     # read in eGenes file
     egenes = pd.read_csv(
-        egenes,
+        egenes_file,
         sep='\t',
         usecols=['chr', 'pos', 'pval_meta', 'motif', 'susie_pip', 'gene', 'finemap_prob', 'celltype', 'ref_len'],
     )
@@ -188,6 +188,7 @@ def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
                     hg38_map_chr_start_end,
                     f'{snp_cis_dir}/{celltype}/{chr}/{gene}_100000bp_meta_results.tsv',
                     celltype,
+                    pheno_output_name
                 )
 
             else:
