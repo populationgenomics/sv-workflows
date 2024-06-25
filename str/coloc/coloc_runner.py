@@ -89,7 +89,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 
     # add cell type and chrom annotation to df
     pd_p4_df['celltype'] = celltype
-    pd_p4_df['chrom'] = eqtl['chrom'].iloc[0]
+    pd_p4_df['chrom'] = eqtl['chr'].iloc[0]
 
     # write to GCS
     pd_p4_df.to_csv(
@@ -117,8 +117,9 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
+@click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.command()
-def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,max_parallel_jobs):
+def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,max_parallel_jobs,job_cpu):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -189,6 +190,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,m
                 )
                 f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 coloc_job.image(image_path('r-meta'))
+                coloc_job.cpu(job_cpu)
                 coloc_job.call(
                     coloc_runner,
                     hg38_map_chr_start_end,
