@@ -150,6 +150,7 @@ def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
     result_df_cfm_str['gene'] = result_df_cfm_str['gene'].str.replace(
         '.tsv', '', regex=False,
     )  # remove .tsv from gene names (artefact of the data file)
+    b = get_batch(name='Run coloc')
 
     for celltype in celltypes.split(','):
         result_df_cfm_str_celltype = result_df_cfm_str[
@@ -174,7 +175,6 @@ def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
                 print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
-                b = get_batch(name='Run coloc')
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
