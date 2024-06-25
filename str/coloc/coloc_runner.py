@@ -6,7 +6,7 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 
 1) Identify eGenes where at least one STR has a fine-map causal probability of at least 80% by both SUSIE and FINEMAP.
 2) Extract the SNP GWAS data for the cis-window (gene +/- 100kB)
-3) Run coloc for each eGene
+3) Run coloc for each eGene (if the SNP GWAS data has at least one variant with pval <5e-8)
 4) Write the results to a TSV file
 
 analysis-runner --dataset "bioheart" \
@@ -18,7 +18,7 @@ analysis-runner --dataset "bioheart" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/bentham_2015_26502338_sle_parsed.tsv \
     --pheno-output-name="sle_GCST003156" \
-    --celltypes "gdT,B_intermediate,ILC"
+    --celltypes "ASDC"
 
 """
 
@@ -124,7 +124,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
 @click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.command()
-def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,max_parallel_jobs,job_cpu):
+def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, max_parallel_jobs, job_cpu):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -161,7 +161,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,m
         subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
     result_df_cfm_str['gene'] = result_df_cfm_str['gene'].str.replace(
-        '.tsv', '', regex=False,
+        '.tsv',
+        '',
+        regex=False,
     )  # remove .tsv from gene names (artefact of the data file)
     b = get_batch(name=f'Run coloc:{pheno_output_name}')
 
@@ -171,7 +173,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,m
         ]  # filter for the celltype of interest
         for gene in result_df_cfm_str_celltype['gene']:
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
-            if to_path(output_path(f"coloc-snp-only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis')).exists():
+            if to_path(
+                output_path(f"coloc-snp-only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+            ).exists():
                 continue
             if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
                 print('Cis results for ' + gene + ' exist: proceed with coloc')
@@ -187,6 +191,10 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,m
                 if hg38_map_chr_start_end.empty:
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
+                # check if the p-value column contains at least one value which is <=5e-8:
+                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                    continue
                 print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
@@ -201,7 +209,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,m
                     hg38_map_chr_start_end,
                     f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
                     celltype,
-                    pheno_output_name
+                    pheno_output_name,
                 )
                 manage_concurrency_for_job(coloc_job)
 
