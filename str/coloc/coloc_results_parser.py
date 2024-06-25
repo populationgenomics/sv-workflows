@@ -5,11 +5,12 @@ This script concatenates the results of running `coloc_runner.py` (output is per
 analysis-runner --dataset "bioheart" \
     --description "Parse coloc results" \
     --access-level "test" \
+    --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_results_parser.py \
-    --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
-    --celltypes=CD4_TCM \
-    --phenos=ibd
+    --coloc-dir=gs://cpg-bioheart-test-analysis/str/associatr/coloc-snp-only \
+    --celltypes=gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive \
+    --phenos=covid_GCST011071
 
 
 """
@@ -38,7 +39,7 @@ def coloc_results_combiner(coloc_dir, pheno, celltype):
     # Concatenate DataFrames row-wise
     result_df = pd.concat(dfs, ignore_index=True)
     # Write the result to a CSV file
-    result_df.to_csv(output_path(f'coloc/{pheno}/{celltype}/gene_summary_result.csv', 'analysis'), index=False)
+    result_df.to_csv(output_path(f'coloc-snp-only/{pheno}/{celltype}/gene_summary_result.csv', 'analysis'), index=False)
 
 
 @click.command()
