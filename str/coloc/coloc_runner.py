@@ -12,9 +12,13 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
+    --memory='8G' \
+    --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_runner.py \
-    --celltypes "CD4_TCM"
+    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/bentham_2015_26502338_sle_parsed.tsv \
+    --pheno-output-name="sle_GCST003156" \
+    --celltypes "gdT,B_intermediate,ILC"
 
 """
 
@@ -42,6 +46,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     ro.r(
         '''
     gwas_r = gwas_r %>% select(beta, varbeta, position,snp)
+    gwas_r = gwas_r %>% filter((beta!=0) | (varbeta!=0))
     gwas_r = gwas_r %>% distinct(snp, .keep_all = TRUE)
     gwas_r = gwas_r%>% as.list()
     gwas_r$type = 'cc'
