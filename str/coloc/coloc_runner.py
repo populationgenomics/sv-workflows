@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
-    coloc_runner.py
+    coloc_runner.py \
     --celltypes "CD4_TCM"
 
 """
@@ -22,7 +22,7 @@ import click
 import pandas as pd
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, image_path
+from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
 def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
@@ -88,7 +88,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     my.res <- coloc.abf(dataset1=gwas_r,
                     dataset2=eqtl_r)
 
-    p_df <- data.frame(gene, my.res$summary[1:6])
+    p_df <- data.frame(gene,my.res$summary[1:6])
     names(p_df) <- c('gene', 'nsnps_coloc_tested','PP.H0.abf','PP.H1.abf','PP.H2.abf','PP.H3.abf','PP.H4.abf')
     ''',
     )
@@ -96,6 +96,10 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     # convert to pandas df
     with (ro.default_converter + pandas2ri.converter).context():
         pd_p4_df = ro.conversion.get_conversion().rpy2py(ro.r('p_df'))
+
+    # add cell type and chrom annotation to df
+    pd_p4_df['celltype'] = celltype
+    pd_p4_df['chrom'] = eqtl['chrom'].iloc[0]
 
     # write to GCS
     pd_p4_df.to_csv(
@@ -157,19 +161,19 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name):
         result_df_cfm_str_celltype = result_df_cfm_str[
             result_df_cfm_str['celltype'] == celltype
         ]  # filter for the celltype of interest
-        print(result_df_cfm_str_celltype['gene'])
         for gene in result_df_cfm_str_celltype['gene']:
-            print(f'Processing {gene}')
-            chr = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
-            if to_path(f'{snp_cis_dir}/{celltype}/{chr}/{gene}_100000bp_meta_results.tsv').exists():
+            chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
+            if to_path(output_path(f"coloc-snp-only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis')).exists():
+                continue
+            if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
                 print('Cis results for ' + gene + ' exist: proceed with coloc')
 
                 # extract the coordinates for the cis-window (gene +/- 100kB)
                 gene_table = var_table[var_table['gene_ids'] == gene]
                 start = float(gene_table['start'].astype(float)) - 100000
                 end = float(gene_table['end'].astype(float)) + 100000
-                chr = gene_table['chr'].iloc[0]
-                hg38_map_chr = hg38_map[hg38_map['chromosome'] == (chr)]
+                chrom = gene_table['chr'].iloc[0]
+                hg38_map_chr = hg38_map[hg38_map['chromosome'] == (chrom)]
                 hg38_map_chr_start = hg38_map_chr[hg38_map_chr['position'] >= start]
                 hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['position'] <= end]
                 if hg38_map_chr_start_end.empty:
@@ -181,12 +185,12 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name):
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
-                f'{snp_cis_dir}/{celltype}/{chr}/{gene}_100000bp_meta_results.tsv'
+                f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 coloc_job.image(image_path('r-meta'))
                 coloc_job.call(
                     coloc_runner,
                     hg38_map_chr_start_end,
-                    f'{snp_cis_dir}/{celltype}/{chr}/{gene}_100000bp_meta_results.tsv',
+                    f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
                     celltype,
                     pheno_output_name
                 )
