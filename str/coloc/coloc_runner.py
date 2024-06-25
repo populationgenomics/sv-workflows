@@ -78,7 +78,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     my.res <- coloc.abf(dataset1=gwas_r,
                     dataset2=eqtl_r)
 
-    p_df <- data.frame(gene,my.res$summary[1:6])
+    p_df <- data.frame(gene,my.res$summary[1], my.res$summary[2], my.res$summary[3], my.res$summary[4], my.res$summary[5], my.res$summary[6])
     names(p_df) <- c('gene', 'nsnps_coloc_tested','PP.H0.abf','PP.H1.abf','PP.H2.abf','PP.H3.abf','PP.H4.abf')
     ''',
     )
