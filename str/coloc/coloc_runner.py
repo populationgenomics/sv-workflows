@@ -43,8 +43,9 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
         '''
     gwas_r = gwas_r %>% select(beta, varbeta, position,snp)
     gwas_r = gwas_r %>% distinct(snp, .keep_all = TRUE)
-    gwas_r$type = 'cc'
     gwas_r = gwas_r%>% as.list()
+    gwas_r$type = 'cc'
+
     ''',
     )
     eqtl = pd.read_csv(
