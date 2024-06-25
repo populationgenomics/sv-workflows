@@ -157,7 +157,9 @@ def main(snp_cis_dir, egenes, celltypes, snp_gwas_file, pheno_output_name):
         result_df_cfm_str_celltype = result_df_cfm_str[
             result_df_cfm_str['celltype'] == celltype
         ]  # filter for the celltype of interest
+        print(result_df_cfm_str_celltype['gene'])
         for gene in result_df_cfm_str_celltype['gene']:
+            print(f'Processing {gene}')
             chr = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(f'{snp_cis_dir}/{celltype}/{chr}/{gene}_100000bp_meta_results.tsv').exists():
                 print('Cis results for ' + gene + ' exist: proceed with coloc')
