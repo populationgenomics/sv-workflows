@@ -21,6 +21,8 @@ analysis-runner --dataset "bioheart" \
 import click
 import pandas as pd
 
+import hailtop.batch as hb
+
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
@@ -48,24 +50,11 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     eqtl = pd.read_csv(
         eqtl_file_path,
         sep='\t',
-        names=[
-            'chrom',
-            'pos',
-            'alleles',
-            'n_samples_tested',
-            'locus_filtered',
-            'p-val',
-            'beta',
-            'se',
-            'r2',
-            'motif',
-            'period',
-            'ref-len',
-            'allele-freq',
-        ],
-        header=0,
     )
-    eqtl['snp'] = eqtl['chrom'] + '_' + eqtl['pos'].astype(str) + '_' + eqtl['motif']
+    eqtl['beta'] = eqtl['coeff_meta']
+    eqtl['se'] = eqtl['se_meta']
+    eqtl['position'] = eqtl['pos']
+    eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
     gene = eqtl_file_path.split('/')[-1].split('_')[2]
     with (ro.default_converter + pandas2ri.converter).context():
@@ -125,9 +114,21 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     default='gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST011071_parsed.tsv',
 )
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
+@click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
 @click.command()
-def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name):
+def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name,max_parallel_jobs):
+    # Setup MAX concurrency by genes
+    _dependent_jobs: list[hb.batch.job.Job] = []
+
+    def manage_concurrency_for_job(job: hb.batch.job.Job):
+        """
+        To avoid having too many jobs running at once, we have to limit concurrency.
+        """
+        if len(_dependent_jobs) >= max_parallel_jobs:
+            job.depends_on(_dependent_jobs[-max_parallel_jobs])
+        _dependent_jobs.append(job)
+
     # read in gene annotation file
     var_table = pd.read_csv(
         'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
@@ -155,7 +156,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name):
     result_df_cfm_str['gene'] = result_df_cfm_str['gene'].str.replace(
         '.tsv', '', regex=False,
     )  # remove .tsv from gene names (artefact of the data file)
-    b = get_batch(name='Run coloc')
+    b = get_batch(name=f'Run coloc:{pheno_output_name}')
 
     for celltype in celltypes.split(','):
         result_df_cfm_str_celltype = result_df_cfm_str[
@@ -194,6 +195,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name):
                     celltype,
                     pheno_output_name
                 )
+                manage_concurrency_for_job(coloc_job)
 
             else:
                 print('No cis results for ' + gene + ' exist: skipping....')
