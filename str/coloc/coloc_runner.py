@@ -18,7 +18,7 @@ analysis-runner --dataset "bioheart" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ibd_EAS_EUR_SiKJEF_meta_IBD.tsv \
     --pheno-output-name="ibd_liu2023" \
-    --celltypes "CD4_Naive"
+    --celltypes "B_naive"
 
 """
 
@@ -98,7 +98,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 
     # write to GCS
     pd_p4_df.to_csv(
-        output_path(f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -176,7 +176,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
                 output_path(
-                    f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis',
+                    f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis',
                 ),
             ).exists():
                 continue
@@ -195,9 +195,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 # check if the p-value column contains at least one value which is <=5e-8:
-                # if hg38_map_chr_start_end['p_value'].min() > 5e-8:
-                #    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                #    continue
+                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                    continue
                 print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
