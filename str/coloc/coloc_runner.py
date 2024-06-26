@@ -16,9 +16,9 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_runner.py \
-    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/bentham_2015_26502338_sle_parsed.tsv \
-    --pheno-output-name="sle_GCST003156" \
-    --celltypes "ASDC"
+    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ibd_EAS_EUR_SiKJEF_meta_IBD.tsv \
+    --pheno-output-name="ibd_liu2023" \
+    --celltypes "CD4_Naive"
 
 """
 
@@ -98,7 +98,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 
     # write to GCS
     pd_p4_df.to_csv(
-        output_path(f"coloc-snp-only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -151,10 +151,11 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         sep='\t',
         usecols=['chr', 'pos', 'pval_meta', 'motif', 'susie_pip', 'gene', 'finemap_prob', 'celltype', 'ref_len'],
     )
-    result_df_80 = egenes[
-        (egenes['susie_pip'] >= 0.8) & (egenes['finemap_prob'] >= 0.8)
-    ]  # filter for variants where the causal probability is at least 80% by both SUSIE and FINEMAP
-    result_df_cfm = result_df_80[result_df_80['pval_meta'] < 1e-10]  # filter for variants with p-value < 1e-10
+    # result_df_80 = egenes[
+    # (egenes['susie_pip'] >= 0.8) & (egenes['finemap_prob'] >= 0.8)
+    # ]  # filter for variants where the causal probability is at least 80% by both SUSIE and FINEMAP
+    # result_df_cfm = result_df_80[result_df_80['pval_meta'] < 1e-10]  # filter for variants with p-value < 1e-10
+    result_df_cfm = egenes
     result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
     result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
@@ -174,7 +175,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         for gene in result_df_cfm_str_celltype['gene']:
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
-                output_path(f"coloc-snp-only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+                output_path(
+                    f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis',
+                ),
             ).exists():
                 continue
             if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
@@ -192,9 +195,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 # check if the p-value column contains at least one value which is <=5e-8:
-                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
-                    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                    continue
+                # if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                #    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                #    continue
                 print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
