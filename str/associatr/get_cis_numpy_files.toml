@@ -2,14 +2,14 @@
 # GCS directory to the input AnnData objects
 input_h5ad_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_anndata'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/pseudobulk'
+input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/pseudobulk'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/covariates/7_rna_pcs'
-chromosomes = 'chr5'
-cell_types = 'B_intermediate'
+input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/covariates/7_rna_pcs'
+chromosomes = 'chr19'
+cell_types = 'B_naive'
 # cis window size in bp
 cis_window = 100000
-version = 'v1-cond-analysis/chr5_40438209'
+version = 'v1-cond-analysis/chr19_48110531'
 job_cpu = 2
 job_memory = 'standard'
 job_storage = '10G'
@@ -28,5 +28,5 @@ snp_loci=[]
 # set str_vcf_dir == 'gs//cpg-bioheart-test' if no STR loci to condition on
 str_vcf_dir = 'gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific'
 # note chrom for STR loci has the chr prefix
-str_loci =['chr5:40438209']
-str_motifs = ['TA']
+str_loci =['chr19:48110531']
+str_motifs = ['GCTCCGGAATCCGGTGCGGAGGCTTGG']
