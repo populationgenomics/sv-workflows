@@ -158,6 +158,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     result_df_cfm = egenes
     result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
     result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
+    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8] # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
