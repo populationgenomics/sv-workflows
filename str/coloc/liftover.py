@@ -6,20 +6,20 @@ The liftover is obtained from the Broad Institute liftover API.
 It uses BCFTools liftover internally to get the liftover variant id.
 New as of 2024 with support for multi-allelic variants.
 
-analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 to hg38" --access-level "full" \
+analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 to hg38" --access-level "test" \
     --output-dir "str/associatr/liftover" \
     liftover.py --variants_file=gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_cholesterol_snp_gwas_results.tab.gz
 """
 
-import logging
-import time
-
 import click
 import pandas as pd
+import logging
 import requests
-from cloudpathlib import CloudPath
+import time
 
 from cpg_utils import to_path
+
+from cloudpathlib import CloudPath
 
 LIFTOVER_URL_BASE = 'https://liftover-xwkwwwxdwq-uc.a.run.app/liftover/?hg={hg}&format=variant&chrom={chrom}&pos={pos}&ref={ref}&alt={alt}'
 
@@ -58,7 +58,7 @@ def get_broad_liftover(variant, hg):
 
 
 @click.command()
-@click.argument('variants_file', required=True)
+@click.option('--variants-file', required=True)
 def main(variants_file: str):
     """
     Opens the variants_file json and read the liftover variant id for each variant.
@@ -76,18 +76,15 @@ def main(variants_file: str):
         broad_liftover_hg38 = get_broad_liftover(liftover_input, '19')
         time.sleep(6)  # 12 requests per minute max
         row['position'] = broad_liftover_hg38.split('-')[1]
-        row['chromosome'] = 'chr' + row['#CHROM'].astype(str)
-        row['varbeta'] = row['SE'] ** 2
+        row['chromosome'] = 'chr'+row['#CHROM'].astype(str)
+        row['varbeta'] = row['SE']**2
         row['beta'] = row['BETA']
         row['snp'] = row['#CHROM'] + '_' + row['POS'].astype(str) + '_' + row['REF'] + '_' + row['ALT']
         row['p_value'] = row['P']
 
-    row[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv(
-        'gs://cpg-bioheart-test/str/gyremk-ukbb-snp-gwas-catalogs/white_british_cholesterol_snp_gwas_results_hg38.tab.gz',
-        sep='\t',
-        index=False,
-    )
+    row[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv('gs://cpg-bioheart-test/str/gyremk-ukbb-snp-gwas-catalogs/white_british_cholesterol_snp_gwas_results_hg38.tab.gz', sep='\t', index=False)
 
 
 if __name__ == '__main__':
+
     main()  # pylint: disable=no-value-for-parameter
