@@ -97,7 +97,7 @@ def main():
         "white_blood_cell_count",
     ]
     for pheno in phenotypes:
-        liftover_job.memory('64G')
+        liftover_job.memory('32G')
         liftover_job.storage('10G')
         liftover_job.call(liftover, pheno)
     b.run(wait=False)
