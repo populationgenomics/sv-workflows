@@ -41,7 +41,7 @@ def liftover(phenotype):
 
     # Write out the results
     df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv(
-        'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_albumin_snp_gwas_results_hg38.tab.gz',
+        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
         sep='\t',
         index=False,
     )
