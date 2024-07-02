@@ -97,6 +97,11 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     eqtl['position'] = eqtl['pos']
     eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
+
+    eqtl = eqtl.sort_values(by=['snp', 'pval_meta'])
+
+    # Step 2: Drop duplicate variants (keep the one with the lowest p-value)
+    eqtl = eqtl.drop_duplicates(subset='snp', keep='first')
     # for testing purposes
     eqtl.to_csv(
         output_path(f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb_eqtl.tsv", 'analysis'),
