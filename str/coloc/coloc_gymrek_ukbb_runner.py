@@ -28,32 +28,43 @@ import hailtop.batch as hb
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path, reset_batch
 
+
 def cyclical_shifts(s):
     return [s[i:] + s[:i] for i in range(len(s))]
 
 
-def coloc_runner(gwas_snp, gwas, eqtl_file_path, celltype, pheno):
+def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
     from cpg_utils.hail_batch import output_path
+
     eqtl = pd.read_csv(eqtl_file_path, sep='\t')
 
-    # create an empty df called gwas_str with the following columns: 'chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'
-    gwas_str = pd.DataFrame(columns=['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'])
+    # create an empty df with the following columns: 'chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'
+    gwas_str_harmonised = pd.DataFrame(columns=['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'])
 
     # harmonise Gymrek STR definitons with ours
-    eqtl_str = eqtl[~eqtl['motif'].str.contains('-')] # str entries have no '-' in motif column
-    for index,gwas_row in gwas.iterrows():
-        for index2,eqtl_row in eqtl_str.iterrows():
-            if eqtl_row['pos']>= (gwas_row['start_pos (hg38)'] -1) and eqtl_row['pos']<= gwas_row['end_pos (hg38)']:
-                if (eqtl_row['motif'] in cyclical_shifts(gwas_row['repeat_unit'])):
-                    gwas_str = gwas_str.append({'chromosome': gwas_row['chromosome'], 'position': eqtl_row['pos'], 'varbeta': gwas_row['standard_error']**2, 'beta': gwas_row['beta'], 'snp': f'{gwas_row['chromosome']}_]{eqtl_row["pos"]}_{eqtl_row["motif"]}', 'p_value': gwas_row['p_value']}, ignore_index=True)
+    eqtl_str = eqtl[~eqtl['motif'].str.contains('-')]  # str entries have no '-' in motif column
+    for index, gwas_row in gwas_str.iterrows():
+        for index2, eqtl_row in eqtl_str.iterrows():
+            if eqtl_row['pos'] >= (gwas_row['start_pos (hg38)'] - 1) and eqtl_row['pos'] <= gwas_row['end_pos (hg38)']:
+                if eqtl_row['motif'] in cyclical_shifts(gwas_row['repeat_unit']):
+                    gwas_str_harmonised = gwas_str_harmonised.append(
+                        {
+                            'chromosome': gwas_row['chromosome'],
+                            'position': eqtl_row['pos'],
+                            'varbeta': gwas_row['standard_error'] ** 2,
+                            'beta': gwas_row['beta'],
+                            'snp': f'{gwas_row["chromosome"]}_{eqtl_row["pos"]}_{eqtl_row["motif"]}',
+                            'p_value': gwas_row['p_value'],
+                        },
+                        ignore_index=True,
+                    )
                     continue
 
     # concatenate gwas_str with gwas_snp (row wise)
-    gwas = pd.concat([gwas_str, gwas_snp], ignore_index=True)
-
+    gwas = pd.concat([gwas_str_harmonised, gwas_snp], ignore_index=True)
 
     ro.r('library(coloc)')
     ro.r('library(tidyverse)')
@@ -73,9 +84,9 @@ def coloc_runner(gwas_snp, gwas, eqtl_file_path, celltype, pheno):
     )
     gene = eqtl_file_path.split('/')[-1].split('_')[0]
     eqtl['beta'] = eqtl['coeff_meta']
-    eqtl['varbeta'] = eqtl['se_meta']**2
+    eqtl['varbeta'] = eqtl['se_meta'] ** 2
     eqtl['position'] = eqtl['pos']
-    eqtl['snp'] = eqtl['chr']+ '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
+    eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
@@ -112,7 +123,6 @@ def coloc_runner(gwas_snp, gwas, eqtl_file_path, celltype, pheno):
         sep='\t',
         index=False,
     )
-
 
 
 @click.option(
@@ -153,14 +163,28 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
         str_gwas_file = to_path(
             f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
         )
-        snp_gwas_file = to_path()
+        snp_gwas_file = to_path(
+            f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz'
+        )
         with gzip.open(str_gwas_file, 'rb') as f:
             str_gwas = pd.read_csv(
                 f,
                 sep='\t',
-                usecols=['chromosome', 'beta', 'standard_error', 'p_value', 'repeat_unit', 'start_pos (hg38)', 'end_pos (hg38)'],
+                usecols=[
+                    'chromosome',
+                    'beta',
+                    'standard_error',
+                    'p_value',
+                    'repeat_unit',
+                    'start_pos (hg38)',
+                    'end_pos (hg38)',
+                ],
             )
-
+        with gzip.open(snp_gwas_file, 'rb') as snp_f:
+            snp_gwas = pd.read_csv(
+                snp_f,
+                sep='\t',
+            )
 
         for celltype in celltypes.split(','):
             # run each unique cell-type-pheno combination batch completely separately to help with job scaling
@@ -183,18 +207,22 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
 
                 ## subset the STR GWAS data for the cis-window
                 str_gwas_subset = str_gwas[
-                    (str_gwas['chromosome'] == int(chrom)) &
-                    (str_gwas['start_pos (hg38)'] >= start) &
-                    (str_gwas['start_pos (hg38)'] <= end)
+                    (str_gwas['chromosome'] == int(chrom))
+                    & (str_gwas['start_pos (hg38)'] >= start)
+                    & (str_gwas['start_pos (hg38)'] <= end)
                 ]
 
-               ## subset the SNP GWAS data for the cis-window
+                ## subset the SNP GWAS data for the cis-window
+                snp_gwas_subset = snp_gwas[
+                    (snp_gwas['chromosome'] == int(chrom))
+                    & (snp_gwas['position'] >= start)
+                    & (snp_gwas['position'] <= end)
+                ]
 
-
-                if str_gwas_subset.empty:
-                    print('No STR GWAS data for ' + gene + ' in the cis-window: skipping....')
+                if str_gwas_subset.empty and snp_gwas_subset.empty:
+                    print('No GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
-                print('Extracted SNP GWAS data for ' + gene)
+                print('Extracted GWAS data for ' + gene)
 
                 # run coloc
                 b = get_batch(name='Run coloc')
@@ -205,7 +233,8 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
                 coloc_job.call(
                     coloc_runner,
-                    hg38_map_chr_start_end,
+                    str_gwas_subset,
+                    snp_gwas_subset,
                     f'{str_cis_dir}/{celltype}/chr{chrom}/{gene}_100000bp_meta_results.tsv',
                     celltype,
                     phenotype,
