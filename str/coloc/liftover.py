@@ -9,6 +9,7 @@ New as of 2024 with support for multi-allelic variants.
 analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 to hg38" --access-level "test" \
     --output-dir "str/associatr/liftover" \
     --memory "64G" \
+    --storage "20G" \
     liftover.py --variants-file=gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_cholesterol_snp_gwas_results.tab.gz
 """
 
@@ -17,6 +18,7 @@ import pandas as pd
 import logging
 import requests
 import time
+from cpg_utils import to_path
 
 @click.command()
 @click.option('--variants-file', required=True)
