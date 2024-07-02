@@ -301,7 +301,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 )
                 manage_concurrency_for_job(coloc_job)
 
-    b.run(wait=False)
+    get_batch().run(wait=False)
 
 
 if __name__ == '__main__':
