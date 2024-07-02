@@ -14,9 +14,8 @@ analysis-runner --dataset "bioheart" \
     --storage = '10G'\
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
-    --celltypes "gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive" \
-    --pheno 'c_reactive_protein' \
-    --max-parallel-jobs 100
+    --celltypes "ASDC" \
+    --pheno "albumin"
 """
 import gzip
 
@@ -26,7 +25,7 @@ import pandas as pd
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path, reset_batch
+from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
 def cyclical_shifts(s):
@@ -119,7 +118,7 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
 
     # write to GCS
     pd_p4_df.to_csv(
-        output_path(f"coloc-snp-only/sig_str_filter_only/{pheno}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -164,7 +163,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
             f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
         )
         snp_gwas_file = to_path(
-            f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz'
+            f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
         )
         with gzip.open(str_gwas_file, 'rb') as f:
             str_gwas = pd.read_csv(
@@ -186,16 +185,38 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 sep='\t',
             )
 
-        for celltype in celltypes.split(','):
-            # run each unique cell-type-pheno combination batch completely separately to help with job scaling
-            egenes_file_path = f'{egenes_dir}/{celltype}_qval.tsv'
-            # read in eGenes file
-            egenes = pd.read_csv(egenes_file_path, sep='\t')
-            egenes = egenes[egenes['qval'] < 0.05]  # filter for eGenes with FDR<5%
+        # read in eGenes file
+        egenes = pd.read_csv(
+            egenes_dir,
+            sep='\t',
+            usecols=['chr', 'pos', 'pval_meta', 'motif', 'susie_pip', 'gene', 'finemap_prob', 'celltype', 'ref_len'],
+        )
 
-            for gene in egenes['gene_name']:
+        result_df_cfm = egenes
+        result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
+        result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
+        result_df_cfm_str = result_df_cfm_str[
+            result_df_cfm_str['pval_meta'] < 5e-8
+        ]  # filter for STRs with p-value < 5e-8
+        result_df_cfm_str = result_df_cfm_str.drop_duplicates(
+            subset=['gene', 'celltype'],
+        )  # drop duplicates (ie pull out the distinct genes in each celltype)
+        result_df_cfm_str['gene'] = result_df_cfm_str['gene'].str.replace(
+            '.tsv',
+            '',
+            regex=False,
+        )  # remove .tsv from gene names (artefact of the data file)
+
+        for celltype in celltypes.split(','):
+            result_df_cfm_str_celltype = result_df_cfm_str[
+                result_df_cfm_str['celltype'] == celltype
+            ]  # filter for the celltype of interest
+            # for gene in result_df_cfm_str_celltype['gene']:
+            for gene in ['ENSG00000198502']:
                 if to_path(
-                    f'{output_path(f"coloc/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv")}',
+                    output_path(
+                        f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv", 'analysis',
+                    ),
                 ).exists():
                     print('Coloc results already processed for ' + gene + ': skipping....')
                     continue
@@ -224,13 +245,17 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                     continue
                 print('Extracted GWAS data for ' + gene)
 
+                if str_gwas_subset['p_value'].min() > 5e-8 and snp_gwas_subset['p_value'].min() > 5e-8:
+                    print('No significant GWAS data for ' + gene + ' in the cis-window: skipping....')
+                    continue
+
                 # run coloc
                 b = get_batch(name='Run coloc')
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
                 coloc_job.cpu(0.25)
-                coloc_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:2.0')
+                coloc_job.image(image_path('r-meta'))
                 coloc_job.call(
                     coloc_runner,
                     str_gwas_subset,
