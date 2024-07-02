@@ -40,6 +40,7 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     from cpg_utils.hail_batch import output_path
 
     eqtl = pd.read_csv(eqtl_file_path, sep='\t')
+    gene = eqtl_file_path.split('/')[-1].split('_')[0]
 
     # create an empty df with the following columns: 'chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'
     gwas_str_harmonised = pd.DataFrame(columns=['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'])
@@ -91,7 +92,6 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
 
      ''',
     )
-    gene = eqtl_file_path.split('/')[-1].split('_')[0]
     eqtl['beta'] = eqtl['coeff_meta']
     eqtl['varbeta'] = eqtl['se_meta'] ** 2
     eqtl['position'] = eqtl['pos']
