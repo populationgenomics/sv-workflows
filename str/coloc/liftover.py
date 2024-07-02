@@ -48,8 +48,7 @@ def liftover(phenotype):
 
 
 def main():
-    b = get_batch()
-    liftover_job = b.new_python_job('Liftover variants from hg19 to hg38')
+    b = get_batch(name='liftover')
     phenotypes = [
         "alanine_aminotransferase",
         "albumin",
@@ -97,6 +96,7 @@ def main():
         "white_blood_cell_count",
     ]
     for pheno in phenotypes:
+        liftover_job = b.new_python_job('Liftover variants from hg19 to hg38: ' + pheno)
         liftover_job.memory('32G')
         liftover_job.storage('10G')
         liftover_job.call(liftover, pheno)
