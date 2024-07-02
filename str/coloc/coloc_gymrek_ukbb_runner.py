@@ -10,7 +10,7 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory '32G' \
+    --memory '8G' \
     --storage '10G' \
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
@@ -281,7 +281,7 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
             coloc_job = b.new_python_job(
                 f'Coloc for {celltype} and {phenotype}',
             )
-            coloc_job.cpu(3)
+            coloc_job.cpu(4)
             coloc_job.image(image_path('r-meta'))
             coloc_job.call(
                 coloc_runner,
