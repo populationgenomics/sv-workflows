@@ -8,7 +8,7 @@ New as of 2024 with support for multi-allelic variants.
 
 analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 to hg38" --access-level "test" \
     --output-dir "str/associatr/liftover" \
-    liftover.py --variants_file=gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_cholesterol_snp_gwas_results.tab.gz
+    liftover.py --variants-file=gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_cholesterol_snp_gwas_results.tab.gz
 """
 
 import click
@@ -74,7 +74,8 @@ def main(variants_file: str):
         liftover_input = row['#CHROM'] + '-' + row['POS'] + '-' + row['REF'] + '-' + row['ALT']
 
         broad_liftover_hg38 = get_broad_liftover(liftover_input, '19')
-        time.sleep(6)  # 12 requests per minute max
+        logging.info(f'Parsing {liftover_input}')
+        print(f'Parsing {liftover_input}')
         row['position'] = broad_liftover_hg38.split('-')[1]
         row['chromosome'] = 'chr'+row['#CHROM'].astype(str)
         row['varbeta'] = row['SE']**2
