@@ -18,25 +18,47 @@ analysis-runner --dataset "bioheart" \
     --egenes-dir='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv' \
     --pheno "albumin"
 """
-import gzip
 
 import click
 import pandas as pd
 
 import hailtop.batch as hb
 
-from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, image_path, output_path
+from cpg_utils.hail_batch import get_batch, image_path
 
 
 def cyclical_shifts(s):
     return [s[i:] + s[:i] for i in range(len(s))]
 
 
-def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas, snp_gwas, eqtl_cis_dir, celltype, pheno):
+def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas_file, snp_gwas_file, eqtl_cis_dir, celltype, pheno):
+    import gzip
+
+    import pandas as pd
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
+    from cpg_utils import to_path
+    from cpg_utils.hail_batch import output_path
 
+    with gzip.open(to_path(str_gwas_file), 'rb') as f:
+            str_gwas = pd.read_csv(
+                f,
+                sep='\t',
+                usecols=[
+                    'chromosome',
+                    'beta',
+                    'standard_error',
+                    'p_value',
+                    'repeat_unit',
+                    'start_pos (hg38)',
+                    'end_pos (hg38)',
+                ],
+            )
+    with gzip.open(to_path(snp_gwas_file), 'rb') as snp_f:
+        snp_gwas = pd.read_csv(
+            snp_f,
+            sep='\t',
+        )
 
     for gene in result_df_cfm_str_celltype['gene']:
         if to_path(
@@ -79,7 +101,6 @@ def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas, snp_gwas, eqtl
 
         eqtl_file_path = f'{eqtl_cis_dir}/{celltype}/chr{chrom}/{gene}_100000bp_meta_results.tsv'
         eqtl = pd.read_csv(eqtl_file_path, sep='\t')
-        gene = eqtl_file_path.split('/')[-1].split('_')[0]
 
         # create an empty df with the following columns: 'chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'
         gwas_str_harmonised = pd.DataFrame(columns=['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'])
@@ -111,6 +132,9 @@ def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas, snp_gwas, eqtl
 
         # concatenate gwas_str with gwas_snp (row wise)
         gwas = pd.concat([gwas_str_harmonised, snp_gwas_subset], ignore_index=True)
+        gwas = gwas.sort_values(by=['snp', 'p_value'])
+        # Drop duplicate variants (keep the one with the lowest p-value)
+        gwas = gwas.drop_duplicates(subset='snp', keep='first')
 
         gwas = gwas[~gwas['beta'].isna()]
 
@@ -137,8 +161,7 @@ def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas, snp_gwas, eqtl
         eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
 
         eqtl = eqtl.sort_values(by=['snp', 'pval_meta'])
-
-        # Step 2: Drop duplicate variants (keep the one with the lowest p-value)
+        # Drop duplicate variants (keep the one with the lowest p-value)
         eqtl = eqtl.drop_duplicates(subset='snp', keep='first')
 
         with (ro.default_converter + pandas2ri.converter).context():
@@ -155,7 +178,7 @@ def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas, snp_gwas, eqtl
 
                 p4 <- tryCatch({
 
-                  my.res <- coloc.abf(dataset1=gwas_r,
+                my.res <- coloc.abf(dataset1=gwas_r,
                                 dataset2=eqtl_r)
 
                 p_df <- data.frame(gene,my.res$summary[1], my.res$summary[2], my.res$summary[3], my.res$summary[4], my.res$summary[5], my.res$summary[6])
@@ -222,31 +245,8 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
     var_table = pd.read_csv(var_annotation_file)
 
     for phenotype in pheno.split(','):
-        str_gwas_file = to_path(
-            f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
-        )
-        snp_gwas_file = to_path(
-            f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
-        )
-        with gzip.open(str_gwas_file, 'rb') as f:
-            str_gwas = pd.read_csv(
-                f,
-                sep='\t',
-                usecols=[
-                    'chromosome',
-                    'beta',
-                    'standard_error',
-                    'p_value',
-                    'repeat_unit',
-                    'start_pos (hg38)',
-                    'end_pos (hg38)',
-                ],
-            )
-        with gzip.open(snp_gwas_file, 'rb') as snp_f:
-            snp_gwas = pd.read_csv(
-                snp_f,
-                sep='\t',
-            )
+        str_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
+        snp_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
 
         # read in eGenes file
         egenes = pd.read_csv(
@@ -287,8 +287,8 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
                 coloc_runner,
                 result_df_cfm_str_celltype,
                 var_table,
-                str_gwas,
-                snp_gwas,
+                str_gwas_file,
+                snp_gwas_file,
                 eqtl_cis_dir,
                 celltype,
                 phenotype,
