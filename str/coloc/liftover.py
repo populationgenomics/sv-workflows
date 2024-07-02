@@ -97,7 +97,7 @@ def main():
     ]
     for pheno in phenotypes:
         liftover_job = b.new_python_job('Liftover variants from hg19 to hg38: ' + pheno)
-        liftover_job.memory('32G')
+        liftover_job.memory('64G')
         liftover_job.storage('10G')
         liftover_job.call(liftover, pheno)
     b.run(wait=False)
