@@ -28,12 +28,32 @@ import hailtop.batch as hb
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path, reset_batch
 
+def cyclical_shifts(s):
+    return [s[i:] + s[:i] for i in range(len(s))]
 
-def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
+
+def coloc_runner(gwas_snp, gwas, eqtl_file_path, celltype, pheno):
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
     from cpg_utils.hail_batch import output_path
+    eqtl = pd.read_csv(eqtl_file_path, sep='\t')
+
+    # create an empty df called gwas_str with the following columns: 'chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'
+    gwas_str = pd.DataFrame(columns=['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value'])
+
+    # harmonise Gymrek STR definitons with ours
+    eqtl_str = eqtl[~eqtl['motif'].str.contains('-')] # str entries have no '-' in motif column
+    for index,gwas_row in gwas.iterrows():
+        for index2,eqtl_row in eqtl_str.iterrows():
+            if eqtl_row['pos']>= (gwas_row['start_pos (hg38)'] -1) and eqtl_row['pos']<= gwas_row['end_pos (hg38)']:
+                if (eqtl_row['motif'] in cyclical_shifts(gwas_row['repeat_unit'])):
+                    gwas_str = gwas_str.append({'chromosome': gwas_row['chromosome'], 'position': eqtl_row['pos'], 'varbeta': gwas_row['standard_error']**2, 'beta': gwas_row['beta'], 'snp': f'{gwas_row['chromosome']}_]{eqtl_row["pos"]}_{eqtl_row["motif"]}', 'p_value': gwas_row['p_value']}, ignore_index=True)
+                    continue
+
+    # concatenate gwas_str with gwas_snp (row wise)
+    gwas = pd.concat([gwas_str, gwas_snp], ignore_index=True)
+
 
     ro.r('library(coloc)')
     ro.r('library(tidyverse)')
@@ -44,21 +64,19 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     ro.globalenv['gwas_r'] = gwas_r
     ro.r(
         '''
-    print(names(gwas_r))
-    gwas_r$pvalues = gwas_r$p_value
-    gwas_r$varbeta = (gwas_r$standard_error)**2
-    gwas_r$position = gwas_r$pos -1
-    gwas_r$snp = paste('s', gwas_r$position, sep = '')
-
-    gwas_r = gwas_r %>% select(beta, varbeta, position,snp)
+    gwas_r = gwas_r %>% distinct(beta, varbeta, position,snp)
     gwas_r = gwas_r%>% as.list()
     gwas_r$type = 'quant'
     gwas_r$sdY = 1
 
      ''',
     )
-    eqtl = pd.read_csv(eqtl_file_path, sep='\t')
     gene = eqtl_file_path.split('/')[-1].split('_')[0]
+    eqtl['beta'] = eqtl['coeff_meta']
+    eqtl['varbeta'] = eqtl['se_meta']**2
+    eqtl['position'] = eqtl['pos']
+    eqtl['snp'] = eqtl['chr']+ '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
+    eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     print('loaded in eqtl_r')
@@ -66,46 +84,35 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno):
     ro.globalenv['gene'] = gene
     ro.r(
         '''
-    eqtl_r$beta = eqtl_r$coeff_meta
-    eqtl_r$varbeta = eqtl_r$se_meta**2
-    eqtl_r$position = eqtl_r$pos
-    eqtl_r$snp = paste('s', eqtl_r$position, sep = '')
-    eqtl_r = eqtl_r%>% select(beta, varbeta, position, snp)
-    eqtl_r = eqtl_r %>% distinct(snp, .keep_all = TRUE)
-
-
+    eqtl_r = eqtl_r%>% distinct(beta, varbeta, position, snp)
     eqtl_r = eqtl_r %>% as.list()
     eqtl_r$type = 'quant'
     eqtl_r$sdY = 1
-    p4 <- tryCatch({
+
 
     my.res <- coloc.abf(dataset1=gwas_r,
-                        dataset2=eqtl_r)
-    p4 = my.res$summary[6]
-    }, error = function(e) {
+                    dataset2=eqtl_r)
 
-    print(paste("An error occurred:", e))
-    0
-    })
-    p_df <- data.frame(gene, p4)
-    names(p_df) <- c('gene', 'PP.H4.abf')
+    p_df <- data.frame(gene,my.res$summary[1], my.res$summary[2], my.res$summary[3], my.res$summary[4], my.res$summary[5], my.res$summary[6])
+    names(p_df) <- c('gene', 'nvariants_coloc_tested','PP.H0.abf','PP.H1.abf','PP.H2.abf','PP.H3.abf','PP.H4.abf')
     ''',
     )
 
     # convert to pandas df
     with (ro.default_converter + pandas2ri.converter).context():
         pd_p4_df = ro.conversion.get_conversion().rpy2py(ro.r('p_df'))
-    print('converted back to pandas df')
 
-    # add cell type annotation to df
+    # add cell type and chrom annotation to df
     pd_p4_df['celltype'] = celltype
+    pd_p4_df['chrom'] = eqtl['chr'].iloc[0]
 
     # write to GCS
     pd_p4_df.to_csv(
-        f'{output_path(f"coloc/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv")}',
+        output_path(f"coloc-snp-only/sig_str_filter_only/{pheno}/{celltype}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
+
 
 
 @click.option(
@@ -143,15 +150,17 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
     var_table = pd.read_csv(var_annotation_file)
 
     for phenotype in pheno.split(','):
-        gwas_file = to_path(
+        str_gwas_file = to_path(
             f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
         )
-        with gzip.open(gwas_file, 'rb') as f:
-            gwas = pd.read_csv(
+        snp_gwas_file = to_path()
+        with gzip.open(str_gwas_file, 'rb') as f:
+            str_gwas = pd.read_csv(
                 f,
                 sep='\t',
-                usecols=['chromosome', 'beta', 'standard_error', 'p_value', 'repeat_unit', 'start_pos (hg38)'],
+                usecols=['chromosome', 'beta', 'standard_error', 'p_value', 'repeat_unit', 'start_pos (hg38)', 'end_pos (hg38)'],
             )
+
 
         for celltype in celltypes.split(','):
             # run each unique cell-type-pheno combination batch completely separately to help with job scaling
@@ -171,12 +180,18 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 start = float(gene_table['start'].astype(float)) - 100000
                 end = float(gene_table['end'].astype(float)) + 100000
                 chrom = gene_table['chr'].iloc[0][3:]
-                hg38_map_chr = gwas[gwas['chromosome'] == int(chrom)]
-                hg38_map_chr_start = hg38_map_chr[hg38_map_chr['start_pos (hg38)'] >= start]
-                hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['start_pos (hg38)'] <= end]
-                hg38_map_chr_start_end['pos'] = hg38_map_chr_start_end['start_pos (hg38)']
 
-                if hg38_map_chr_start_end.empty:
+                ## subset the STR GWAS data for the cis-window
+                str_gwas_subset = str_gwas[
+                    (str_gwas['chromosome'] == int(chrom)) &
+                    (str_gwas['start_pos (hg38)'] >= start) &
+                    (str_gwas['start_pos (hg38)'] <= end)
+                ]
+
+               ## subset the SNP GWAS data for the cis-window
+
+
+                if str_gwas_subset.empty:
                     print('No STR GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 print('Extracted SNP GWAS data for ' + gene)
