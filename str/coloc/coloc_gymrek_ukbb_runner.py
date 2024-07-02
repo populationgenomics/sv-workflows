@@ -58,7 +58,7 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
                                 'position': eqtl_row['pos'],
                                 'varbeta': gwas_row['standard_error'] ** 2,
                                 'beta': gwas_row['beta'],
-                                'snp': f'{gwas_row["chromosome"]}_{eqtl_row["pos"]}_{eqtl_row["motif"]}',
+                                'snp': f'{eqtl_row["chr"]}_{eqtl_row["pos"]}_{eqtl_row["motif"]}',
                                 'p_value': gwas_row['p_value'],
                             },
                         ],
@@ -66,7 +66,20 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
                     gwas_str_harmonised = pd.concat([gwas_str_harmonised, new_entry], ignore_index=True)
 
                     continue
-
+    # for testing purposes
+    gwas_str_harmonised.to_csv(
+        output_path(
+            f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb_gwas_str_harmonised.tsv",
+            'analysis',
+        ),
+        sep='\t',
+        index=False,
+    )
+    gwas_snp.to_csv(
+        output_path(f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb_gwas_snp.tsv", 'analysis'),
+        sep='\t',
+        index=False,
+    )
     # concatenate gwas_str with gwas_snp (row wise)
     gwas = pd.concat([gwas_str_harmonised, gwas_snp], ignore_index=True)
 
