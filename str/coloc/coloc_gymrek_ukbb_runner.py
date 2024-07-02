@@ -50,14 +50,18 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
         for index2, eqtl_row in eqtl_str.iterrows():
             if eqtl_row['pos'] >= (gwas_row['start_pos (hg38)'] - 1) and eqtl_row['pos'] <= gwas_row['end_pos (hg38)']:
                 if eqtl_row['motif'] in cyclical_shifts(gwas_row['repeat_unit']):
-                    new_entry = pd.DataFrame([{
-
-                            'chromosome': gwas_row['chromosome'],
-                            'position': eqtl_row['pos'],
-                            'varbeta': gwas_row['standard_error'] ** 2,
-                            'beta': gwas_row['beta'],
-                            'snp': f'{gwas_row["chromosome"]}_{eqtl_row["pos"]}_{eqtl_row["motif"]}',
-                            'p_value': gwas_row['p_value']}])
+                    new_entry = pd.DataFrame(
+                        [
+                            {
+                                'chromosome': gwas_row['chromosome'],
+                                'position': eqtl_row['pos'],
+                                'varbeta': gwas_row['standard_error'] ** 2,
+                                'beta': gwas_row['beta'],
+                                'snp': f'{gwas_row["chromosome"]}_{eqtl_row["pos"]}_{eqtl_row["motif"]}',
+                                'p_value': gwas_row['p_value'],
+                            },
+                        ],
+                    )
                     gwas_str_harmonised = pd.concat([gwas_str_harmonised, new_entry], ignore_index=True)
 
                     continue
@@ -65,6 +69,12 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     # concatenate gwas_str with gwas_snp (row wise)
     gwas = pd.concat([gwas_str_harmonised, gwas_snp], ignore_index=True)
 
+    # for testing purposes
+    gwas.to_csv(
+        output_path(f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb_gwas.tsv", 'analysis'),
+        sep='\t',
+        index=False,
+    )
     ro.r('library(coloc)')
     ro.r('library(tidyverse)')
 
@@ -87,6 +97,12 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     eqtl['position'] = eqtl['pos']
     eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
+    # for testing purposes
+    eqtl.to_csv(
+        output_path(f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb_eqtl.tsv", 'analysis'),
+        sep='\t',
+        index=False,
+    )
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     print('loaded in eqtl_r')
@@ -215,7 +231,8 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
             for gene in ['ENSG00000198502']:
                 if to_path(
                     output_path(
-                        f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv", 'analysis',
+                        f"coloc/sig_str_and_gwas_hit/gymrek-ukbb-{pheno}/{celltype}/{gene}_100kb.tsv",
+                        'analysis',
                     ),
                 ).exists():
                     print('Coloc results already processed for ' + gene + ': skipping....')
