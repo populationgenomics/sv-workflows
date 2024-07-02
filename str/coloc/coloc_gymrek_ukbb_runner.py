@@ -10,11 +10,12 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory = '16G' \
-    --storage = '10G'\
+    --memory '32G' \
+    --storage '10G' \
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
     --celltypes "ASDC" \
+    --egenes-dir='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv' \
     --pheno "albumin"
 """
 import gzip
@@ -49,17 +50,16 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
         for index2, eqtl_row in eqtl_str.iterrows():
             if eqtl_row['pos'] >= (gwas_row['start_pos (hg38)'] - 1) and eqtl_row['pos'] <= gwas_row['end_pos (hg38)']:
                 if eqtl_row['motif'] in cyclical_shifts(gwas_row['repeat_unit']):
-                    gwas_str_harmonised = gwas_str_harmonised.append(
-                        {
+                    new_entry = pd.DataFrame([{
+
                             'chromosome': gwas_row['chromosome'],
                             'position': eqtl_row['pos'],
                             'varbeta': gwas_row['standard_error'] ** 2,
                             'beta': gwas_row['beta'],
                             'snp': f'{gwas_row["chromosome"]}_{eqtl_row["pos"]}_{eqtl_row["motif"]}',
-                            'p_value': gwas_row['p_value'],
-                        },
-                        ignore_index=True,
-                    )
+                            'p_value': gwas_row['p_value']}])
+                    gwas_str_harmonised = pd.concat([gwas_str_harmonised, new_entry], ignore_index=True)
+
                     continue
 
     # concatenate gwas_str with gwas_snp (row wise)
