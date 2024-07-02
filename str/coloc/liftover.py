@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 This script lifts over variants from hg19 to hg38.
 
@@ -30,7 +31,7 @@ def main(variants_file: str):
     """
     file_path = to_path(variants_file)
 
-    df = pd.read_csv(file_path, sep='\t', compression='gzip')
+    df = pd.read_csv(file_path, sep='\t', compression='gzip', usecols=['ID','REF','ALT','BETA','SE','P'])
     liftover_df = pd.read_csv('gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/ukbb_snp_chr_pos_hg38_liftover.bed', sep = '\t', header=None, names=['chromosome', 'position', 'end38', 'rsid'])
 
     df = pd.merge(df, liftover_df, left_on = 'ID', right_on = 'rsid')
