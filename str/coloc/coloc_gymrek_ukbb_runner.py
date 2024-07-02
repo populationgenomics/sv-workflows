@@ -270,7 +270,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
 
                 ## subset the SNP GWAS data for the cis-window
                 snp_gwas_subset = snp_gwas[
-                    (snp_gwas['chromosome'] == gene_table['chr'])
+                    (snp_gwas['chromosome'] == gene_table['chr'].iloc[0])
                     & (snp_gwas['position'] >= start)
                     & (snp_gwas['position'] <= end)
                 ]
