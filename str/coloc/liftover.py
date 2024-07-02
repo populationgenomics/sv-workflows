@@ -11,7 +11,7 @@ analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 
     --output-dir "str/associatr/liftover" \
     --memory "64G" \
     --storage "20G" \
-    liftover.py --variants-file=gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_cholesterol_snp_gwas_results.tab.gz
+    liftover.py --variants-file=gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_albumin_snp_gwas_results.tab.gz
 """
 
 import click
@@ -42,7 +42,7 @@ def main(variants_file: str):
 
 
     # Write out the results
-    df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv('gs://cpg-bioheart-test/str/gyremk-ukbb-snp-gwas-catalogs/white_british_cholesterol_snp_gwas_results_hg38.tab.gz', sep='\t', index=False)
+    df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv('gs://cpg-bioheart-test/str/gyremk-ukbb-snp-gwas-catalogs/white_british_albumin_snp_gwas_results_hg38.tab.gz', sep='\t', index=False)
 
 
 if __name__ == '__main__':
