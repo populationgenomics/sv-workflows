@@ -164,9 +164,9 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     default='gs://cpg-bioheart-test-analysis/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/fdr_qvals/using_acat',
 )
 @click.option(
-    '--str-cis-dir',
-    help='Path to the directory containing the STR eQTL cis results',
-    default='gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results',
+    '--eqtl-cis-dir',
+    help='Path to the directory containing the STR+SNP eQTL cis results',
+    default='gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results',
 )
 @click.option('--celltypes', help='Cell type for which the eGenes were identified', default='CD4_TCM')
 @click.option(
@@ -177,7 +177,7 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
 @click.option('--pheno', help='Phenotype to use for coloc', default='alanine_aminotransferase')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
 @click.command()
-def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_parallel_jobs):
+def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_parallel_jobs):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -278,11 +278,12 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                 if str_gwas_subset.empty and snp_gwas_subset.empty:
                     print('No GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
-                print('Extracted GWAS data for ' + gene)
 
                 if str_gwas_subset['p_value'].min() > 5e-8 and snp_gwas_subset['p_value'].min() > 5e-8:
                     print('No significant GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
+
+                print('Extracted GWAS data for ' + gene)
 
                 # run coloc
                 b = get_batch(name='Run coloc')
@@ -295,7 +296,7 @@ def main(str_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_par
                     coloc_runner,
                     str_gwas_subset,
                     snp_gwas_subset,
-                    f'{str_cis_dir}/{celltype}/chr{chrom}/{gene}_100000bp_meta_results.tsv',
+                    f'{eqtl_cis_dir}/{celltype}/chr{chrom}/{gene}_100000bp_meta_results.tsv',
                     celltype,
                     phenotype,
                 )
