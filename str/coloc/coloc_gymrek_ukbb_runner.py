@@ -54,7 +54,7 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
                     new_entry = pd.DataFrame(
                         [
                             {
-                                'chromosome': gwas_row['chromosome'],
+                                'chromosome': eqtl_row["chr"],
                                 'position': eqtl_row['pos'],
                                 'varbeta': gwas_row['standard_error'] ** 2,
                                 'beta': gwas_row['beta'],
@@ -82,6 +82,8 @@ def coloc_runner(gwas_str, gwas_snp, eqtl_file_path, celltype, pheno):
     )
     # concatenate gwas_str with gwas_snp (row wise)
     gwas = pd.concat([gwas_str_harmonised, gwas_snp], ignore_index=True)
+
+    gwas = gwas[~gwas['beta'].isna()]
 
     # for testing purposes
     gwas.to_csv(
