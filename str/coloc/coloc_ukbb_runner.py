@@ -16,8 +16,8 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
-    --snp-gwas-file=gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/white_british_albumin_snp_str_gwas_results_hg38.tab.gz \
-    --pheno-output-name="ukbb-albumin" \
+    --snp-gwas-file=gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/white_british_alanine_aminotransferase_snp_str_gwas_results_hg38.tab.gz \
+    --pheno-output-name="gymrek-ukbb-alanine_aminotransferase \
     --celltypes "ASDC" \
     --max-parallel-jobs 1000 \
     --snp-cis-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results
@@ -67,13 +67,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     eqtl['position'] = eqtl['pos']
     eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
-    # for testing
-    eqtl.to_csv(
-        output_path(
-            f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_eqtl_100kb.tsv",
-            'analysis',
-        ),
-    )
+
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     ro.globalenv['eqtl_r'] = eqtl_r
@@ -182,8 +176,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         result_df_cfm_str_celltype = result_df_cfm_str[
             result_df_cfm_str['celltype'] == celltype
         ]  # filter for the celltype of interest
-        # for gene in result_df_cfm_str_celltype['gene']:
-        for gene in ['ENSG00000125945']:
+        for gene in result_df_cfm_str_celltype['gene']:
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
                 output_path(
@@ -211,14 +204,6 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 print('Extracted SNP GWAS data for ' + gene)
-
-                # for testing
-                hg38_map_chr_start_end.to_csv(
-                    output_path(
-                        f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_gwas_100kb.tsv",
-                        'analysis',
-                    ),
-                )
 
                 # run coloc
                 coloc_job = b.new_python_job(
