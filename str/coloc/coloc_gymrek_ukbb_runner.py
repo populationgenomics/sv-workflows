@@ -279,7 +279,7 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
             coloc_job = b.new_python_job(
                 f'Coloc for {celltype} and {phenotype}',
             )
-            coloc_job.cpu(4)
+            coloc_job.cpu(8)
             coloc_job.image(image_path('r-meta'))
             coloc_job.call(
                 coloc_runner,
