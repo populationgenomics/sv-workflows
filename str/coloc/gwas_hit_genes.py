@@ -10,7 +10,6 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     gwas_hit_genes.py \
-
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/colorectalca_GCST90129505_parsed.tsv \
     --pheno-output-name="colorectalca_GCST90129505"
 
@@ -84,9 +83,7 @@ def main(egenes_file, snp_gwas_file, pheno_output_name):
         gwas_sig_genes.append(gene)
 
     # write list to a csv file
-    output_file = (
-        'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/' + pheno_output_name + '_gwas_sig_genes.csv'
-    )
+    output_file = 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/' + pheno_output_name + '_gwas_sig_genes.csv'
     output_df = pd.DataFrame({'gene': gwas_sig_genes})
     output_df.to_csv(output_file, index=False)
     print('Output file saved:', output_file)
