@@ -66,7 +66,7 @@ def liftover(phenotype):
 
 def main():
     b = get_batch(name='liftover')
-    phenotypes = 'albumin'
+    phenotypes = ['albumin']
     for pheno in phenotypes:
         liftover_job = b.new_python_job('Parse STR UKBB and combine with SNP ' + pheno)
         liftover_job.memory('64G')
