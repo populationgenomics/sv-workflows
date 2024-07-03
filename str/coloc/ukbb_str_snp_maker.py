@@ -66,10 +66,55 @@ def liftover(phenotype):
 
 def main():
     b = get_batch(name='liftover')
-    phenotypes = ['albumin']
+    phenotypes = [
+        "alanine_aminotransferase",
+        "albumin",
+        "alkaline_phosphatase",
+        "apolipoprotein_a",
+        "apolipoprotein_b",
+        "aspartate_aminotransferase",
+        "c_reactive_protein",
+        "calcium",
+        "cholesterol",
+        "creatinine",
+        "cystatin_c",
+        "eosinophil_count",
+        "eosinophil_percent",
+        "gamma_glutamyltransferase",
+        "glucose",
+        "glycated_haemoglobin",
+        "haematocrit",
+        "haemoglobin_concentration",
+        "hdl_cholesterol",
+        "igf_1",
+        "ldl_cholesterol_direct",
+        "lymphocyte_count",
+        "lymphocyte_percent",
+        "mean_corpuscular_haemoglobin",
+        "mean_corpuscular_haemoglobin_concentration",
+        "mean_corpuscular_volume",
+        "mean_platelet_volume",
+        "mean_sphered_cell_volume",
+        "neutrophil_count",
+        "neutrophil_percent",
+        "phosphate",
+        "platelet_count",
+        "platelet_crit",
+        "platelet_distribution_width",
+        "red_blood_cell_count",
+        "red_blood_cell_distribution_width",
+        "shbg",
+        "total_bilirubin",
+        "total_protein",
+        "triglycerides",
+        "urate",
+        "urea",
+        "vitamin_d",
+        "white_blood_cell_count",
+    ]
     for pheno in phenotypes:
         liftover_job = b.new_python_job('Parse STR UKBB and combine with SNP ' + pheno)
-        liftover_job.memory('64G')
+        liftover_job.memory('32G')
         liftover_job.storage('10G')
         liftover_job.call(liftover, pheno)
     b.run(wait=False)
