@@ -40,7 +40,6 @@ def main():
     b = get_batch(name='catalog sharder')
     phenotypes = [
         "alanine_aminotransferase",
-        "albumin",
         "alkaline_phosphatase",
         "apolipoprotein_a",
         "apolipoprotein_b",
@@ -84,7 +83,7 @@ def main():
         "vitamin_d",
         "white_blood_cell_count",
     ]
-    for pheno in ['albumin']:
+    for pheno in phenotypes:
         liftover_job = b.new_python_job('Catalog sharder for' + pheno)
         liftover_job.memory('32G')
         liftover_job.storage('10G')
