@@ -10,14 +10,28 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     gwas_hit_genes.py \
+
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/colorectalca_GCST90129505_parsed.tsv \
     --pheno-output-name="colorectalca_GCST90129505"
 
 """
-
+import click
 import pandas as pd
 
+@click.option(
+    '--egenes-file',
+    help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
+    default='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv',
+)
 
+@click.option(
+    '--snp-gwas-file',
+    help='Path to the SNP GWAS file',
+    default='gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST011071_parsed.tsv',
+)
+
+@click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
+@click.command()
 def main(egenes_file, snp_gwas_file, pheno_output_name):
     gwas_sig_genes = []
     # read in gene annotation file
