@@ -7,7 +7,7 @@ analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 
     --output-dir "str/associatr/liftover" \
     --memory "4G" \
     --storage "5G" \
-    ukbb_str_snp_maker.py
+    catalog_sharder.py
 """
 
 import pandas as pd
@@ -86,7 +86,7 @@ def main():
     ]
     for pheno in ['albumin']:
         liftover_job = b.new_python_job('Catalog sharder for' + pheno)
-        liftover_job.memory('16G')
+        liftover_job.memory('32')
         liftover_job.storage('10G')
         liftover_job.call(sharder, pheno)
     b.run(wait=False)
