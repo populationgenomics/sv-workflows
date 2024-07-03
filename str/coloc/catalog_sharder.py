@@ -86,7 +86,7 @@ def main():
     ]
     for pheno in ['albumin']:
         liftover_job = b.new_python_job('Catalog sharder for' + pheno)
-        liftover_job.memory('32')
+        liftover_job.memory('32G')
         liftover_job.storage('10G')
         liftover_job.call(sharder, pheno)
     b.run(wait=False)
