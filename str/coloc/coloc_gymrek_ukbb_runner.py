@@ -10,8 +10,6 @@ This script performs colocalisation analysis betweeen eGenes identified by pseud
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory '8G' \
-    --storage '10G' \
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
     --celltypes "ASDC" \
@@ -245,8 +243,8 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
     var_table = pd.read_csv(var_annotation_file)
 
     for phenotype in pheno.split(','):
-        str_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz',
-        snp_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
+        str_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz'
+        snp_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz'
 
         # read in eGenes file
         egenes = pd.read_csv(
