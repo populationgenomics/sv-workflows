@@ -145,9 +145,6 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     var_table = pd.read_csv(
         'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
     )
-    with gzip.open(to_path(snp_gwas_file), 'rb') as f:
-        hg38_map = pd.read_csv(f, sep='\t')
-
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file,
@@ -180,53 +177,56 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[
                 result_df_cfm_str_celltype['chr'] == chrom
             ]
-        for gene in result_df_cfm_str_celltype['gene']:
-            chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
-            if to_path(
-                output_path(
-                    f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
-                    'analysis',
-                ),
-            ).exists():
-                continue
-            if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
-                print('Cis results for ' + gene + ' exist: proceed with coloc')
+            pheno = pheno_output_name
+            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            with gzip.open(to_path(chr_gwas_file), 'rb') as f:
+                hg38_map = pd.read_csv(f, sep='\t')
 
-                # extract the coordinates for the cis-window (gene +/- 100kB)
-                gene_table = var_table[var_table['gene_ids'] == gene]
-                start = float(gene_table['start'].astype(float)) - 100000
-                end = float(gene_table['end'].astype(float)) + 100000
-                chrom = gene_table['chr'].iloc[0]
-                hg38_map_chr = hg38_map[hg38_map['chromosome'] == (chrom)]
-                hg38_map_chr_start = hg38_map_chr[hg38_map_chr['position'] >= start]
-                hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['position'] <= end]
-                if hg38_map_chr_start_end.empty:
-                    print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+            for gene in result_df_cfm_str_celltype_chrom['gene']:
+                if to_path(
+                    output_path(
+                        f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
+                        'analysis',
+                    ),
+                ).exists():
                     continue
-                # check if the p-value column contains at least one value which is <=5e-8:
-                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
-                    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                    continue
-                print('Extracted SNP GWAS data for ' + gene)
+                if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
+                    print('Cis results for ' + gene + ' exist: proceed with coloc')
 
-                # run coloc
-                coloc_job = b.new_python_job(
-                    f'Coloc for {gene}: {celltype}',
-                )
-                f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
-                coloc_job.image(image_path('r-meta'))
-                coloc_job.cpu(job_cpu)
-                coloc_job.call(
-                    coloc_runner,
-                    hg38_map_chr_start_end,
-                    f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
-                    celltype,
-                    pheno_output_name,
-                )
-                manage_concurrency_for_job(coloc_job)
+                    # extract the coordinates for the cis-window (gene +/- 100kB)
+                    gene_table = var_table[var_table['gene_ids'] == gene]
+                    start = float(gene_table['start'].astype(float)) - 100000
+                    end = float(gene_table['end'].astype(float)) + 100000
+                    hg38_map_chr = hg38_map[hg38_map['chromosome'] == (chrom)]
+                    hg38_map_chr_start = hg38_map_chr[hg38_map_chr['position'] >= start]
+                    hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['position'] <= end]
+                    if hg38_map_chr_start_end.empty:
+                        print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                        continue
+                    # check if the p-value column contains at least one value which is <=5e-8:
+                    if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                        print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                        continue
+                    print('Extracted SNP GWAS data for ' + gene)
 
-            else:
-                print('No cis results for ' + gene + ' exist: skipping....')
+                    # run coloc
+                    coloc_job = b.new_python_job(
+                        f'Coloc for {gene}: {celltype}',
+                    )
+                    f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
+                    coloc_job.image(image_path('r-meta'))
+                    coloc_job.cpu(job_cpu)
+                    coloc_job.call(
+                        coloc_runner,
+                        hg38_map_chr_start_end,
+                        f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
+                        celltype,
+                        pheno_output_name,
+                    )
+                    manage_concurrency_for_job(coloc_job)
+
+                else:
+                    print('No cis results for ' + gene + ' exist: skipping....')
 
     b.run(wait=False)
 
