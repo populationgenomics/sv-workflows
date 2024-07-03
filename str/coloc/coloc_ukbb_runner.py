@@ -17,9 +17,9 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/white_british_alanine_aminotransferase_snp_str_gwas_results_hg38.tab.gz \
-    --pheno-output-name="gymrek-ukbb-alanine_aminotransferase \
-    --celltypes "ASDC" \
-    --max-parallel-jobs 1000 \
+    --pheno-output-name=gymrek-ukbb-alanine-aminotransferase \
+    --celltypes "B_naive" \
+    --max-parallel-jobs 10000 \
     --snp-cis-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results
 
 """
@@ -176,6 +176,10 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         result_df_cfm_str_celltype = result_df_cfm_str[
             result_df_cfm_str['celltype'] == celltype
         ]  # filter for the celltype of interest
+        for chrom in result_df_cfm_str_celltype['chr'].unique():
+            result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[
+                result_df_cfm_str_celltype['chr'] == chrom
+            ]
         for gene in result_df_cfm_str_celltype['gene']:
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
