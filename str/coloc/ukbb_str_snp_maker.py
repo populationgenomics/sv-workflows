@@ -20,7 +20,7 @@ from cpg_utils.hail_batch import get_batch
 def liftover(phenotype):
     import gzip
 
-    str_gwas_file = 'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_albumin_str_gwas_results.tab.gz'
+    str_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/gymrek-ukbb-str-gwas-catalogs/white_british_{phenotype}_str_gwas_results.tab.gz'
     with gzip.open(to_path(str_gwas_file), 'rb') as f:
         str_gwas = pd.read_csv(
             f,
