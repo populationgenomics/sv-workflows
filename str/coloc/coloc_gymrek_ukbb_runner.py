@@ -11,11 +11,11 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
-    --memory='8G' \
+    --memory='32G' \
     coloc_gymrek_ukbb_runner.py \
     --celltypes "CD4_Naive,B_naive" \
     --egenes-dir='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv' \
-    --pheno "albumin"
+    --pheno "alanine_aminotransferase"
 """
 
 import gzip
@@ -31,7 +31,6 @@ from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 def cyclical_shifts(s):
     return [s[i:] + s[:i] for i in range(len(s))]
-
 
 def coloc_runner(str_gwas_subset, snp_gwas_subset, eqtl_cis_dir, celltype, pheno, gene, chrom):
     import pandas as pd
@@ -270,7 +269,6 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno):
                 coloc_job.image(image_path('r-meta'))
                 coloc_job.call(
                     coloc_runner,
-                    result_df_cfm_str_celltype,
                     str_gwas_subset,
                     snp_gwas_subset,
                     eqtl_cis_dir,
