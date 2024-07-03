@@ -12,7 +12,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --output-dir "str/associatr" \
     coloc_gymrek_ukbb_runner.py \
-    --celltypes "ASDC" \
+    --celltypes "CD4_TCM" \
     --egenes-dir='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv' \
     --pheno "albumin"
 """
@@ -79,7 +79,8 @@ def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas_file, snp_gwas_
             & (str_gwas['start_pos (hg38)'] >= start)
             & (str_gwas['start_pos (hg38)'] <= end)
         ]
-
+        # remove rows with missing repeat_unit (not sure why they are NA)
+        str_gwas_subset[~str_gwas_subset['repeat_unit'].isna()]
         ## subset the SNP GWAS data for the cis-window
         snp_gwas_subset = snp_gwas[
             (snp_gwas['chromosome'] == gene_table['chr'].iloc[0])
