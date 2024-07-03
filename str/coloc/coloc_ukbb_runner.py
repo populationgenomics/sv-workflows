@@ -16,11 +16,9 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
-    --snp-gwas-file=gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/white_british_alanine_aminotransferase_snp_str_gwas_results_hg38.tab.gz \
     --pheno-output-name=gymrek-ukbb-alanine-aminotransferase \
     --celltypes "B_naive" \
-    --max-parallel-jobs 10000 \
-    --snp-cis-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results
+    --max-parallel-jobs 10000
 
 """
 
@@ -117,19 +115,14 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results',
-)
-@click.option(
-    '--snp-gwas-file',
-    help='Path to the SNP GWAS file',
-    default='gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST011071_parsed.tsv',
+    default='gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results',
 )
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
 @click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.command()
-def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, max_parallel_jobs, job_cpu):
+def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jobs, job_cpu):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -174,11 +167,11 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             result_df_cfm_str['celltype'] == celltype
         ]  # filter for the celltype of interest
         for chrom in result_df_cfm_str_celltype['chr'].unique():
-            result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[
-                result_df_cfm_str_celltype['chr'] == chrom
-            ]
-            pheno = pheno_output_name
-            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['chr'] == chrom]
+            phenotype = pheno_output_name.split('-')[-1]
+            chr_gwas_file = (
+                f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            )
             with gzip.open(to_path(chr_gwas_file), 'rb') as f:
                 hg38_map = pd.read_csv(f, sep='\t')
 
