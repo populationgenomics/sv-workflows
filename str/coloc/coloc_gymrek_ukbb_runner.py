@@ -11,8 +11,9 @@ analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --output-dir "str/associatr" \
+    --memory='4G' \
     coloc_gymrek_ukbb_runner.py \
-    --celltypes "CD4_TCM" \
+    --celltypes "gdT,B_memory" \
     --egenes-dir='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv' \
     --pheno "albumin"
 """
@@ -29,7 +30,7 @@ def cyclical_shifts(s):
     return [s[i:] + s[:i] for i in range(len(s))]
 
 
-def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas_file, snp_gwas_file, eqtl_cis_dir, celltype, pheno):
+def coloc_runner(result_df_cfm_str, var_table, str_gwas_file, snp_gwas_file, eqtl_cis_dir, celltype, pheno):
     import gzip
 
     import pandas as pd
@@ -37,6 +38,10 @@ def coloc_runner(result_df_cfm_str_celltype, var_table, str_gwas_file, snp_gwas_
     from rpy2.robjects import pandas2ri
     from cpg_utils import to_path
     from cpg_utils.hail_batch import output_path
+
+    result_df_cfm_str_celltype = result_df_cfm_str[
+                result_df_cfm_str['celltype'] == celltype
+            ]  # filter for the celltype of interest
 
     with gzip.open(to_path(str_gwas_file), 'rb') as f:
             str_gwas = pd.read_csv(
@@ -269,13 +274,9 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
             regex=False,
         )  # remove .tsv from gene names (artefact of the data file)
 
-        b = get_batch(name='Run coloc')
+        b = get_batch(name=f'Run coloc for {celltypes}:{pheno}')
 
         for celltype in celltypes.split(','):
-            result_df_cfm_str_celltype = result_df_cfm_str[
-                result_df_cfm_str['celltype'] == celltype
-            ]  # filter for the celltype of interest
-
             # run one coloc job for every celltype-phenotype combination
             coloc_job = b.new_python_job(
                 f'Coloc for {celltype} and {phenotype}',
@@ -284,7 +285,7 @@ def main(eqtl_cis_dir, egenes_dir, celltypes, var_annotation_file, pheno, max_pa
             coloc_job.image(image_path('r-meta'))
             coloc_job.call(
                 coloc_runner,
-                result_df_cfm_str_celltype,
+                result_df_cfm_str,
                 var_table,
                 str_gwas_file,
                 snp_gwas_file,
