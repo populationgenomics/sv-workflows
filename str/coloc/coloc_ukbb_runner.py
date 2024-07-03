@@ -12,7 +12,7 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='8G' \
+    --memory='32G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
@@ -61,6 +61,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
         eqtl_file_path,
         sep='\t',
     )
+    gene = eqtl_file_path.split('/')[-1].split('_')[0]
     eqtl['beta'] = eqtl['coeff_meta']
     eqtl['se'] = eqtl['se_meta']
     eqtl['position'] = eqtl['pos']
@@ -73,7 +74,6 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
             'analysis',
         ),
     )
-    gene = eqtl_file_path.split('/')[-1].split('_')[0]
     with (ro.default_converter + pandas2ri.converter).context():
         eqtl_r = ro.conversion.get_conversion().py2rpy(eqtl)
     ro.globalenv['eqtl_r'] = eqtl_r
