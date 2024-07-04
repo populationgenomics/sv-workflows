@@ -2,7 +2,7 @@
 
 # Define the cell types
 celltypes=(gdT B_intermediate ILC Plasmablast dnT ASDC cDC1 pDC NK_CD56bright MAIT B_memory CD4_CTL CD4_Proliferating CD8_Proliferating HSPC NK_Proliferating cDC2 CD16_Mono Treg CD14_Mono CD8_TCM CD4_TEM CD8_Naive CD4_TCM NK CD8_TEM CD4_Naive B_naive)
-phenos=(apolipoprotein_a apolipoprotein_b aspartate_aminotransferase c_reactive_protein calcium)
+phenos=("haematocrit" "haemoglobin_concentration" "lymphocyte_count" "lymphocyte_percent" "mean_corpuscular_haemoglobin" "mean_corpuscular_haemoglobin_concentration" "mean_corpuscular_volume" "mean_platelet_volume" "mean_sphered_cell_volume" "neutrophil_count" "neutrophil_percent" "platelet_count" "platelet_crit" "platelet_distribution_width" "red_blood_cell_count" "red_blood_cell_distribution_width" "white_blood_cell_count")
 
 # Iterate over the cell types and execute the command
 for celltype in "${celltypes[@]}"; do
