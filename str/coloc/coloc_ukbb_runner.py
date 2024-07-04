@@ -160,7 +160,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
         '',
         regex=False,
     )  # remove .tsv from gene names (artefact of the data file)
-    b = get_batch(name=f'Run coloc:{pheno_output_name}')
+    b = get_batch(name=f'Run coloc:{pheno_output_name} and {celltypes}')
 
     for celltype in celltypes.split(','):
         result_df_cfm_str_celltype = result_df_cfm_str[
@@ -200,7 +200,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
 
                     # run coloc
                     coloc_job = b.new_python_job(
-                        f'Coloc for {gene}: {celltype}',
+                        f'Coloc for {gene}: {celltype}: {phenotype}',
                     )
                     f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
                     coloc_job.image(image_path('r-meta'))
