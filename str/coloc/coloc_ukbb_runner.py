@@ -12,12 +12,12 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='8G' \
+    --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
     --pheno-output-name=gymrek-ukbb-alkaline_phosphatase \
-    --celltypes "ASDC"
+    --celltypes "B_intermediate" \
     --max-parallel-jobs 10000
 
 """
@@ -176,10 +176,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
 
             for gene in result_df_cfm_str_celltype_chrom['gene']:
                 if to_path(
-                    output_path(
-                        f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
-                        'analysis',
-                    ),
+                    output_path(f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
                 ).exists():
                     continue
                 if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
