@@ -12,12 +12,12 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='32G' \
+    --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
-    --pheno-output-name=gymrek-ukbb-alanine-aminotransferase \
-    --celltypes "B_naive" \
+    --pheno-output-name=gymrek-ukbb-alkaline_phosphatase \
+    --celltypes "ASDC"
     --max-parallel-jobs 10000
 
 """
@@ -169,9 +169,8 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
         for chrom in result_df_cfm_str_celltype['chr'].unique():
             result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['chr'] == chrom]
             phenotype = pheno_output_name.split('-')[-1]
-            chr_gwas_file = (
-                f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz',
-            )
+            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz'
+
             with gzip.open(to_path(chr_gwas_file), 'rb') as f:
                 hg38_map = pd.read_csv(f, sep='\t')
 
