@@ -10,7 +10,7 @@ analysis-runner --dataset "bioheart" \
     filter_file.py \
     --celltypes "B_intermediate"
 """
-
+import click
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
@@ -56,7 +56,8 @@ def fold_calc(directory, celltype):
         index=False,
     )
 
-
+@click.option('--celltypes', help='Cell type (can be multiple)')
+@click.command()
 def main(celltypes):
     b = get_batch()
     for celltype in celltypes.split(','):
