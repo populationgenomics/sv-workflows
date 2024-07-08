@@ -28,7 +28,7 @@ def fold_calc(directory, celltype):
 
     # Iterate over each file path
     for file_path in gene_files:
-        gene_name = file_path.split('/')[-1].split('_')[0]
+        gene_name = str(file_path).split('/')[-1].split('_')[0]
         # Read file into a DataFrame
         df = pd.read_csv(file_path, sep='\t')
         str_df = df[~df['motif'].str.contains('-')]
