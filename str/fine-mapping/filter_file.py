@@ -8,7 +8,7 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     filter_file.py \
-    --celltypes "B_intermediate"
+    --celltypes "gdT,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive"
 """
 import click
 from cpg_utils import to_path
@@ -65,7 +65,7 @@ def main(celltypes):
         combiner_job = b.new_python_job(
             f'Parser job for {celltype}',
         )
-        combiner_job.cpu(4)
+        combiner_job.cpu(2)
         combiner_job.call(fold_calc, directory, celltype)
 
     b.run(wait=False)
