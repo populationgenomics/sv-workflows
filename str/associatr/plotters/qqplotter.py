@@ -141,7 +141,7 @@ def main(input_dir, cell_types, title, ylim):
     other_labels = [l for l in labels if l != "Permuted control"]
     ax.add_artist(
         ax.legend(
-            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=11,
+            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, 0), loc='upper left', fontsize=11,
         ),
     )
 
