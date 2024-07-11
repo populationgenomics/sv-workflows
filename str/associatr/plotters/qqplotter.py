@@ -46,40 +46,36 @@ def main(input_dir, cell_types, title, ylim):
         )
 
     cell_type_mapping = {
-        'CD4_TCM': 'CD4+ TCM',
-        'CD4_Naive': 'CD4+ Naive',
-        'CD4_TEM': 'CD4+ TEM',
-        'CD4_CTL': 'CD4+ CTL',
-        'CD4_Proliferating': 'CD4+ Proliferating',
-        'CD4_TCM_permuted': 'Permuted control',
-        'NK': 'NK',
-        'NK_CD56bright': 'NK CD56bright',
-        'NK_Proliferating': 'NK Proliferating',
-        'CD8_TEM': 'CD8+ TEM',
-        'CD8_TCM': 'CD8+ TCM',
-        'CD8_Proliferating': 'CD8+ Proliferating',
-        'CD8_Naive': 'CD8+ Naive',
-        'Treg': 'Treg',
-        'B_naive': 'B naive',
-        'B_memory': 'B memory',
-        'B_intermediate': 'B intermediate',
-        'Plasmablast': 'Plasmablast',
-        'CD14_Mono': 'CD14+ Monocyte',
-        'CD16_Mono': 'CD16+ Monocyte',
-        'cDC1': 'cDC1',
-        'cDC2': 'cDC2',
-        'pDC': 'pDC',
-        'dnT': 'dnT',
-        'gdT': 'gdT',
-        'MAIT': 'MAIT',
-        'ASDC': 'ASDC',
-        'HSPC': 'HSPC',
-        'ILC': 'ILC',
-        # Add other mappings as needed
-    }
-
-    # Split the cell_types string into a list
-    cell_types_list = cell_types.split(',')
+    'ASDC': 'ASDC',
+    'B_intermediate': 'B intermediate',
+    'B_memory': 'B memory',
+    'B_naive': 'B naive',
+    'CD14_Mono': 'CD14+ Monocyte',
+    'CD16_Mono': 'CD16+ Monocyte',
+    'CD4_CTL': 'CD4+ CTL',
+    'CD4_Naive': 'CD4+ Naive',
+    'CD4_Proliferating': 'CD4+ Proliferating',
+    'CD4_TCM': 'CD4+ TCM',
+    'CD4_TCM_permuted': 'Permuted control',
+    'CD4_TEM': 'CD4+ TEM',
+    'CD8_Naive': 'CD8+ Naive',
+    'CD8_Proliferating': 'CD8+ Proliferating',
+    'CD8_TCM': 'CD8+ TCM',
+    'CD8_TEM': 'CD8+ TEM',
+    'cDC1': 'cDC1',
+    'cDC2': 'cDC2',
+    'dnT': 'dnT',
+    'gdT': 'gdT',
+    'HSPC': 'HSPC',
+    'ILC': 'ILC',
+    'MAIT': 'MAIT',
+    'NK': 'NK',
+    'NK_CD56bright': 'NK CD56bright',
+    'NK_Proliferating': 'NK Proliferating',
+    'pDC': 'pDC',
+    'Plasmablast': 'Plasmablast',
+    'Treg': 'Treg',
+}
 
     # Create QQ plot
     plt.figure(figsize=(10, 8))
@@ -145,7 +141,7 @@ def main(input_dir, cell_types, title, ylim):
     other_labels = [l for l in labels if l != "Permuted control"]
     ax.add_artist(
         ax.legend(
-            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, -0.1), loc='upper left', fontsize=11,
+            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=11,
         ),
     )
 
