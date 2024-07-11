@@ -143,13 +143,16 @@ def main(input_dir, cell_types, title, ylim):
     permuted_control_handle = [h for h, l in zip(handles, labels) if l == "Permuted control"]
     other_handles = [h for h, l in zip(handles, labels) if l != "Permuted control"]
     other_labels = [l for l in labels if l != "Permuted control"]
-    ax.add_artist(ax.legend(permuted_control_handle, ['Permuted control'],bbox_to_anchor=(1.05, 0.9), loc='upper left',fontsize=11))
+    ax.add_artist(
+        ax.legend(
+            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, 0.9), loc='upper left', fontsize=11,
+        ),
+    )
 
     # Create the main legend with other items
-    ax.legend(other_handles, other_labels, bbox_to_anchor=(1.05, 1), loc='upper left',fontsize=11)
+    ax.legend(other_handles, other_labels, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=11)
 
-
-    ax.set_xlabel('Expected -log10(p-value)',fontsize=14)
+    ax.set_xlabel('Expected -log10(p-value)', fontsize=14)
     ax.set_ylabel('Observed -log10(p-value)', fontsize=14)
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=10)
@@ -157,8 +160,6 @@ def main(input_dir, cell_types, title, ylim):
 
     ax.grid(True)
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
-
-
 
     gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.png', 'analysis')
     fig.tight_layout()
