@@ -4,7 +4,7 @@
 This script makes QC plots
 
 analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n990_bioheart_only/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n990_bioheart_only/annotated_mt/v1/str_annotated.mt
+--mt-path=gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
 import hail as hl
@@ -27,8 +27,13 @@ def main(mt_path):
 
 
     # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.00995
-    #mt = mt.filter_rows((mt.num_alleles>1) & (mt.variant_qc.call_rate>=0.9) & (mt.obs_het>=0.00995) )
-    #print(f'MT dimensions after subsetting to loci with more than 1 allele: {mt.count()}')
+    mt = mt.filter_rows(
+        (mt.num_alleles > 1) & (mt.variant_qc.call_rate >= 0.9) & (mt.obs_het >= 0.00995) & (mt.binom_hwep >= 0.000001),
+    )
+    print(f'MT dimensions after locus-level filters: {mt.count()}')
+    # Filter out chrX
+    mt = mt.filter_rows(mt.locus.contig != 'chrX')
+    print(f'MT dimensions after filtering out chrX: {mt.count()}')
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
 
@@ -55,16 +60,16 @@ def main(mt_path):
     #print(f' MT cap [-20,20] rel. to ref: {dotato.entries().count()}')
 
     # Alleles minus ref histogram
-    alleles_minus_ref_ht = mt.select_rows(
-    allele_minus_ref = hl.agg.collect(mt.allele_1_minus_mode)
-        .extend(hl.agg.collect(mt.allele_2_minus_mode))
-    ).rows()
-    alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
-    p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus mode (10to200)", range = (10,200))
-    output_file('local_plot_1.html')
-    save(p)
-    gcs_path_1 = output_path(f'alleles_minus_mode/10to200.html', 'analysis')
-    hl.hadoop_copy('local_plot_1.html', gcs_path_1)
+    ##alleles_minus_ref_ht = mt.select_rows(
+    #allele_minus_ref = hl.agg.collect(mt.allele_1_minus_mode)
+    #    .extend(hl.agg.collect(mt.allele_2_minus_mode))
+    #).rows()
+    #alleles_minus_ref_ht = alleles_minus_ref_ht.explode('allele_minus_ref', name='alleles_minus_ref')
+    #p = hl.plot.histogram(alleles_minus_ref_ht.alleles_minus_ref,legend= "Allele sizes minus mode (10to200)", range = (10,200))
+    #output_file('local_plot_1.html')
+    #save(p)
+    #gcs_path_1 = output_path(f'alleles_minus_mode/10to200.html', 'analysis')
+    #hl.hadoop_copy('local_plot_1.html', gcs_path_1)
 
     #for cohort in ['tob','bioheart']:
         #mt_cohort = mt.filter_cols(mt.cohort == cohort)
