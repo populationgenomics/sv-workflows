@@ -3,7 +3,7 @@
 This script plots a QQ plot of observed vs expected -log10(p-values) for each cell type.
 
 analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=32G \
+    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=8G \
     qqplotter.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/raw_pval_extractor \
     --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC \
@@ -145,7 +145,7 @@ def main(input_dir, cell_types, title, ylim):
     other_labels = [l for l in labels if l != "Permuted control"]
     ax.add_artist(
         ax.legend(
-            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, 0.9), loc='upper left', fontsize=11,
+            permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, -0.1), loc='upper left', fontsize=11,
         ),
     )
 
@@ -158,7 +158,6 @@ def main(input_dir, cell_types, title, ylim):
     plt.yticks(fontsize=10)
     ax.set_ylim(0, ylim)
 
-    ax.grid(True)
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
     gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.png', 'analysis')
