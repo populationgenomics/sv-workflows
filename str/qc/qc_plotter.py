@@ -32,10 +32,11 @@ def main(mt_path):
     )
     print(f'MT dimensions after locus-level filters: {mt.count()}')
     # Filter out chrX
-    mt = mt.filter_rows(mt.locus.contig != 'chrX')
-    print(f'MT dimensions after filtering out chrX: {mt.count()}')
+    #mt = mt.filter_rows(mt.locus.contig != 'chrX')
+    #print(f'MT dimensions after filtering out chrX: {mt.count()}')
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_filtered_rows.tsv.bgz')
 
     #chr = 'chr14'
     #position = 42532368
