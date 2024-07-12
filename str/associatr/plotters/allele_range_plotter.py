@@ -3,7 +3,7 @@
 This script plots a QQ plot of observed vs expected -log10(p-values) for each cell type.
 
 analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=32G \
+    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=highmem --cpu=16 \
     allele_range_plotter.py
 
 
@@ -24,12 +24,7 @@ def main():
         sep='\t',
         usecols=['alleles_minus_mode'],
     )
-    proportion = ((df['alleles_minus_mode'] > 10) | (df['alleles_minus_mode'] < -10)).mean()
-    print(f"Proportion of rows where 'alleles_minus_mode' is >10 or <-10: {proportion}")
 
-    proportion_2 = ((df['alleles_minus_mode'] > 20) | (df['alleles_minus_mode'] < -20)).mean()
-    print(f"Proportion of rows where 'alleles_minus_mode' is >10 or <-10: {proportion_2}")
-    # Create QQ plot
     plt.figure(figsize=(12, 6))
     fig, ax = plt.subplots(figsize=(12, 6))
     plt.hist(
