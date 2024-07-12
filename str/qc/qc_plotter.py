@@ -27,16 +27,23 @@ def main(mt_path):
 
 
     # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.00995
-    mt = mt.filter_rows(
-        (mt.num_alleles > 1) & (mt.variant_qc.call_rate >= 0.9) & (mt.obs_het >= 0.00995) & (mt.binom_hwep >= 0.000001),
-    )
-    print(f'MT dimensions after locus-level filters: {mt.count()}')
+    #mt = mt.filter_rows(
+    #    (mt.num_alleles > 1) & (mt.variant_qc.call_rate >= 0.9) & (mt.obs_het >= 0.00995) & (mt.binom_hwep >= 0.000001),
+    #)
+    #print(f'MT dimensions after locus-level filters: {mt.count()}')
     # Filter out chrX
     #mt = mt.filter_rows(mt.locus.contig != 'chrX')
     #print(f'MT dimensions after filtering out chrX: {mt.count()}')
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
-    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_filtered_rows.tsv.bgz')
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_rows.tsv.bgz')
+
+    alleles_minus_mode_ht = mt.select_rows(
+    allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
+        .extend(hl.agg.collect(mt.allele_2_minus_mode))
+    ).rows()
+    alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
+    alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
 
     #chr = 'chr14'
     #position = 42532368
