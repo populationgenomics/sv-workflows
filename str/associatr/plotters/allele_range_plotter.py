@@ -23,6 +23,11 @@ def main():
         compression='gzip',
         sep='\t',
     )
+    proportion = ((df['alleles_minus_mode'] > 10) | (df['alleles_minus_mode'] < -10)).mean()
+    print(f"Proportion of rows where 'alleles_minus_mode' is >10 or <-10: {proportion}")
+
+    proportion_2 = ((df['alleles_minus_mode'] > 20) | (df['alleles_minus_mode'] < -20)).mean()
+    print(f"Proportion of rows where 'alleles_minus_mode' is >10 or <-10: {proportion_2}")
     # Create QQ plot
     plt.figure(figsize=(12, 6))
     fig, ax = plt.subplots(figsize=(12, 6))
