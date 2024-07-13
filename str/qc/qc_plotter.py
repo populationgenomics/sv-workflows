@@ -42,7 +42,7 @@ def main(mt_path):
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
     ).rows()
-    #alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
+    alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
     #alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
     #pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", bins = 30,range = (-20, 20))
     #output_file('local_plot_pq.html')
