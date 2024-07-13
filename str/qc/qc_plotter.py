@@ -42,25 +42,33 @@ def main(mt_path):
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
     ).rows()
-    alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
+    #alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
     #alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
-    #pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", range = (-20, 20))
+    #pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", bins = 30,range = (-20, 20))
     #output_file('local_plot_pq.html')
     #save(pq)
-    #gcs_path_pq = output_path('alleles_minus_mode/range_20_20', 'analysis')
+    #gcs_path_pq = output_path('alleles_minus_mode/range_20_20.html', 'analysis')
     #hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
+    # Calculate the frequency of every distinct value of 'alleles_minus_mode'
+    alleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
+        frequency=hl.agg.count()
+    )
+
+    # Export the result to a TSV file
+    alleles_frequency_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_alleles_minus_mode_freq.tsv.bgz')
+
     # calculate proportion of alleles that are within 20bp of the mode allele
-    alleles_minus_mode_ht = alleles_minus_mode_ht.annotate(
-    within_20bp = (alleles_minus_mode_ht.alleles_minus_mode >= -20) & (alleles_minus_mode_ht.alleles_minus_mode <= 20),
-    within_10bp = (alleles_minus_mode_ht.alleles_minus_mode >= -10) & (alleles_minus_mode_ht.alleles_minus_mode <= 10),
-)
+    #alleles_minus_mode_ht = alleles_minus_mode_ht.annotate(
+    #within_20bp = (alleles_minus_mode_ht.alleles_minus_mode >= -20) & (alleles_minus_mode_ht.alleles_minus_mode <= 20),
+    #within_10bp = (alleles_minus_mode_ht.alleles_minus_mode >= -10) & (alleles_minus_mode_ht.alleles_minus_mode <= 10),
+#)
 
-    within_20bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_20bp))
-    print(f'Proportion of alleles within 20bp of the mode allele: {within_20bp_proportion}')
+    ##within_20bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_20bp))
+    #print(f'Proportion of alleles within 20bp of the mode allele: {within_20bp_proportion}')
 
-    within_10bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_10bp))
-    print(f'Proportion of alleles within 10bp of the mode allele: {within_10bp_proportion}')
+    #within_10bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_10bp))
+    #print(f'Proportion of alleles within 10bp of the mode allele: {within_10bp_proportion}')
 
 
     #chr = 'chr14'
