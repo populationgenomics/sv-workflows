@@ -3,7 +3,7 @@
 """
 This script makes QC plots
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n990_bioheart_only/QC" qc_plotter.py \
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
 --mt-path=gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
 
 """
@@ -36,14 +36,19 @@ def main(mt_path):
     #print(f'MT dimensions after filtering out chrX: {mt.count()}')
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
-    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_rows.tsv.bgz')
+    #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_rows.tsv.bgz')
 
     alleles_minus_mode_ht = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
     ).rows()
     alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
-    alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
+    #alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
+    pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", range = (-20, 20))
+    output_file('local_plot_pq.html')
+    save(pq)
+    gcs_path_pq = output_path('alleles_minus_mode/range_20_20', 'analysis')
+    hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
     #chr = 'chr14'
     #position = 42532368
