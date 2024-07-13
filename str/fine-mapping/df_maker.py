@@ -11,7 +11,6 @@ import pandas as pd
 """
 analysis-runner --dataset "bioheart" --description "Create a dataframe from all cell types" --access-level "test" \
     --output-dir "str/associatr/fine_mapping/susie_finemap" \
-    --memory=16G --storage=30G \
     df_maker.py
 
 """
@@ -26,7 +25,7 @@ def run_concatenator(cell):
     dfs =[]
     for chrom in range(1,23):
         try:
-            files_list = list(to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/{cell}/chr{chrom}').glob('*.tsv'))
+            files_list = list(to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/{cell}/chr{chrom}').glob('*.tsv'))
         except:
             continue
         for file in files_list:
@@ -34,24 +33,25 @@ def run_concatenator(cell):
             data = pd.read_csv(file, sep = '\t')
             data['celltype'] = cell
             data['gene'] = gene_name
+            data = data[data['pval_meta'] < 0.05] # Filter out non-significant results (0.05)
             dfs.append(data)
         print (f'Processed {cell} and chr{chrom}')
     result_df = pd.concat(dfs, ignore_index=True)
-    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/{cell}/all_genes.tsv', sep = '\t', index = False)
+    result_df.to_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/{cell}/all_genes_pval_0.05.tsv', sep = '\t', index = False)
 
 def main():
 
     cell_types = 'B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,CD4_TCM,gdT,dnT'
-
+    b = get_batch()
     # Split the string into a list of characters
     cell_type_list = cell_types.split(',')
-    dfs = []
     for cell in cell_type_list:
-        data = pd.read_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/{cell}/all_genes.tsv', sep = '\t')
-        dfs.append(data)
-    result_df = pd.concat(dfs, ignore_index=True)
-    result_df = result_df[result_df['pval_meta'] < 5e-8]
-    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv', sep = '\t', index = False)
+        combiner_job = b.new_python_job(
+            f'Concatenate all genes for {cell}',
+        )
+        combiner_job.cpu(2)
+        combiner_job.call(run_concatenator, cell)
+    b.run(wait=False)
 
 
 
