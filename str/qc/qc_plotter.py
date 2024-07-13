@@ -52,11 +52,13 @@ def main(mt_path):
 
     # calculate proportion of alleles that are within 20bp of the mode allele
     alleles_minus_mode_ht = alleles_minus_mode_ht.annotate(
-        within_20bp = hl.cond((alleles_minus_mode_ht.alleles_minus_mode >= -20) & (alleles_minus_mode_ht.alleles_minus_mode <= 20), 1, 0),
-        within_10bp = hl.cond((alleles_minus_mode_ht.alleles_minus_mode >= -10) & (alleles_minus_mode_ht.alleles_minus_mode <= 10), 1, 0),
-    )
+    within_20bp = (alleles_minus_mode_ht.alleles_minus_mode >= -20) & (alleles_minus_mode_ht.alleles_minus_mode <= 20),
+    within_10bp = (alleles_minus_mode_ht.alleles_minus_mode >= -10) & (alleles_minus_mode_ht.alleles_minus_mode <= 10),
+)
+
     within_20bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_20bp))
     print(f'Proportion of alleles within 20bp of the mode allele: {within_20bp_proportion}')
+
     within_10bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_10bp))
     print(f'Proportion of alleles within 10bp of the mode allele: {within_10bp_proportion}')
 
