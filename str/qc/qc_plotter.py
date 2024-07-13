@@ -44,11 +44,22 @@ def main(mt_path):
     ).rows()
     alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
     #alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
-    pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", range = (-20, 20))
-    output_file('local_plot_pq.html')
-    save(pq)
-    gcs_path_pq = output_path('alleles_minus_mode/range_20_20', 'analysis')
-    hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
+    #pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", range = (-20, 20))
+    #output_file('local_plot_pq.html')
+    #save(pq)
+    #gcs_path_pq = output_path('alleles_minus_mode/range_20_20', 'analysis')
+    #hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
+
+    # calculate proportion of alleles that are within 20bp of the mode allele
+    alleles_minus_mode_ht = alleles_minus_mode_ht.annotate(
+        within_20bp = hl.cond((alleles_minus_mode_ht.alleles_minus_mode >= -20) & (alleles_minus_mode_ht.alleles_minus_mode <= 20), 1, 0),
+        within_10bp = hl.cond((alleles_minus_mode_ht.alleles_minus_mode >= -10) & (alleles_minus_mode_ht.alleles_minus_mode <= 10), 1, 0),
+    )
+    within_20bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_20bp))
+    print(f'Proportion of alleles within 20bp of the mode allele: {within_20bp_proportion}')
+    within_10bp_proportion = alleles_minus_mode_ht.aggregate(hl.agg.fraction(alleles_minus_mode_ht.within_10bp))
+    print(f'Proportion of alleles within 10bp of the mode allele: {within_10bp_proportion}')
+
 
     #chr = 'chr14'
     #position = 42532368
