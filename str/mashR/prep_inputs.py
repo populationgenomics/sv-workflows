@@ -53,6 +53,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
                 f'{cell}_beta': beta,
                 f'{cell}_se': se,
             },
+            index=[0],
         )
         cell_df = pd.concat([cell_df, beta_se], axis=0)
     cell_df.to_csv(
