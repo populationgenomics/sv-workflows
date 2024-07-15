@@ -102,7 +102,7 @@ def main():
         if master_df.empty:
             master_df = df
         else:
-            master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'ref_len', 'gene'], how='inner')
+            master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'ref_len', 'gene'], how='inner')
             #estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
             #if to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
             #    continue
