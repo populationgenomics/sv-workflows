@@ -57,7 +57,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
         )
         cell_df = pd.concat([cell_df, beta_se], axis=0)
     cell_df.to_csv(
-        'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
+        f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
         sep='\t',
         index=False,
     )
@@ -65,16 +65,18 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
 
 def main():
     b = get_batch(name='Prep eSTRs for mashr')
-    cell_types = 'CD4_TCM'
+    cell_types = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
+
     celltypes = cell_types.split(',')
     # load in the list of eSTRs passing FDR <5% across all cell types:
     estrs_coord = pd.read_csv(
         'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_coord_gene.csv',
     )
     for cell in celltypes:
-        for chrom in range(1, 2):
+        for chrom in range(1, 23):
             estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
             job = b.new_python_job(f'Prep eSTRs for mashr {cell} {chrom}')
+            job.cpu(0.25)
             job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom)
     b.run(wait=False)
 
