@@ -97,7 +97,7 @@ def main():
             #    f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
             #    sep='\t',
             #)
-        df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_nullbeta_se/{cell}/chr22/beta_se.tsv',
+        df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_null_beta_se/{cell}/chr22/beta_se.tsv',
             sep='\t')
         if master_df.empty:
             master_df = df
