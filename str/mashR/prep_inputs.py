@@ -75,6 +75,7 @@ def main():
             estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
             job = b.new_python_job(f'Prep eSTRs for mashr {cell} {chrom}')
             job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
