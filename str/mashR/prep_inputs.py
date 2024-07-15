@@ -61,7 +61,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
     )
 
 def cell_chrom_parser_null(cell, chrom):
-    gene_files = list(to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/{cell}/{chrom}').rglob('*.tsv'))
+    gene_files = list(to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/{cell}/chr{chrom}').rglob('*.tsv'))
     master_df = pd.DataFrame()
     for gene_file in gene_files:
         gene_name = str(gene_file).split('/')[-1].split('_')[0]
@@ -74,7 +74,7 @@ def cell_chrom_parser_null(cell, chrom):
 
 
     master_df.to_csv(
-            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_null_beta_se/{cell}/{chrom}/beta_se.tsv',
+            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv',
             sep='\t',
             index=False,
         )
