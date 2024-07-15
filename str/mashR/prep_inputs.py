@@ -70,22 +70,28 @@ def main():
     #estrs_coord = pd.read_csv(
     #    'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_coord_gene.csv',
     #)
+    master_df = pd.DataFrame()
     for cell in celltypes:
-        master_df = pd.DataFrame()
-        for chrom in range(1, 23):
-            df = pd.read_csv(
-                f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
-                sep='\t',
-            )
-            master_df = pd.concat([master_df, df], axis=0)
+
+        #for chrom in range(1, 23):
+            #df = pd.read_csv(
+            #    f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
+            #    sep='\t',
+            #)
+        df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/all_chr_beta_se.tsv',
+            sep='\t')
+        if master_df.empty:
+            master_df = df
+        else:
+            master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'ref_len', 'gene'], how='inner')
             #estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
             #if to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
             #    continue
             #job = b.new_python_job(f'Prep eSTRs for mashr {cell} {chrom}')
             #job.cpu(0.25)
             #job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom)
-        master_df.to_csv(
-            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/all_chr_beta_se.tsv',
+    master_df.to_csv(
+            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_cell_all_chr_beta_se.tsv',
             sep='\t',
             index=False,
         )
