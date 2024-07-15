@@ -60,6 +60,25 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
         index=False,
     )
 
+def cell_chrom_parser_null(cell, chrom):
+    gene_files = list(to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/{cell}/{chrom}').rglob('*.tsv'))
+    master_df = pd.DataFrame()
+    for gene_file in gene_files:
+        gene_name = str(gene_file).split('/')[-1].split('_')[0]
+        df = pd.read_csv(gene_file, sep='\t')
+        df['gene'] = gene_name
+        df[f'{cell}_beta'] = df['coeff_meta']
+        df[f'{cell}_se'] = df['se_meta']
+        df = df[['chr', 'pos', 'motif', 'ref_len', 'gene', f'{cell}_beta',f'{cell}_se']]
+        master_df = pd.concat([master_df, df], axis=0)
+
+
+    master_df.to_csv(
+            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_null_beta_se/{cell}/{chrom}/beta_se.tsv',
+            sep='\t',
+            index=False,
+        )
+
 
 def main():
     b = get_batch(name='Prep eSTRs for mashr')
@@ -70,31 +89,31 @@ def main():
     #estrs_coord = pd.read_csv(
     #    'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_coord_gene.csv',
     #)
-    master_df = pd.DataFrame()
+    #master_df = pd.DataFrame()
     for cell in celltypes:
 
-        #for chrom in range(1, 23):
+        for chrom in [22]:
             #df = pd.read_csv(
             #    f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
             #    sep='\t',
             #)
-        df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/all_chr_beta_se.tsv',
-            sep='\t')
-        if master_df.empty:
-            master_df = df
-        else:
-            master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'ref_len', 'gene'], how='inner')
+        #df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/all_chr_beta_se.tsv',
+            #sep='\t')
+        #if master_df.empty:
+            #master_df = df
+        #else:
+            #master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'ref_len', 'gene'], how='inner')
             #estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
             #if to_path(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
             #    continue
-            #job = b.new_python_job(f'Prep eSTRs for mashr {cell} {chrom}')
-            #job.cpu(0.25)
-            #job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom)
-    master_df.to_csv(
-            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_cell_all_chr_beta_se.tsv',
-            sep='\t',
-            index=False,
-        )
+            job = b.new_python_job(f'Prep eSTRs for mashr {cell} {chrom}')
+            job.cpu(0.25)
+            job.call(cell_chrom_parser_null, cell, chrom)
+    #master_df.to_csv(
+    #        f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_cell_all_chr_beta_se.tsv',
+    #        sep='\t',
+    #        index=False,
+    #    )
     #b.run(wait=False)
 
 
