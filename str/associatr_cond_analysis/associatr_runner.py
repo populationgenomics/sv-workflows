@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-function-docstring,no-member,too-many-arguments
 """
-This script runs associaTR, given a chromosome or cell type.
+This script runs associaTR (conditioned on the index STR), given a chromosome or cell type.
 Ensure prior scripts have been run to generate dependent files, particularly:
-- get_cis_numpy_files.py
+- get_cis_numpy_files.py (conditional analysis version)
 - pseudobulk.py
 - get_covariates.py
 - qc_filters_associatr.py (depends on qc_annotator.py)
@@ -49,7 +49,7 @@ def main():
             job.depends_on(_dependent_jobs[-get_config()['associatr']['max_parallel_jobs']])
         _dependent_jobs.append(job)
 
-    egenes = pd.read_csv(get_config()['get_cis_numpy']['egene'])
+    egenes = pd.read_csv(get_config()['associatr']['egene'])
     celltypes = egenes['cell_type'].unique()
 
     # for cell_type in celltypes:
