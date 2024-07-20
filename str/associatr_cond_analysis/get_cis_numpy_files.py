@@ -277,7 +277,7 @@ def main():
 
             if get_config()['get_cis_numpy']['str_vcf_dir'] != 'gs://cpg-bioheart-test':
                 str_vcf_dir = get_config()['get_cis_numpy']['str_vcf_dir']
-                str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
+                str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
                 str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
             else:  # no STR VCF provided
                 str_input = None
