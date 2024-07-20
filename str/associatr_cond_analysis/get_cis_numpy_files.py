@@ -19,18 +19,14 @@ python3 get_cis_numpy_files.py
 import json
 from ast import literal_eval
 
-import numpy as np
 import pandas as pd
-import scanpy as sc
 from cyvcf2 import VCF
-from scipy.stats import norm
 
 import hail as hl
 import hailtop.batch as hb
 
-from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
+from cpg_utils.hail_batch import get_batch, image_path, init_batch
 
 
 def extract_snp_genotypes(vcf_file, loci):
@@ -65,6 +61,9 @@ def extract_str_genotypes(vcf_file, loci, motifs):
     Helper function to extract genotypes (STRs) from a VCF file; target loci specified as a list (can be single or multiple)
 
     """
+    from cyvcf2 import VCF
+    import numpy as np
+    import pandas as pd
 
     # Read the VCF file
     vcf_reader = VCF(vcf_file)
@@ -99,7 +98,6 @@ def extract_str_genotypes(vcf_file, loci, motifs):
 
     return results
 
-
 def cis_window_numpy_extractor(
     egenes_cell_chrom,
     input_h5ad_dir,
@@ -121,15 +119,13 @@ def cis_window_numpy_extractor(
     import numpy as np
     import pandas as pd
     import scanpy as sc
-    from cyvcf2 import VCF
     from scipy.stats import norm
 
     import hail as hl
-    import hailtop.batch as hb
 
     from cpg_utils import to_path
     from cpg_utils.config import get_config
-    from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
+    from cpg_utils.hail_batch import init_batch, output_path
 
     init_batch()
 
