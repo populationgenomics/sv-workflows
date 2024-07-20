@@ -65,6 +65,7 @@ def extract_str_genotypes(vcf_file, loci, motifs):
     Helper function to extract genotypes (STRs) from a VCF file; target loci specified as a list (can be single or multiple)
 
     """
+
     # Read the VCF file
     vcf_reader = VCF(vcf_file)
 
@@ -117,6 +118,19 @@ def cis_window_numpy_extractor(
     Creates gene-specific cis window files and phenotype-covariate numpy objects
 
     """
+    import numpy as np
+    import pandas as pd
+    import scanpy as sc
+    from cyvcf2 import VCF
+    from scipy.stats import norm
+
+    import hail as hl
+    import hailtop.batch as hb
+
+    from cpg_utils import to_path
+    from cpg_utils.config import get_config
+    from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
+
     init_batch()
 
     chromosome = f'chr{chromosome}'
@@ -249,6 +263,8 @@ def main():
         egenes_cell = egenes[egenes['cell_type'] == cell_type]
         for chrom in range(1, 23):
             egenes_cell_chrom = egenes_cell[egenes_cell['chr'] == f'chr{chrom}']
+            if egenes_cell_chrom.empty:
+                continue
             init_batch()
             chrom_len = hl.get_reference('GRCh38').lengths[f'chr{chrom}']
             j = b.new_python_job(
