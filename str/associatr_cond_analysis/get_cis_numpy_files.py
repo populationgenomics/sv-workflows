@@ -61,9 +61,9 @@ def extract_str_genotypes(vcf_file, loci, motifs):
     Helper function to extract genotypes (STRs) from a VCF file; target loci specified as a list (can be single or multiple)
 
     """
-    from cyvcf2 import VCF
     import numpy as np
     import pandas as pd
+    from cyvcf2 import VCF
 
     # Read the VCF file
     vcf_reader = VCF(vcf_file)
@@ -97,6 +97,7 @@ def extract_str_genotypes(vcf_file, loci, motifs):
                 break
 
     return results
+
 
 def cis_window_numpy_extractor(
     egenes_path,
@@ -262,7 +263,7 @@ def main():
     egenes = pd.read_csv(get_config()['get_cis_numpy']['egene'])
     celltypes = egenes['cell_type'].unique()
 
-    #for cell_type in celltypes:
+    # for cell_type in celltypes:
     for cell_type in ['ASDC']:
         egenes_cell = egenes[egenes['cell_type'] == cell_type]
         for chrom in range(1, 23):
