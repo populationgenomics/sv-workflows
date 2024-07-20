@@ -99,7 +99,7 @@ def extract_str_genotypes(vcf_file, loci, motifs):
     return results
 
 def cis_window_numpy_extractor(
-    egenes_cell_chrom,
+    egenes_path,
     input_h5ad_dir,
     input_pseudobulk_dir,
     input_cov_dir,
@@ -130,6 +130,10 @@ def cis_window_numpy_extractor(
     init_batch()
 
     chromosome = f'chr{chromosome}'
+    egenes = pd.read_csv(egenes_path)
+    egenes_cell = egenes[egenes['cell_type'] == cell_type]
+
+    egenes_cell_chrom = egenes_cell[egenes_cell['chr'] == chromosome]
 
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
@@ -279,7 +283,7 @@ def main():
                 str_input = None
             j.call(
                 cis_window_numpy_extractor,
-                egenes_cell_chrom,
+                get_config()['get_cis_numpy']['egene'],
                 get_config()['get_cis_numpy']['input_h5ad_dir'],
                 get_config()['get_cis_numpy']['input_pseudobulk_dir'],
                 get_config()['get_cis_numpy']['input_cov_dir'],
