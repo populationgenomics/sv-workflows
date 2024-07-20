@@ -14,6 +14,12 @@ Ensure prior scripts have been run to generate dependent files, particularly:
     --output-dir "str/associatr/cond_analysis/common_variants_snps/tob_n1055" \
      python3 associatr_runner.py
 
+     analysis-runner --dataset "bioheart" --config associatr_runner.toml \
+    --description "run associatr" \
+    --access-level "test" \
+    --output-dir "str/associatr/cond_analysis/bioheart_n990" \
+     python3 associatr_runner.py
+
 
 """
 import pandas as pd
@@ -52,8 +58,7 @@ def main():
     egenes = pd.read_csv(get_config()['associatr']['egene'])
     celltypes = egenes['cell_type'].unique()
 
-    # for cell_type in celltypes:
-    for cell_type in ['ASDC']:
+    for cell_type in celltypes:
         egenes_cell = egenes[egenes['cell_type'] == cell_type]
         for chrom in range(1, 23):
             egenes_cell_chrom = egenes_cell[egenes_cell['chr'] == f'chr{chrom}']
