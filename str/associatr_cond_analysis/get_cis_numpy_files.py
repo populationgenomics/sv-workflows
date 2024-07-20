@@ -11,7 +11,7 @@ This script aims to prepare inputs for conditional analysis by:
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/cond_analysis/bioheart_n990" \
+--description "get cis and numpy" --output-dir "str/associatr/cond_analysis/tob_n1055" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -263,8 +263,7 @@ def main():
     egenes = pd.read_csv(get_config()['get_cis_numpy']['egene'])
     celltypes = egenes['cell_type'].unique()
 
-    # for cell_type in celltypes:
-    for cell_type in ['ASDC']:
+    for cell_type in celltypes:
         egenes_cell = egenes[egenes['cell_type'] == cell_type]
         for chrom in range(1, 23):
             egenes_cell_chrom = egenes_cell[egenes_cell['chr'] == f'chr{chrom}']
