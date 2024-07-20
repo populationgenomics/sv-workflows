@@ -11,7 +11,7 @@ This script aims to prepare inputs for conditional analysis by:
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/cond_analysis/tob_n1055" \
+--description "get cis and numpy" --output-dir "str/associatr/cond_analysis/bioheart_n990" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -163,7 +163,7 @@ def cis_window_numpy_extractor(
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
         # check if all rows are SNPs:
-        all_motif_dash = (smallest_pval_rows['motif'] == '-').all()
+        all_motif_dash = smallest_pval_rows['motif'].str.contains('-').all()
         if all_motif_dash:
             print(f'Lead signal(s) is a SNP for {gene}... skipping')
             continue
