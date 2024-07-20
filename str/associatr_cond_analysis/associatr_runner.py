@@ -82,7 +82,11 @@ def main():
 
                 gene_cis_window_file = f'{cis_window_dir}/{cell_type}/chr{chrom}/{gene}_{cis_window_size}bp.bed'
                 # need to extract the gene start and end from the cis window file for input into 'region'
-                cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
+                try:
+                    cis_window_region = gene_cis_window_file_reader(gene_cis_window_file)
+                except FileNotFoundError:
+                    print(f'File not found: {gene_cis_window_file}..skipping')
+                    continue
                 pheno_cov_numpy_dir = get_config()['associatr']['pheno_cov_numpy_dir']
                 gene_pheno_cov = b.read_input(f'{pheno_cov_numpy_dir}/{cell_type}/chr{chrom}/{gene}_pheno_cov.npy')
 
