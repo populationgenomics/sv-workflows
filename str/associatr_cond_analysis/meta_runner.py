@@ -6,10 +6,9 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/common_variants_snps/bioheart_n990/results/v1 \
-    --results-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/common_variants_snps/tob_n1055/results/v1 \
-    --egenes-file=gs://cpg-bioheart-test/str/associatr/cond_analysis/input_files/egenes.csv
+    --output-dir "str/associatr/cond_analysis/tob_n1055_and_bioheart_n990" \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/bioheart_n990/results/v1 \
+    --results-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/tob_n1055/results/v1
 """
 
 import click
@@ -150,14 +149,12 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
 @click.option('--results-dir-1', help='GCS path directory to the raw associatr results for cohort 1')
 @click.option('--results-dir-2', help='GCS path directory to the raw associatr results for cohort 2')
-@click.option('--egenes-file', help='GCS path directory to the egenes df')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--always-run', is_flag=True, help='Set job to always run')
 @click.command()
 def main(
     results_dir_1,
     results_dir_2,
-    egenes_file,
     max_parallel_jobs,
     always_run,
 ):
