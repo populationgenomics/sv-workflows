@@ -8,10 +8,10 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 - get_covariates.py
 - qc_filters_associatr.py (depends on qc_annotator.py)
 
- analysis-runner --dataset "bioheart" --config associatr_runner.toml \
+ analysis-runner --dataset "bioheart" --config associatr_runner_snps.toml \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/tob_n1055" \
+    --output-dir "str/associatr/cond_analysis/common_variants_snps/tob_n1055" \
      python3 associatr_runner.py
 
 
