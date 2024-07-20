@@ -150,10 +150,14 @@ def cis_window_numpy_extractor(
     gene_names = egenes_cell_chrom['gene_name']
 
     for gene in gene_names:
-        eqtl_results = pd.read_csv(
-            f'{get_config()["get_cis_numpy"]["snp_str_meta"]}/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
-            sep='\t',
-        )
+        try:
+            eqtl_results = pd.read_csv(
+                f'{get_config()["get_cis_numpy"]["snp_str_meta"]}/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
+                sep='\t',
+            )
+        except FileNotFoundError:
+            print(f'No eQTL results found for {gene}... skipping')
+            continue
         # get row(s) with minimum p-value
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
