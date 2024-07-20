@@ -6,10 +6,10 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/tob_n1055/results/v1 \
-    --results-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/bioheart_n990/results/v1 \
-    --egenes-file=gs://cgs://cpg-bioheart-test/str/associatr/cond_analysis/input_files/egenes.csv
+    --output-dir "str/associatr/cond_analysis/common_variants_snps/tob_n1055_and_bioheart_n990" \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/common_variants_snps/bioheart_n990/results/v1 \
+    --results-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/common_variants_snps/tob_n1055/results/v1 \
+    --egenes-file=gs://cpg-bioheart-test/str/associatr/cond_analysis/input_files/egenes.csv
 """
 
 import click
@@ -176,34 +176,27 @@ def main(
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    egenes = pd.read_csv(egenes_file)
-    celltypes = egenes['cell_type'].unique()
 
     # for cell_type in celltypes:
     for cell_type in ['ASDC']:
-        egenes_cell = egenes[egenes['cell_type'] == cell_type]
-        for chrom in range(1, 23):
-            egenes_cell_chrom = egenes_cell[egenes_cell['chr'] == f'chr{chrom}']
-            if egenes_cell_chrom.empty:
+        gene_files = list(map(str, to_path(f'{results_dir_1}/{cell_type}').rglob('*.tsv')))
+        for gene_file in gene_files:
+            gene = gene_file.split('/')[-1].split('_')[0]
+            chrom = gene_file.split('/')[-2]
+            if to_path(
+                output_path(
+                    f"meta_results/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv",
+                    "analysis",
+                ),
+            ).exists():
                 continue
-            intersected_genes = egenes_cell_chrom['gene_name']
-
-            # run meta-analysis for each gene
-            for gene in intersected_genes:
-                if to_path(
-                    output_path(
-                        f"meta_results/{cell_type}/chr{chrom}/{gene}_100000bp_meta_results.tsv",
-                        "analysis",
-                    ),
-                ).exists():
-                    continue
-                j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_chr{chrom}_{gene}')
-                j.cpu(0.25)
-                if always_run:
-                    j.always_run()
-                j.image(image_path('r-meta'))
-                j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type, f'chr{chrom}', gene)
-                manage_concurrency_for_job(j)
+            j = get_batch(name='compute_meta').new_python_job(name=f'compute_meta_{cell_type}_{chrom}_{gene}')
+            j.cpu(0.25)
+            if always_run:
+                j.always_run()
+            j.image(image_path('r-meta'))
+            j.call(run_meta_gen, results_dir_1, results_dir_2, cell_type,chrom, gene)
+            manage_concurrency_for_job(j)
 
     get_batch().run(wait=False)
 
