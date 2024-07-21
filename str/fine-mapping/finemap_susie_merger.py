@@ -23,7 +23,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
 
 
-def run_concatenator(finemap_dir, susie_dir, celltype, chromosome, gene):
+def run_concatenator(finemap_dir: str, susie_dir: str, celltype: str, chromosome: str, gene: str) -> None:
     """
     Concatenate two dataframes together.
     """
