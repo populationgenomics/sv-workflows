@@ -173,9 +173,9 @@ def main(
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-
-    # for cell_type in celltypes:
-    for cell_type in ['ASDC']:
+    celltypes = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
+    celltypes = celltypes.split(',')
+    for cell_type in celltypes:
         gene_files = list(map(str, to_path(f'{results_dir_1}/{cell_type}').rglob('*.tsv')))
         for gene_file in gene_files:
             gene = gene_file.split('/')[-1].split('_')[0]
