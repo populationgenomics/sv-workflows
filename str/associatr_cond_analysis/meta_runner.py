@@ -107,10 +107,19 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         coeff = df[i, "coeff_2"]
     )
     result_df <- rbind(row_cohort1, row_cohort2)
-    m.gen = metagen(result_df$coeff, result_df$se, random = TRUE)
 
+    skip_to_next <- FALSE
 
-    new_entry = data.frame(
+    tryCatch({
+        m.gen <- metagen(result_df$coeff, result_df$se, random = FALSE, control = list(stepadj = 0.5))
+    }, error = function(e) {
+        cat("Error at iteration:", i, "\n")
+        skip_to_next <<- TRUE
+    })
+
+    if (skip_to_next) next
+
+    new_entry <- data.frame(
         chr = df[i, "chrom"],
         pos = df[i, "pos"],
         n_samples_tested_1 = df[i, "n_samples_tested.x"],
@@ -130,7 +139,7 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         allele_frequency_2 = df[i, "allele_frequency.y"]
     )
 
-    meta_df = rbind(meta_df, new_entry)
+    meta_df <- rbind(meta_df, new_entry)
     }
     ''',
     )
