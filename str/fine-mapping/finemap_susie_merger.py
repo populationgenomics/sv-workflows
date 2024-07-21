@@ -68,7 +68,7 @@ def run_concatenator(finemap_dir: str, susie_dir: str, celltype: str, chromosome
 @click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.option('--always-run', help='Job set to always run', is_flag=True)
 @click.command()
-def main(finemap_dir, susie_dir, celltypes, chromosomes, max_parallel_jobs, always_run, job_cpu):
+def main(finemap_dir: str, susie_dir: str, celltypes: str, chromosomes: str, max_parallel_jobs: int, always_run: bool, job_cpu: float) -> None:
     """
     Runner script to FINEMAP and SUSIE DFs together
     """
