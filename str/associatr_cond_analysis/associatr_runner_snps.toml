@@ -5,11 +5,11 @@ egene = 'gs://cpg-bioheart-test/str/associatr/cond_analysis/input_files/egenes.c
 vcf_file_dir='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4'
 cis_window_dir='gs://cpg-bioheart-test/str/associatr/cond_analysis/tob_n1055/input_files/cis_window_files/v1'
 pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr/cond_analysis/tob_n1055/input_files/pheno_cov_numpy/v1'
-max_parallel_jobs=500
+max_parallel_jobs=5000
 cis_window_size=100000
 # version of the output
 version='v1'
 # job storage
 job_storage = '0G'
-job_cpu =0.5
+job_cpu =1
 always_run = false
