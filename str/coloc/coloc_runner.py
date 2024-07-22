@@ -4,7 +4,7 @@
 This script performs SNP-only colocalisation analysis betweeen eGenes identified by pseudobulk STR analysis and GWAS signals.
 Assumes that the SNP GWAS data has been pre-processed with the following columns: 'chromosome', 'position' (hg38 bp), 'snp'(chromosome_position_refallele_effectallele), 'beta', 'varbeta'
 
-1) Identify eGenes where at least one STR has a fine-map causal probability of at least 80% by both SUSIE and FINEMAP.
+1) Identify eGenes where at least one STR has pval < 5e-8
 2) Extract the SNP GWAS data for the cis-window (gene +/- 100kB)
 3) Run coloc for each eGene (if the SNP GWAS data has at least one variant with pval <5e-8)
 4) Write the results to a TSV file
@@ -151,10 +151,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         sep='\t',
         usecols=['chr', 'pos', 'pval_meta', 'motif', 'susie_pip', 'gene', 'finemap_prob', 'celltype', 'ref_len'],
     )
-    # result_df_80 = egenes[
-    # (egenes['susie_pip'] >= 0.8) & (egenes['finemap_prob'] >= 0.8)
-    # ]  # filter for variants where the causal probability is at least 80% by both SUSIE and FINEMAP
-    # result_df_cfm = result_df_80[result_df_80['pval_meta'] < 1e-10]  # filter for variants with p-value < 1e-10
+
     result_df_cfm = egenes
     result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
     result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
