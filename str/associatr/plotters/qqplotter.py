@@ -3,11 +3,11 @@
 This script plots a QQ plot of observed vs expected -log10(p-values) for each cell type.
 
 analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
-    --output-dir "str/associatr/bioheart_n990" --memory=32G \
+    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=8G \
     qqplotter.py \
-    --input-dir=gs://cpg-bioheart-test/str/associatr/bioheart_n990/results/raw_pval_extractor \
+    --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/raw_pval_extractor \
     --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC \
-    --title='associaTR BioHEART' --ylim=200
+    --title='associaTR BioHEART' --ylim=330
 
 """
 import click
@@ -44,6 +44,38 @@ def main(input_dir, cell_types, title, ylim):
         globals()[f'expected_log_pvals_{cell_type}'] = -np.log10(
             np.arange(1, globals()[f'n_{cell_type}'] + 1) / globals()[f'n_{cell_type}'],
         )
+
+    cell_type_mapping = {
+        'ASDC': 'ASDC',
+        'B_intermediate': 'B intermediate',
+        'B_memory': 'B memory',
+        'B_naive': 'B naive',
+        'CD14_Mono': 'CD14+ Monocyte',
+        'CD16_Mono': 'CD16+ Monocyte',
+        'CD4_CTL': 'CD4+ CTL',
+        'CD4_Naive': 'CD4+ Naive',
+        'CD4_Proliferating': 'CD4+ Proliferating',
+        'CD4_TCM': 'CD4+ TCM',
+        'CD4_TCM_permuted': 'Permuted control',
+        'CD4_TEM': 'CD4+ TEM',
+        'CD8_Naive': 'CD8+ Naive',
+        'CD8_Proliferating': 'CD8+ Proliferating',
+        'CD8_TCM': 'CD8+ TCM',
+        'CD8_TEM': 'CD8+ TEM',
+        'cDC1': 'cDC1',
+        'cDC2': 'cDC2',
+        'dnT': 'dnT',
+        'gdT': 'gdT',
+        'HSPC': 'HSPC',
+        'ILC': 'ILC',
+        'MAIT': 'MAIT',
+        'NK': 'NK',
+        'NK_CD56bright': 'NK CD56bright',
+        'NK_Proliferating': 'NK Proliferating',
+        'pDC': 'pDC',
+        'Plasmablast': 'Plasmablast',
+        'Treg': 'Treg',
+    }
 
     # Create QQ plot
     plt.figure(figsize=(10, 8))
@@ -92,25 +124,43 @@ def main(input_dir, cell_types, title, ylim):
 
     # Loop through each cell type and plot the scatter plot
     for i, cell_type in enumerate(cell_type_list):
+        output_label = cell_type_mapping.get(cell_type, cell_type)
         color_index = i % len(colors)  # Get the index of the color to use for the current cell type
         ax.scatter(
             expected_sorted_values[cell_type],
             observed_sorted_values[cell_type],
             color=colors[color_index],
-            label=cell_type,
+            label=output_label,
             s=9,
         )
 
-    ax.set_xlabel('Expected -log10(p-value)')
-    ax.set_ylabel('Observed -log10(p-value)')
-    ax.set_title(f'QQ Plot - {title}')
+    # Create a legend for all items except "permuted control"
+    handles, labels = ax.get_legend_handles_labels()
+    permuted_control_handle = [h for h, l in zip(handles, labels) if l == "Permuted control"]
+    other_handles = [h for h, l in zip(handles, labels) if l != "Permuted control"]
+    other_labels = [l for l in labels if l != "Permuted control"]
+    ax.add_artist(
+        ax.legend(
+            permuted_control_handle,
+            ['Permuted control'],
+            bbox_to_anchor=(1.05, 0),
+            loc='upper left',
+            fontsize=11,
+        ),
+    )
+
+    # Create the main legend with other items
+    ax.legend(other_handles, other_labels, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=11)
+
+    ax.set_xlabel('Expected -log10(p-value)', fontsize=14)
+    ax.set_ylabel('Observed -log10(p-value)', fontsize=14)
+    plt.xticks(fontsize=10)
+    plt.yticks(fontsize=10)
     ax.set_ylim(0, ylim)
 
-    ax.grid(True)
-    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = output_path('summary_plots/qq_plot.png', 'analysis')
+    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.png', 'analysis')
     fig.tight_layout()
     fig.savefig('qqplot.png')
     hl.hadoop_copy('qqplot.png', gcs_output_path)
