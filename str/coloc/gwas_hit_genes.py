@@ -17,18 +17,17 @@ analysis-runner --dataset "bioheart" \
 import click
 import pandas as pd
 
+
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
     default='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv',
 )
-
 @click.option(
     '--snp-gwas-file',
     help='Path to the SNP GWAS file',
     default='gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST011071_parsed.tsv',
 )
-
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
 @click.command()
 def main(egenes_file, snp_gwas_file, pheno_output_name):
@@ -83,7 +82,9 @@ def main(egenes_file, snp_gwas_file, pheno_output_name):
         gwas_sig_genes.append(gene)
 
     # write list to a csv file
-    output_file = 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/' + pheno_output_name + '_gwas_sig_genes.csv'
+    output_file = (
+        'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/' + pheno_output_name + '_gwas_sig_genes.csv'
+    )
     output_df = pd.DataFrame({'gene': gwas_sig_genes})
     output_df.to_csv(output_file, index=False)
     print('Output file saved:', output_file)

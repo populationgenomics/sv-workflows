@@ -33,7 +33,7 @@ def liftover(phenotype):
         names=['chromosome', 'position', 'end38', 'rsid'],
     )
 
-    df = pd.merge(df, liftover_df, left_on='ID', right_on='rsid')
+    df = df.merge(liftover_df, left_on='ID', right_on='rsid')
     df['varbeta'] = df['SE'] ** 2
     df['beta'] = df['BETA']
     df['snp'] = df['chromosome'] + '_' + df['position'].astype(str) + '_' + df['REF'] + '_' + df['ALT']

@@ -36,27 +36,28 @@ def coloc_runner(result_df_cfm_str, var_table, str_gwas_file, snp_gwas_file, eqt
     import pandas as pd
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
+
     from cpg_utils import to_path
     from cpg_utils.hail_batch import output_path
 
     result_df_cfm_str_celltype = result_df_cfm_str[
-                result_df_cfm_str['celltype'] == celltype
-            ]  # filter for the celltype of interest
+        result_df_cfm_str['celltype'] == celltype
+    ]  # filter for the celltype of interest
 
     with gzip.open(to_path(str_gwas_file), 'rb') as f:
-            str_gwas = pd.read_csv(
-                f,
-                sep='\t',
-                usecols=[
-                    'chromosome',
-                    'beta',
-                    'standard_error',
-                    'p_value',
-                    'repeat_unit',
-                    'start_pos (hg38)',
-                    'end_pos (hg38)',
-                ],
-            )
+        str_gwas = pd.read_csv(
+            f,
+            sep='\t',
+            usecols=[
+                'chromosome',
+                'beta',
+                'standard_error',
+                'p_value',
+                'repeat_unit',
+                'start_pos (hg38)',
+                'end_pos (hg38)',
+            ],
+        )
     with gzip.open(to_path(snp_gwas_file), 'rb') as snp_f:
         snp_gwas = pd.read_csv(
             snp_f,

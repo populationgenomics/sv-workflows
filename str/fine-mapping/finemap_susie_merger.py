@@ -56,7 +56,9 @@ def run_concatenator(finemap_dir: str, susie_dir: str, celltype: str, chromosome
 
     # write results as a tsv file to gcp
     merged_df.to_csv(
-        output_path(f'susie_finemap/{celltype}/{chromosome}/{gene}.tsv', 'analysis'), sep='\t', index=False,
+        output_path(f'susie_finemap/{celltype}/{chromosome}/{gene}.tsv', 'analysis'),
+        sep='\t',
+        index=False,
     )
 
 
@@ -68,7 +70,15 @@ def run_concatenator(finemap_dir: str, susie_dir: str, celltype: str, chromosome
 @click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
 @click.option('--always-run', help='Job set to always run', is_flag=True)
 @click.command()
-def main(finemap_dir: str, susie_dir: str, celltypes: str, chromosomes: str, max_parallel_jobs: int, always_run: bool, job_cpu: float) -> None:
+def main(
+    finemap_dir: str,
+    susie_dir: str,
+    celltypes: str,
+    chromosomes: str,
+    max_parallel_jobs: int,
+    always_run: bool,
+    job_cpu: float,
+) -> None:
     """
     Runner script to FINEMAP and SUSIE DFs together
     """
