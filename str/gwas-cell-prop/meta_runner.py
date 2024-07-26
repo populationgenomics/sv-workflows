@@ -7,16 +7,13 @@ Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/gwas-cell-prop/tob_n1055_and_bioheart_n990" \
+     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/gwas-cell-prop/tob_n1055/results \
     --results-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/gwas-cell-prop/bioheart_n990/results
 """
 
 import click
-import pandas as pd
 
-import hailtop.batch as hb
-
-from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
@@ -26,6 +23,8 @@ def run_meta_gen(input_dir_1, input_dir_2, pheno):
     """
 
     # load packages
+    import pandas as pd
+
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
