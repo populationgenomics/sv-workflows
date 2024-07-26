@@ -40,7 +40,7 @@ def get_numpy(macrogroup, cov_path, cell_summary_file, remove_samples_file):
     with to_path(remove_samples_file).open() as f:
         array_string = f.read().strip()
         remove_samples = literal_eval(array_string)
-        cell_summary = cell_summary[~cell_summary['sample_id'].isin(remove_samples)]
+        cell_summary = cell_summary[~cell_summary['cpg_id'].isin(remove_samples)]
 
     # RINT
     cell_summary.loc[:, 'rank'] = cell_summary['cell_proportion'].rank()
