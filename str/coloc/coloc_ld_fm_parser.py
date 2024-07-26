@@ -27,6 +27,7 @@ import click
 import pandas as pd
 
 from cpg_utils.hail_batch import get_batch
+from cpg_utils import to_path
 
 
 def ld_parser(
@@ -216,6 +217,10 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             ld_job.cpu(2)
             ld_job.storage('10G')
 
+            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
+                print(f'File already exists for {pheno} and {chrom}')
+                continue
+
             fm_pheno_chrom = fm_pheno[fm_pheno['chr'] == chrom]
             pheno_csv = pheno_map[pheno]
 
@@ -232,8 +237,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
                 snp_input,
                 str_input,
             )
-            break
-        break
+
     b.run(wait=False)
 
 
