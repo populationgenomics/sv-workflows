@@ -52,6 +52,7 @@ def get_numpy(macrogroup, cov_path, cell_summary_file, remove_samples_file):
 
     # merge with other covariates
     covariates = pd.read_csv(cov_path, sep='\t')
+    print(covariates.columns)
     df = pd.merge(cell_summary, covariates, left_on='cpg_id', right_on='sample_id')
     df = df.drop(columns=['sample_id'])
 
