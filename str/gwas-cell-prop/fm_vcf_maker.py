@@ -54,7 +54,7 @@ def main():
 
     ld_job = b.new_python_job('get_fm_estr_vcf')
     ld_job.cpu(2)
-    ld_job.storage('30G')
+    ld_job.storage('50G')
     ld_job.call(get_fm_estr_vcf, str_input)
     b.run(wait=False)
 
