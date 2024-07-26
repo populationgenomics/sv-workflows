@@ -14,7 +14,7 @@ analysis-runner --dataset "bioheart" --description "meta results runner" --acces
 
 import click
 
-from cpg_utils.hail_batch import get_batch, image_path, output_path
+from cpg_utils.hail_batch import get_batch, image_path
 
 
 def run_meta_gen(input_dir_1, input_dir_2, pheno):
@@ -24,7 +24,7 @@ def run_meta_gen(input_dir_1, input_dir_2, pheno):
 
     # load packages
     import pandas as pd
-
+    from cpg_utils.hail_batch import output_path
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
