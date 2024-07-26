@@ -154,6 +154,9 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     for pheno in pheno_list:
         fm_pheno = fm[fm['pheno'] == pheno]
         for chrom in fm_pheno['chr'].unique():
+            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
+                print(f'File already exists for {pheno} and {chrom}')
+                continue
             pheno_map = {
             'sle_GCST003156': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/bentham_2015_26502338_sle_parsed.tsv',
             'ra_GCST90132223': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST90132223_parsed.tsv',
@@ -214,12 +217,9 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             ld_job = b.new_python_job(
                 f'LD calc for {chrom}; {pheno}',
             )
-            ld_job.cpu(2)
+            ld_job.cpu(3)
             ld_job.storage('10G')
 
-            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
-                print(f'File already exists for {pheno} and {chrom}')
-                continue
 
             fm_pheno_chrom = fm_pheno[fm_pheno['chr'] == chrom]
             pheno_csv = pheno_map[pheno]
