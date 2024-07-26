@@ -83,12 +83,6 @@ def ld_parser(
             snp_df = pd.concat([snp_df, df_to_append], axis=1)
         print('Finished reading SNP VCF')
 
-        snp_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{gene}_snp_df.tsv',
-        sep='\t',
-        index=False,
-         )
-
         # Extract the genotypes for STRs in the cis window
         str_df = pd.DataFrame(columns=['individual'])
         str_vcf = VCF(str_input['vcf'])
@@ -111,11 +105,6 @@ def ld_parser(
             sums = np.where(sums == -198, np.nan, sums)
             snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
             str_df[snp] = sums
-        str_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{gene}_str_df.tsv',
-        sep='\t',
-        index=False,
-        )
 
         # merge the STR and SNP GT dfs together
         merged_df = pd.merge(str_df, snp_df, on='individual')
@@ -138,17 +127,13 @@ def ld_parser(
         max_correlation_row['gene'] = gene
         max_correlation_row['lead_str_locus'] = lead_str_locus
         max_correlation_row['max_corr_gwas_locus'] = max_correlation_index
-        max_correlation_row['chrom'] = chrom
-        max_correlation_row['pos'] = pos
-        max_correlation_row['end'] = end
-        max_correlation_row['motif'] = motif
         max_correlation_row['pheno'] = pheno
-        max_correlation_row = max_correlation_row[['gene', 'lead_str_locus', 'chrom', 'pos', 'end', 'motif', 'pheno', 'correlation', 'max_corr_gwas_locus']]
+        max_correlation_row = max_correlation_row[['gene', 'lead_str_locus', 'pheno', 'correlation', 'max_corr_gwas_locus']]
 
         max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=0)
 
     max_corr_master_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{gene}_corr.tsv',
+        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
         sep='\t',
         index=False,
     )
