@@ -43,7 +43,7 @@ def ld_parser(
     gene_annotation_table = pd.read_csv(
         'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
     )
-    for row in fm_chrom.iterrows():
+    for index,row in fm_chrom.iterrows():
         chrom = row['chr']
         pos = row['pos']
         end = row['end']
