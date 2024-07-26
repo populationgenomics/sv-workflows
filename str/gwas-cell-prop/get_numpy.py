@@ -15,21 +15,21 @@ This script aims to:
 
 """
 
-from ast import literal_eval
-
 import click
-import numpy as np
-import pandas as pd
-from scipy.stats import norm
+
 
 import hail as hl
-import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
 
 def get_numpy(macrogroup, cov_path, cell_summary_file, remove_samples_file):
+    import numpy as np
+    from ast import literal_eval
+
+    import pandas as pd
+    from scipy.stats import norm
     # read in cellsummary file and RINT
     cell_summary = pd.read_csv(cell_summary_file)
     cell_summary = cell_summary[cell_summary['macro_group'] == macrogroup]
