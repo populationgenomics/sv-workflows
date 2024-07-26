@@ -10,6 +10,16 @@ Workflow:
 3) Calculate pairwise correlation of the lead eSTR locus and other variants.
 4) Save results of the top correlated variant in a TSV file.
 
+analysis-runner --dataset "bioheart" \
+    --description "Calculate LD for fine-mapped eSTRs with GWAS variants" \
+    --access-level "test" \
+    --memory='8G' \
+    --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
+    --output-dir "str/associatr/coloc-ld/fm_strs_only" \
+    coloc_ld_fm_parser.py \
+    --fm-csv=gs://cpg-bioheart-test/str/associatr/coloc/estrs_fm_coloc_list_for_ld.csv
+
+
 """
 
 
@@ -135,6 +145,7 @@ def ld_parser(
 @click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
 @click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific')
 @click.option('--fm-csv', required=True, help='Fine-mapped eSTRs CSV file path')
+@click.command()
 def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     b = get_batch(name='Calculate LD for fine-mapped eSTRs with GWAS variants')
     fm = pd.read_csv(fm_csv)
