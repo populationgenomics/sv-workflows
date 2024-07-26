@@ -3,8 +3,7 @@
 """
 This script runs associaTR (GWAS style)
 
-analysis-runner --dataset "bioheart"
-    --description "run associatr" \
+analysis-runner --dataset "bioheart" --description "run associatr" \
     --access-level "test" \
     --output-dir "str/associatr/gwas-cell-prop/tob_n1055" \
     associatr_runner.py \
@@ -44,7 +43,7 @@ def main(vcf_file_path, pheno_cov_dir):
 
         # run associatr for the macrogroup proportion
         associatr_job = b.new_job(name=f'associatr_{macrogroup}')
-        gene_pheno_cov = b.read(f'{pheno_cov_dir}/{macrogroup}_pheno_cov.npy')
+        gene_pheno_cov = b._input(f'{pheno_cov_dir}/{macrogroup}_pheno_cov.npy')
         associatr_job.image(get_config()['images']['trtools'])
         associatr_job.declare_resource_group(association_results={'tsv': '{root}.tsv'})
         associatr_job.command(
