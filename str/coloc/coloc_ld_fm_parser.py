@@ -217,7 +217,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             ld_job = b.new_python_job(
                 f'LD calc for {chrom}; {pheno}',
             )
-            ld_job.cpu(3)
+            ld_job.cpu(4)
             ld_job.storage('10G')
 
 
