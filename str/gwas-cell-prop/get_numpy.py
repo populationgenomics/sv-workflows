@@ -91,7 +91,7 @@ def main(covariate_file_path, cell_summary_file_path, remove_samples_file):
         'Eryth',
     ]:
         j = b.new_python_job(name=f'get_numpy_{macrogroup}')
-        j.call(get_numpy, macrogroup, covariate_file_path, cell_summary_file_path)
+        j.call(get_numpy, macrogroup, covariate_file_path, cell_summary_file_path, remove_samples_file)
 
     b.run(wait=False)
 
