@@ -109,8 +109,8 @@ def ld_parser(
             sums = np.sum(split_genotypes_array.astype(int), axis=1)
             # set dummy -198 value to np.nan
             sums = np.where(sums == -198, np.nan, sums)
-
-            str_df[f'{chrom}_{pos}_{motif}'] = sums
+            snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
+            str_df[snp] = sums
         str_df.to_csv(
         f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{gene}_str_df.tsv',
         sep='\t',
