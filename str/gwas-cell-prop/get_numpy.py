@@ -25,12 +25,13 @@ def get_numpy(macrogroup, cov_path, cell_summary_file, remove_samples_file):
     import numpy as np
     from ast import literal_eval
     from cpg_utils import to_path
-    from cpg_utils.hail_batch import output_path
+    from cpg_utils.hail_batch import output_path, init_batch
     import hail as hl
 
 
     import pandas as pd
     from scipy.stats import norm
+    init_batch()
     # read in cellsummary file and RINT
     cell_summary = pd.read_csv(cell_summary_file)
     cell_summary = cell_summary[cell_summary['macro_group'] == macrogroup]
