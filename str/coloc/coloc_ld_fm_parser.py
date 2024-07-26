@@ -222,7 +222,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             fm_pheno_chrom = fm_pheno[fm_pheno['chr'] == chrom]
             pheno_csv = pheno_map[pheno]
 
-            snp_vcf_path = f'{snp_vcf_dir}/chail_filtered_{chrom}.vcf.bgz'
+            snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
             str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
 
             snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
