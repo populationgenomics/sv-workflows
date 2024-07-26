@@ -137,11 +137,13 @@ def ld_parser(
         # add some attributes
         max_correlation_row['gene'] = gene
         max_correlation_row['lead_str_locus'] = lead_str_locus
+        max_correlation_row['max_corr_gwas_locus'] = max_correlation_index
         max_correlation_row['chrom'] = chrom
         max_correlation_row['pos'] = pos
         max_correlation_row['end'] = end
         max_correlation_row['motif'] = motif
         max_correlation_row['pheno'] = pheno
+        max_correlation_row = max_correlation_row[['gene', 'lead_str_locus', 'chrom', 'pos', 'end', 'motif', 'pheno', 'correlation', 'max_corr_gwas_locus']]
 
         max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=1)
 
