@@ -145,7 +145,7 @@ def ld_parser(
         max_correlation_row['pheno'] = pheno
         max_correlation_row = max_correlation_row[['gene', 'lead_str_locus', 'chrom', 'pos', 'end', 'motif', 'pheno', 'correlation', 'max_corr_gwas_locus']]
 
-        max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=1)
+        max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=0)
 
     max_corr_master_df.to_csv(
         f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{gene}_corr.tsv',
