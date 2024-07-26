@@ -8,9 +8,9 @@ This script aims to:
  - output phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/gwas-cell-prop/tob_n1055/input_files" \
+--description "get cis and numpy" --output-dir "str/associatr/gwas-cell-prop/bioheart_n990/input_files" \
  --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
- get_numpy.py --covariate-file-path=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/tob_covariates_str_run_v1.csv \
+ get_numpy.py --covariate-file-path=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/bioheart_covariates_str_run_v1.csv \
     --cell-summary-file-path=gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/cell_prop.csv \
     --remove-samples-file=gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt
 
@@ -22,15 +22,17 @@ from cpg_utils.hail_batch import get_batch
 
 
 def get_numpy(macrogroup, cov_path, cell_summary_file, remove_samples_file):
-    import numpy as np
     from ast import literal_eval
-    from cpg_utils import to_path
-    from cpg_utils.hail_batch import output_path, init_batch
-    import hail as hl
 
-
+    import numpy as np
     import pandas as pd
     from scipy.stats import norm
+
+    import hail as hl
+
+    from cpg_utils import to_path
+    from cpg_utils.hail_batch import init_batch, output_path
+
     init_batch()
     # read in cellsummary file and RINT
     cell_summary = pd.read_csv(cell_summary_file)
