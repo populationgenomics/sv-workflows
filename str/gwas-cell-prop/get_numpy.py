@@ -15,21 +15,17 @@ This script aims to:
 
 """
 
-import json
 from ast import literal_eval
 
 import click
 import numpy as np
 import pandas as pd
-import scanpy as sc
-from cyvcf2 import VCF
 from scipy.stats import norm
 
 import hail as hl
 import hailtop.batch as hb
 
 from cpg_utils import to_path
-from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
 
