@@ -95,23 +95,22 @@ def ld_parser(
         str_df['individual'] = str_vcf.samples
         print('Starting to subset STR VCF for window...')
         for variant in str_vcf(cis_window):
-            if str(variant.INFO.get('RU')) == motif:
-                genotypes = variant.format('REPCN')
-                # Replace '.' with '-99/-99' to handle missing values
-                genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
+            genotypes = variant.format('REPCN')
+            # Replace '.' with '-99/-99' to handle missing values
+            genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
 
-                # Split each element by '/'
-                split_genotypes = [genotype.split('/') for genotype in genotypes]
+            # Split each element by '/'
+            split_genotypes = [genotype.split('/') for genotype in genotypes]
 
-                # Convert split_genotypes into a numpy array for easier manipulation
-                split_genotypes_array = np.array(split_genotypes)
+            # Convert split_genotypes into a numpy array for easier manipulation
+            split_genotypes_array = np.array(split_genotypes)
 
-                # Convert the strings to integers and sum them row-wise
-                sums = np.sum(split_genotypes_array.astype(int), axis=1)
-                # set dummy -198 value to np.nan
-                sums = np.where(sums == -198, np.nan, sums)
+            # Convert the strings to integers and sum them row-wise
+            sums = np.sum(split_genotypes_array.astype(int), axis=1)
+            # set dummy -198 value to np.nan
+            sums = np.where(sums == -198, np.nan, sums)
 
-                str_df[f'{chrom}_{pos}_{motif}'] = sums
+            str_df[f'{chrom}_{pos}_{motif}'] = sums
         str_df.to_csv(
         f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{gene}_str_df.tsv',
         sep='\t',
