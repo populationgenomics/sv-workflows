@@ -22,7 +22,7 @@ def main():
     init_batch(worker_memory='highmem')
 
     mt = hl.import_vcf(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/MS_sum_all.vcf.gz', force=True, array_elements_required=False
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/MS_sum_all.vcf.gz', force=True, array_elements_required=False,
     )
     # Load the mapping file (assuming it's a CSV with columns 'old_id' and 'new_id')
     mapping_table = hl.import_table(
@@ -42,8 +42,31 @@ def main():
     mt = mt.key_rows_by('REPID')
     sr = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/sr_rep_lengths.mt')
     mt = mt.annotate_entries(sr_summed_rep_length=sr[mt.row_key, mt.col_key].sr_summed_rep_length)
+
+    qc_table = hl.import_table(
+        'gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_filtered_rows.tsv.bgz',
+        delimiter='\t',
+        quote=None,
+    )
+    qc_table = qc_table.key_by('REPID')
+    repid_list = qc_table.aggregate(hl.agg.collect(qc_table.REPID))
+
+    # Filter the MatrixTable rows based on REPIDs
+    mt = mt.filter_rows(hl.literal(repid_list).contains(mt.REPID))
+
+    mt = mt.annotate_entries(lr_summed_rep_length=hl.int(mt.MS[0]))
+    mt = mt.annotate_entries(strict_concord=hl.if_else(mt.sr_summed_rep_length == mt.lr_summed_rep_length, 1, 0))
+    mt = mt.annotate_entries(
+        off_by_one_concord=hl.if_else(hl.abs(mt.sr_summed_rep_length - mt.lr_summed_rep_length) <= 1, 1, 0),
+    )
+    mt = mt.annotate_rows(
+        prop_strict_concord=hl.agg.sum(mt.strict_concord) / 25,
+        prop_off_by_one_concord=hl.agg.sum(mt.off_by_one_concord) / 25,
+    )
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/filtered_trgt_sr_25_rows.tsv.bgz')
+
     mt.write(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25.mt',
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/filtered_trgt_sr_25.mt',
         overwrite=True,
     )
 
