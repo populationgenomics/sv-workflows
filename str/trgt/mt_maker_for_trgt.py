@@ -4,7 +4,7 @@
 
 This script selects for the 25 samples with LR PacBio data and pulls out the rep lengths.
 
-analysis-runner --access-level test --description "Extract rep lengths for 25 samples with LR PacBio data" \
+analysis-runner --access-level test --description "Extract rep lengths for 25 samples with LR PacBio data" --dataset bioheart \
 --output-dir potato mt_maker_for_trgt.py
 
 
@@ -36,10 +36,14 @@ def main():
     mt = mt.filter_cols(hl.literal(cpg_ids).contains(mt.s))
 
     # Pull out the rep lengths stored as allele_1_rep_length and allele_2_rep_length
-    mt = mt.annotate_entries(sr_summed_rep_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
+    #mt = mt.annotate_entries(sr_summed_rep_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
     # extract as a table
-    mt.select_entries(mt.sr_summed_rep_length).write(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/sr_rep_lengths.mt', overwrite=True,
+    #mt.select_entries(mt.sr_summed_rep_length).write(
+    #    'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/sr_rep_lengths.mt', overwrite=True,
+    #)
+    mt = mt.annotate_rows(mode_allele = mt.aggregated_info.mode_allele)
+    mt.rows().export(
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/mode_allele.tsv.bgz',
     )
 
 
