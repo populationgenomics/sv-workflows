@@ -15,7 +15,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/coloc-ld/fm_strs_only" \
+    --output-dir "str/associatr/coloc-ld/fm_strs_only/v2" \
     coloc_ld_fm_parser.py \
     --fm-csv=gs://cpg-bioheart-test/str/associatr/coloc/estrs_fm_coloc_list_for_ld.csv
 
@@ -136,7 +136,7 @@ def ld_parser(
         max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=0)
 
     max_corr_master_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
+        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v2/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
         sep='\t',
         index=False,
     )
@@ -156,7 +156,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     for pheno in pheno_list:
         fm_pheno = fm[fm['pheno'] == pheno]
         for chrom in fm_pheno['chr'].unique():
-            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
+            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v2/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
                 print(f'File already exists for {pheno} and {chrom}')
                 continue
             pheno_map = {
