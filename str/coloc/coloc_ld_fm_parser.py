@@ -105,6 +105,8 @@ def ld_parser(
             # set dummy -198 value to np.nan
             sums = np.where(sums == -198, np.nan, sums)
             snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
+            if snp == lead_str_locus:
+                snp = snp+'_lead' #add suffix so that it doesn't get dropped later.
             str_df[snp] = sums
 
         # merge the STR and SNP GT dfs together
