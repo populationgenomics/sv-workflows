@@ -51,8 +51,6 @@ def ld_parser(
         motif = row['motif_x']
         pheno = row['pheno']
         gene = row['gene_name']
-        if gene != 'ENSG00000153094':
-            continue
         lead_str_locus = f'{chrom}_{pos}_{motif}'
 
         # Extract the cis window for the gene
@@ -110,8 +108,6 @@ def ld_parser(
             # set dummy -198 value to np.nan
             sums = np.where(sums == -198, np.nan, sums)
             snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
-            if snp == lead_str_locus:
-                str_df[f'{snp}_lead']= sums #add it twice with suffix so it doesn't get dropped.
             str_df[snp] = sums
 
         # merge the STR and SNP GT dfs together
@@ -127,8 +123,7 @@ def ld_parser(
         correlation_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_correlation_df_all.tsv',
         sep='\t',
         index=False,)
-        # drop the lead STR locus from the list of variants (it will automatically have a correlation of 1)
-        correlation_df = correlation_df[correlation_df['locus'] != lead_str_locus]
+
 
         # keep only the variants in the GWAS catalog
         correlation_df = correlation_df[correlation_df['locus'].isin(pheno_df_cis['snp'])]
