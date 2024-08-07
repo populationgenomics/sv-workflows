@@ -16,7 +16,7 @@ analysis-runner --dataset "bioheart" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/coloc-ld/fm_strs_only/v3-debug" \
-    coloc_ld_fm_parser_debug.py \
+    coloc_fm_ld_parser_debug.py \
     --fm-csv=gs://cpg-bioheart-test/str/associatr/coloc/estrs_fm_coloc_list_for_ld.csv
 
 
@@ -67,6 +67,9 @@ def ld_parser(
             & (pheno_df['position'] >= start_window)
             & (pheno_df['position'] <= end_window)
         ]
+        pheno_df_cis.to_csv('gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_pheno_df_cis.tsv',
+        sep='\t',
+        index=False,)
         print('Subsetted GWAS catalog to the cis window')
 
         # Extract the genotypes for SNVs in the cis window
