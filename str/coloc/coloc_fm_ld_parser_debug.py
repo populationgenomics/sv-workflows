@@ -51,6 +51,8 @@ def ld_parser(
         motif = row['motif_x']
         pheno = row['pheno']
         gene = row['gene_name']
+        if gene != 'ENSG00000153094':
+            continue
         lead_str_locus = f'{chrom}_{pos}_{motif}'
 
         # Extract the cis window for the gene
@@ -130,13 +132,14 @@ def ld_parser(
 
         # keep only the variants in the GWAS catalog
         correlation_df = correlation_df[correlation_df['locus'].isin(pheno_df_cis['snp'])]
-        correlation_df.to_csv('gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_correlation_df_gwas_only.tsv',
+        correlation_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_correlation_df_gwas_only.tsv',
         sep='\t',
         index=False,)
 
         # find the VARIANT with the highest absolute correlation
         max_correlation_index = correlation_df['correlation'].abs().idxmax()
         max_correlation_row = correlation_df[correlation_df['locus'] == max_correlation_index]
+        max_correlation_row.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_max_correlation_row.tsv', sep='\t', index=False)
 
         # add some attributes
         max_correlation_row['gene'] = gene
