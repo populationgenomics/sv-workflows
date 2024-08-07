@@ -15,7 +15,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/coloc-ld/fm_strs_only/v2" \
+    --output-dir "str/associatr/coloc-ld/fm_strs_only/v4" \
     coloc_ld_fm_parser.py \
     --fm-csv=gs://cpg-bioheart-test/str/associatr/coloc/estrs_fm_coloc_list_for_ld.csv
 
@@ -105,8 +105,7 @@ def ld_parser(
             # set dummy -198 value to np.nan
             sums = np.where(sums == -198, np.nan, sums)
             snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
-            if snp == lead_str_locus:
-                str_df[f'{snp}_lead']= sums #add it twice with suffix so it doesn't get dropped.
+
             str_df[snp] = sums
 
         # merge the STR and SNP GT dfs together
@@ -116,9 +115,6 @@ def ld_parser(
         correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[lead_str_locus])
         correlation_df = pd.DataFrame(correlation_series, columns=['correlation'])
         correlation_df['locus'] = correlation_df.index
-        # drop the lead STR locus from the list of variants (it will automatically have a correlation of 1)
-        correlation_df = correlation_df[correlation_df['locus'] != lead_str_locus]
-
         # keep only the variants in the GWAS catalog
         correlation_df = correlation_df[correlation_df['locus'].isin(pheno_df_cis['snp'])]
 
@@ -136,7 +132,7 @@ def ld_parser(
         max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=0)
 
     max_corr_master_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v2/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
+        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v4/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
         sep='\t',
         index=False,
     )
@@ -156,7 +152,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     for pheno in pheno_list:
         fm_pheno = fm[fm['pheno'] == pheno]
         for chrom in fm_pheno['chr'].unique():
-            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v2/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
+            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v4/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
                 print(f'File already exists for {pheno} and {chrom}')
                 continue
             pheno_map = {
@@ -219,7 +215,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             ld_job = b.new_python_job(
                 f'LD calc for {chrom}; {pheno}',
             )
-            ld_job.cpu(4)
+            ld_job.cpu(1)
             ld_job.storage('10G')
 
 
