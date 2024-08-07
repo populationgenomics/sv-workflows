@@ -67,7 +67,7 @@ def ld_parser(
             & (pheno_df['position'] >= start_window)
             & (pheno_df['position'] <= end_window)
         ]
-        pheno_df_cis.to_csv('gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_pheno_df_cis.tsv',
+        pheno_df_cis.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_pheno_df_cis.tsv',
         sep='\t',
         index=False,)
         print('Subsetted GWAS catalog to the cis window')
@@ -114,7 +114,7 @@ def ld_parser(
 
         # merge the STR and SNP GT dfs together
         merged_df = pd.merge(str_df, snp_df, on='individual')
-        merged_df.to_csv('gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_merged_df.tsv',
+        merged_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_merged_df.tsv',
         sep='\t',
         index=False,)
 
@@ -122,7 +122,7 @@ def ld_parser(
         correlation_series = merged_df.drop(columns='individual').corrwith(merged_df[lead_str_locus])
         correlation_df = pd.DataFrame(correlation_series, columns=['correlation'])
         correlation_df['locus'] = correlation_df.index
-        correlation_df.to_csv('gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_correlation_df_all.tsv',
+        correlation_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v3-debug/{pheno}/{chrom}/{pheno}_{chrom}_{gene}_correlation_df_all.tsv',
         sep='\t',
         index=False,)
         # drop the lead STR locus from the list of variants (it will automatically have a correlation of 1)
