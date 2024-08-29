@@ -49,13 +49,22 @@ def concatenator(input_methylation_dir, chrom_num):
     default='gs://cpg-bioheart-test/str/pacbio-methylation',
 
 )
+@click.option(
+    '--chrom_num',
+    help='Chromosome number comma-separated',
+    default='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22',
+)
+@click.option(
+    '--storage',
+    help='Storage size',
+    default='60G')
 @click.command()
-def main(input_methylation_dir):
+def main(input_methylation_dir,chrom_num,storage):
     b = get_batch(name='Methylation bed parser')
-    for chrom_num in range(1, 23):
+    for chrom_num in chrom_num.split(','):
         methylation_parser_job = b.new_python_job(f'Methylation parser for chr{chrom_num}')
         methylation_parser_job.cpu(2)
-        methylation_parser_job.storage('20G')
+        methylation_parser_job.storage(storage)
         methylation_parser_job.call(concatenator, input_methylation_dir, chrom_num)
     b.run(wait=False)
 
