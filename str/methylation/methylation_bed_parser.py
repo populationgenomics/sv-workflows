@@ -8,7 +8,7 @@ This script concatenates each per-sample BED file into a single BED file (chromo
 Only CpG sites called in all samples are retained (inner join merge).
 Only the 'mod_score' parameter is extracted; all other methylation-related columns are discarded.
 
-analysis-runner --dataset "bioheart" --access-level "test" --description "Concatenate methylation BED files" --output-dir "str/pacbio-methylation/combined_bed" methylation_bed_parser.py
+analysis-runner --dataset "bioheart" --access-level "test" --description "Concatenate methylation BED files" --output-dir "str/pacbio-methylation-v3/combined_bed" methylation_bed_parser.py
 
 
 """
@@ -32,13 +32,10 @@ def concatenator(input_methylation_dir, chrom_num):
     for file in methylation_files:
         file_name = str(file)
         sample = file_name.split('/')[-1].split('.')[0]
-        try:
-            df = pd.read_csv(
-                file, sep='\t', usecols=[0, 1, 3], names=['chrom', 'start', f'{sample}'],
-            )  # col3 corresponds to mod_score
-        except:
-            print('Error reading file:', file)
-            break
+        df = pd.read_csv(
+            file, sep='\t', usecols=[0, 1, 3], names=['chrom', 'start', f'{sample}'],
+        )  # col3 corresponds to mod_score
+
         df = df[df['chrom'] == chrom]
         if master_df.empty:
             master_df = df
