@@ -39,7 +39,7 @@ def concatenator(input_methylation_dir, chrom_num):
         if master_df.empty:
             master_df = df
         else:
-            master_df = master_df.merge(master_df, df, on=['chrom', 'start'], how='inner')
+            master_df = master_df.merge(df, on=['chrom', 'start'], how='inner')
     output_gcs = output_path(f'methylation_combined_{chrom}.bed')
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
