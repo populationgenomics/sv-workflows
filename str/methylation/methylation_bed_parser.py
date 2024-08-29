@@ -54,6 +54,8 @@ def main(input_methylation_dir):
     b = get_batch(name='Methylation bed parser')
     for chrom_num in range(1, 23):
         methylation_parser_job = b.new_python_job(f'Methylation parser for chr{chrom_num}')
+        methylation_parser_job.cpu(2)
+        methylation_parser_job.memory('20G')
         methylation_parser_job.call(concatenator, input_methylation_dir, chrom_num)
     b.run(wait=False)
 
