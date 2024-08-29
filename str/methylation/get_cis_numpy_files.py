@@ -50,7 +50,7 @@ def cis_window_numpy_extractor(
             f'cpg_lists/{chromosome}_cpg_list.json',
         ),
     ).open('w') as write_handle:
-        json.dump(pheno['meth_id'], write_handle)
+        json.dump(pheno['meth_id'].tolist(), write_handle)
 
     for site in pheno['meth_id']:
         # make the phenotype-covariate numpy objects
