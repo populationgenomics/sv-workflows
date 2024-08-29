@@ -110,7 +110,6 @@ def main():
         _dependent_jobs.append(job)
 
     for chrom in get_config()['get_cis_numpy']['chromosomes'].split(','):
-        init_batch()
         j = b.new_python_job(
             name=f'Extract cis window & phenotype and covariate numpy object: {chrom}',
         )
