@@ -8,6 +8,8 @@ This script concatenates each per-sample BED file into a single BED file (chromo
 Only CpG sites called in all samples are retained (inner join merge).
 Only the 'mod_score' parameter is extracted; all other methylation-related columns are discarded.
 
+analysis-runner --dataset "bioheart" --access-level "test" --description "Concatenate methylation BED files" --output-dir "str/pacbio-methylation/combined_bed" methylation_bed_parser.py
+
 
 """
 
@@ -18,12 +20,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
 
 
-@click.option(
-    '--input-methylation-dir',
-    help='GCS path to the directory containing the methylation BED files',
-    default='cpg-bioheart-test/str/pacbio-methylation',
-)
-@click.command()
+
 def concatenator(input_methylation_dir, chrom_num):
     methylation_files = list(to_path(f'{input_methylation_dir}').glob('*.combined.bed'))
     chrom = f'chr{chrom_num}'
@@ -43,7 +40,13 @@ def concatenator(input_methylation_dir, chrom_num):
     output_gcs = output_path(f'methylation_combined_{chrom}.bed')
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
+@click.option(
+    '--input-methylation-dir',
+    help='GCS path to the directory containing the methylation BED files',
+    default='gs://cpg-bioheart-test/str/pacbio-methylation',
 
+)
+@click.command()
 def main(input_methylation_dir):
     b = get_batch(name='Methylation bed parser')
     for chrom_num in range(1, 23):
