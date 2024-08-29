@@ -25,7 +25,7 @@ import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 def cis_window_numpy_extractor(
@@ -37,8 +37,6 @@ def cis_window_numpy_extractor(
     Creates phenotype-covariate numpy objects
 
     """
-    init_batch()
-
     # read in pseudobulk and covariate files
     pheno = pd.read_csv(f'{input_methyl_dir}/methylation_combined_{chromosome}.bed', sep='\t')
     covariates = pd.read_csv(covariate_path)
