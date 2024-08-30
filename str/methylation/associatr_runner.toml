@@ -1,0 +1,8 @@
+[associatr]
+chromosomes='chr22'
+pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr-methylation/bioheart_n25/input_files/v2/pheno_cov_numpy'
+max_parallel_jobs=500
+cis_window_size=50000
+job_storage = '0G'
+job_cpu =1
+always_run=false
