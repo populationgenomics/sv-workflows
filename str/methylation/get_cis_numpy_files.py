@@ -13,6 +13,7 @@ python3 get_cis_numpy_files.py
 
 """
 
+import pandas as pd
 
 import hailtop.batch as hb
 
@@ -21,7 +22,7 @@ from cpg_utils.hail_batch import get_batch
 
 
 def cis_window_numpy_extractor(
-    input_methyl_dir,
+    batch_sites,
     covariate_path,
     chromosome,
 ):
@@ -29,28 +30,20 @@ def cis_window_numpy_extractor(
     Creates phenotype-covariate numpy objects
 
     """
-    import json
-    from cpg_utils import to_path
-    import hail as hl
-
     import numpy as np
     import pandas as pd
     from scipy.stats import norm
-    from cpg_utils.hail_batch import output_path, init_batch
+
+    import hail as hl
+
+    from cpg_utils import to_path
+    from cpg_utils.hail_batch import init_batch, output_path
 
     init_batch()
-    # read in pseudobulk and covariate files
-    pheno = pd.read_csv(f'{input_methyl_dir}/methylation_combined_{chromosome}.bed', sep='\t')
+    # read in batch_sites and covariate files
+    pheno = batch_sites
     covariates = pd.read_csv(covariate_path)
     pheno['meth_id'] = pheno['chrom'].astype(str) + '_' + pheno['start'].astype(str)
-
-    # write CpG sites to a JSON file
-    with to_path(
-        output_path(
-            f'cpg_lists/{chromosome}_cpg_list.json',
-        ),
-    ).open('w') as write_handle:
-        json.dump(pheno['meth_id'].tolist(), write_handle)
 
     for site in pheno['meth_id']:
         # make the phenotype-covariate numpy objects
@@ -111,20 +104,27 @@ def main():
             job.depends_on(_dependent_jobs[-get_config()['get_cis_numpy']['max_parallel_jobs']])
         _dependent_jobs.append(job)
 
-    for chrom in get_config()['get_cis_numpy']['chromosomes'].split(','):
-        j = b.new_python_job(
-            name=f'Extract cis window & phenotype and covariate numpy object: {chrom}',
-        )
-        j.cpu(get_config()['get_cis_numpy']['job_cpu'])
-        j.memory(get_config()['get_cis_numpy']['job_memory'])
-        j.storage(get_config()['get_cis_numpy']['job_storage'])
+    sites_per_job = 50
 
-        j.call(
-            cis_window_numpy_extractor,
-            get_config()['get_cis_numpy']['input_methyl_dir'],
-            get_config()['get_cis_numpy']['covariate_path'],
-            chrom,
-        )
+    for chrom in get_config()['get_cis_numpy']['chromosomes'].split(','):
+        methyl_dir = get_config()['get_cis_numpy']['input_methyl_dir']
+        pheno = pd.read_csv(f'{methyl_dir}/methylation_combined_{chrom}.bed', sep='\t')
+        for i in range(0, pheno.shape[0], sites_per_job):
+            batch_sites = pheno.iloc[i : i + sites_per_job]
+
+            j = b.new_python_job(
+                name=f'Extract cis window & phenotype and covariate numpy object: {chrom}, sites {i}-{i+sites_per_job}',
+            )
+            j.cpu(get_config()['get_cis_numpy']['job_cpu'])
+            j.memory(get_config()['get_cis_numpy']['job_memory'])
+            j.storage(get_config()['get_cis_numpy']['job_storage'])
+
+            j.call(
+                cis_window_numpy_extractor,
+                batch_sites,
+                get_config()['get_cis_numpy']['covariate_path'],
+                chrom,
+            )
 
         manage_concurrency_for_job(j)
     b.run(wait=False)
