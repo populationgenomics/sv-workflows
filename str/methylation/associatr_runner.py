@@ -51,7 +51,8 @@ def main():
             ),
         )
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-        for site_numpy in list(to_path(f'{methyl_dir}/{chromosome}').glob(f'*.npy')):
+        #for site_numpy in list(to_path(f'{methyl_dir}/{chromosome}').glob(f'*.npy')):
+        for site_numpy in ['gs://cpg-bioheart-test/str/associatr-methylation/bioheart_n25/input_files/v3/pheno_cov_numpy/chr22/chr22_16549215_pheno_cov.npy']:
             cis_window_size = 50000
             site_coord = str(site_numpy).split('/')[-1].split('_')[1]
             site = f'{chromosome}_{site_coord}'
