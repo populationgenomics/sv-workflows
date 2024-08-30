@@ -44,10 +44,11 @@ def main():
 
 
     for chromosome in get_config()['associatr']['chromosomes'].split(','):
-        vcf_file_path = 'gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/fm_estr.vcf'
+        vcf_file_path = 'gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/fm_estr.vcf.gz'
         variant_vcf = b.read_input_group(
             **dict(
                 vcf=vcf_file_path,
+                tabix=f'{vcf_file_path}.tbi',
             ),
         )
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
