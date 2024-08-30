@@ -54,6 +54,7 @@ def main():
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{methyl_dir}/{chromosome}').glob(f'*.npy'))
         for i in range(0, len(site_numpy_list), 70):
+            _dependent_jobs = []
             reset_batch()
             batch_gene_files = site_numpy_list[i : i + 70]
             b = get_batch(name='Run associatr-methylation chr' + chromosome + ' sites ' + str(i) + '-' + str(i + 70))
