@@ -5,9 +5,8 @@ This script runs associaTR on methylation data.
 
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
-    --access-level "full" \
-    --memory "8G" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055" \
+    --access-level "test"
+    --output-dir "str/associatr-methylation/bioheart_n25" \
      python3 associatr_runner.py
 
 
@@ -51,7 +50,7 @@ def main():
                 vcf=vcf_file_path,
             ),
         )
-        methyl_dir = get_config()['associatr']['input_methyl_dir']
+        methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         for site_numpy in list(to_path(methyl_dir).glob(f'*.npy')):
             cis_window_size = 50000
             site_coord = str(site_numpy).split('/')[-1].split('_')[1]
