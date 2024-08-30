@@ -8,7 +8,7 @@ This script aims to:
  - output CpG site-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files/v2" \
+--description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files/v3" \
 python3 get_cis_numpy_files.py
 
 """
@@ -70,6 +70,7 @@ def cis_window_numpy_extractor(
 
         # rename 's' to 'sample_id'
         site_pheno = site_pheno.rename(columns={'s': 'sample_id'})
+        site_pheno = site_pheno[['sample_id', 'gene_inverse_normal']]
 
         site_pheno_cov = site_pheno.merge(covariates, on='sample_id', how='inner')
 
