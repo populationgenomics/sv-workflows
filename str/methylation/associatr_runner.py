@@ -89,6 +89,7 @@ def main():
                     'analysis',
                 ),
             )
+            break # just to test one site
             manage_concurrency_for_job(associatr_job)
     b.run(wait=False)
 
