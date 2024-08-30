@@ -45,12 +45,7 @@ def main():
 
     for chromosome in get_config()['associatr']['chromosomes'].split(','):
         vcf_file_path = 'gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/fm_estr.vcf.gz'
-        variant_vcf = b.read_input_group(
-            **dict(
-                vcf=vcf_file_path,
-                tabix=f'{vcf_file_path}.tbi',
-            ),
-        )
+
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{methyl_dir}/{chromosome}').glob(f'*.npy'))
         for i in range(0, len(site_numpy_list), 70):
@@ -58,6 +53,12 @@ def main():
             reset_batch()
             batch_gene_files = site_numpy_list[i : i + 70]
             b = get_batch(name='Run associatr-methylation chr' + chromosome + ' sites ' + str(i) + '-' + str(i + 70))
+            variant_vcf = b.read_input_group(
+            **dict(
+                vcf=vcf_file_path,
+                tabix=f'{vcf_file_path}.tbi',
+            ),
+            )
             for site_numpy in batch_gene_files:
                 cis_window_size = 50000
                 site_coord = str(site_numpy).split('/')[-1].split('_')[1]
