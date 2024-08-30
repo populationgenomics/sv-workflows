@@ -1,9 +1,10 @@
 [get_cis_numpy]
-input_methyl_dir = 'gs://cpg-bioheart-test/str/pacbio-methylation-v3/combined_bed'
+input_methyl_dir = 'gs://cpg-bioheart-test/str/pacbio-methylation-v3/combined_bed/filtered_set'
 covariate_path = 'gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/bioheart_covariates_str_run_v1.csv'
-chromosomes = 'chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
-job_cpu = 1
-job_memory = 'standard'
+# chromosomes = 'chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
+chromosomes = 'chr2'
+job_cpu = 0.25
+job_memory = 'lowmem'
 job_storage = '0G'
 # To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
 max_parallel_jobs = 500

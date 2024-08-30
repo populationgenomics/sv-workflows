@@ -8,7 +8,7 @@ This script aims to:
  - output CpG site-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files" \
+--description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files/v1" \
 python3 get_cis_numpy_files.py
 
 """
@@ -49,7 +49,7 @@ def cis_window_numpy_extractor(
         # make the phenotype-covariate numpy objects
 
         site_pheno = pheno[pheno['meth_id'] == site]
-        site_pheno = site_pheno.drop(columns=['chrom', 'start', 'meth_id'])
+        site_pheno = site_pheno.drop(columns=['chrom', 'start', 'meth_id', 'std_dev'])
 
         # Now, let's reshape the dataframe
         site_pheno = pd.melt(site_pheno, value_vars=site_pheno.columns, var_name='sample_id', value_name=site)
