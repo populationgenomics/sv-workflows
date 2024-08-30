@@ -51,7 +51,7 @@ def main():
             ),
         )
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-        for site_numpy in list(to_path(methyl_dir).glob(f'*.npy')):
+        for site_numpy in list(to_path({methyl_dir}/chromosome).glob(f'*.npy')):
             cis_window_size = 50000
             site_coord = str(site_numpy).split('/')[-1].split('_')[1]
             site = f'{chromosome}_{site_coord}'
