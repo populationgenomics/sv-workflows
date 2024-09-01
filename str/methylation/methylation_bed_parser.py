@@ -15,16 +15,15 @@ analysis-runner --dataset "bioheart" --access-level "test" --description "Concat
 
 import click
 
-
 from cpg_utils.hail_batch import get_batch
-
 
 
 def concatenator(input_methylation_dir, chrom_num):
     import pandas as pd
-    from cpg_utils import to_path
 
+    from cpg_utils import to_path
     from cpg_utils.hail_batch import output_path
+
     methylation_files = list(to_path(f'{input_methylation_dir}').glob('*.combined.bed'))
     chrom = f'chr{chrom_num}'
     print(f'Processing {chrom}...')
@@ -33,7 +32,10 @@ def concatenator(input_methylation_dir, chrom_num):
         file_name = str(file)
         sample = file_name.split('/')[-1].split('.')[0]
         df = pd.read_csv(
-            file, sep='\t', usecols=[0, 1, 3], names=['chrom', 'start', f'{sample}'],
+            file,
+            sep='\t',
+            usecols=[0, 1, 3],
+            names=['chrom', 'start', f'{sample}'],
         )  # col3 corresponds to mod_score
         df = df[df['chrom'] == chrom]
         if master_df.empty:
@@ -43,25 +45,23 @@ def concatenator(input_methylation_dir, chrom_num):
     output_gcs = output_path(f'methylation_combined_{chrom}.bed')
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
+
 @click.option(
     '--input-methylation-dir',
     help='GCS path to the directory containing the methylation BED files',
     default='gs://cpg-bioheart-test/str/pacbio-methylation',
-
 )
 @click.option(
-    '--chrom_num',
+    '--chrom_nums',
     help='Chromosome number comma-separated',
     default='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22',
 )
-@click.option(
-    '--storage',
-    help='Storage size',
-    default='60G')
+@click.option('--storage', help='Storage size', default='60G')
 @click.command()
-def main(input_methylation_dir,chrom_num,storage):
+def main(input_methylation_dir, chrom_nums, storage):
     b = get_batch(name='Methylation bed parser')
-    for chrom_num in chrom_num.split(','):
+    chrom_nums = chrom_nums.split(',')
+    for chrom_num in chrom_nums:
         methylation_parser_job = b.new_python_job(f'Methylation parser for chr{chrom_num}')
         methylation_parser_job.cpu(8)
         methylation_parser_job.storage(storage)
