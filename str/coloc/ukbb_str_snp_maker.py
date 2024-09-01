@@ -39,7 +39,7 @@ def liftover(phenotype):
 
     mapping_df = pd.read_csv('gs://cpg-bioheart-test/str/gymrek-ukbb-str-gwas-catalogs/ukbb_str_harmonised_mapping.csv')
 
-    df = pd.merge(
+    df = pd.merge(  # noqa: PD015
         str_gwas,
         mapping_df,
         left_on=['chromosome', 'start_pos (hg38)', 'repeat_unit'],

@@ -155,7 +155,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     result_df_cfm = egenes
     result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
     result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
-    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8] # filter for STRs with p-value < 5e-8
+    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
@@ -174,7 +174,8 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
                 output_path(
-                    f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis',
+                    f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
+                    'analysis',
                 ),
             ).exists():
                 continue
@@ -193,10 +194,10 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 # check if the p-value column contains at least one value which is <=5e-8:
-                #if hg38_map_chr_start_end['p_value'].min() > 5e-8:
-                    #print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                    #continue
-                #print('Extracted SNP GWAS data for ' + gene)
+                # if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                # print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                # continue
+                # print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
                 coloc_job = b.new_python_job(

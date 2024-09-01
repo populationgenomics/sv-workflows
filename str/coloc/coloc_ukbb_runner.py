@@ -172,7 +172,10 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
 
             for gene in result_df_cfm_str_celltype_chrom['gene']:
                 if to_path(
-                    output_path(f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+                    output_path(
+                        f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
+                        'analysis',
+                    ),
                 ).exists():
                     continue
                 if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
