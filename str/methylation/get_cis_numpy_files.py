@@ -8,7 +8,7 @@ This script aims to:
  - output CpG site-level phenotype and covariate numpy objects for input into associatr
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files/v3" \
+--description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files/5kb" \
 python3 get_cis_numpy_files.py
 
 """
