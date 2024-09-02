@@ -38,7 +38,7 @@ def concatenator(input_dir, chrom):
 
     # Concatenate all DataFrames
     master_df = pd.concat(results, ignore_index=True)
-    output_gcs = to_path(f'{input_dir}/chr{chrom}_concatenated_results.tsv')
+    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-methylation/bioheart_n25/5kb/results/chr{chrom}_concatenated_results.tsv'
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
 
