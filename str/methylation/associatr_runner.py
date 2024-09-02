@@ -5,8 +5,8 @@ This script runs associaTR on methylation data.
 
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
-    --access-level "test"
-    --output-dir "str/associatr-methylation/bioheart_n25" \
+    --access-level "test" \
+    --output-dir "str/associatr-methylation/bioheart_n25/5kb/v2" \
      python3 associatr_runner.py
 
 
@@ -20,8 +20,6 @@ import hailtop.batch as hb
 from cpg_utils import to_path
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, init_batch, output_path, reset_batch
-
-
 
 
 def main():
@@ -42,22 +40,21 @@ def main():
             job.depends_on(_dependent_jobs[-get_config()['associatr']['max_parallel_jobs']])
         _dependent_jobs.append(job)
 
-
     for chromosome in get_config()['associatr']['chromosomes'].split(','):
         vcf_file_path = 'gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/fm_estr.vcf.gz'
 
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-        site_numpy_list = list(to_path(f'{methyl_dir}/{chromosome}').glob(f'*.npy'))
+        site_numpy_list = list(to_path(f'{methyl_dir}/{chromosome}').glob('*.npy'))
         for i in range(0, len(site_numpy_list), 70):
             _dependent_jobs = []
             reset_batch()
             batch_gene_files = site_numpy_list[i : i + 70]
             b = get_batch(name='Run associatr-methylation chr' + chromosome + ' sites ' + str(i) + '-' + str(i + 70))
             variant_vcf = b.read_input_group(
-            **dict(
-                vcf=vcf_file_path,
-                tabix=f'{vcf_file_path}.tbi',
-            ),
+                **dict(
+                    vcf=vcf_file_path,
+                    tabix=f'{vcf_file_path}.tbi',
+                ),
             )
             for site_numpy in batch_gene_files:
                 cis_window_size = 50000
@@ -88,7 +85,7 @@ def main():
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
                 associatr_job.declare_resource_group(association_results={'tsv': '{root}.tsv'})
                 associatr_job.command(
-                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.vcf} {site} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh",
+                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.vcf} {site} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh --non-major-cutoff=0",
                 )
                 b.write_output(
                     associatr_job.association_results,
