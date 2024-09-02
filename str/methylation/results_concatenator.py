@@ -50,21 +50,22 @@ def concatenator(input_dir, chrom):
 @click.option('--chromosomes', help='Comma-separated list of chromosomes to concatenate', default='22')
 @click.command()
 def main(input_dir, chromosomes):
-    b = get_batch(name='Concatenate associatr-methylation results')
+    #b = get_batch(name='Concatenate associatr-methylation results')
     for chrom in chromosomes.split(','):
-        j = b.new_python_job(
-            name=f'Concatenate associatr-methylation results for chr{chrom}',
-        )
-        j.cpu(1)
-        j.storage('5G')
+        #j = b.new_python_job(
+        #    name=f'Concatenate associatr-methylation results for chr{chrom}',
+        #)
+        #j.cpu(1)
+        #j.storage('5G')
 
-        j.call(
-            concatenator,
-            input_dir,
-            chrom,
-        )
+        #j.call(
+        #    concatenator,
+        #    input_dir,
+        #    chrom,
+        #)
+        concatenator(input_dir, chrom)
 
-    b.run(wait=False)
+    #b.run(wait=False)
 
 
 if __name__ == '__main__':
