@@ -57,7 +57,7 @@ def main():
                 ),
             )
             for site_numpy in batch_gene_files:
-                cis_window_size = 50000
+                cis_window_size = 5000
                 site_coord = str(site_numpy).split('/')[-1].split('_')[1]
                 site = f'{chromosome}_{site_coord}'
 
