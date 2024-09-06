@@ -112,11 +112,7 @@ def ld_parser(
 
         # merged_df has only two columns - calculate the correlation
         correlation = merged_df.drop(columns = 'individual').corr().iloc[0, 1]
-        correlation.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/fm_strs/pval_ratio/{cell_type}/{chrom}/{cell_type}_{chrom}_corr_table.tsv',
-        sep='\t',
-        index=False,
-    )
+
 
         # save correlation and pval ratio to a df
         results_df = pd.DataFrame({
