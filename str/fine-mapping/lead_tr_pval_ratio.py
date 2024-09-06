@@ -19,7 +19,7 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/coloc-ld/fm_strs_only/v4" \
     lead_tr_pval_ratio.py \
-    --fm-csv=gs:/cpg-bioheart-main-analysis/str/associatr/fine_mapping/estrs_lead_filtered.csv
+    --fm-csv=gs://cpg-bioheart-test/str/associatr/fine_mapping/estrs_lead_filtered.csv
 
 
 """
@@ -54,7 +54,7 @@ def ld_parser(
         lead_str_pval = row['pval_meta']
 
         # get the lead SNV for that gene
-        meta_results = pd.read_csv(f'gs://cpg-bioheart-main-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv', sep = '\t')
+        meta_results = pd.read_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv', sep = '\t')
         snv_meta_results = meta_results[meta_results['motif'].str.contains('-')] # filter for SNVs
         lead_snv = snv_meta_results[snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()] # get the lead SNV
         lead_snv_coord = chrom + ':' + str(lead_snv.iloc[0]['pos'])
