@@ -74,8 +74,7 @@ def ld_parser(
             if str(variant.INFO.get('RU')) == lead_snv_motif:
                 gt = variant.gt_types  # extracts GTs as a numpy array
                 gt[gt == 3] = 2
-                motif = str(variant.INFO.get('RU')).replace('-', '_')
-                snp = variant.CHROM + '_' + str(variant.POS) + '_' + motif
+                snp = variant.CHROM + '_' + str(variant.POS) + '_' + lead_snv_motif
                 df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                 snp_df = pd.concat([snp_df, df_to_append], axis=1)
                 break
@@ -112,7 +111,7 @@ def ld_parser(
         merged_df = pd.merge(str_df, snp_df, on='individual')
 
         # merged_df has only two columns - calculate the correlation
-        correlation = merged_df.drop(columns = 'individual').corr()
+        correlation = merged_df.drop(columns = 'individual').iloc[0, 1]
 
         # save correlation and pval ratio to a df
         results_df = pd.DataFrame({
@@ -171,6 +170,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
 
             )
             break # testing only
+        break # testing only
 
     b.run(wait=False)
 
