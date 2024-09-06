@@ -111,7 +111,7 @@ def ld_parser(
         merged_df = pd.merge(str_df, snp_df, on='individual')
 
         # merged_df has only two columns - calculate the correlation
-        correlation = merged_df.drop(columns = 'individual')
+        correlation = merged_df.drop(columns = 'individual').corr()
         correlation.to_csv(
         f'gs://cpg-bioheart-test-analysis/str/associatr/fm_strs/pval_ratio/{cell_type}/{chrom}/{cell_type}_{chrom}_corr_table.tsv',
         sep='\t',
