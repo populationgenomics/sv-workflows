@@ -168,8 +168,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
                 str_input,
 
             )
-            break # testing only
-        break # testing only
+
 
     b.run(wait=False)
 
