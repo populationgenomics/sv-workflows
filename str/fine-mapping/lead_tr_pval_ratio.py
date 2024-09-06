@@ -111,7 +111,7 @@ def ld_parser(
         merged_df = pd.merge(str_df, snp_df, on='individual')
 
         # merged_df has only two columns - calculate the correlation
-        correlation = merged_df.drop(columns = 'individual').corr()
+        correlation = merged_df.drop(columns = 'individual').corr().iloc[0, 1]
         correlation.to_csv(
         f'gs://cpg-bioheart-test-analysis/str/associatr/fm_strs/pval_ratio/{cell_type}/{chrom}/{cell_type}_{chrom}_corr_table.tsv',
         sep='\t',
@@ -155,8 +155,6 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             ld_job = b.new_python_job(
                 f'LD calc for {chrom}; {cell_type}',
             )
-            ld_job.cpu(4)
-            ld_job.storage('10G')
 
 
             fm_cell_type_chrom = fm_cell_type[fm_cell_type['chr'] == chrom]
