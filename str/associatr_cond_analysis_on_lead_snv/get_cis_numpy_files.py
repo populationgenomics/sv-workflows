@@ -161,12 +161,12 @@ def cis_window_numpy_extractor(
             continue
         # get row(s) with minimum p-value
 
-        snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')] # filter for SNVs
-        lead_snv=snv_meta_results[snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()]
+        snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')]  # filter for SNVs
+        lead_snv = snv_meta_results[snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()]
 
         # get characteristics of the lead snv
         lead_snv_motif = [lead_snv.iloc[0]['motif']]
-        lead_snv_locus = [f'{chromosome}:{lead_snv.iloc[0]['pos']}']
+        lead_snv_locus = [f"{chromosome}:{lead_snv.iloc[0]['pos']}"]
 
         # get gene body position (start and end) and add window
         start_coord = adata.var[adata.var.index == gene]['start']
