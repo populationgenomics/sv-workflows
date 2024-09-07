@@ -21,7 +21,7 @@ Ensure prior scripts have been run to generate dependent files, particularly:
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/tob_n1055" \
+    --output-dir "str/associatr/cond_analysis_lead_snv/bioheart_n990" \
      python3 associatr_runner.py
 
 
