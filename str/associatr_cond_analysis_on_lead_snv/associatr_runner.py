@@ -61,7 +61,7 @@ def main():
 
     egenes = pd.read_csv(get_config()['associatr']['egene'])
     celltypes = egenes['cell_type'].unique()
-    for cell_type in ['B_naive', 'CD16_Mono', 'CD8_TEM', 'CD8_TCM', 'B_memory', 'cDC1', 'dnT,', 'NK']:
+    for cell_type in celltypes:
         # for cell_type in celltypes:
         egenes_cell = egenes[egenes['cell_type'] == cell_type]
         for chrom in range(1, 23):
