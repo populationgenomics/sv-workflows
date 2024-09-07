@@ -11,7 +11,7 @@ This script aims to prepare inputs for conditional analysis by:
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/cond_analysis/tob_n1055" \
+--description "get cis and numpy" --output-dir "str/associatr/cond_analysis_lead_snv/bioheart_n990" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -29,7 +29,7 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch
 
 
-def extract_snp_genotypes(vcf_file, loci):
+def extract_snp_genotypes(vcf_file, loci, motifs):
     """
     Helper function to extract genotypes (SNPs) from a VCF file; target loci specified as a list (can be single or multiple)
 
@@ -40,13 +40,13 @@ def extract_snp_genotypes(vcf_file, loci):
     results = pd.DataFrame()
     results['sample_id'] = vcf_reader.samples
 
-    # Iterate through the records in the VCF file for each locus
-    for locus in loci:
+    for locus, motif in zip(loci, motifs):
         chrom, pos = locus.split(':')
         pos = int(pos)
 
         for record in vcf_reader(f'{chrom}:{pos}-{pos}'):
-            if record.CHROM == chrom and record.POS == pos:
+            # check motif as well because two STRs can have same coord but different motif
+            if record.CHROM == chrom and record.POS == pos and record.INFO.get('RU') == motif:
                 gt = record.gt_types
                 gt[gt == 3] = 2  # HOM ALT is coded as 3; change it to 2
                 results[locus] = gt
@@ -111,7 +111,7 @@ def cis_window_numpy_extractor(
     chrom_len,
     min_pct,
     remove_samples_file,
-    str_input,
+    snv_input,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -160,18 +160,13 @@ def cis_window_numpy_extractor(
             print(f'No eQTL results found for {gene}... skipping')
             continue
         # get row(s) with minimum p-value
-        min_pval = eqtl_results['pval_meta'].min()
-        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
-        # check if all rows are SNPs:
-        all_motif_dash = smallest_pval_rows['motif'].str.contains('-').all()
-        if all_motif_dash:
-            print(f'Lead signal(s) is a SNP for {gene}... skipping')
-            continue
 
-        # get characteristics of the lead STR
-        lead_str = smallest_pval_rows[smallest_pval_rows['motif'] != '-']
-        lead_str_motif = [lead_str['motif'].values[0]]
-        lead_str_locus = [f'{chromosome}:{lead_str["pos"].values[0]}']
+        snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')] # filter for SNVs
+        lead_snv=snv_meta_results[snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()]
+
+        # get characteristics of the lead snv
+        lead_snv_motif = [lead_snv.iloc[0]['motif']]
+        lead_snv_locus = [f'{chromosome}:{lead_snv.iloc[0]['pos']}']
 
         # get gene body position (start and end) and add window
         start_coord = adata.var[adata.var.index == gene]['start']
@@ -209,12 +204,12 @@ def cis_window_numpy_extractor(
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
-        # add STR genotypes we would like to condition on
-        if str_input is not None:
-            str_genotype_df = extract_str_genotypes(str_input['vcf'], lead_str_locus, lead_str_motif)
+        # add SNV genotypes we would like to condition on
+        if snv_input is not None:
+            snv_genotype_df = extract_snp_genotypes(snv_input['vcf'], lead_snv_locus, lead_snv_motif)
             # append 'CPG' prefix to 'id' column
-            str_genotype_df['sample_id'] = str_genotype_df['sample_id'].apply(lambda x: 'CPG' + x)
-            gene_pheno_cov = gene_pheno_cov.merge(str_genotype_df, on='sample_id', how='inner')
+            snv_genotype_df['sample_id'] = snv_genotype_df['sample_id'].apply(lambda x: 'CPG' + x)
+            gene_pheno_cov = gene_pheno_cov.merge(snv_genotype_df, on='sample_id', how='inner')
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
@@ -279,10 +274,10 @@ def main():
             j.memory(get_config()['get_cis_numpy']['job_memory'])
             j.storage(get_config()['get_cis_numpy']['job_storage'])
 
-            if get_config()['get_cis_numpy']['str_vcf_dir'] != 'gs://cpg-bioheart-test':
-                str_vcf_dir = get_config()['get_cis_numpy']['str_vcf_dir']
-                str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
-                str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
+            if get_config()['get_cis_numpy']['snv_vcf_dir'] != 'gs://cpg-bioheart-test':
+                snv_vcf_dir = get_config()['get_cis_numpy']['snv_vcf_dir']
+                snv_vcf_path = f'{snv_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+                snv_input = get_batch().read_input_group(**{'vcf': snv_vcf_path, 'tbi': snv_vcf_path + '.tbi'})
             else:  # no STR VCF provided
                 str_input = None
             j.call(
@@ -298,7 +293,7 @@ def main():
                 chrom_len,
                 get_config()['get_cis_numpy']['min_pct'],
                 get_config()['get_cis_numpy']['remove_samples_file'],
-                str_input,
+                snv_input,
             )
 
             manage_concurrency_for_job(j)
