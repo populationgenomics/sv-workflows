@@ -16,8 +16,8 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/ld_with_lead_tr" \
     ld_with_lead_tr.py \
-    --cell_type CD4_Naive \
-    --gene_ensg ENSG00000156475 \
+    --cell-type CD4_Naive \
+    --gene-ensg ENSG00000156475 \
     --chrom chr5
 
 
@@ -103,10 +103,7 @@ def ld_parser(
     correlation_df['locus'] = correlation_df.index
 
     # write results as a tsv file to gcp
-    correlation_df.to_csv(
-        to_path(
-            f'gs://cpg-bioheart-test-analysis/str/associatr/ld_with_lead_tr/{cell_type}/{chrom}/{gene_ensg}_corr.tsv',
-        ),
+    correlation_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/ld_with_lead_tr/{cell_type}/{chrom}/{gene_ensg}_corr.tsv',
         sep='\t',
         index=False,
     )
