@@ -7,13 +7,14 @@ analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level
     qqplotter.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/raw_pval_extractor \
     --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC \
-    --title='associaTR BioHEART' --ylim=330
+    --title='associaTR BioHEART' --ylim=310
 
 """
 import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 import hail as hl
 
@@ -144,12 +145,12 @@ def main(input_dir, cell_types, title, ylim):
             permuted_control_handle, ['Permuted control'], bbox_to_anchor=(1.05, 0), loc='upper left', fontsize=11,
         ),
     )
-
+    sns.despine()
     # Create the main legend with other items
     ax.legend(other_handles, other_labels, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=11)
 
-    ax.set_xlabel('Expected -log10(p-value)', fontsize=14)
-    ax.set_ylabel('Observed -log10(p-value)', fontsize=14)
+    ax.set_xlabel('Expected -log₁₀(p-value)', fontsize=14)
+    ax.set_ylabel('Expected -log₁₀(p-value)', fontsize=14)
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=10)
     ax.set_ylim(0, ylim)
