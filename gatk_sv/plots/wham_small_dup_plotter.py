@@ -22,6 +22,7 @@ from cpg_utils.hail_batch import init_batch, output_path
 
 
 @click.option('--vcf-path', help='GCS path to the input vcf file')
+@click.command()
 def main(vcf_path):
     init_batch()
     sample_id = vcf_path.split("/")[-1].split(".")[0]
