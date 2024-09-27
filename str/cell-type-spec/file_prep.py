@@ -17,10 +17,13 @@ analysis-runner --dataset "bioheart" --description "eqtl_file_prep" --access-lev
 import click
 import pandas as pd
 
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 
 def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
+    import pandas as pd
+
+    from cpg_utils.hail_batch import output_path
     meta_input_df = pd.DataFrame()
     cell_type_list = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
     cell_type_array = cell_type_list.split(',')
