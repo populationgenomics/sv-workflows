@@ -41,35 +41,36 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                 file = f'{associatr_dir}/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
+                    eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
+                    eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
+                    eqtl_df2['end']= (eqtl_df2['pos'].astype(float) + eqtl_df2['ref_len'].astype(float) * eqtl_df2['motif_len'].astype(float)).round().astype(int)
+                    eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
+                    eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
+                    eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
+                    eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
+
+                    ## add a row to the meta_input_df
+                    new_row = pd.DataFrame(
+                        {
+                            'chrom': [chrom],
+                            'pos': [pos],
+                            'end': [end],
+                            'motif': [motif],
+                            'celltype_main': [cell_type],
+                            'coeff_main': [row['coeff']],
+                            'se_main': [row['se']],
+                            'pval_main': [pval],
+                            'cell_type2': [cell_type2],
+                            'coeff_2': [eqtl_df2_coeff],
+                            'se_2': [eqtl_df2_se],
+                        },
+                    )
+                    meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
+                    if row['coeff'] * eqtl_df2_coeff < 0:
+                        opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
                 except FileNotFoundError:
                     continue
-                eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
-                eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
-                eqtl_df2['end']= (eqtl_df2['pos'].astype(float) + eqtl_df2['ref_len'].astype(float) * eqtl_df2['motif_len'].astype(float)).round().astype(int)
-                eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
-                eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
-                eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
-                eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
 
-                ## add a row to the meta_input_df
-                new_row = pd.DataFrame(
-                    {
-                        'chrom': [chrom],
-                        'pos': [pos],
-                        'end': [end],
-                        'motif': [motif],
-                        'celltype_main': [cell_type],
-                        'coeff_main': [row['coeff']],
-                        'se_main': [row['se']],
-                        'pval_main': [pval],
-                        'cell_type2': [cell_type2],
-                        'coeff_2': [eqtl_df2_coeff],
-                        'se_2': [eqtl_df2_se],
-                    },
-                )
-                meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
-                if row['coeff'] * eqtl_df2_coeff < 0:
-                    opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
     o_file_path_opposite = output_path(f'prep_files/{cell_type}/opposite_signed_betas.csv')
