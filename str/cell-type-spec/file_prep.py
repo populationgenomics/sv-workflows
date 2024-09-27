@@ -25,10 +25,11 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
 
     from cpg_utils.hail_batch import output_path
     meta_input_df = pd.DataFrame()
+    opposite_signed_betas = pd.DataFrame()
     cell_type_list = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
     cell_type_array = cell_type_list.split(',')
 
-    for row in cell_type_eqtls.iterrows():
+    for index,row in cell_type_eqtls.iterrows():
         gene = row['gene_name']
         chrom = row['chr']
         pos = row['pos']
@@ -65,9 +66,13 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     },
                 )
                 meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
+                if row['coeff'] * eqtl_df2['coeff'] < 0:
+                    opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
+    o_file_path_opposite = output_path(f'prep_files/{cell_type}/opposite_signed_betas.csv')
     meta_input_df.to_csv(o_file_path, index=False)
+    opposite_signed_betas.to_csv(o_file_path_opposite, index=False)
 
 
 @click.option('--eqtl-file', help='File containing eQTLs passing FDR threshold')
