@@ -3,7 +3,7 @@
 """
 
 This script is the first step in assessing cell type-specificity of eQTLs.
-It performs pairwise meta-analysis of eQTLs (e.g. testing maximum of two cell types) for each eQTL passing MTC (eg FDR <5%).
+It prepares input files for the next step, which is running the meta-analysis; and also outputs a file containing eQTLs with opposite signed betas for each cell type.
 
 analysis-runner --dataset "bioheart" --description "eqtl_file_prep" --access-level "test" \
 --output-dir "str/associatr/cell-type-spec" file_prep.py --eqtl-file=gs://cpg-bioheart-test/str/associatr/cell-type-spec/estrs.csv \
@@ -38,7 +38,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
         pval = row['pval_pooled']
         for cell_type2 in cell_type_array:
             if cell_type2 != cell_type:
-                file = f'{associatr_dir}/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv'
+                file = f'{associatr_dir}/{cell_type2}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
