@@ -71,7 +71,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
 @click.option('--associatr-dir', help='Directory containing associaTR raw outputs')
 @click.command()
 def main(eqtl_file, associatr_dir):
-    df = pd.read_csv(eqtl_file, sep='\t')
+    df = pd.read_csv(eqtl_file)
     df = df.drop_duplicates(subset=['chr', 'pos', 'motif'])
     #for cell_type in df['cell_type'].unique():
     for cell_type in ['ASDC']:
