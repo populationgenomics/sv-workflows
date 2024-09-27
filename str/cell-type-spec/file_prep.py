@@ -66,7 +66,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     },
                 )
                 meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
-                if row['coeff'] * eqtl_df2['coeff_meta'] < 0:
+                if row['coeff'] * eqtl_df2['coeff_meta'].iloc[0] < 0:
                     opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
