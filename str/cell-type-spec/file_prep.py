@@ -35,7 +35,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
         pos = row['pos']
         end = row['end']
         motif = row['motif']
-        pval = row['pval']
+        pval = row['pval_pooled']
         for cell_type2 in cell_type_array:
             if cell_type2 != cell_type:
                 file = f'{associatr_dir}/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv'
@@ -61,8 +61,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                         'se_main': [row['se']],
                         'pval_main': [pval],
                         'cell_type2': [cell_type2],
-                        'coeff_2': [eqtl_df2['pval']],
-                        'se_2': [eqtl_df2['se']],
+                        'coeff_2': [eqtl_df2['coeff_meta']],
+                        'se_2': [eqtl_df2['se_meta']],
                     },
                 )
                 meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
