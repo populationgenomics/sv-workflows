@@ -43,8 +43,6 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                 except FileNotFoundError:
                     continue
-                eqtl_df2 = eqtl_df2[eqtl_df2['gene'] == gene]
-                eqtl_df2 = eqtl_df2[eqtl_df2['chr'] == chrom]
                 eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
                 eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
                 eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
