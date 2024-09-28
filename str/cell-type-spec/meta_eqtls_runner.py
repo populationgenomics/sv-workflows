@@ -132,8 +132,8 @@ import click
 from cpg_utils.hail_batch import get_batch
 
 
-@click.option('---file-input-dir', required=True, help='Directory containing input files for meta-analysis')
-@click.option('---cell-types', required=True, help='Comma-separated list of cell types to compare')
+@click.option('--file-input-dir', required=True, help='Directory containing input files for meta-analysis')
+@click.option('--cell-types', required=True, help='Comma-separated list of cell types to compare')
 @click.command()
 def main(file_input_dir, cell_types):
     b = get_batch(name='meta_eqtl_cell_spec_runner')
