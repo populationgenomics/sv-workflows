@@ -129,7 +129,7 @@ def run_meta_gen(file_path, cell_type):
 
 import click
 
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch,image_path
 
 
 @click.option('--file-input-dir', required=True, help='Directory containing input files for meta-analysis')
@@ -140,6 +140,7 @@ def main(file_input_dir, cell_types):
     for cell_type in cell_types.split(','):
         file_path = f'{file_input_dir}/{cell_type}/meta_input_df.csv'
         meta_job = b.new_python_job(name=f'{cell_type}_meta_eqtl_cell_spec_runner')
+        meta_job.image(image_path('r-meta'))
         meta_job.call(run_meta_gen, file_path, cell_type)
     b.run(wait=False)
 
