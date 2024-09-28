@@ -48,23 +48,23 @@ def run_meta_gen(file_path, cell_type):
     meta_df <- data.frame(
     chrom = character(),
     pos = numeric(),
-    end = numeric())
-    #gene_name = character(),
-    #motif = character(),
-    #celltype_main = character(),
-    #coeff_main = numeric(),
-    #se_main = numeric(),
-    #pval_main = numeric(),
-    #cell_type2 = character(),
-    #coeff_2 = numeric(),
-    #se_2 = numeric(),
-    #coeff_meta = numeric(),
-    #se_meta = numeric(),
-    #pval_q_meta = numeric(),
-    #pval_meta = numeric(),
-    #lowerCI_meta = numeric(),
-    #upperCI_meta = numeric()
-    #)
+    end = numeric()
+    gene_name = character(),
+    motif = character(),
+    celltype_main = character(),
+    coeff_main = numeric(),
+    se_main = numeric(),
+    pval_main = numeric(),
+    cell_type2 = character(),
+    coeff_2 = numeric(),
+    se_2 = numeric(),
+    coeff_meta = numeric(),
+    se_meta = numeric(),
+    pval_q_meta = numeric(),
+    pval_meta = numeric(),
+    lowerCI_meta = numeric(),
+    upperCI_meta = numeric()
+    )
     ''',
     )
 
@@ -93,28 +93,24 @@ def run_meta_gen(file_path, cell_type):
     new_entry = data.frame(
         chrom = df[i, "chrom"],
         pos = df[i, "pos"],
-        end = df[i, "end"])
+        end = df[i, "end"],
+        gene_name = df[i, "gene_name"],
+        motif = df[i, "motif"],
+        celltype_main = df[i, "celltype_main"],
+        coeff_main = df[i, "coeff_main"],
+        se_main = df[i, "se_main"],
+        pval_main = df[i, "pval_main"],
+        cell_type2 = df[i, "cell_type2"],
+        coeff_2 = df[i, "coeff_2"],
+        se_2 = df[i, "se_2"],
+        coeff_meta = m.gen$TE.random,
+        se_meta = m.gen$seTE.random,
+        pval_q_meta = m.gen$pval.Q,
+        pval_meta = m.gen$pval.random,
+        lowerCI_meta = m.gen$lower.random,
+        upperCI_meta = m.gen$upper.random)
+
     print('New entry created')
-
-
-        #gene_name = df[i, "gene_name"],
-        #motif = df[i, "motif"],
-        #celltype_main = df[i, "celltype_main"],
-        #coeff_main = df[i, "coeff_main"],
-        #se_main = df[i, "se_main"],
-        #pval_main = df[i, "pval_main"],
-        #cell_type2 = df[i, "cell_type2"],
-        #coeff_2 = df[i, "coeff_2"],
-        #se_2 = df[i, "se_2"],
-        #coeff_meta = m.gen$TE.random,
-        #se_meta = m.gen$seTE.random,
-        #pval_q_meta = m.gen$pval.Q,
-        #pval_meta = m.gen$pval.random,
-        #lowerCI_meta = m.gen$lower.random,
-        #upperCI_meta = m.gen$upper.random,
-
-
-
 
     meta_df = rbind(meta_df, new_entry)
     }
