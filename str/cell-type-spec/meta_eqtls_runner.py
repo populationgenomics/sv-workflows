@@ -87,13 +87,15 @@ def run_meta_gen(file_path, cell_type):
     )
     result_df <- rbind(row_cohort1, row_cohort2)
     m.gen = metagen(result_df$coeff, result_df$se, random = TRUE)
+    print('Meta-analysis ran')
 
-    print(df[i])
 
     new_entry = data.frame(
         chrom = df[i, "chrom"],
         pos = df[i, "pos"],
         end = df[i, "end"])
+    print('New entry created')
+
 
         #gene_name = df[i, "gene_name"],
         #motif = df[i, "motif"],
@@ -116,6 +118,7 @@ def run_meta_gen(file_path, cell_type):
 
     meta_df = rbind(meta_df, new_entry)
     }
+    print('Meta-analysis bound to meta_df')
     ''',
     )
 
