@@ -45,7 +45,6 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
                     eqtl_df2['end']= (eqtl_df2['pos'].astype(float) + eqtl_df2['ref_len'].astype(float) * eqtl_df2['motif_len'].astype(float)).round().astype(int)
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
-                    print(f'{gene}{cell_type2}:{pos}_{motif}')
                     eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
 
@@ -69,10 +68,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
                     if row['coeff'] * eqtl_df2_coeff < 0:
                         opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
-                except FileNotFoundError:
-                    print('gene')
-                    print(eqtl_df2)
-
+                except:
+                    continue
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
     o_file_path_opposite = output_path(f'prep_files/{cell_type}/opposite_signed_betas.csv')
