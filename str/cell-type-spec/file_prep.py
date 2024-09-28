@@ -85,8 +85,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
 def main(eqtl_file, associatr_dir):
     df = pd.read_csv(eqtl_file)
     df = df.drop_duplicates(subset=['chr', 'pos', 'motif'])
-    #for cell_type in df['cell_type'].unique():
-    for cell_type in ['ASDC']:
+    for cell_type in df['cell_type'].unique():
         cell_type_eqtls = df[df['cell_type'] == cell_type]
         j = get_batch(name='meta_eqt_file_prep').new_python_job(name=f'{cell_type}_meta_eqt_file_prep')
         j.call(meta_eqt_file_prep, cell_type_eqtls, cell_type, associatr_dir)
