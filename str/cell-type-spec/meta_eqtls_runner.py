@@ -90,7 +90,7 @@ def run_meta_gen(file_path, cell_type):
 
 
     new_entry = data.frame(
-        chr = df[i, "chrom"],
+        chrom = df[i, "chrom"],
         pos = df[i, "pos"],
         end = df[i, "end"],
         gene_name = df[i, "gene_name"],
