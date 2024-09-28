@@ -88,12 +88,13 @@ def run_meta_gen(file_path, cell_type):
     result_df <- rbind(row_cohort1, row_cohort2)
     m.gen = metagen(result_df$coeff, result_df$se, random = TRUE)
 
-    df[i]
+    print(df[i])
 
     new_entry = data.frame(
         chrom = df[i, "chrom"],
         pos = df[i, "pos"],
         end = df[i, "end"])
+
         #gene_name = df[i, "gene_name"],
         #motif = df[i, "motif"],
         #celltype_main = df[i, "celltype_main"],
