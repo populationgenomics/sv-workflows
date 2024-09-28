@@ -48,7 +48,7 @@ def run_meta_gen(file_path, cell_type):
     meta_df <- data.frame(
     chrom = character(),
     pos = numeric(),
-    end = numeric()
+    end = numeric(),
     gene_name = character(),
     motif = character(),
     celltype_main = character(),
@@ -63,8 +63,7 @@ def run_meta_gen(file_path, cell_type):
     pval_q_meta = numeric(),
     pval_meta = numeric(),
     lowerCI_meta = numeric(),
-    upperCI_meta = numeric()
-    )
+    upperCI_meta = numeric())
     ''',
     )
 
