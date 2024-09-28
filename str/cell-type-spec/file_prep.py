@@ -56,6 +56,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                             'pos': [pos],
                             'end': [end],
                             'motif': [motif],
+                            'gene_name' : [gene],
                             'celltype_main': [cell_type],
                             'coeff_main': [row['coeff']],
                             'se_main': [row['se']],
