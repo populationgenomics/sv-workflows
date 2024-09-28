@@ -88,6 +88,7 @@ def run_meta_gen(file_path, cell_type):
     result_df <- rbind(row_cohort1, row_cohort2)
     m.gen = metagen(result_df$coeff, result_df$se, random = TRUE)
 
+    df[i]
 
     new_entry = data.frame(
         chrom = df[i, "chrom"],
