@@ -40,7 +40,7 @@ def run_meta_gen(file_path, cell_type):
         r_from_pd_df1 = ro.conversion.get_conversion().py2rpy(d1)
 
     # initialise R variable in the R environment
-    ro.globalenv['r_df1'] = r_from_pd_df1
+    ro.globalenv['df'] = r_from_pd_df1
 
     # initialise empty df to store meta results
     ro.r(
