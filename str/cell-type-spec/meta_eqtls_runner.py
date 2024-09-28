@@ -93,7 +93,7 @@ def run_meta_gen(file_path, cell_type):
     new_entry = data.frame(
         chrom = df[i, "chrom"],
         pos = df[i, "pos"],
-        end = df[i, "end"],
+        end = df[i, "end"])
         #gene_name = df[i, "gene_name"],
         #motif = df[i, "motif"],
         #celltype_main = df[i, "celltype_main"],
@@ -109,7 +109,7 @@ def run_meta_gen(file_path, cell_type):
         #pval_meta = m.gen$pval.random,
         #lowerCI_meta = m.gen$lower.random,
         #upperCI_meta = m.gen$upper.random,
-    )
+
 
 
 
