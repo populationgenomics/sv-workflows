@@ -38,14 +38,18 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
         pval = row['pval_pooled']
         for cell_type2 in cell_type_array:
             if cell_type2 != cell_type:
+                if gene == "ENSG00000065883":
+                    print('Processing ENSG00000065883')
                 file = f'{associatr_dir}/{cell_type2}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
+                    if gene == "ENSG00000065883":
+                        print('Reading in ENSG00000065883')
+                    if gene == "ENSG00000065883":
+                        eqtl_df2.write_csv(output_path(f'prep_files/{cell_type}/{cell_type2}_{gene}_eqtl_df2.csv'))
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
-                    if gene == "ENSG00000065883":
-                        eqtl_df2.write_csv(output_path(f'prep_files/{cell_type}/{cell_type2}_{gene}_eqtl_df2.csv'))
                     eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
 
