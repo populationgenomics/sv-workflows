@@ -47,7 +47,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
                     if gene == "ENSG00000065883":
-                        print(eqtl_df2)
+                        eqtl_df2.write_csv(output_path(f'prep_files/{cell_type}/{cell_type2}_{gene}_eqtl_df2.csv'))
 
                     ## add a row to the meta_input_df
                     new_row = pd.DataFrame(
