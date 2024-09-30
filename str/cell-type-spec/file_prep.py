@@ -43,8 +43,6 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
-                    eqtl_df2['end']= (eqtl_df2['pos'].astype(float) + eqtl_df2['ref_len'].astype(float) * eqtl_df2['motif_len'].astype(float)).round().astype(int)
-                    eqtl_df2 = eqtl_df2[eqtl_df2['end']==end]
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
                     eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
