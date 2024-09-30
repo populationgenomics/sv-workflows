@@ -46,6 +46,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
                     eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
+                    if gene == "ENSG00000065883":
+                        print(eqtl_df2)
 
                     ## add a row to the meta_input_df
                     new_row = pd.DataFrame(
