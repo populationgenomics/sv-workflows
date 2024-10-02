@@ -24,12 +24,13 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
     import pandas as pd
 
     from cpg_utils.hail_batch import output_path
+
     meta_input_df = pd.DataFrame()
     opposite_signed_betas = pd.DataFrame()
     cell_type_list = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
     cell_type_array = cell_type_list.split(',')
 
-    for index,row in cell_type_eqtls.iterrows():
+    for index, row in cell_type_eqtls.iterrows():
         gene = row['gene_name']
         chrom = row['chr']
         pos = row['pos']
@@ -43,12 +44,18 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
-                    eqtl_df2['end']= (eqtl_df2['pos'].astype(float) + eqtl_df2['ref_len'].astype(float) * eqtl_df2['motif_len'].astype(float)).round().astype(int)
-                    eqtl_df2 = eqtl_df2[eqtl_df2['end']==end]
+                    eqtl_df2['end'] = (
+                        (
+                            eqtl_df2['pos'].astype(float)
+                            + eqtl_df2['ref_len'].astype(float) * eqtl_df2['motif_len'].astype(float)
+                        )
+                        .round()
+                        .astype(int)
+                    )
+                    eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
                     eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
-
 
                     ## add a row to the meta_input_df
                     new_row = pd.DataFrame(
@@ -57,7 +64,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                             'pos': [pos],
                             'end': [end],
                             'motif': [motif],
-                            'gene_name' : [gene],
+                            'gene_name': [gene],
                             'celltype_main': [cell_type],
                             'coeff_main': [row['coeff']],
                             'se_main': [row['se']],
@@ -85,7 +92,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
 def main(eqtl_file, associatr_dir):
     df = pd.read_csv(eqtl_file)
     for cell_type in df['cell_type'].unique():
-    #for cell_type in ['ASDC']:
+        # for cell_type in ['ASDC']:
         cell_type_eqtls = df[df['cell_type'] == cell_type]
         j = get_batch(name='meta_eqt_file_prep').new_python_job(name=f'{cell_type}_meta_eqt_file_prep')
         j.call(meta_eqt_file_prep, cell_type_eqtls, cell_type, associatr_dir)
