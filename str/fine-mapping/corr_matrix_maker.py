@@ -55,7 +55,7 @@ def ld_parser(
 
     if str_fdr.empty:
         print(f'No eSTRs for {celltype}')
-        return
+        return  # type: ignore
 
     for index, row in str_fdr.iterrows():  # iterate over each gene
         gene = row['gene_name']
@@ -140,7 +140,7 @@ def ld_parser(
             sep='\t',
         )
         print(f"Wrote correlation matrix for {gene}")
-    return
+    return  # type: ignore
 
 
 @click.option(
