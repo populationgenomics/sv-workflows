@@ -15,8 +15,8 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_ukbb_runner.py \
-    --pheno-output-name=gymrek-ukbb-alkaline_phosphatase \
-    --celltypes "B_intermediate" \
+    --pheno-output-name=gymrek-ukbb-apolipoprotein-a \
+    --celltypes "CD16_Mono" \
     --max-parallel-jobs 10000
 
 """
@@ -50,7 +50,8 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
     gwas_r = gwas_r %>% filter((beta!=0) | (varbeta!=0))
     gwas_r = gwas_r %>% distinct(snp, .keep_all = TRUE)
     gwas_r = gwas_r%>% as.list()
-    gwas_r$type = 'cc'
+    gwas_r$type = 'quant'
+    gwas_r$sdY = 1
 
     ''',
     )
