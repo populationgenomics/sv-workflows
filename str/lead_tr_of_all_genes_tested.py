@@ -26,10 +26,6 @@ def gene_with_lead_tr_parser(
     cell_type,
 ):
     """ """
-    import numpy as np
-    import scanpy as sc
-    from scipy.stats import norm
-
     from cpg_utils import to_path
     from cpg_utils.hail_batch import output_path
 
