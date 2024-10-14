@@ -147,7 +147,7 @@ def main(input_dir, cell_types, title, ylim):
             ['Permuted control'],
             bbox_to_anchor=(1.05, 0),
             loc='upper left',
-            fontsize=13,
+            fontsize=12,
         ),
     )
     sns.despine()
