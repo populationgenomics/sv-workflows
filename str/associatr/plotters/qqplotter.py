@@ -7,7 +7,7 @@ analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level
     qqplotter.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/raw_pval_extractor \
     --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC \
-    --title='associaTR BioHEART' --ylim=308
+    --title='associaTR BioHEART' --ylim=330
 
 
 """
@@ -80,8 +80,8 @@ def main(input_dir, cell_types, title, ylim):
     }
 
     # Create QQ plot
-    plt.figure(figsize=(10, 6))
-    fig, ax = plt.subplots(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(10, 8))
 
     # Define a list of colors
     colors = [
