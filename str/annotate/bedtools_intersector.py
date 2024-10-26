@@ -13,7 +13,7 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path
 
 CATALOG_PATH = 'gs://cpg-bioheart-test/str/ncAnnot.v0.14.jul2024.bed'
-TR_PATH = 'gs://cpg-bioheart-test/saige-qtl/rare_singlevariants_p5e_6_immune_coloc_qv_05_chr_pos_end_only.tsv'
+TR_PATH = 'gs://cpg-bioheart-test/saige-qtl/rare_singlevariants_p5e_6_qv_05_chr_pos_end_only.tsv'
 
 
 # Initializing Batch
@@ -34,6 +34,6 @@ tr = b.read_input(TR_PATH)
 bedtools_job.command(f'bedtools intersect -a {tr} -b {catalog} -wo > {bedtools_job.ofile}')
 
 # write output to GCP bucket for this dataset
-b.write_output(bedtools_job.ofile, 'gs://cpg-bioheart-test/str/arthur/anna_rare_singlevariants_p5e_6_immune_coloc_arthur_intersect.bed')
+b.write_output(bedtools_job.ofile, 'gs://cpg-bioheart-test/str/arthur/anna_rare_singlevariants_p5e_6_qv_05_arthur_intersect.bed')
 
 b.run(wait=False)
