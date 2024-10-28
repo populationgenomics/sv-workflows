@@ -84,37 +84,37 @@ def main(input_dir, cell_types, title, ylim):
     fig, ax = plt.subplots(figsize=(10, 8))
 
     # Define a list of colors
-    colors = [
-        'tab:blue',
-        'tab:orange',
-        'tab:green',
-        'tab:red',
-        'tab:purple',
-        'tab:brown',
-        'tab:pink',
-        'tab:gray',
-        'tab:olive',
-        'tab:cyan',
-        'darkred',
-        'darkblue',
-        'darkgreen',
-        'darkorange',
-        'darkviolet',
-        'darkgoldenrod',
-        'deeppink',
-        'dimgray',
-        'dodgerblue',
-        'firebrick',
-        'forestgreen',
-        'fuchsia',
-        'gold',
-        'indigo',
-        'khaki',
-        'lawngreen',
-        'lightcoral',
-        'lightseagreen',
-        'lightskyblue',
-    ]
+    # Define a color mapping dictionary for each cell type
+    color_mapping = {
+    'CD4_TCM': '#0C46A0FF',
+    'CD4_Naive': '#1976D2FF',
+    'CD4_TEM': '#2096F2FF',
+    'CD4_CTL': '#64B4F6FF',
+    'Treg': '#90CAF8FF',
+    'CD4_Proliferating': '#BADEFAFF',
+    'gdT': '#817717FF',
+    'MAIT': '#AEB32BFF',
+    'dnT': '#CCDC39FF',
+    'ILC': '#DCE674FF',
+    'CD8_TEM': '#311A92FF',
+    'CD8_Naive': '#5E34B1FF',
+    'CD8_TCM': '#7E57C1FF',
+    'CD8_Proliferating': '#D1C4E9FF',
+    'NK': '#AC1357FF',
+    'NK_CD56bright': '#E91E63FF',
+    'NK_Proliferating': '#F38EB1FF',
+    'B_naive': '#F47F17FF',
+    'B_intermediate': '#FABF2CFF',
+    'B_memory': '#FFEB3AFF',
+    'Plasmablast': '#FFF176FF',
+    'CD14_Mono': '#388D3BFF',
+    'CD16_Mono': '#80C684FF',
+    'cDC2': '#5D3F37FF',
+    'pDC': '#795447FF',
+    'cDC1': '#A0877FFF',
+    'ASDC': '#D7CCC7FF',
+    'HSPC': '#BDBDBDFF',
+    }
 
     # Pre-calculate sorted values
     expected_sorted_values = {
@@ -127,11 +127,11 @@ def main(input_dir, cell_types, title, ylim):
     # Loop through each cell type and plot the scatter plot
     for i, cell_type in enumerate(cell_type_list):
         output_label = cell_type_mapping.get(cell_type, cell_type)
-        color_index = i % len(colors)  # Get the index of the color to use for the current cell type
+        color = color_mapping.get(cell_type, 'grey')   # Get the index of the color to use for the current cell type
         ax.scatter(
             expected_sorted_values[cell_type],
             observed_sorted_values[cell_type],
-            color=colors[color_index],
+            color=color,
             label=output_label,
             s=9,
         )
