@@ -6,7 +6,7 @@ analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level
     --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=8G \
     qqplotter.py \
     --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/raw_pval_extractor \
-    --cell-types=CD4_TCM,CD4_Naive,NK,CD8_TEM,B_naive,CD8_Naive,CD14_Mono,CD4_TEM,CD8_TCM,B_intermediate,B_memory,Treg,CD4_CTL,gdT,CD16_Mono,MAIT,NK_CD56bright,cDC2,NK_Proliferating,dnT,pDC,Plasmablast,ILC,HSPC,CD8_Proliferating,cDC1,CD4_Proliferating,ASDC \
+    --cell-types=CD4_TCM,CD4_Naive,NK,CD8_TEM,B_naive,CD8_Naive,CD14_Mono,CD4_TEM,CD8_TCM,B_intermediate,B_memory,Treg,CD4_CTL,gdT,CD16_Mono,MAIT,NK_CD56bright,cDC2,NK_Proliferating,dnT,pDC,Plasmablast,ILC,HSPC,CD8_Proliferating,cDC1,CD4_Proliferating,ASDC,CD4_TCM_permuted \
     --title='associaTR BioHEART' --ylim=315
 
 
@@ -165,7 +165,7 @@ def main(input_dir, cell_types, title, ylim):
 
     sns.despine()
     ax.set_xlabel('Expected -log₁₀(p-value)', fontsize=17)
-    ax.set_ylabel('Expected -log₁₀(p-value)', fontsize=17)
+    ax.set_ylabel('Observed -log₁₀(p-value)', fontsize=17)
 
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
