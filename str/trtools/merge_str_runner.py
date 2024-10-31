@@ -83,7 +83,7 @@ def main(
                                 'vcf.gz': each_vcf,
                                 'vcf.gz.tbi': f'{each_vcf}.tbi',
                             },
-                        )['vcf.gz'],
+                        )['vcf.gz'].split('/', 1)[-1],
                     )
                 num_samples = num_samples + len(ids)
 
