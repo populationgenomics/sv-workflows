@@ -78,12 +78,12 @@ def main(
                 for id in ids:
                     each_vcf = os.path.join(input_dir, f'{id}_eh_shard{shard_index}.reheader.vcf.gz')
                     batch_vcfs.append(
-                        b.read_input_group(
+                        '${BATCH_TMPDIR}/'+str(b.read_input_group(
                             **{
                                 'vcf.gz': each_vcf,
                                 'vcf.gz.tbi': f'{each_vcf}.tbi',
                             },
-                        )['vcf.gz'].split('/', 1)[-1],
+                        )['vcf.gz'].split('/', 1)[-1])
                     )
                 num_samples = num_samples + len(ids)
 
