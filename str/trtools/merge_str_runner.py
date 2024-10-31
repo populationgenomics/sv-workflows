@@ -38,7 +38,7 @@ TRTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images-dev/trtoo
 )
 @click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='20G')
 @click.option('--job-memory', help='Memory of the Hail batch job', default='standard')
-@click.option('--job-cpu', help='Number of CPUs of the Hail batch job', default=8)
+@click.option('--job-cpu', help='Number of CPUs of the Hail batch job', default=1)
 # input sample ID
 @click.argument('input-file-paths', nargs=-1)
 @click.command()
