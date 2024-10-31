@@ -25,7 +25,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
-TRTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images-dev/trtools:latest'
+TRTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images-dev/trtools:v6.0.2'
 
 
 # inputs:
