@@ -90,11 +90,15 @@ def main(
         if len(cpg_ids) != len(set(cpg_ids)):
             raise ValueError('Duplicate CPG IDs detected in sample list')
 
-        # TODO Convert to use mergeSTR --vcfs-list when that option is available
+        batch_vcfs_list = '${BATCH_TMPDIR}/batch_vcfs.list'
+
+        newline = '\n'
+        # Writing cat...EOF on one line avoids any indentation on the batch_vcfs and EOF lines
         trtools_job.command(
             f"""
-        cd ${{BATCH_TMPDIR}}/inputs
-        mergeSTR --vcfs `(echo {";echo ,".join(batch_vcfs)}) | sed 's|'${{BATCH_TMPDIR}}'/inputs/*||' | tr -d '\\n'` --out {trtools_job.vcf_output} --vcftype eh
+        cat <<EOF >{batch_vcfs_list}\n{newline.join(batch_vcfs)}\nEOF
+
+        mergeSTR --vcfs-list {batch_vcfs_list} --out {trtools_job.vcf_output} --vcftype eh
         bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
         tabix -f -p vcf {trtools_job.vcf_output['vcf.gz']}  > {trtools_job.vcf_output['vcf.gz.tbi']}
         """,
