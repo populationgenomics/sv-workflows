@@ -96,7 +96,7 @@ def main(
         # Writing cat...EOF on one line avoids any indentation on the batch_vcfs and EOF lines
         trtools_job.command(
             f"""
-        cat <<'EOF' >{batch_vcfs_list}\n{newline.join(batch_vcfs)}\nEOF
+        cat <<EOF >{batch_vcfs_list}\n{newline.join(batch_vcfs)}\nEOF
 
         mergeSTR --vcfs-list {batch_vcfs_list} --out {trtools_job.vcf_output} --vcftype eh
         bgzip -c {trtools_job.vcf_output}.vcf > {trtools_job.vcf_output['vcf.gz']}
