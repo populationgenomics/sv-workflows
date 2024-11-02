@@ -8,9 +8,9 @@ Optional ability to add in VCFs from another file directory (but must be sharded
 Specify VCFs from each distinct file directory as a comma separated list of the input directory and the sample list file (in that order) eg: input-dir-1,sample-1 input-dir-2,sample-2
 
 For example:
-analysis-runner --access-level full --dataset tob-wgs --description '5M-3M mergeSTR tester' --output-dir 'str/5M-3M experiment/merge_str/v1' merge_str_runner.py --num-shards=27 \
-gs://cpg-tob-wgs-main-analysis/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt \
-gs://cpg-tob-wgs-main-analysis/str/polymorphic_run/merge_str_prep/v1,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-3M.txt
+analysis-runner --access-level test --dataset bioheart --description '5M-3M mergeSTR tester' --output-dir 'str/polymorphic_run/merge_str/v1_n2412' merge_str_runner.py --num-shards=27 \
+gs://cpg-tob-wgs-test-analysis/str/5M_run_combined_vcfs_pruned/merge_str_prep/v4,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-5M.txt \
+gs://cpg-tob-wgs-test-analysis/str/polymorphic_run/merge_str_prep/v1,gs://cpg-tob-wgs-test/str/polymorphic_run/mergeSTR-tester-3M.txt
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -51,7 +51,7 @@ def main(
 ):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
-    for shard_index in range(1, num_shards + 1):
+    for shard_index in [27]:
         # Initialise TRTools job to run mergeSTR
         trtools_job = b.new_job(name=f'mergeSTR shard {shard_index}')
         trtools_job.image(TRTOOLS_IMAGE)
@@ -69,26 +69,19 @@ def main(
         # read in input file paths
         batch_vcfs = []
         num_samples = 0
-        cpg_ids = []
-        for pair in input_file_paths:
-            input_dir, sample_list = pair.split(',')
-            with to_path(sample_list).open() as f:
-                ids = [line.strip() for line in f]
-                cpg_ids.extend(ids)
-                for id in ids:
-                    each_vcf = os.path.join(input_dir, f'{id}_eh_shard{shard_index}.reheader.vcf.gz')
-                    batch_vcfs.append(
-                        b.read_input_group(
-                            **{
-                                'vcf.gz': each_vcf,
-                                'vcf.gz.tbi': f'{each_vcf}.tbi',
-                            },
-                        )['vcf.gz'],
-                    )
-                num_samples = num_samples + len(ids)
+        input_file_paths = ['gs://cpg-bioheart-test-analysis/str/polymorphic_run/merge_str/bioheart/v2_n367/mergeSTR_367_samples_eh_shard27.vcf.gz','gs://cpg-bioheart-test-analysis/str/polymorphic_run_n2045/merge_str/v1/mergeSTR_2045_samples_eh_shard27.vcf.gz']
+        for input_file_path in input_file_paths:
+            each_vcf = input_file_path
+            batch_vcfs.append(
+                b.read_input_group(
+                    **{
+                        'vcf.gz': each_vcf,
+                        'vcf.gz.tbi': f'{each_vcf}.tbi',
+                    },
+                )['vcf.gz'],
+            )
+        num_samples = 367+2045
 
-        if len(cpg_ids) != len(set(cpg_ids)):
-            raise ValueError('Duplicate CPG IDs detected in sample list')
 
         batch_vcfs_list = '${BATCH_TMPDIR}/batch_vcfs.list'
 
@@ -104,7 +97,7 @@ def main(
         """,
         )
 
-        output_path_name = output_path(f'mergeSTR_{num_samples}_samples_eh_shard{shard_index}', 'analysis')
+        output_path_name = output_path(f'mergeSTR_{num_samples}_samples_eh_shard27', 'analysis')
         b.write_output(trtools_job.vcf_output['vcf.gz'], f'{output_path_name}.vcf.gz')
         b.write_output(trtools_job.vcf_output['vcf.gz.tbi'], f'{output_path_name}.vcf.gz.tbi')
 
