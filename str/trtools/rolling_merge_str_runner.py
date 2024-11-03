@@ -5,7 +5,7 @@ This script merges two (or more) mergeSTR outputs into a new mergeSTR output (ro
 Specify as args the paths to the mergeSTR output (including file name prefix).
 
 For example:
-analysis-runner --access-level test --dataset bioheart --description '5M-3M mergeSTR tester' --output-dir 'str/polymorphic_run/merge_str/v1_n2412' merge_str_runner.py --num-shards=27 \
+analysis-runner --access-level test --dataset bioheart --description '5M-3M mergeSTR tester' --output-dir 'str/polymorphic_run/merge_str/v1_n2412' rolling_merge_str_runner.py --num-shards=27 \
 gs://cpg-bioheart-test-analysis/str/polymorphic_run/merge_str/bioheart/v2_n367/mergeSTR_367_samples_eh gs://cpg-bioheart-test-analysis/str/polymorphic_run_n2045/merge_str/v1/mergeSTR_2045_samples_eh
 
 Required packages: sample-metadata, hail, click, os
