@@ -10,7 +10,7 @@ gene_list_dir ='gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA
 max_parallel_jobs=500
 cis_window_size=100000
 # version of the output
-version='v1-nonlinearlog'
+version='v2-nonlinearlog'
 # job storage
 job_storage = '0G'
 job_cpu =1
