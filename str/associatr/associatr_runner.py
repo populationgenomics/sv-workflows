@@ -88,7 +88,7 @@ def main():
                 if get_config()['associatr']['always_run']:
                     associatr_job.always_run()
 
-                associatr_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/trtools_nonlinear_sum:master')
+                associatr_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images-dev/trtools_nonlinear_sum:largest_allele_effect')
                 associatr_job.storage(get_config()['associatr']['job_storage'])
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
                 associatr_job.declare_resource_group(association_results={'tsv': '{root}.tsv'})
