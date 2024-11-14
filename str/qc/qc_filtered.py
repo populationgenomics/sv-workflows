@@ -155,7 +155,7 @@ def qc_filter(mt_path, version):
 
     # write out mt
     mt_path = output_path(f'{version}/str_filtered.mt')
-    hl.write_matrix_table(mt, mt_path)
+    mt.write(mt_path)
 
 
 
