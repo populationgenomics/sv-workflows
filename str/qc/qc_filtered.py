@@ -59,7 +59,7 @@ def qc_filter(mt_path, version):
 
     # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
     condition_allele_1 = (mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)
-    condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
+
     mt = mt.annotate_entries(
         GT=hl.if_else(
             condition_allele_1,
@@ -102,7 +102,7 @@ def qc_filter(mt_path, version):
             mt.SO,
         ),
     )
-
+    condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
     mt = mt.annotate_entries(
         GT=hl.if_else(
             condition_allele_2,
