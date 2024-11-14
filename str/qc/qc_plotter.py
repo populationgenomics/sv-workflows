@@ -27,9 +27,35 @@ def main(mt_path):
 
     print(f'MT dimensions: {mt.count()}')
 
-    print(f'MT rows with 100% call rate: {mt.filter_rows(mt.variant_qc.call_rate == 1).count()}')
-    print(f'MT rows with 90% call rate: {mt.filter_rows(mt.variant_qc.call_rate >= 0.9).count()}')
-    print(f'MT rows with 95% call rate: {mt.filter_rows(mt.variant_qc.call_rate >= 0.95).count()}')
+    mt = mt.filter_rows(mt.locus.contig != 'chrX')
+
+    print(f'MT dimensions after filtering out chrX: {mt.count()}')
+
+    mt = mt.filter_rows(mt.num_alleles > 1)
+
+    print(f'MT rows with >1 allele: {mt.count()}')
+
+    mt = mt.filter_rows(mt.variant_qc.call_rate >= 0.9)
+
+    print(f'MT rows with 90% call rate: {mt.count()}')
+
+    mt = mt.filter_rows(mt.obs_het >= 0.00995)
+
+    print(f'MT rows with obs_het >= 0.00995: {mt.count()}')
+
+    mt = mt.filter_rows(mt.binom_hwep >= 0.000001)
+
+    print(f'MT rows with binom_hwep >= 0.000001: {mt.count()}')
+
+    print(f'MT entries count is {mt.entries().count()}')
+
+    #Set calls outside of [-30,20] relative to mode to NA
+    mt = mt.filter_entries(((mt.allele_1_minus_mode >= -30) & (mt.allele_1_minus_mode <= 20)) & ((mt.allele_2_minus_mode >= -30) & (mt.allele_2_minus_mode <= 20)))
+
+    print(f'MT entries count after filtering [-30,20] relative to mode: {mt.entries().count()}')
+
+
+
 
 
 
