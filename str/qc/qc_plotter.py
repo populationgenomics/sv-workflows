@@ -4,7 +4,7 @@
 This script makes QC plots
 
 analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt
 
 """
 import hail as hl
@@ -23,7 +23,14 @@ def main(mt_path):
     init_batch()
 
     mt = hl.read_matrix_table(mt_path)
-    #print(f'MT dimensions: {mt.count()}')
+
+
+    print(f'MT dimensions: {mt.count()}')
+
+    print(f'MT rows with 100% call rate: {mt.filter_rows(mt.variant_qc.call_rate == 1).count()}')
+    print(f'MT rows with 90% call rate: {mt.filter_rows(mt.variant_qc.call_rate >= 0.9).count()}')
+    print(f'MT rows with 95% call rate: {mt.filter_rows(mt.variant_qc.call_rate >= 0.95).count()}')
+
 
 
     # Filter out monomorphic loci,locus-level call rate 0.9 threshold, obs_het >= 0.00995
@@ -37,7 +44,7 @@ def main(mt_path):
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
     #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_rows.tsv.bgz')
-
+    """
     alleles_minus_mode_ht = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
@@ -51,12 +58,12 @@ def main(mt_path):
     #hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
     # Calculate the frequency of every distinct value of 'alleles_minus_mode'
-    alleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
-        frequency=hl.agg.count()
-    )
-
+    #a#lleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
+   #     frequency=hl.agg.count()
+    #)
+    """
     # Export the result to a TSV file
-    alleles_frequency_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_alleles_minus_mode_freq.tsv.bgz')
+    #alleles_frequency_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_alleles_minus_mode_freq.tsv.bgz')
 
     # calculate proportion of alleles that are within 20bp of the mode allele
     #alleles_minus_mode_ht = alleles_minus_mode_ht.annotate(
