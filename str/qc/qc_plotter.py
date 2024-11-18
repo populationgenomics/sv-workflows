@@ -27,32 +27,32 @@ def main(mt_path):
 
     print(f'MT dimensions: {mt.count()}')
 
-    mt = mt.filter_rows(mt.locus.contig != 'chrX')
+    #mt = mt.filter_rows(mt.locus.contig != 'chrX')
 
-    print(f'MT dimensions after filtering out chrX: {mt.count()}')
+    #print(f'MT dimensions after filtering out chrX: {mt.count()}')
 
-    mt = mt.filter_rows(mt.num_alleles > 1)
+    #mt = mt.filter_rows(mt.num_alleles > 1)
 
-    print(f'MT rows with >1 allele: {mt.count()}')
+    #print(f'MT rows with >1 allele: {mt.count()}')
 
-    mt = mt.filter_rows(mt.variant_qc.call_rate >= 0.9)
+    #mt = mt.filter_rows(mt.variant_qc.call_rate >= 0.9)
 
-    print(f'MT rows with 90% call rate: {mt.count()}')
+    #print(f'MT rows with 90% call rate: {mt.count()}')
 
-    mt = mt.filter_rows(mt.obs_het >= 0.00995)
+    #mt = mt.filter_rows(mt.obs_het >= 0.00995)
 
-    print(f'MT rows with obs_het >= 0.00995: {mt.count()}')
+    #print(f'MT rows with obs_het >= 0.00995: {mt.count()}')
 
-    mt = mt.filter_rows(mt.binom_hwep >= 0.000001)
+    #mt = mt.filter_rows(mt.binom_hwep >= 0.000001)
 
-    print(f'MT rows with binom_hwep >= 0.000001: {mt.count()}')
+    #print(f'MT rows with binom_hwep >= 0.000001: {mt.count()}')
 
-    print(f'MT entries count is {mt.entries().count()}')
+    #print(f'MT entries count is {mt.entries().count()}')
 
     #Set calls outside of [-30,20] relative to mode to NA
-    mt = mt.filter_entries(((mt.allele_1_minus_mode >= -30) & (mt.allele_1_minus_mode <= 20)) & ((mt.allele_2_minus_mode >= -30) & (mt.allele_2_minus_mode <= 20)))
+    #mt = mt.filter_entries(((mt.allele_1_minus_mode >= -30) & (mt.allele_1_minus_mode <= 20)) & ((mt.allele_2_minus_mode >= -30) & (mt.allele_2_minus_mode <= 20)))
 
-    print(f'MT entries count after filtering [-30,20] relative to mode: {mt.entries().count()}')
+    #print(f'MT entries count after filtering [-30,20] relative to mode: {mt.entries().count()}')
 
 
 
@@ -70,7 +70,7 @@ def main(mt_path):
     #potato = mt.filter_entries((mt.allele_1_minus_mode> -21) & (mt.allele_1_minus_mode<21) & (mt.allele_2_minus_mode>-21) & (mt.allele_2_minus_mode<21))
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
     #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_rows.tsv.bgz')
-    """
+
     alleles_minus_mode_ht = mt.select_rows(
     allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
         .extend(hl.agg.collect(mt.allele_2_minus_mode))
@@ -84,12 +84,13 @@ def main(mt_path):
     #hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
     # Calculate the frequency of every distinct value of 'alleles_minus_mode'
-    #a#lleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
-   #     frequency=hl.agg.count()
-    #)
+    alleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
+        frequency=hl.agg.count()
+    )
+    alleles_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_alleles_minus_mode_freq.tsv.bgz')
     """
     # Export the result to a TSV file
-    #alleles_frequency_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_alleles_minus_mode_freq.tsv.bgz')
+
 
     # calculate proportion of alleles that are within 20bp of the mode allele
     #alleles_minus_mode_ht = alleles_minus_mode_ht.annotate(
@@ -144,7 +145,7 @@ def main(mt_path):
         # Alleles minus ref histogram
 
 
-    """
+
     # Alleles minus mode histogram
     mt = mt.filter_rows(mt.locus == hl.locus('chr1', 105963350))
     alleles_minus_mode_ht = mt.select_rows(
