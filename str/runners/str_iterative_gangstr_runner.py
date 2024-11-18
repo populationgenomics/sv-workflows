@@ -16,12 +16,9 @@ import os
 
 import click
 
-
 import hailtop.batch as hb
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path, reference_path
-
 from cpg_utils.hail_batch import get_batch, output_path, reference_path
 from metamist.graphql import gql, query
 
@@ -61,8 +58,7 @@ def main(variant_catalog, dataset, cpg_ids: list[str]):  # pylint: disable=missi
 
     # Iterate over each sample to call GangSTR
     for cpg_id in cpg_ids:
-
-         # retrieve corresponding cram path
+        # retrieve corresponding cram path
         cram_retrieval_query = gql(
             """
             query MyQuery($dataset: String!,$cpg_id: [String!]!) {
