@@ -46,7 +46,7 @@ def main(variant_catalog, dataset, cpg_ids: list[str]):  # pylint: disable=missi
     if any(keyword in dataset for keyword in ['hgdp', 'thousand-genomes']):
         ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
     else:
-        ref_fasta = reference_path('broad/ref_fasta')
+        ref_fasta = str(reference_path('broad/ref_fasta'))
 
     gangstr_regions = b.read_input(variant_catalog)
 
