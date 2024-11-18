@@ -49,7 +49,7 @@ def main(variant_catalog, dataset, external_wgs_ids: list[str]):  # pylint: disa
 
     external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(dataset, list(external_wgs_ids))
     cpg_id_to_external_id = {cpg_id: external_wgs_id for external_wgs_id, cpg_id in external_id_to_cpg_id.items()}
-    if dataset in ['tob-wgs', 'hgdp']:
+    if dataset in ['tob-wgs', 'hgdp', 'thousand-genomes']:
         ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
     else:
         ref_fasta = reference_path('broad/ref_fasta')
