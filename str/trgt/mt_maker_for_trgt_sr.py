@@ -53,9 +53,8 @@ def main():
     )
     qc_table = qc_table.key_by('REPID')
     repid_list = qc_table.aggregate(hl.agg.collect(qc_table.REPID))
-
-    # Filter the MatrixTable rows based on REPIDs
-    mt = mt.filter_rows(hl.literal(repid_list).contains(mt.REPID))
+    repid_set = hl.set(repid_list)
+    mt = mt.filter_rows(repid_set.contains(mt.REPID))
 
     mt = mt.annotate_entries(lr_summed_rep_length=hl.int(mt.MS[0]))
     mt = mt.annotate_entries(strict_concord=hl.if_else(mt.sr_summed_rep_length == mt.lr_summed_rep_length, 1, 0))
@@ -66,12 +65,12 @@ def main():
         prop_strict_concord=hl.agg.sum(mt.strict_concord) / 25,
         prop_off_by_one_concord=hl.agg.sum(mt.off_by_one_concord) / 25,
     )
-    #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
 
-    mt.write(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
-        overwrite=True,
-    )
+    #mt.write(
+    #    'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
+    #    overwrite=True,
+    #)
 
 
 if __name__ == '__main__':
