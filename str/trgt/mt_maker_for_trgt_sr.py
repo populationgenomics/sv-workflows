@@ -66,7 +66,7 @@ def main():
         prop_strict_concord=hl.agg.sum(mt.strict_concord) / 25,
         prop_off_by_one_concord=hl.agg.sum(mt.off_by_one_concord) / 25,
     )
-    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
+    #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
 
     mt.write(
         'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25.mt',
