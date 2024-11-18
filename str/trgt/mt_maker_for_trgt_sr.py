@@ -69,7 +69,7 @@ def main():
     #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
 
     mt.write(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25.mt',
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
         overwrite=True,
     )
 
