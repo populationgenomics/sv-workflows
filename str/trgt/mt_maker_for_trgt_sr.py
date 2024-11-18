@@ -20,7 +20,7 @@ from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 def main():
     init_batch(worker_memory='highmem')
-
+    '''
     mt = hl.import_vcf(
         'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/MS_sum_all.vcf.gz', force=True, array_elements_required=False,
     )
@@ -42,6 +42,9 @@ def main():
     mt = mt.key_rows_by('REPID')
     sr = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/sr_rep_lengths.mt')
     mt = mt.annotate_entries(sr_summed_rep_length=sr[mt.row_key, mt.col_key].sr_summed_rep_length)
+
+    '''
+    mt = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25.mt')
 
     qc_table = hl.import_table(
         'gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/str_annotated_rows.tsv.bgz',
