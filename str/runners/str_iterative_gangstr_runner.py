@@ -5,7 +5,7 @@
 This script uses GangSTRv2.5 to call STRs on WGS cram files.
 Required input: --variant-catalog (file path to variant catalog), --dataset, and external sample IDs
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_gangstr_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs-test CPG308239
+analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' str_iterative_gangstr_runner.py --variant-catalog=gs://cpg-tob-wgs-test/hoptan-str/Illuminavariant_catalog.json --dataset=tob-wgs-test CPGXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -36,7 +36,11 @@ GANGSTR_IMAGE = config['images']['gangstr']
 # input sample ID
 @click.argument('cpg-ids', nargs=-1)
 @click.command()
-def main(variant_catalog, dataset, cpg_ids: list[str]):  # pylint: disable=missing-function-docstring
+def main(variant_catalog, dataset, cpg_ids: list[str]):
+    """
+    Run GangSTR on WGS cram files
+
+    """
     # Initializing Batch
     b = get_batch()
 
