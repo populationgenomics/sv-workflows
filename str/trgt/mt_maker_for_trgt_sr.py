@@ -56,6 +56,11 @@ def main():
     repid_set = hl.set(repid_list)
     mt = mt.filter_rows(repid_set.contains(mt.REPID))
 
+    mt.write(
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
+        overwrite=True,)
+
+    '''
     mt = mt.annotate_entries(lr_summed_rep_length=hl.int(mt.MS[0]))
     mt = mt.annotate_entries(strict_concord=hl.if_else(mt.sr_summed_rep_length == mt.lr_summed_rep_length, 1, 0))
     mt = mt.annotate_entries(
@@ -71,6 +76,7 @@ def main():
     #    'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
     #    overwrite=True,
     #)
+    '''
 
 
 if __name__ == '__main__':
