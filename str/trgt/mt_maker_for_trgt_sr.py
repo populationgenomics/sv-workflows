@@ -44,7 +44,7 @@ def main():
     mt = mt.annotate_entries(sr_summed_rep_length=sr[mt.row_key, mt.col_key].sr_summed_rep_length)
 
     qc_table = hl.import_table(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_filtered_rows.tsv.bgz',
+        'gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/str_annotated_rows.tsv.bgz',
         delimiter='\t',
         quote=None,
     )
@@ -63,10 +63,10 @@ def main():
         prop_strict_concord=hl.agg.sum(mt.strict_concord) / 25,
         prop_off_by_one_concord=hl.agg.sum(mt.off_by_one_concord) / 25,
     )
-    #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/filtered_trgt_sr_25_rows.tsv.bgz')
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
 
     mt.write(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/filtered_trgt_sr_25.mt',
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25.mt',
         overwrite=True,
     )
 
