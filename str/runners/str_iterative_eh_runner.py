@@ -160,8 +160,10 @@ def main(
             )
             # per sample, run parallel jobs on each shard of the catalog
             for index, subcatalog in enumerate(catalog_files, start=1):
-
-                if to_path(output_path(f'{cpg_id}/{cpg_id}_eh_shard{index}.vcf', 'analysis')).exists() and not output_bam_json:
+                if (
+                    to_path(output_path(f'{cpg_id}/{cpg_id}_eh_shard{index}.vcf', 'analysis')).exists()
+                    and not output_bam_json
+                ):
                     continue
                 # ExpansionHunter job initialisation
                 eh_job = b.new_job(name=f'ExpansionHunter:{cpg_id} running  shard {index}/{len(catalog_files)}')
