@@ -42,7 +42,7 @@ def qc_filter(mt_path, version):
     """
     from cpg_utils.hail_batch import init_batch, output_path
 
-    init_batch(worker_memory='highmem',storage = '12G')
+    init_batch(worker_memory='highmem',worker_cores = 2)
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
