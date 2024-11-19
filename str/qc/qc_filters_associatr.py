@@ -28,21 +28,29 @@ import click
 import hail as hl
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch
-
+from cpg_utils.hail_batch import init_batch, output_path
 config = get_config()
 
-BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-def qc_filter(mt_path, version):
 
+@click.option(
+    '--mt-path',
+    help='GCS file path to mt (output of qc_annotator.py)',
+    type=str,
+)
+
+@click.option('--version', help='version of the output files', type=str, default='v1')
+@click.command()
+def main(
+    mt_path,
+    version,
+):
     """
-    Applies QC filters to the input MT
+    Runner to apply QC filters to input MT, and bgzip and tabix.
     """
-    from cpg_utils.hail_batch import init_batch, output_path
 
-    init_batch(worker_memory='highmem',worker_cores = 2)
+    init_batch(worker_memory='highmem')
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
@@ -151,7 +159,7 @@ def qc_filter(mt_path, version):
     # re-enforce locus level call rate >=0.9
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
-    print('MT filtered counts:' + str(mt.count()))
+
 
     # wrangle mt, prepare for export_vcf():
 
@@ -196,39 +204,6 @@ def qc_filter(mt_path, version):
             append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
             tabix=True,
         )
-
-
-@click.option(
-    '--mt-path',
-    help='GCS file path to mt (output of qc_annotator.py)',
-    type=str,
-)
-@click.option('--hail-storage', help='Hail storage', type=str, default='0G')
-@click.option('--hail-cpu', help='Hail CPU', type=int, default=1)
-@click.option('--hail-memory', help='Hail memory', type=str, default='standard')
-@click.option('--version', help='version of the output files', type=str, default='v1')
-@click.command()
-def main(
-    mt_path,
-    hail_storage,
-    hail_cpu,
-    hail_memory,
-    version,
-):
-    """
-    Runner to apply QC filters to input MT, and bgzip and tabix.
-    """
-
-    b = get_batch('Apply QC filters to MT and export chr-specific VCFs')
-
-    hail_job = b.new_python_job(name='QC filters')
-    hail_job.image(config['workflow']['driver_image'])
-    hail_job.storage(hail_storage)
-    hail_job.cpu(hail_cpu)
-    hail_job.memory(hail_memory)
-    hail_job.call(qc_filter, mt_path, version)
-
-    b.run(wait=False)
 
 
 if __name__ == '__main__':
