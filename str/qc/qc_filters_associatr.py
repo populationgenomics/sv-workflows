@@ -49,8 +49,7 @@ def main(
     """
     Runner to apply QC filters to input MT, and bgzip and tabix.
     """
-
-    init_batch(worker_memory='highmem')
+    init_batch(worker_memory='highmem',worker_cores=4)
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
