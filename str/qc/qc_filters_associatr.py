@@ -192,17 +192,22 @@ def main(
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
+    mt.write(
+        output_path(f'mt/hail_filtered.mt'),
+        overwrite=True,
+    )
+
     #for chr_index in range(22):  # iterate over chr1-22
-    for chr_index in range(8, 22):
-        mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
-        gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
+    #for chr_index in range(8, 22):
+        #mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
+        #gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
-        hl.export_vcf(
-            mt_chr,
-            gcs_output_path,
-            append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
-            tabix=True,
-        )
+        #hl.export_vcf(
+        #    mt_chr,
+        #    gcs_output_path,
+        #    append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
+        #    tabix=True,
+        #)
 
 
 if __name__ == '__main__':
