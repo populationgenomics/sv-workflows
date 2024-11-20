@@ -18,7 +18,7 @@ Applied filters:
     --description "Hail QC for associaTR" \
     --access-level "test" \
     --output-dir "str/associatr/final-freeze/input_files" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt \
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/associatr/final-freeze/input_files/mt/hail_filtered.mt \
     --version=v1-chr-specific
 
 """
@@ -49,11 +49,11 @@ def main(
     """
     Runner to apply QC filters to input MT, and bgzip and tabix.
     """
-    init_batch(worker_memory='highmem', worker_cores=4)
+    init_batch(worker_memory='highmem')
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
-
+    '''
     # remove monomorphic variants, set locus level call rate >=0.9, observed heterozygosity >=0.00995, locus level HWEP (binom definition) >=10^-6
     mt = mt.filter_rows(
         (mt.num_alleles > 1) & (mt.variant_qc.call_rate >= 0.9) & (mt.obs_het >= 0.00995) & (mt.binom_hwep >= 0.000001),
@@ -196,18 +196,18 @@ def main(
         output_path(f'mt/hail_filtered.mt'),
         overwrite=True,
     )
-
+    '''
     #for chr_index in range(22):  # iterate over chr1-22
-    #for chr_index in range(8, 22):
-        #mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
-        #gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
+    for chr_index in range(10, 22):
+        mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
+        gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
-        #hl.export_vcf(
-        #    mt_chr,
-        #    gcs_output_path,
-        #    append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
-        #    tabix=True,
-        #)
+        hl.export_vcf(
+            mt_chr,
+            gcs_output_path,
+            append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
+            tabix=True,
+        )
 
 
 if __name__ == '__main__':
