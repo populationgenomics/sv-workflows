@@ -193,7 +193,7 @@ def main(
     mt.drop('s_no_prefix')
 
     #for chr_index in range(22):  # iterate over chr1-22
-    for chr_index in range(7, 22):
+    for chr_index in range(8, 22):
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
