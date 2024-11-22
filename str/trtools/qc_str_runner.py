@@ -3,7 +3,7 @@
 """
 This script runs qcSTR() from TRTools package on a single/merged STR vcf file and outputs various QC graphs
 
-For example: 
+For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' qcSTR_runner.py --caller=eh --file-path=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
 --refbias-binsize=5 --refbias-metric=mean --refbias-mingts=100 --refbias-xrange-min=0 --rebias-xrange-max=10000
 
@@ -14,8 +14,7 @@ pip install sample-metadata hail click
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
@@ -78,7 +77,7 @@ def main(
     trtools_job = b.new_job(name=f'qcSTR {caller}')
 
     trtools_job.image(TRTOOLS_IMAGE)
-    trtools_job.storage('20G')
+    trtools_job.storage('30G')
     trtools_job.cpu(8)
 
     if caller == 'eh':
@@ -87,16 +86,16 @@ def main(
                 'sample-callnum.pdf': '{root}-sample-callnum.pdf',
                 'chrom-callnum.pdf': '{root}-chrom-callnum.pdf',
                 'diffref-histogram.pdf': '{root}-diffref-histogram.pdf',
-                'diffref-bias.pdf': '{root}-diffref-bias.pdf'
+                'diffref-bias.pdf': '{root}-diffref-bias.pdf',
                 # EH does not have quality plots
-            }
+            },
         )
         trtools_job.command(
             f"""
         set -ex;
         qcSTR --vcf {vcf_input} --vcftype {caller} --refbias-binsize {refbias_binsize} --refbias-metric {refbias_metric} --refbias-mingts {refbias_mingts} --refbias-xrange-min {refbias_xrange_min} --refbias-xrange-max {refbias_xrange_max} --out {trtools_job.ofile}
-    
-        """
+
+        """,
         )
 
     elif caller == 'gangstr':
@@ -109,14 +108,14 @@ def main(
                 'quality-per-locus.pdf': '{root}-quality-per-locus.pdf',
                 'quality-sample-stratified.pdf': '{root}-quality-sample-stratified.pdf',
                 'quality-per-sample.pdf': '{root}-quality-per-sample.pdf',
-            }
+            },
         )
         trtools_job.command(
             f"""
         set -ex;
         qcSTR --vcf {vcf_input} --vcftype {caller} --quality per-locus --quality sample-stratified --quality per-sample --refbias-binsize {refbias_binsize} --refbias-metric {refbias_metric} --refbias-mingts {refbias_mingts} --refbias-xrange-min {refbias_xrange_min} --refbias-xrange-max {refbias_xrange_max} --out {trtools_job.ofile}
-    
-        """
+
+        """,
         )
     else:
         raise ValueError('Invalid caller')

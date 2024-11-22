@@ -3,7 +3,7 @@
 """
 This script runs compareSTR() from TRTools package to compare calls between 2 STR VCFs.
 
-For example: 
+For example:
 analysis-runner --access-level test --dataset tob-wgs --description 'tester' --output-dir 'tester' compareSTR_runner.py --file-path-1=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_gangstr.vcf
 --file-path-2=gs://cpg-tob-wgs-test/hoptan-str/mergeSTR/mergeSTR_2_samples_eh.vcf --caller-1=gangstr --caller-2=eh
 
@@ -13,8 +13,7 @@ pip install sample-metadata hail click
 import click
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 config = get_config()
 
@@ -32,9 +31,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 # caller-2
 @click.option('--caller-2', help='gangstr or eh')
 @click.command()
-def main(
-    file_path_1, file_path_2, caller_1, caller_2
-):  # pylint: disable=missing-function-docstring
+def main(file_path_1, file_path_2, caller_1, caller_2):  # pylint: disable=missing-function-docstring
     # Initializing Batch
     b = get_batch()
 
@@ -49,31 +46,31 @@ def main(
 
     # declare resource groups, including extensions
     bcftools_job.declare_resource_group(
-        vcf_1={'vcf.gz': '{root}.vcf_1.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_1.vcf.gz.tbi'}
+        vcf_1={'vcf.gz': '{root}.vcf_1.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_1.vcf.gz.tbi'},
     )
     bcftools_job.declare_resource_group(
-        vcf_2={'vcf.gz': '{root}.vcf_2.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_2.vcf.gz.tbi'}
+        vcf_2={'vcf.gz': '{root}.vcf_2.vcf.gz', 'vcf.gz.tbi': '{root}.vcf_2.vcf.gz.tbi'},
     )
 
     bcftools_job.command(
         f"""
     set -ex;
-    
+
     echo "compressing {vcf_input_1}";
     bcftools sort {vcf_input_1} | bgzip -c >{bcftools_job.vcf_1['vcf.gz']};
-    
+
     echo "indexing {bcftools_job.vcf_1['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_1['vcf.gz']};
-    
-    echo "compressing {vcf_input_2}"; 
+
+    echo "compressing {vcf_input_2}";
     bcftools sort {vcf_input_2} | bgzip -c >{bcftools_job.vcf_2['vcf.gz']};
-    
+
     echo "indexing {bcftools_job.vcf_2['vcf.gz']}";
     tabix -p vcf {bcftools_job.vcf_2['vcf.gz']};
-    """
+    """,
     )
 
-    trtools_job = b.new_job(name=f'compareSTR')
+    trtools_job = b.new_job(name='compareSTR')
     trtools_job.image(TRTOOLS_IMAGE)
     trtools_job.depends_on(bcftools_job)
     trtools_job.storage('20G')
@@ -87,19 +84,17 @@ def main(
             'locuscompare.pdf': '{root}-locuscompare.pdf',
             'samplecompare.tab': '{root}-samplecompare.tab',
             'samplecompare.pdf': '{root}-samplecompare.pdf',
-        }
+        },
     )
 
     trtools_job.command(
         f"""
     set -ex;
     compareSTR --vcf1 {bcftools_job.vcf_1['vcf.gz']} --vcf2 {bcftools_job.vcf_2['vcf.gz']} --vcftype1 {caller_1} --vcftype2 {caller_2} --out {trtools_job.ofile}
-    
-    """
+
+    """,
     )
-    output_path_vcf = output_path(
-        f'compareSTR_samples_{caller_1}_{caller_2}', 'analysis'
-    )
+    output_path_vcf = output_path(f'compareSTR_samples_{caller_1}_{caller_2}', 'analysis')
     b.write_output(trtools_job.ofile, output_path_vcf)
 
     b.run(wait=False)

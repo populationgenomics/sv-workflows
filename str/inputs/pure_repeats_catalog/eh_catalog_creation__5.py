@@ -4,9 +4,7 @@ The input is a BED file containing loci of pure_repeats, which was
 outputted from `pure_repeats_catalog.py`
 """
 
-
 import json
-
 
 PURE_BED = 'intermediate_files/pure_repeats_loci.bed'
 PURE_JSON_OUTPUT = 'catalogs/eh_pure_repeats_catalog.json'
@@ -107,9 +105,7 @@ with open(PURE_BED, encoding='utf-8') as handle:
             'LocusStructure': locus_structure,
             'ReferenceRegion': reference_region,
             'VariantId': variant_id,
-            'VariantType': 'RareRepeat'
-            if reference_region == 'chr9:27573528-27573546'
-            else 'Repeat',
+            'VariantType': 'RareRepeat' if reference_region == 'chr9:27573528-27573546' else 'Repeat',
         }
 
         # special locus because Illumina catalog specifies Off-Target-Regions,

@@ -2,9 +2,9 @@
 
 
 """
-This script uses HipSTR to call STRs on WGS cram files, using the joint calling option. 
+This script uses HipSTR to call STRs on WGS cram files, using the joint calling option.
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp HGDP00511
+analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp CPGXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -14,13 +14,10 @@ import logging
 
 import click
 
-from sample_metadata.apis import AnalysisApi, SampleApi
-from sample_metadata.model.analysis_type import AnalysisType
-from sample_metadata.model.analysis_query_model import AnalysisQueryModel
-from sample_metadata.models import AnalysisStatus
+
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
+from metamist.graphql import gql, query
 
 config = get_config()
 
@@ -29,45 +26,51 @@ HIPSTR_IMAGE = config['images']['hipstr']
 BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-def get_cloudfuse_paths(dataset, external_wgs_ids):
+def get_cloudfuse_paths(dataset, input_cpg_sids):
     """Retrieves cloud fuse paths and outputs as a comma-separated string for crams associated with the external-wgs-ids"""
-    # Extract CPG IDs from external sample IDs
-    external_id_to_cpg_id: dict[str, str] = SampleApi().get_sample_id_map_by_external(
-        dataset, list(external_wgs_ids)
-    )
-    if dataset == 'tob-wgs':
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequencing_type': 'genome', 'source': 'nagim'},
-        )
-    else:
-        analysis_query_model = AnalysisQueryModel(
-            sample_ids=list(external_id_to_cpg_id.values()),
-            projects=[dataset],
-            type=AnalysisType('cram'),
-            status=AnalysisStatus('completed'),
-            meta={'sequencing_type': 'genome'},
-        )
-    crams_path = AnalysisApi().query_analyses(analysis_query_model)
-    cpg_sids_with_crams = set(sid for sids in crams_path for sid in sids['sample_ids'])
-    cpg_id_to_external_id = {
-        cpg_id: external_wgs_id
-        for external_wgs_id, cpg_id in external_id_to_cpg_id.items()
+
+    cram_retrieval_query = gql(
+        """
+        query MyQuery($dataset: String!,$input_cpg_sids: [String!]!) {
+    project(name: $dataset) {
+        sequencingGroups(id: {in_: $input_cpg_sids}) {
+        id
+        sample {
+            externalId
+        }
+        analyses(type: {eq: "cram"}, active: {eq: true}) {
+            output
+            timestampCompleted
+        }
+        }
     }
-    cpg_sids_without_crams = set(cpg_id_to_external_id.keys()) - cpg_sids_with_crams
-    if cpg_sids_without_crams:
-        external_wgs_sids_without_crams = ', '.join(
-            cpg_id_to_external_id[sid] for sid in cpg_sids_without_crams
-        )
-        logging.warning(
-            f'There were some samples without CRAMs: {external_wgs_sids_without_crams}'
-        )
+
+    }
+        """,
+    )
+    response = query(
+        cram_retrieval_query,
+        variables={'dataset': dataset, 'input_cpg_sids': input_cpg_sids},
+    )
+    crams_by_id = {}
+    for i in response['project']['sequencingGroups']:
+        for cram in i['analyses']:
+            # ignore archived CRAMs and ONT crams
+            if cram['output'] is None:
+                continue
+            if 'archive' in cram['output']:
+                continue
+            if 'ont' in cram['output']:
+                continue
+            crams_by_id[i['id']] = cram
+
+    if len(crams_by_id) != len(input_cpg_sids):
+        cpg_sids_without_crams = set(input_cpg_sids) - set(crams_by_id.keys())
+        logging.warning(f'There were some samples without CRAMs: {cpg_sids_without_crams}')
+
     # Create string containing paths based on /cramfuse
     cramfuse_path = []
-    for cram_obj in crams_path:
+    for cram_obj in crams_by_id.values():
         suffix = cram_obj['output'].removeprefix('gs://').split('/', maxsplit=1)[1]
         cramfuse_path.append(f'/cramfuse/{suffix}')
     cramfuse_path = ','.join(cramfuse_path)  # string format for input into hipstr
@@ -75,28 +78,35 @@ def get_cloudfuse_paths(dataset, external_wgs_ids):
 
 
 # inputs:
+@click.option('--job-storage', help='Storage of the Hail batch job eg 375G', default='375G')
+@click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.option('--variant-catalog', help='Full path to HipSTR Variants catalog')
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('external-wgs-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.command()
 def main(
-    variant_catalog, dataset, external_wgs_ids, output_file_name
+    job_storage,
+    job_memory,
+    variant_catalog,
+    dataset,
+    external_wgs_ids,
+    output_file_name,
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     # Create HipSTR job
-    hipstr_job = b.new_job(name=f'HipSTR running')
+    hipstr_job = b.new_job(name='HipSTR running')
     hipstr_job.image(HIPSTR_IMAGE)
-    hipstr_job.storage('375G')
+    hipstr_job.storage(job_storage)
     hipstr_job.cpu(4)
-    hipstr_job.memory('highmem')
+    hipstr_job.memory(job_memory)
 
     hipstr_job.declare_resource_group(
         hipstr_output={
             'vcf.gz': '{root}.vcf.gz',
             'viz.gz': '{root}.viz.gz',
             'log.txt': '{root}.log.txt',
-        }
+        },
     )
     hipstr_job.cloudfuse(f'cpg-{dataset}-main', '/cramfuse')
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -111,9 +121,8 @@ def main(
         **dict(
             base=ref_fasta,
             fai=ref_fasta + '.fai',
-            dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '')
-            + '.dict',
-        )
+            dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
+        ),
     )
 
     hipstr_job.command(
@@ -125,16 +134,16 @@ def main(
         --viz-out {hipstr_job.hipstr_output['viz.gz']} \\
         --log {hipstr_job.hipstr_output['log.txt']} \\
         --output-filters
-    """
+    """,
     )
     # HipSTR output writing
-    hipstr_output_path_vcf = output_path(f'{output_file_name}.vcf.gz')
+    hipstr_output_path_vcf = output_path(f'{output_file_name}.vcf.gz', 'analysis')
     b.write_output(hipstr_job.hipstr_output['vcf.gz'], hipstr_output_path_vcf)
 
-    hipstr_output_path_viz = output_path(f'{output_file_name}_hipstr.viz.gz')
+    hipstr_output_path_viz = output_path(f'{output_file_name}_hipstr.viz.gz', 'analysis')
     b.write_output(hipstr_job.hipstr_output['viz.gz'], hipstr_output_path_viz)
 
-    hipstr_output_path_log = output_path(f'{output_file_name}_hipstr.log.txt')
+    hipstr_output_path_log = output_path(f'{output_file_name}_hipstr.log.txt', 'analysis')
     b.write_output(hipstr_job.hipstr_output['log.txt'], hipstr_output_path_log)
 
     b.run(wait=False)
