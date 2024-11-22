@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option.
 For example:
-analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp HGDP00511
+analysis-runner --access-level test --dataset hgdp --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py --variant-catalog=gs://cpg-hgdp-test/str/untrimmed_coordinates_resources/hg38_hipstr_catalog_untrimmed_coordinates.bed --output-file-name=hipster_90_genomes --dataset=hgdp CPGXXX
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -14,9 +14,9 @@ import logging
 
 import click
 
+
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import output_path
-from cpg_workflows.batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 from metamist.graphql import gql, query
 
 config = get_config()
