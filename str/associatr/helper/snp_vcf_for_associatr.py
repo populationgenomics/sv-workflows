@@ -8,7 +8,7 @@ Please note ad-hoc changes:
 - RL field is set to 0 for all loci so that the REF allele is coded as 0 (https://github.com/gymrek-lab/TRTools/blob/master/trtools/utils/tr_harmonizer.py#L515)
 - REF field is set to 3 (arbitrary value)
 
-analysis-runner --dataset bioheart --access-level standard --output-dir str/associatr --description "snp vcf for associatr" \
+analysis-runner --dataset bioheart --access-level test --output-dir str/associatr --description "snp vcf for associatr" \
 snp_vcf_for_associatr.py --vcf-dir=gs://cpg-bioheart-main/saige-qtl/bioheart_n990_and_tob_n1055/input_files/genotypes/vds-tenk10k1-0 \
 --chromosomes=11,12,13,14,16,6,9 --job-storage=100G --job-cpu=8
 
@@ -75,7 +75,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 new_info_fields = [
                     f'END={parts[1]}',
                     'REF=3',
-                    f'REPID={pid}',
+                    f'REPID=.',
                     'RL=0',
                     f'RU={parts[3]}-{parts[4]}',
                     f'VARID=.',
