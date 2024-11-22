@@ -19,7 +19,6 @@ import click
 import pandas as pd
 
 import hail as hl
-
 from hail.methods import export_vcf
 
 from cpg_utils import to_path
@@ -64,21 +63,19 @@ def add_remove_chr_and_index_job(vcf_path):
         output={
             'vcf.bgz': '{root}.vcf.bgz',
             'vcf.bgz.csi': '{root}.vcf.bgz.csi',
-        }
+        },
     )
     bcftools_job.image(get_config()['images']['bcftools'])
     bcftools_job.cpu(4)
     bcftools_job.storage(f'{storage_required}Gi')
     # now remove "chr" from chromosome names using bcftools
-    bcftools_job.command(
-        'for num in {1..22} X Y; do echo "chr${num} ${num}" >> chr_update.txt; done'
-    )
+    bcftools_job.command('for num in {1..22} X Y; do echo "chr${num} ${num}" >> chr_update.txt; done')
     bcftools_job.command(
         f"""
         bcftools annotate --rename-chrs chr_update.txt --set-id +'%CHROM\:%POS\:%REF\:%FIRST_ALT' {vcf_input} | \\
         bgzip -c > {bcftools_job.output['vcf.bgz']}
         bcftools index -c {bcftools_job.output['vcf.bgz']}
-    """
+    """,
     )
     logging.info('VCF rename/index jobs scheduled!')
 
@@ -86,11 +83,9 @@ def add_remove_chr_and_index_job(vcf_path):
     get_batch().write_output(bcftools_job.output, vcf_path.removesuffix('.vcf.bgz'))
 
 
-
 # inputs:
 @click.option('--vds-path', help=' GCP gs:// path to the VDS')
 @click.option('--chromosomes', help=' e.g., chr22,chrX ')
-
 @click.option('--cv-maf-threshold', default=0.01)
 @click.command()
 def main(
@@ -109,16 +104,11 @@ def main(
 
     for chromosome in chromosomes.split(','):
         # create paths and check if they exist already
-        cv_vcf_path = output_path(
-            f'vds-{vds_name}/{chromosome}_common_variants.vcf.bgz'
-        )
+        cv_vcf_path = output_path(f'vds-{vds_name}/{chromosome}_common_variants.vcf.bgz')
         cv_vcf_existence_outcome = can_reuse(cv_vcf_path)
         logging.info(f'Does {cv_vcf_path} exist? {cv_vcf_existence_outcome}')
 
-
-        if (
-            not cv_vcf_existence_outcome
-        ):
+        if not cv_vcf_existence_outcome:
             # consider only relevant chromosome
             chrom_vds = hl.vds.filter_chromosomes(vds, keep=chromosome)
 
@@ -128,13 +118,10 @@ def main(
             # densify to matrix table object
             mt = hl.vds.to_dense_mt(chrom_vds)
 
-
             # filter out loci & variant QC
             mt = mt.filter_rows(hl.len(mt.alleles) == 2)  # remove hom-ref
 
-
             mt = hl.variant_qc(mt)
-
 
             if not cv_vcf_existence_outcome:
                 # common variants only
