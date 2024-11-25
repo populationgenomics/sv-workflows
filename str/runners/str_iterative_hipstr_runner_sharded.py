@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option, and a sharded catalog.
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes  --variant-catalog=gs://.... --dataset=hgdp HGDP00511
+analysis-runner --access-level test --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes  --variant-catalog=gs://.... --dataset=hgdp --max-str-len=100 HGDP00511
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -87,6 +87,11 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('internal-cpg-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
+@click.option(
+    '--max-str-len',
+    help="Only genotype STRs in the provided BED file with length < MAX_BP (Default = 100)",
+    default='100',
+)
 @click.command()
 def main(
     job_storage,
@@ -95,6 +100,7 @@ def main(
     dataset,
     internal_cpg_ids,
     output_file_name,
+    max_str_len,
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -140,6 +146,7 @@ def main(
             --str-vcf {hipstr_job.hipstr_output['vcf.gz']} \\
             --viz-out {hipstr_job.hipstr_output['viz.gz']} \\
             --log {hipstr_job.hipstr_output['log.txt']} \\
+            --max-str-len {max_str_len} \\
             --output-filters
         """,
         )
