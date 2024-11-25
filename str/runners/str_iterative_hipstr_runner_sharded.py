@@ -87,7 +87,11 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 @click.option('--dataset', help='dataset eg tob-wgs')
 @click.argument('internal-cpg-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
-@click.option('--max-str-len', help="Only genotype STRs in the provided BED file with length < MAX_BP (Default = 100)", default='100')
+@click.option(
+    '--max-str-len',
+    help="Only genotype STRs in the provided BED file with length < MAX_BP (Default = 100)",
+    default='100',
+)
 @click.command()
 def main(
     job_storage,
