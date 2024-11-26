@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option, and a sharded catalog.
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes  --variant-catalog=gs://.... --dataset=hgdp --max-str-len=100 --sample-id-file=gs://...
+analysis-runner --access-level test --config hipstr.toml --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes  --variant-catalog=gs://.... --dataset=hgdp --max-str-len=100
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -78,7 +78,6 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 
 
 # inputs:
-@click.option('--sample-id-file', help='List of CPG IDs')
 @click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='30G')
 @click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.option(
@@ -94,7 +93,6 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 )
 @click.command()
 def main(
-    sample_id_file,
     job_storage,
     job_memory,
     variant_catalog,
@@ -112,15 +110,7 @@ def main(
             dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
         ),
     )
-    internal_cpg_ids = []
-    # open sample id file and add to list
-    with to_path(sample_id_file).open() as f:
-        for line in f:
-            split_line = line.split(',')
-            cpg_id = split_line[0]
-            if cpg_id == 's':  # header line
-                continue
-            internal_cpg_ids.append(cpg_id)
+    internal_cpg_ids = config['hipstr']['internal_cpg_ids']
 
     catalog_files = list(to_path(variant_catalog).glob('*.bed'))
 
