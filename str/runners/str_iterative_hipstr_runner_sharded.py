@@ -110,7 +110,7 @@ def main(
             dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
         ),
     )
-    internal_cpg_ids = config['hipstr']['internal_cpg_ids']
+    internal_cpg_ids = config['hipstr']['internal_cpg_ids'].split(',')
 
     catalog_files = list(to_path(variant_catalog).glob('*.bed'))
 
