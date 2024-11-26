@@ -18,7 +18,7 @@ Applied filters:
     --description "Hail QC for associaTR" \
     --access-level "test" \
     --output-dir "str/replicate/input_files" \
-    replicate_error.py.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt \
+    replicate_error.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt \
     --version=v1-chr-specific
 
 """
@@ -28,7 +28,7 @@ import click
 import hail as hl
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 config = get_config()
 
@@ -39,6 +39,8 @@ def qc_filter(mt_path, version):
     """
     Applies QC filters to the input MT
     """
+    from cpg_utils.hail_batch import init_batch, output_path
+
     init_batch(worker_memory='highmem')
 
     # read in mt
