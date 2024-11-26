@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option, and a sharded catalog.
 For example:
-analysis-runner --access-level test --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes  --variant-catalog=gs://.... --dataset=hgdp --max-str-len=100 HGDP00511
+analysis-runner --access-level test --config hipstr.toml --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes  --variant-catalog=gs://.... --dataset=hgdp --max-str-len=100
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -85,7 +85,6 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
     help='Full path to HipSTR Variants sharded catalog directory or file path to unsharded catalog',
 )
 @click.option('--dataset', help='dataset eg tob-wgs')
-@click.argument('internal-cpg-ids', nargs=-1)
 @click.option('--output-file-name', help='Output file name without file extension')
 @click.option(
     '--max-str-len',
@@ -98,7 +97,6 @@ def main(
     job_memory,
     variant_catalog,
     dataset,
-    internal_cpg_ids,
     output_file_name,
     max_str_len,
 ):  # pylint: disable=missing-function-docstring
@@ -112,6 +110,7 @@ def main(
             dict=ref_fasta.replace('.fasta', '').replace('.fna', '').replace('.fa', '') + '.dict',
         ),
     )
+    internal_cpg_ids = config['hipstr']['internal_cpg_ids']
 
     catalog_files = list(to_path(variant_catalog).glob('*.bed'))
 
