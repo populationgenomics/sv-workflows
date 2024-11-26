@@ -131,7 +131,7 @@ def run_meta_gen(file_path, cell_type):
 
 import click
 
-from cpg_utils.hail_batch import get_batch,image_path
+from cpg_utils.hail_batch import get_batch, image_path
 
 
 @click.option('--file-input-dir', required=True, help='Directory containing input files for meta-analysis')
