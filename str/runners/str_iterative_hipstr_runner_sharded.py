@@ -78,7 +78,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 
 
 # inputs:
-@click.option('--sample-id-file', help='CSV of CPG IDs')
+@click.option('--sample-id-file', help='Path to CSV of CPG IDs')
 @click.option('--job-storage', help='Storage of the Hail batch job eg 30G', default='30G')
 @click.option('--job-memory', help='Memory of the Hail batch job', default='highmem')
 @click.option(
