@@ -94,7 +94,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 )
 @click.command()
 def main(
-    sample-id-file,
+    sample_id_file,
     job_storage,
     job_memory,
     variant_catalog,
@@ -113,7 +113,7 @@ def main(
         ),
     )
     internal_cpg_ids = []
-    # open sample id file and add to list 
+    # open sample id file and add to list
     with to_path(sample_id_file).open() as f:
         for line in f:
             split_line = line.split(',')
