@@ -12,7 +12,7 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='8G' \
+    --memory='16G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_runner.py \
@@ -166,13 +166,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         ]  # filter for the celltype of interest
         for gene in result_df_cfm_str_celltype['gene']:
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
-            if to_path(
-                output_path(
-                    f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv",
-                    'analysis',
-                ),
-            ).exists():
-                continue
+
             if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
                 print('Cis results for ' + gene + ' exist: proceed with coloc')
 
@@ -185,6 +179,13 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                 hg38_map_chr_start = hg38_map_chr[hg38_map_chr['position'] >= start]
                 hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['position'] <= end]
                 for probe in hg38_map_chr_start_end['ProbeID'].unique():
+                    if to_path(
+                        output_path(
+                            f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv",
+                            'analysis',
+                        ),
+                    ).exists():
+                        continue
                     hg38_map_chr_start_end_probe = hg38_map_chr_start_end[hg38_map_chr_start_end['ProbeID'] == probe]
                     if hg38_map_chr_start_end_probe.empty:
                         print('No SNP GWAS data for ' + gene + f' {probe} combination' +' in the cis-window: skipping....')
