@@ -17,7 +17,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv \
-    --pheno-output-name="trujillo_methylation_eQTLs" \
+    --pheno-output-name="Trujillo_methylation_eQTLs" \
     --celltypes='ILC'
 
 """
@@ -31,7 +31,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
-def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
+def coloc_runner(gwas, probe, eqtl_file_path, celltype, pheno_output_name):
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
 
@@ -98,7 +98,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 
     # write to GCS
     pd_p4_df.to_csv(
-        output_path(f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -168,7 +168,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
                 output_path(
-                    f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
+                    f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv",
                     'analysis',
                 ),
             ).exists():
@@ -204,7 +204,8 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     coloc_job.call(
                         coloc_runner,
                         hg38_map_chr_start_end_probe,
-                        f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_{probe}_100000bp_meta_results.tsv',
+                        probe,
+                        f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
                         celltype,
                         pheno_output_name,
                     )
