@@ -16,9 +16,8 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_runner.py \
-    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ibd_EAS_EUR_SiKJEF_meta_IBD.tsv \
-    --pheno-output-name="ibd_liu2023" \
-    --celltypes "NK"
+    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/NHL_GCST90011819_parsed.tsv \
+    --pheno-output-name="NHL_GCST90011819"
 
 """
 
@@ -174,7 +173,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
             if to_path(
                 output_path(
-                    f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
+                    f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
                     'analysis',
                 ),
             ).exists():
@@ -194,16 +193,15 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 # check if the p-value column contains at least one value which is <=5e-8:
-                # if hg38_map_chr_start_end['p_value'].min() > 5e-8:
-                # print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                # continue
-                # print('Extracted SNP GWAS data for ' + gene)
+                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
+                    continue
+                print('Extracted SNP GWAS data for ' + gene)
 
                 # run coloc
                 coloc_job = b.new_python_job(
                     f'Coloc for {gene}: {celltype}',
                 )
-                f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
                 coloc_job.image(image_path('r-meta'))
                 coloc_job.cpu(job_cpu)
                 coloc_job.call(
