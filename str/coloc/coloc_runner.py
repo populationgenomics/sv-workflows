@@ -16,8 +16,8 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_runner.py \
-    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/Kiryluk_IgAN_parsed.tsv \
-    --pheno-output-name="Kiryluk_IgAN" \
+    --snp-gwas-file=gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv \
+    --pheno-output-name="trujillo_methylation_eQTLs" \
     --celltypes='ILC'
 
 """
@@ -184,29 +184,31 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                 hg38_map_chr = hg38_map[hg38_map['chromosome'] == (chrom)]
                 hg38_map_chr_start = hg38_map_chr[hg38_map_chr['position'] >= start]
                 hg38_map_chr_start_end = hg38_map_chr_start[hg38_map_chr_start['position'] <= end]
-                if hg38_map_chr_start_end.empty:
-                    print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                    continue
-                # check if the p-value column contains at least one value which is <=5e-8:
-                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
-                    print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
-                    continue
-                print('Extracted SNP GWAS data for ' + gene)
+                for probe in hg38_map_chr_start_end['ProbeID'].unique():
+                    hg38_map_chr_start_end_probe = hg38_map_chr_start_end[hg38_map_chr_start_end['ProbeID'] == probe]
+                    if hg38_map_chr_start_end_probe.empty:
+                        print('No SNP GWAS data for ' + gene + f' {probe} combination' +' in the cis-window: skipping....')
+                        continue
+                    # check if the p-value column contains at least one value which is <=5e-8:
+                    if hg38_map_chr_start_end_probe['p_value'].min() > 5e-8:
+                        print('No significant SNP GWAS data for ' + gene + f' {probe} combination' + ' in the cis-window: skipping....')
+                        continue
+                    print('Extracted SNP GWAS data for ' +gene + f' {probe} combination')
 
-                # run coloc
-                coloc_job = b.new_python_job(
-                    f'Coloc for {gene}: {celltype}',
-                )
-                coloc_job.image(image_path('r-meta'))
-                coloc_job.cpu(job_cpu)
-                coloc_job.call(
-                    coloc_runner,
-                    hg38_map_chr_start_end,
-                    f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv',
-                    celltype,
-                    pheno_output_name,
-                )
-                manage_concurrency_for_job(coloc_job)
+                    # run coloc
+                    coloc_job = b.new_python_job(
+                        f'Coloc for {gene} and {probe}: {celltype}',
+                    )
+                    coloc_job.image(image_path('r-meta'))
+                    coloc_job.cpu(job_cpu)
+                    coloc_job.call(
+                        coloc_runner,
+                        hg38_map_chr_start_end_probe,
+                        f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_{probe}_100000bp_meta_results.tsv',
+                        celltype,
+                        pheno_output_name,
+                    )
+                    manage_concurrency_for_job(coloc_job)
 
             else:
                 print('No cis results for ' + gene + ' exist: skipping....')
