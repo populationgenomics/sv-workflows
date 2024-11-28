@@ -17,7 +17,8 @@ analysis-runner --dataset "bioheart" \
     --output-dir "str/associatr" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/NHL_GCST90011819_parsed.tsv \
-    --pheno-output-name="NHL_GCST90011819"
+    --pheno-output-name="NHL_GCST90011819"\
+    --celltypes='CD4_TCM'
 
 """
 
@@ -106,7 +107,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv',
+    default='gs://cpg-bioheart-test-analysis/str/associatr/coloc-snp-only/estrs_lead_filtered.csv',
 )
 @click.option(
     '--snp-cis-dir',
@@ -147,22 +148,16 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file,
-        sep='\t',
-        usecols=['chr', 'pos', 'pval_meta', 'motif', 'susie_pip', 'gene', 'finemap_prob', 'celltype', 'ref_len'],
-    )
+        sep='\t')
 
     result_df_cfm = egenes
-    result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
-    result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
+    #result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
+    #result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
     result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
-    result_df_cfm_str['gene'] = result_df_cfm_str['gene'].str.replace(
-        '.tsv',
-        '',
-        regex=False,
-    )  # remove .tsv from gene names (artefact of the data file)
+
     b = get_batch(name=f'Run coloc:{pheno_output_name}')
 
     for celltype in celltypes.split(','):
