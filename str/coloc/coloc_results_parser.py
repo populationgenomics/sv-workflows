@@ -5,11 +5,11 @@ This script concatenates the results of running `coloc_runner.py` (output is per
 analysis-runner --dataset "bioheart" \
     --description "Parse coloc results" \
     --access-level "test" \
-    --output-dir "str/associatr" \
+    --output-dir "str/associatr/coloc-snp-only/sig_str_filter_only" \
     coloc_results_parser.py \
-    --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc \
+    --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc-snp-only/sig_str_filter_only \
     --celltypes=CD4_TCM \
-    --phenos=ibd
+    --phenos=kiryluk_IgAN
 
 
 """
@@ -38,7 +38,7 @@ def coloc_results_combiner(coloc_dir, pheno, celltype):
     # Concatenate DataFrames row-wise
     result_df = pd.concat(dfs, ignore_index=True)
     # Write the result to a CSV file
-    result_df.to_csv(output_path(f'coloc/{pheno}/{celltype}/gene_summary_result.csv', 'analysis'), index=False)
+    result_df.to_csv(output_path(f'{pheno}/{celltype}/gene_summary_result.csv', 'analysis'), index=False)
 
 
 @click.command()
