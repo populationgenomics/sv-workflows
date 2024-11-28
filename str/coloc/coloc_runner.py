@@ -145,6 +145,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         sep='\t',
     )
 
+    hg38_map['p_value'] = hg38_map['p_value'].astype(float)
+    hg38_map['position'] = hg38_map['position'].astype(int)
+
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file)
