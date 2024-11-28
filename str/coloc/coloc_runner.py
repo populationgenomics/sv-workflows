@@ -16,9 +16,9 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr" \
     coloc_runner.py \
-    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/NHL_GCST90011819_parsed.tsv \
-    --pheno-output-name="NHL_GCST90011819"\
-    --celltypes='CD4_TCM'
+    --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/Kiryluk_IgAN_parsed.tsv \
+    --pheno-output-name="Kiryluk_IgAN" \
+    --celltypes='ILC'
 
 """
 
@@ -98,7 +98,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 
     # write to GCS
     pd_p4_df.to_csv(
-        output_path(f"coloc-snp-only/sig_str_filter_only/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
