@@ -147,8 +147,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
 
     # read in eGenes file
     egenes = pd.read_csv(
-        egenes_file,
-        sep='\t')
+        egenes_file)
 
     result_df_cfm_str = egenes
     #result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
