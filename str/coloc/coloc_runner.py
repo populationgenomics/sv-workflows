@@ -156,7 +156,8 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene_name', 'cell_type'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
-
+    result_df_cfm_str['gene'] = result_df_cfm_str['gene_name']
+    result_df_cfm_str['celltype'] = result_df_cfm_str['cell_type']
     b = get_batch(name=f'Run coloc:{pheno_output_name}')
 
     for celltype in celltypes.split(','):
