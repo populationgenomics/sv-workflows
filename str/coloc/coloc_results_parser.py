@@ -5,12 +5,14 @@ This script concatenates the results of running `coloc_runner.py` (output is per
 analysis-runner --dataset "bioheart" \
     --description "Parse coloc results" \
     --access-level "test" \
-    --output-dir "str/associatr/coloc-snp-only/sig_str_filter_only" \
+    --output-dir "str/associatr/coloc-snp-only/sig_str_and_gwas_hit" \
     coloc_results_parser.py \
-    --coloc-dir=gs://cpg-bioheart-test/str/associatr/coloc-snp-only/sig_str_filter_only \
-    --celltypes=CD4_TCM \
-    --phenos=kiryluk_IgAN
+    --coloc-dir=gs://cpg-bioheart-test-analysis/str/associatr/coloc-snp-only/sig_str_and_gwas_hit \
+    --celltypes=B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,gdT,dnT,CD4_TCM \
+    --phenos=Trujillo_methylation_eQTLs
 
+
+    cpg-bioheart-test-analysis/str/associatr/coloc-snp-only/sig_str_and_gwas_hit/lymphocytic_leukemia_GCST90011814
 
 """
 import click
@@ -32,6 +34,7 @@ def coloc_results_combiner(coloc_dir, pheno, celltype):
     for file_path in files:
         # Read file into a DataFrame
         df = pd.read_csv(file_path, sep='\t')
+        df['probe'] = str(file_path).split('/')[-1].split('_')[1]
         # Append DataFrame to the list
         dfs.append(df)
 
