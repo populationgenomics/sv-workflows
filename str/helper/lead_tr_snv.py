@@ -71,7 +71,7 @@ def genes_parser(
             # Extract the genotypes for lead SNV in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
             snp_vcf_1 = VCF(snp_input['vcf'])
-            lead_df['individual'] = lead_df.samples
+            lead_df['individual'] = snp_vcf_1.samples
 
             for variant in snp_vcf_1(lead_snv_coord):
                 if str(variant.INFO.get('RU')) == lead_snv_motif:
