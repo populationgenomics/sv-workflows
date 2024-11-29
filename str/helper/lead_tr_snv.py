@@ -8,7 +8,7 @@ Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
-python3 lead_tr_of_all_genes_tested.py
+python3 lead_tr_snv.py
 
 """
 import json
@@ -185,8 +185,8 @@ def main(snp_vcf_dir, str_vcf_dir):
             j = b.new_python_job(
                 name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}',
             )
-            snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
-            str_vcf_path = f'{str_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
+            snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+            str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
 
             snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
             str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
