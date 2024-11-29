@@ -49,8 +49,8 @@ def coloc_runner(gwas, probe, eqtl_file_path, celltype, pheno_output_name):
     gwas_r = gwas_r %>% filter((beta!=0) | (varbeta!=0))
     gwas_r = gwas_r %>% distinct(snp, .keep_all = TRUE)
     gwas_r = gwas_r%>% as.list()
-    gwas_r$type = 'cc'
-
+    gwas_r$type = 'quant'
+    gwas_r$sdY = 1
     ''',
     )
     eqtl = pd.read_csv(
