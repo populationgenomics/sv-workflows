@@ -67,6 +67,7 @@ def genes_parser(
             proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
             proxy_snv_coord = f"{chromosome}:{proxy_snv.iloc[0]['pos']}"
             proxy_snv_motif = proxy_snv.iloc[0]['motif']
+            distance = abs(int(lead_snv.iloc[0]['pos']) - int(proxy_snv.iloc[0]['pos']))
 
             # Extract the genotypes for lead SNV in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
@@ -93,6 +94,7 @@ def genes_parser(
             proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
             proxy_snv_coord = f"{chromosome}:{proxy_snv.iloc[0]['pos']}"
             proxy_snv_motif = proxy_snv.iloc[0]['motif']
+            distance = abs(int(lead_tr.iloc[0]['pos']) - int(proxy_snv.iloc[0]['pos']))
 
             # Extract the genotypes for STRs in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
@@ -142,6 +144,7 @@ def genes_parser(
         # merged_df has only two columns - calculate the correlation
         correlation = merged_df.drop(columns='individual').corr().iloc[0, 1]
 
+
         # save correlation and pval ratio to a df
         results_df = pd.DataFrame(
             {
@@ -151,6 +154,7 @@ def genes_parser(
                 'lead_snv_boolean': [at_least_one_lead_SNV],
                 'cell_type': [cell_type],
                 'gene': [gene],
+                'distance': [distance],
             },
         )
 
