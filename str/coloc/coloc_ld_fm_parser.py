@@ -154,7 +154,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     for probe in probe_list:
         fm_pheno = fm[fm['ProbeID'] == probe]
         for chrom in fm_pheno['chr'].unique():
-            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v4/Trujillo_methylation_eQTLs/{chrom}/Trujillo_methylation_eQTLs_{probe}_{chrom}_corr.tsv').exists():
+            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v4/Trujillo_methylation_eQTLs_v2/{chrom}/Trujillo_methylation_eQTLs_{probe}_{chrom}_corr.tsv').exists():
                 print(f'File already exists for {probe} and {chrom}')
                 continue
 
