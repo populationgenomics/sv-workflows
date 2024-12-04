@@ -133,7 +133,7 @@ def genes_parser(
             snp_df = pd.DataFrame(columns=['individual'])
             snp_vcf = VCF(snp_input['vcf'])
             snp_df['individual'] = snp_vcf.samples
-
+            print(bin)
             for variant in snp_vcf(bin):
                 gt = variant.gt_types  # extracts GTs as a numpy array
                 gt[gt == 3] = 2
