@@ -25,6 +25,7 @@ def genes_parser(
     cell_type,
     snp_input,
     str_input,
+    gene
 ):
     """ """
     import numpy as np
@@ -35,14 +36,11 @@ def genes_parser(
 
     max_corr_master_df = pd.DataFrame()
 
-    genes_with_lead_tr = []
     chromosome = f'chr{chromosome}'
-    gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
-    with to_path(gene_file).open() as file:
-        genes = json.load(file)
+
 
     # for gene in genes:
-    for gene in genes:
+    for gene in [gene]:
         try:
             eqtl_results = pd.read_csv(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
@@ -178,7 +176,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
+            f'ld_decay/test/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
@@ -200,26 +198,31 @@ def main(snp_vcf_dir, str_vcf_dir):
     for cell_type in ['ASDC']:
         #for chrom in range(1, 23):
         for chrom in [1]:
-            if to_path(
-                f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
-            ).exists():
-                print(f'File already exists for {cell_type} and {chrom}')
-                continue
-            j = b.new_python_job(
-                name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}',
-            )
-            snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
-            str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+            gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
+            with to_path(gene_file).open() as file:
+                genes = json.load(file)
+            for gene in genes:
+                if to_path(
+                    f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_{gene}_summ_stats.tsv',
+                ).exists():
+                    print(f'File already exists for {cell_type} and {chrom}: {gene}')
+                    continue
+                j = b.new_python_job(
+                    name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
+                )
+                snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+                str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
 
-            snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
-            str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
-            j.call(
-                genes_parser,
-                chrom,
-                cell_type,
-                snp_input,
-                str_input,
-            )
+                snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
+                str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
+                j.call(
+                    genes_parser,
+                    chrom,
+                    cell_type,
+                    snp_input,
+                    str_input,
+                    gene
+                )
 
     b.run(wait=False)
 
