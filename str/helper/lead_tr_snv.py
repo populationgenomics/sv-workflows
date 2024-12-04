@@ -41,7 +41,8 @@ def genes_parser(
     with to_path(gene_file).open() as file:
         genes = json.load(file)
 
-    for gene in genes:
+    #for gene in genes:
+    for gene in ['ENSG00000241860']:
         try:
             eqtl_results = pd.read_csv(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
@@ -83,6 +84,7 @@ def genes_parser(
                     lead_df = pd.concat([lead_df, df_to_append], axis=1)
                     break
                 print('Finished reading SNP VCF')
+            lead_variant_coord = lead_snv_coord
 
         else:
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
@@ -121,52 +123,64 @@ def genes_parser(
 
                     lead_df[snp] = sums
                     break
+            lead_variant_coord = lead_tr_coord
 
-        # Extract the genotypes for proxy SNV in the cis window
-        proxy_df = pd.DataFrame(columns=['individual'])
-        snp_vcf_2 = VCF(snp_input['vcf'])
-        proxy_df['individual'] = snp_vcf_2.samples
+        # Extract max R2 for lead TR and SNVs in 10kb bins +/- 500kb from lead variant
+        ## Define the bins
+        lead_variant_chrom = lead_variant_coord.split(':')[0]
+        lead_variant_pos = int(lead_variant_coord.split(':')[1])
+        one_mb_window_start = min(lead_variant_pos - 500000, 0)
+        one_mb_window_end = lead_variant_pos + 500000
+        bins = [f'{lead_variant_chrom}:{start}-{start+10000}' for start in range(one_mb_window_start, one_mb_window_end, 10000)]
+        bin_corrs = {}
 
-        for variant in snp_vcf_2(proxy_snv_coord):
-            if str(variant.INFO.get('RU')) == proxy_snv_motif:
-                gt = variant.gt_types
+        ## Iterate through the bins
+        for i, bin in enumerate(bins):
+            ## Extract the genotypes for SNVs in the bin
+            snp_df = pd.DataFrame(columns=['individual'])
+            snp_vcf = VCF(snp_input['vcf'])
+            snp_df['individual'] = snp_vcf.samples
+
+            for variant in snp_vcf(bin):
+                gt = variant.gt_types  # extracts GTs as a numpy array
                 gt[gt == 3] = 2
-                snp = variant.CHROM + '_' + str(variant.POS) + '_' + proxy_snv_motif
-                df_to_append = pd.DataFrame(gt, columns=[snp])
-                proxy_df = pd.concat([proxy_df, df_to_append], axis=1)
-                break
-            print('Finished reading SNP VCF')
+                snp = variant.CHROM + '_' + str(variant.POS) + '_' + lead_snv_motif
+                df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
+                snp_df = pd.concat([snp_df, df_to_append], axis=1)
 
-        # calculate LD
-        # merge the STR and SNP GT dfs together
-        merged_df = lead_df.merge(proxy_df, on='individual')
+            # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
+            merged_df = lead_df.merge(snp_df, on='individual')
+            corr_matrix = merged_df.drop(columns='individual').corr().values
 
-        # merged_df has only two columns - calculate the correlation
-        correlation = merged_df.drop(columns='individual').corr().iloc[0, 1]
+            # Get the max abs correlation that is not on the diagonal
+            max_abs_corr = np.max(corr_matrix[~np.eye(corr_matrix.shape[0], dtype=bool)])
+
+            # save results for input into results_df
+            # Store max correlation for this bin
+            bin_corrs[f'bin_{i}'] = max_abs_corr
 
 
-        # save correlation and pval ratio to a df
-        results_df = pd.DataFrame(
-            {
-                'correlation': [correlation],
-                'proxy_pval': [proxy_snv.iloc[0]['pval_meta']],
-                'lead_pval': [min_pval],
-                'lead_snv_boolean': [at_least_one_lead_SNV],
-                'cell_type': [cell_type],
-                'gene': [gene],
-                'distance': [distance],
-            },
-        )
 
-        max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
-        max_corr_master_df.to_csv(
-            output_path(
-                f'lead_tr_snv_proxy/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
-                'analysis',
-            ),
-            sep='\t',
-            index=False,
-        )
+        # Create results DataFrame with common attributes and bin correlations
+        results_df = pd.DataFrame({
+            'lead_pval': [min_pval],
+            'lead_snv_boolean': [at_least_one_lead_SNV],
+            'cell_type': [cell_type],
+            'gene': [gene],
+            **bin_corrs  # Unpack bin correlations
+        })
+
+
+    # Append results to master DataFrame
+    max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
+    max_corr_master_df.to_csv(
+        output_path(
+            f'ld_decay/test/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
+            'analysis',
+        ),
+        sep='\t',
+        index=False,
+    )
 
 
 @click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
@@ -180,7 +194,7 @@ def main(snp_vcf_dir, str_vcf_dir):
 
     celltypes = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
-    for cell_type in celltypes:
+    for cell_type in ['ASDC']:
         for chrom in range(1, 23):
             if to_path(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
