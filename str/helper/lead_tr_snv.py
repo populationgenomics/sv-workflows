@@ -143,10 +143,16 @@ def genes_parser(
 
             # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
             merged_df = lead_df.merge(snp_df, on='individual')
-            corr_matrix = merged_df.drop(columns='individual').corr().values
+            # Get correlation matrix
+            corr_matrix = merged_df.drop(columns='individual').corr()
+            print(corr_matrix)
 
-            # Get the max abs correlation that is not on the diagonal
-            max_abs_corr = np.max(corr_matrix[~np.eye(corr_matrix.shape[0], dtype=bool)])
+            # Create mask for off-diagonal elements
+            mask = ~np.eye(corr_matrix.shape[0], dtype=bool)
+
+            # Get maximum absolute correlation off diagonal
+            max_abs_corr = np.max(np.abs(corr_matrix.values[mask]))
+
 
             # save results for input into results_df
             # Store max correlation for this bin
