@@ -42,7 +42,7 @@ def genes_parser(
         genes = json.load(file)
 
     # for gene in genes:
-    for gene in ['ENSG00000241860']:
+    for gene in genes:
         try:
             eqtl_results = pd.read_csv(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
