@@ -140,13 +140,10 @@ def genes_parser(
                 df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                 snp_df = pd.concat([snp_df, df_to_append], axis=1)
 
-            print(snp_df)
             # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
             merged_df = lead_df.merge(snp_df, on='individual')
-            print(merged_df)
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
-            print(corr_matrix)
 
             # Create mask for off-diagonal elements
             mask = ~np.eye(corr_matrix.shape[0], dtype=bool)
@@ -155,12 +152,14 @@ def genes_parser(
             try:
                 max_abs_corr = np.max(np.abs(corr_matrix.values[mask]))
             except ValueError: # if there are no off-diagonal elements
+                print(corr_matrix)
+                print(f'No off-diagonal elements for {bin}')
                 max_abs_corr = np.nan
 
 
             # save results for input into results_df
             # Store max correlation for this bin
-            bin_midpoint = int(bin.split(':')[1].split('-')[1]) + int(bin.split(':')[1].split('-')[0])/2
+            bin_midpoint = (int(bin.split(':')[1].split('-')[1]) + int(bin.split(':')[1].split('-')[0]))/2
             distance = bin_midpoint - lead_variant_pos
 
             # Create results DataFrame with common attributes and bin correlations
