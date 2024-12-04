@@ -153,7 +153,10 @@ def genes_parser(
             mask = ~np.eye(corr_matrix.shape[0], dtype=bool)
 
             # Get maximum absolute correlation off diagonal
-            max_abs_corr = np.max(np.abs(corr_matrix.values[mask]))
+            try:
+                max_abs_corr = np.max(np.abs(corr_matrix.values[mask]))
+            except ValueError: # if there are no off-diagonal elements
+                max_abs_corr = np.nan
 
 
             # save results for input into results_df
