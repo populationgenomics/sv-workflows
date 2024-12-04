@@ -210,6 +210,7 @@ def main(snp_vcf_dir, str_vcf_dir):
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
                 )
+                j.cpu(0.5)
                 snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
 
