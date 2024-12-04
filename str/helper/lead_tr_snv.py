@@ -126,8 +126,6 @@ def genes_parser(
             f'{lead_variant_chrom}:{start}-{start+10000}'
             for start in range(one_mb_window_start, one_mb_window_end, 10000)
         ]
-        bin_corrs = {}
-
         ## Iterate through the bins
         for i, bin in enumerate(bins):
             ## Extract the genotypes for SNVs in the bin
@@ -162,18 +160,20 @@ def genes_parser(
 
             # save results for input into results_df
             # Store max correlation for this bin
-            bin_corrs[f'bin_{i}'] = max_abs_corr
+            bin_midpoint = int(bin.split(':')[1].split('-')[1]) + int(bin.split(':')[1].split('-')[0])/2
+            distance = bin_midpoint - lead_variant_pos
 
-        # Create results DataFrame with common attributes and bin correlations
-        results_df = pd.DataFrame(
-            {
-                'lead_pval': [min_pval],
-                'lead_snv_boolean': [at_least_one_lead_SNV],
-                'cell_type': [cell_type],
-                'gene': [gene],
-                **bin_corrs,  # Unpack bin correlations
-            },
-        )
+            # Create results DataFrame with common attributes and bin correlations
+            results_df = pd.DataFrame(
+                {
+                    'lead_pval': [min_pval],
+                    'lead_snv_boolean': [at_least_one_lead_SNV],
+                    'cell_type': [cell_type],
+                    'gene': [gene],
+                    'distance': [distance],
+                    'max_abs_corr': [max_abs_corr],
+                },
+            )
 
     # Append results to master DataFrame
     max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
