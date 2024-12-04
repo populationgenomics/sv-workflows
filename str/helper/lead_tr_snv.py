@@ -141,8 +141,10 @@ def genes_parser(
                 df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                 snp_df = pd.concat([snp_df, df_to_append], axis=1)
 
+            print(snp_df)
             # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
             merged_df = lead_df.merge(snp_df, on='individual')
+            print(merged_df)
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
             print(corr_matrix)
