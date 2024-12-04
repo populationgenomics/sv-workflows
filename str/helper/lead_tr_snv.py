@@ -35,13 +35,13 @@ def genes_parser(
 
     max_corr_master_df = pd.DataFrame()
 
-    genes_with_lead_tr = []
     chromosome = f'chr{chromosome}'
     gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
     with to_path(gene_file).open() as file:
         genes = json.load(file)
 
-    for gene in genes:
+    #for gene in genes:
+    for gene in ['ENSG00000241860']:
         try:
             eqtl_results = pd.read_csv(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
@@ -143,6 +143,13 @@ def genes_parser(
 
         # merged_df has only two columns - calculate the correlation
         correlation = merged_df.drop(columns='individual').corr().iloc[0, 1]
+        merged_df.drop(columns='individual').corr().to_csv(
+            output_path(f'lead_tr_snv_proxy/debug/{cell_type}/{chromosome}/{cell_type}_{chromosome}_corr.tsv',
+            'analysis',
+        ),
+        sep='\t',
+        index=False,
+        )
 
 
         # save correlation and pval ratio to a df
@@ -159,15 +166,24 @@ def genes_parser(
         )
 
         max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
-        max_corr_master_df.to_csv(
-            output_path(
-                f'lead_tr_snv_proxy/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
-                'analysis',
-            ),
-            sep='\t',
-            index=False,
-        )
 
+    #max_corr_master_df.to_csv(
+    #    output_path(
+    #        f'lead_tr_snv_proxy/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
+    #        'analysis',
+    #    ),
+    #    sep='\t',
+    #    index=False,
+    #)
+
+    max_corr_master_df.to_csv(
+        output_path(
+            f'lead_tr_snv_proxy/debug/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
+            'analysis',
+        ),
+        sep='\t',
+        index=False,
+    )
 
 @click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
 @click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific')
@@ -180,7 +196,8 @@ def main(snp_vcf_dir, str_vcf_dir):
 
     celltypes = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
-    for cell_type in celltypes:
+    #for cell_type in celltypes:
+    for cell_type in ['ASDC']:
         for chrom in range(1, 23):
             if to_path(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
