@@ -148,7 +148,9 @@ def genes_parser(
 
             # Get maximum absolute correlation off diagonal
             try:
-                max_abs_corr = np.max(np.abs(corr_matrix.values[mask]))
+                # get the max absolute correlation in the first column (corresponds to lead variant) but it cant be on the diagnonal
+                first_column = corr_matrix.iloc[:, 0] if hasattr(corr_matrix, 'iloc') else corr_matrix[:, 0]  # Extract the first column
+                max_abs_corr = np.max(np.abs(first_column[1:]))  # Exclude the diagonal by slicing (start from index 1)
             except ValueError: # if there are no off-diagonal elements
                 print(corr_matrix)
                 print(f'No off-diagonal elements for {bin}')
@@ -197,7 +199,7 @@ def main(snp_vcf_dir, str_vcf_dir):
     celltypes = celltypes.split(',')
     for cell_type in ['CD4_TCM']:
         #for chrom in range(1, 23):
-        for chrom in [1]:
+        for chrom in [22]:
             gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/chr{chrom}_{cell_type}_gene_list.json'
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
