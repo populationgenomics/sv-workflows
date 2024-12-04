@@ -175,8 +175,8 @@ def genes_parser(
                 },
             )
 
-    # Append results to master DataFrame
-    max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
+            # Append results to master DataFrame
+            max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
             f'ld_decay/test/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
