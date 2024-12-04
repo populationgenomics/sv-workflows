@@ -8,7 +8,7 @@ Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
-python3 lead_tr_snv.py
+python3 lead_tr_snv_ld_decay_metrics.py
 
 """
 import json
