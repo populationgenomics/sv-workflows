@@ -41,7 +41,7 @@ def genes_parser(
     with to_path(gene_file).open() as file:
         genes = json.load(file)
 
-    #for gene in genes:
+    # for gene in genes:
     for gene in ['ENSG00000241860']:
         try:
             eqtl_results = pd.read_csv(
@@ -66,9 +66,6 @@ def genes_parser(
 
             proxy_snv_results = snv_meta_results[snv_meta_results.index != lead_snv.index[0]]
             proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
-            proxy_snv_coord = f"{chromosome}:{proxy_snv.iloc[0]['pos']}"
-            proxy_snv_motif = proxy_snv.iloc[0]['motif']
-            distance = abs(int(lead_snv.iloc[0]['pos']) - int(proxy_snv.iloc[0]['pos']))
 
             # Extract the genotypes for lead SNV in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
@@ -90,13 +87,6 @@ def genes_parser(
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
             lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
-
-            proxy_snv_results = eqtl_results[eqtl_results.index != lead_tr.index[0]]  # filter out lead tr
-            proxy_snv_results = proxy_snv_results[proxy_snv_results['motif'].str.contains('-')]  # filter for SNVs
-            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
-            proxy_snv_coord = f"{chromosome}:{proxy_snv.iloc[0]['pos']}"
-            proxy_snv_motif = proxy_snv.iloc[0]['motif']
-            distance = abs(int(lead_tr.iloc[0]['pos']) - int(proxy_snv.iloc[0]['pos']))
 
             # Extract the genotypes for STRs in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
@@ -129,9 +119,12 @@ def genes_parser(
         ## Define the bins
         lead_variant_chrom = lead_variant_coord.split(':')[0]
         lead_variant_pos = int(lead_variant_coord.split(':')[1])
-        one_mb_window_start = min(lead_variant_pos - 500000, 0)
+        one_mb_window_start = max(lead_variant_pos - 500000, 0)
         one_mb_window_end = lead_variant_pos + 500000
-        bins = [f'{lead_variant_chrom}:{start}-{start+10000}' for start in range(one_mb_window_start, one_mb_window_end, 10000)]
+        bins = [
+            f'{lead_variant_chrom}:{start}-{start+10000}'
+            for start in range(one_mb_window_start, one_mb_window_end, 10000)
+        ]
         bin_corrs = {}
 
         ## Iterate through the bins
@@ -159,17 +152,16 @@ def genes_parser(
             # Store max correlation for this bin
             bin_corrs[f'bin_{i}'] = max_abs_corr
 
-
-
         # Create results DataFrame with common attributes and bin correlations
-        results_df = pd.DataFrame({
-            'lead_pval': [min_pval],
-            'lead_snv_boolean': [at_least_one_lead_SNV],
-            'cell_type': [cell_type],
-            'gene': [gene],
-            **bin_corrs  # Unpack bin correlations
-        })
-
+        results_df = pd.DataFrame(
+            {
+                'lead_pval': [min_pval],
+                'lead_snv_boolean': [at_least_one_lead_SNV],
+                'cell_type': [cell_type],
+                'gene': [gene],
+                **bin_corrs,  # Unpack bin correlations
+            },
+        )
 
     # Append results to master DataFrame
     max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
