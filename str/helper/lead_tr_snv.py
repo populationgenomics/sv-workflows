@@ -187,7 +187,8 @@ def main(snp_vcf_dir, str_vcf_dir):
     celltypes = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
     for cell_type in ['ASDC']:
-        for chrom in range(1, 23):
+        #for chrom in range(1, 23):
+        for chrom in [1]:
             if to_path(
                 f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
             ).exists():
