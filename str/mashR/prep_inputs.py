@@ -104,7 +104,7 @@ def main():
             #    sep='\t',
             #)
         df = pd.read_csv(
-            'cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
+            f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
             sep='\t',
 
         )
