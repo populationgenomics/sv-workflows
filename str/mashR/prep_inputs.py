@@ -111,7 +111,7 @@ def main():
                 #master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'gene'], how='inner')
                 master_df = pd.concat([master_df, df], axis=0)
         master_df.to_csv(
-            f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
+            f'gs://cpg-bioheart-test/str/common_variants_snps/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
             sep='\t',
             index=False,
         )
