@@ -113,7 +113,7 @@ def main():
         if master_df.empty:
             master_df = df
         else:
-            master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'gene'], how='inner')
+            master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'gene'], how='inner')
             #master_df = pd.concat([master_df, df], axis=0)
     master_df.to_csv(
         f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom_all_cell_beta_se.tsv',
