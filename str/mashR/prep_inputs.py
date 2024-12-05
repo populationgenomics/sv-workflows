@@ -108,6 +108,7 @@ def main():
             sep='\t',
 
         )
+        df.drop(columns=['ref_len'], inplace=True)
         #df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr22/beta_se.tsv',
             #sep='\t')
         if master_df.empty:
