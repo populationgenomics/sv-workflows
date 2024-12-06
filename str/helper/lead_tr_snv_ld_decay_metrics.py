@@ -53,7 +53,7 @@ def genes_parser(
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
         # check if all rows are SNPs:
-        at_least_one_lead_SNV = smallest_pval_rows['motif'].str.contains('-').any()
+        at_least_one_lead_SNV = smallest_pval_rows['motif'].str.contains('-').all()
         if at_least_one_lead_SNV:
             snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')]  # filter for SNVs
             lead_snv = snv_meta_results[
@@ -81,7 +81,7 @@ def genes_parser(
                 print('Finished reading SNP VCF')
             lead_variant_coord = lead_snv_coord
 
-        else:
+        elif not smallest_pval_rows['motif'].str.contains('-').any():
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
             lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
@@ -112,7 +112,9 @@ def genes_parser(
                     lead_df[snp] = sums
                     break
             lead_variant_coord = lead_tr_coord
-
+        else:
+            print('No lead variant found')
+            continue
         # Extract max R2 for lead TR and SNVs in 10kb bins +/- 500kb from lead variant
         ## Define the bins
         lead_variant_chrom = lead_variant_coord.split(':')[0]
@@ -175,7 +177,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/tob_bioheart_ld/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/tob_bioheart_ld/mut_ex/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
