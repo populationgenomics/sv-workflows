@@ -59,7 +59,7 @@ def genes_parser(
             lead_snv = snv_meta_results[
                 snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()
             ]  # get the lead SNV
-            lead_snv_coord = chrom_num + ':' + str(lead_snv.iloc[0]['pos'])
+            lead_snv_coord = str(chrom_num) + ':' + str(lead_snv.iloc[0]['pos'])
             lead_snv_motif = lead_snv.iloc[0]['motif']
             lead_snv_ref = lead_snv_motif.split('-')[0]
             lead_snv_alt = lead_snv_motif.split('-')[1]
