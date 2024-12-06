@@ -8,7 +8,7 @@ Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
-python3 lead_tr_snv_ld_decay_metrics.py --snp-vcf-dir:gs://cpg-bioheart-test/str/associatr/common_variants_snps
+python3 lead_tr_snv_ld_decay_metrics.py --snp-vcf-dir=gs://cpg-bioheart-test/str/associatr/common_variants_snps
 
 """
 import json
@@ -78,7 +78,6 @@ def genes_parser(
                     df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                     lead_df = pd.concat([lead_df, df_to_append], axis=1)
                     break
-                print('Finished reading SNP VCF')
             lead_variant_coord = lead_snv_coord
 
         elif not smallest_pval_rows['motif'].str.contains('-').any():
@@ -177,7 +176,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/tob_bioheart_ld/mut_ex/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/mut_ex/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
