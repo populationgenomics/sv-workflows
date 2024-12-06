@@ -116,6 +116,7 @@ def genes_parser(
                     lead_df[snp] = sums
                     break
             lead_variant_coord = lead_tr_coord
+            print(f'Lead variant coord: {lead_variant_coord}')
 
         # Extract max R2 for lead TR and SNVs in 10kb bins +/- 500kb from lead variant
         ## Define the bins
@@ -148,7 +149,7 @@ def genes_parser(
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
             print('Correlation matrix:')
-            corr_matrix.to_csv('gs://cpg-bioheart-test/str/associatr/ld_decay/test/500bpbin/lead_snv_locus/corr_matrix.tsv', sep='\t')
+            corr_matrix.to_csv('gs://cpg-bioheart-test/str/associatr/ld_decay/test/500bpbin/lead_tr_locus/corr_matrix.tsv', sep='\t')
             print(corr_matrix)
 
             # Create mask for off-diagonal elements
@@ -218,7 +219,7 @@ def main(snp_vcf_dir, str_vcf_dir):
             gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/chr{chrom}_{cell_type}_gene_list.json'
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
-            for gene in ['ENSG00000015475']:
+            for gene in ['ENSG00000291299']:
 
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
