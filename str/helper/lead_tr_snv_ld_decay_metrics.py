@@ -82,7 +82,7 @@ def genes_parser(
 
         elif not smallest_pval_rows['motif'].str.contains('-').any():
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
-            lead_tr_coord = chrom_num + ':' + str(lead_tr.iloc[0]['pos'])
+            lead_tr_coord = str(chrom_num) + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
 
             # Extract the genotypes for STRs in the cis window
