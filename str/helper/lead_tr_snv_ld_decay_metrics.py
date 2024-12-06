@@ -122,7 +122,7 @@ def genes_parser(
         one_mb_window_start = max(lead_variant_pos - 500000, 0)
         one_mb_window_end = lead_variant_pos + 500000
         bins = [
-            f'{lead_variant_chrom}:{start+1}-{start+10000}'
+            f'{chrom_num}:{start+1}-{start+10000}'
             for start in range(one_mb_window_start, one_mb_window_end, 10000)
         ]
         ## Iterate through the bins
@@ -135,7 +135,7 @@ def genes_parser(
             for variant in snp_vcf(bin):
                 gt = variant.gt_types  # extracts GTs as a numpy array
                 gt[gt == 3] = 2
-                snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
+                snp = str(variant.CHROM) + '_' + str(variant.POS) + '_' + variant.REF + '-' +variant.ALT[0]
                 df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                 snp_df = pd.concat([snp_df, df_to_append], axis=1)
 
