@@ -131,6 +131,7 @@ def genes_parser(
             snp_df = pd.DataFrame(columns=['individual'])
             snp_vcf = VCF(snp_input['vcf'])
             snp_df['individual'] = snp_vcf.samples
+            snp_df['individual'] = snp_df['individual'].str.removeprefix('CPG')
             print(bin)
             for variant in snp_vcf(bin):
                 gt = variant.gt_types  # extracts GTs as a numpy array
