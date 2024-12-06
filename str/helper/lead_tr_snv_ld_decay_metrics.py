@@ -8,7 +8,7 @@ Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
-python3 lead_tr_snv_ld_decay_metrics.py
+python3 lead_tr_snv_ld_decay_metrics.py --snp-vcf-dir:gs://cpg-bioheart-test/str/associatr/common_variants_snps
 
 """
 import json
@@ -120,18 +120,10 @@ def genes_parser(
         print(f'Lead variant position: {lead_variant_pos}')
         one_mb_window_start = max(lead_variant_pos - 500000, 0)
         one_mb_window_end = lead_variant_pos + 500000
-        # Define the widening bins
-        bins = []
-        start, end = lead_variant_pos, lead_variant_pos
-
-        while start > one_mb_window_start or end < one_mb_window_end:
-            # Expand the start and end by 5kb
-            start = max(start - 5000, one_mb_window_start)  # Ensure it doesn't go below the lower limit
-            end = min(end + 5000, one_mb_window_end)       # Ensure it doesn't exceed the upper limit
-
-            # Append the new window to the bins
-            bins.append(f'{lead_variant_chrom}:{start}-{end}')
-
+        bins = [
+            f'{lead_variant_chrom}:{start+1}-{start+10000}'
+            for start in range(one_mb_window_start, one_mb_window_end, 10000)
+        ]
         ## Iterate through the bins
         for i, bin in enumerate(bins):
             ## Extract the genotypes for SNVs in the bin
@@ -151,9 +143,6 @@ def genes_parser(
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
 
-            # Create mask for off-diagonal elements
-            mask = ~np.eye(corr_matrix.shape[0], dtype=bool)
-
             # Get maximum absolute correlation off diagonal
             try:
                 # get the max absolute correlation in the first column (corresponds to lead variant) but it cant be on the diagnonal
@@ -167,10 +156,8 @@ def genes_parser(
 
             # save results for input into results_df
             # Store max correlation for this bin
-            #bin_midpoint = (int(bin.split(':')[1].split('-')[1]) + int(bin.split(':')[1].split('-')[0]))/2
-            #distance = bin_midpoint - lead_variant_pos
-            bin_length = int(bin.split(':')[1].split('-')[1]) - int(bin.split(':')[1].split('-')[0])
-
+            bin_midpoint = (int(bin.split(':')[1].split('-')[1]) + int(bin.split(':')[1].split('-')[0]))/2
+            distance = bin_midpoint - lead_variant_pos
 
             # Create results DataFrame with common attributes and bin correlations
             results_df = pd.DataFrame(
@@ -179,8 +166,7 @@ def genes_parser(
                     'lead_snv_boolean': [at_least_one_lead_SNV],
                     'cell_type': [cell_type],
                     'gene': [gene],
-                    #'distance': [distance],
-                    'bin_length': [bin_length],
+                    'distance': [distance],
                     'max_abs_corr': [max_abs_corr],
                 },
             )
@@ -189,7 +175,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/max_taggability/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/tob_bioheart_ld/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
@@ -215,11 +201,7 @@ def main(snp_vcf_dir, str_vcf_dir):
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
             for gene in genes:
-                if to_path(
-                    f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_{gene}_summ_stats.tsv',
-                ).exists():
-                    print(f'File already exists for {cell_type} and {chrom}: {gene}')
-                    continue
+
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
                 )
