@@ -8,7 +8,7 @@ Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
-python3 lead_tr_snv_ld_decay_metrics.py --snp-vcf-dir=gs://cpg-bioheart-test/str/associatr/common_variants_snps
+python3 lead_tr_snv_ld_decay_metrics.py --snp-vcf-dir=gs://cpg-bioheart-test/saige-qtl/bioheart_n990_and_tob_n1055/input_files/genotypes/vds-tenk10k1-0
 
 """
 import json
@@ -35,7 +35,7 @@ def genes_parser(
     from cpg_utils.hail_batch import output_path
 
     max_corr_master_df = pd.DataFrame()
-
+    chrom_num = chromosome
     chromosome = f'chr{chromosome}'
 
 
@@ -59,22 +59,22 @@ def genes_parser(
             lead_snv = snv_meta_results[
                 snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()
             ]  # get the lead SNV
-            lead_snv_coord = chromosome + ':' + str(lead_snv.iloc[0]['pos'])
+            lead_snv_coord = chrom_num + ':' + str(lead_snv.iloc[0]['pos'])
             lead_snv_motif = lead_snv.iloc[0]['motif']
-
-            proxy_snv_results = snv_meta_results[snv_meta_results.index != lead_snv.index[0]]
-            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
+            lead_snv_ref = lead_snv_motif.split('-')[0]
+            lead_snv_alt = lead_snv_motif.split('-')[1]
 
             # Extract the genotypes for lead SNV in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
             snp_vcf_1 = VCF(snp_input['vcf'])
             lead_df['individual'] = snp_vcf_1.samples
+            lead_df['individual'] = lead_df['individual'].str.removeprefix('CPG')
 
             for variant in snp_vcf_1(lead_snv_coord):
-                if str(variant.INFO.get('RU')) == lead_snv_motif:
+                if (variant.REF == lead_snv_ref and variant.ALT[0] == lead_snv_alt):
                     gt = variant.gt_types  # extracts GTs as a numpy array
                     gt[gt == 3] = 2
-                    snp = variant.CHROM + '_' + str(variant.POS) + '_' + lead_snv_motif
+                    snp = str(variant.CHROM) + '_' + str(variant.POS) + '_' + variant.REF + '-' +variant.ALT[0]
                     df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                     lead_df = pd.concat([lead_df, df_to_append], axis=1)
                     break
@@ -82,7 +82,7 @@ def genes_parser(
 
         elif not smallest_pval_rows['motif'].str.contains('-').any():
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
-            lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
+            lead_tr_coord = chrom_num + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
 
             # Extract the genotypes for STRs in the cis window
@@ -90,7 +90,7 @@ def genes_parser(
             str_vcf = VCF(str_input['vcf'])
             lead_df['individual'] = str_vcf.samples
             print('Starting to subset STR VCF for window...')
-            for variant in str_vcf(lead_tr_coord):
+            for variant in str_vcf('chr'+lead_tr_coord):
                 if str(variant.INFO.get('RU')) == lead_tr_motif:
                     genotypes = variant.format('REPCN')
                     # Replace '.' with '-99/-99' to handle missing values
@@ -141,6 +141,7 @@ def genes_parser(
 
             # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
             merged_df = lead_df.merge(snp_df, on='individual')
+            print(merged_df)
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
 
@@ -176,7 +177,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/mut_ex/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/mut_ex/saige_vcf/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
@@ -206,10 +207,10 @@ def main(snp_vcf_dir, str_vcf_dir):
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
                 )
-                snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chrom}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
 
-                snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
+                snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.csi'})
                 str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
                 j.call(
                     genes_parser,
