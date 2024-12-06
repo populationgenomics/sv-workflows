@@ -52,8 +52,11 @@ def genes_parser(
         # get row(s) with minimum p-value
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
+        print('Smallest p-value rows:')
+        print(smallest_pval_rows)
         # check if all rows are SNPs:
         at_least_one_lead_SNV = smallest_pval_rows['motif'].str.contains('-').any()
+        print(f'At least one LEAD SNV boolean: {at_least_one_lead_SNV}')
         if at_least_one_lead_SNV:
             snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')]  # filter for SNVs
             lead_snv = snv_meta_results[
@@ -80,6 +83,7 @@ def genes_parser(
                     break
                 print('Finished reading SNP VCF')
             lead_variant_coord = lead_snv_coord
+            print(f'Lead variant coord: {lead_variant_coord}')
 
         else:
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
@@ -142,6 +146,9 @@ def genes_parser(
             merged_df = lead_df.merge(snp_df, on='individual')
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
+            print('Correlation matrix:')
+            corr_matrix.to_csv('gs://cpg-bioheart-test/str/associatr/ld_decay/test/500bpbin/lead_snv_locus/corr_matrix.tsv', sep='\t')
+            print(corr_matrix)
 
             # Create mask for off-diagonal elements
             mask = ~np.eye(corr_matrix.shape[0], dtype=bool)
@@ -150,7 +157,11 @@ def genes_parser(
             try:
                 # get the max absolute correlation in the first column (corresponds to lead variant) but it cant be on the diagnonal
                 first_column = corr_matrix.iloc[:, 0] if hasattr(corr_matrix, 'iloc') else corr_matrix[:, 0]  # Extract the first column
+                print('First column:')
+                print(first_column)
+
                 max_abs_corr = np.max(np.abs(first_column[1:]))  # Exclude the diagonal by slicing (start from index 1)
+                print(f'Max absolute correlation: {max_abs_corr}')
             except ValueError: # if there are no off-diagonal elements
                 print(corr_matrix)
                 print(f'No off-diagonal elements for {bin}')
@@ -160,7 +171,9 @@ def genes_parser(
             # save results for input into results_df
             # Store max correlation for this bin
             bin_midpoint = (int(bin.split(':')[1].split('-')[1]) + int(bin.split(':')[1].split('-')[0]))/2
+            print(f'Bin midpoint: {bin_midpoint}')
             distance = bin_midpoint - lead_variant_pos
+            print(f'Distance from lead variant: {distance}')
 
             # Create results DataFrame with common attributes and bin correlations
             results_df = pd.DataFrame(
@@ -176,9 +189,10 @@ def genes_parser(
 
             # Append results to master DataFrame
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
+            break
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/500bpbin/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/500bpbin/lead_snv_locus/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
@@ -203,12 +217,8 @@ def main(snp_vcf_dir, str_vcf_dir):
             gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/chr{chrom}_{cell_type}_gene_list.json'
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
-            for gene in genes:
-                if to_path(
-                    f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_{gene}_summ_stats.tsv',
-                ).exists():
-                    print(f'File already exists for {cell_type} and {chrom}: {gene}')
-                    continue
+            for gene in ['ENSG00000015475']:
+
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
                 )
