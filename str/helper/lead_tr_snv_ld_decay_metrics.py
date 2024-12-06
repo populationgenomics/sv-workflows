@@ -53,7 +53,7 @@ def genes_parser(
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
         print('Smallest p-value rows:')
-        print(smallest_pval_rows)
+        print(smallest_pval_rows[['pos', 'motif', 'pval_meta']])
         # check if all rows are SNPs:
         at_least_one_lead_SNV = smallest_pval_rows['motif'].str.contains('-').any()
         print(f'At least one LEAD SNV boolean: {at_least_one_lead_SNV}')
@@ -128,6 +128,7 @@ def genes_parser(
             f'{lead_variant_chrom}:{start}-{start+500}'
             for start in range(one_mb_window_start, one_mb_window_end, 500)
         ]
+        print(bins)
         ## Iterate through the bins
         for i, bin in enumerate(bins):
             ## Extract the genotypes for SNVs in the bin
