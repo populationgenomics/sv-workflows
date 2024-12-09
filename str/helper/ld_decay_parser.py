@@ -41,8 +41,8 @@ def main():
     b = get_batch(name='LD decay parser')
     # Split the string into a list of characters
     cell_type_list = cell_types.split(',')
-    for cell in cell_type_list:
-        for chrom_num in [22]:
+    for cell in ['CD4_TCM']:
+        for chrom_num in range(1, 23):
             j = b.new_python_job(
                 name=f'Get LD decay metrics for {cell} and chr{chrom_num}',
             )

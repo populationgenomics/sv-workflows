@@ -18,7 +18,7 @@ import click
 import pandas as pd
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 def genes_parser(
@@ -204,6 +204,12 @@ def main(snp_vcf_dir, str_vcf_dir):
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
             for gene in genes:
+                if to_path(output_path(
+            f'ld_decay/test/mut_ex/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_{gene}_summ_stats.tsv',
+            'analysis',
+            )).exists():
+                    print(f'File already exists for {cell_type} and {chrom}')
+                    continue
 
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
