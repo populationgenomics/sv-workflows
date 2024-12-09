@@ -54,6 +54,6 @@ def main():
 
     #result_df = pd.concat(dfs, ignore_index = True)
     #result_df.to_csv('gs://cpg-bioheart-test-analysis/str/associatr/estrs/ld_decay/test/mut_ex/chr22_all_cell_types_ld_decay_metrics.csv', index = False)
-
+    b.run(wait=False)
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter,too-many-arguments
