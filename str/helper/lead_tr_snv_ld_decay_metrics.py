@@ -194,7 +194,7 @@ def main(snp_vcf_dir, str_vcf_dir):
     """
     b = get_batch(name='Lead TR, SNV, and proxy SNV data extraction')
 
-    celltypes = 'CD8_Naive,CD4_TCM,NK,CD8_TEM'
+    celltypes = 'CD4_Naive,B_naive'
     #,,,,,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
     for cell_type in celltypes:
