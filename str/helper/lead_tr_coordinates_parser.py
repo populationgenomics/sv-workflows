@@ -9,10 +9,11 @@ import pandas as pd
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
+
 def main():
     dfs=[]
     genes = pd.read_csv('gs://cpg-bioheart-test/str/CD4_TCM_lead_TR_genes.csv')
-    for row in genes.iterrows():
+    for _, row in genes.iterrows():
         gene = row['gene']
         chromosome = row['chrom']
         eqtl_results = pd.read_csv(
