@@ -152,7 +152,7 @@ def genes_parser(
             try:
                 # get the max absolute correlation in the first column (corresponds to lead variant) but it cant be on the diagnonal
                 first_column = corr_matrix.iloc[:, 0] if hasattr(corr_matrix, 'iloc') else corr_matrix[:, 0]  # Extract the first column
-                max_abs_corr = np.mean(np.abs(first_column[1:]))  # Exclude the diagonal by slicing (start from index 1)
+                max_abs_corr = np.mean((np.abs(first_column[1:]))**2)  # Exclude the diagonal by slicing (start from index 1)
             except ValueError: # if there are no off-diagonal elements
                 print(corr_matrix)
                 print(f'No off-diagonal elements for {bin}')
