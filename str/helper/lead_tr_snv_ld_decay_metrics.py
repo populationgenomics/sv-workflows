@@ -2,12 +2,12 @@
 # pylint: disable=too-many-arguments,too-many-locals
 
 """
-This script writes out genes for every cell type if the gene has a lead signal that is not a SNP.
+This script writes out the max R2 for the lead TR and SNVs in 10kb bins +/- 500kb from the lead variant.
 We test all genes tested, not just eGenes that pass an FDR.
 Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
- --storage="20G" --memory='8G' \
+ --storage="10G" --memory='4G' \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
 python3 lead_tr_snv_ld_decay_metrics.py
 
@@ -81,7 +81,7 @@ def genes_parser(
                     break
             lead_variant_coord = lead_snv_coord
 
-        elif not smallest_pval_rows['motif'].str.contains('-').any():
+        elif not smallest_pval_rows['motif'].str.contains('-').any(): #lead variant is a TR
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
             lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
@@ -115,7 +115,7 @@ def genes_parser(
         else:
             print('No lead variant found')
             continue
-        # Extract max R2 for lead TR and SNVs in 10kb bins +/- 500kb from lead variant
+        # Extract max R2 for lead variant and SNVs in 10kb bins +/- 500kb from lead variant
         ## Define the bins
         lead_variant_chrom = lead_variant_coord.split(':')[0]
         lead_variant_pos = int(lead_variant_coord.split(':')[1])
@@ -140,7 +140,7 @@ def genes_parser(
                 df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                 snp_df = pd.concat([snp_df, df_to_append], axis=1)
 
-            # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
+            # merge the df of the lead variant genotypes and the snp (in the bins) genotypes
             merged_df = lead_df.merge(snp_df, on='individual')
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
