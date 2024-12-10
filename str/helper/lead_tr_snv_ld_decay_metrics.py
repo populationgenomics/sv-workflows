@@ -2,7 +2,7 @@
 # pylint: disable=too-many-arguments,too-many-locals
 
 """
-This script writes out the max R2 for the lead TR and SNVs in 10kb bins +/- 500kb from the lead variant.
+This script writes out the max R2 for the SNVs in 10kb bins +/- 500kb from the lead variant.
 We test all genes tested, not just eGenes that pass an FDR.
 Used to generate one stat in the paper.
 
