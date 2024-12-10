@@ -2,14 +2,13 @@
 # pylint: disable=too-many-arguments,too-many-locals
 
 """
-This script writes out the max R2 for the SNVs in 10kb bins +/- 500kb from the lead variant.
+This script writes out genes for every cell type if the gene has a lead signal that is not a SNP.
 We test all genes tested, not just eGenes that pass an FDR.
 Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
- --storage="10G" --memory='4G' \
 --description "get cis and numpy" --output-dir "str/associatr/estrs" \
-python3 lead_tr_snv_ld_decay_metrics.py
+python3 lead_tr_snv_ld_decay_metrics.py --snp-vcf-dir=gs://cpg-bioheart-test/saige-qtl/bioheart_n787_and_tob_n960/241008_ashg/input_files/genotypes/vds-tenk10k1-0_qc_pass
 
 """
 import json
@@ -18,7 +17,7 @@ import click
 import pandas as pd
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 
 def genes_parser(
@@ -36,7 +35,7 @@ def genes_parser(
     from cpg_utils.hail_batch import output_path
 
     max_corr_master_df = pd.DataFrame()
-
+    chrom_num = chromosome
     chromosome = f'chr{chromosome}'
 
 
@@ -60,30 +59,30 @@ def genes_parser(
             lead_snv = snv_meta_results[
                 snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()
             ]  # get the lead SNV
-            lead_snv_coord = chromosome + ':' + str(lead_snv.iloc[0]['pos'])
+            lead_snv_coord = str(chrom_num) + ':' + str(lead_snv.iloc[0]['pos'])
             lead_snv_motif = lead_snv.iloc[0]['motif']
-
-            proxy_snv_results = snv_meta_results[snv_meta_results.index != lead_snv.index[0]]
-            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
+            lead_snv_ref = lead_snv_motif.split('-')[0]
+            lead_snv_alt = lead_snv_motif.split('-')[1]
 
             # Extract the genotypes for lead SNV in the cis window
             lead_df = pd.DataFrame(columns=['individual'])
             snp_vcf_1 = VCF(snp_input['vcf'])
             lead_df['individual'] = snp_vcf_1.samples
+            lead_df['individual'] = lead_df['individual'].str.removeprefix('CPG')
 
             for variant in snp_vcf_1(lead_snv_coord):
-                if str(variant.INFO.get('RU')) == lead_snv_motif:
+                if (variant.REF == lead_snv_ref and variant.ALT[0] == lead_snv_alt):
                     gt = variant.gt_types  # extracts GTs as a numpy array
                     gt[gt == 3] = 2
-                    snp = variant.CHROM + '_' + str(variant.POS) + '_' + lead_snv_motif
+                    snp = str(variant.CHROM) + '_' + str(variant.POS) + '_' + variant.REF + '-' +variant.ALT[0]
                     df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                     lead_df = pd.concat([lead_df, df_to_append], axis=1)
                     break
             lead_variant_coord = lead_snv_coord
 
-        elif not smallest_pval_rows['motif'].str.contains('-').any(): #lead variant is a TR
+        elif not smallest_pval_rows['motif'].str.contains('-').any():
             lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
-            lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
+            lead_tr_coord = str(chrom_num) + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
 
             # Extract the genotypes for STRs in the cis window
@@ -91,7 +90,7 @@ def genes_parser(
             str_vcf = VCF(str_input['vcf'])
             lead_df['individual'] = str_vcf.samples
             print('Starting to subset STR VCF for window...')
-            for variant in str_vcf(lead_tr_coord):
+            for variant in str_vcf('chr'+lead_tr_coord):
                 if str(variant.INFO.get('RU')) == lead_tr_motif:
                     genotypes = variant.format('REPCN')
                     # Replace '.' with '-99/-99' to handle missing values
@@ -115,7 +114,7 @@ def genes_parser(
         else:
             print('No lead variant found')
             continue
-        # Extract max R2 for lead variant and SNVs in 10kb bins +/- 500kb from lead variant
+        # Extract max R2 for lead TR and SNVs in 10kb bins +/- 500kb from lead variant
         ## Define the bins
         lead_variant_chrom = lead_variant_coord.split(':')[0]
         lead_variant_pos = int(lead_variant_coord.split(':')[1])
@@ -123,7 +122,7 @@ def genes_parser(
         one_mb_window_start = max(lead_variant_pos - 500000, 0)
         one_mb_window_end = lead_variant_pos + 500000
         bins = [
-            f'{lead_variant_chrom}:{start+1}-{start+10000}'
+            f'{chrom_num}:{start+1}-{start+10000}'
             for start in range(one_mb_window_start, one_mb_window_end, 10000)
         ]
         ## Iterate through the bins
@@ -132,18 +131,20 @@ def genes_parser(
             snp_df = pd.DataFrame(columns=['individual'])
             snp_vcf = VCF(snp_input['vcf'])
             snp_df['individual'] = snp_vcf.samples
+            snp_df['individual'] = snp_df['individual'].str.removeprefix('CPG')
             print(bin)
             for variant in snp_vcf(bin):
-                if len(str(variant.INFO.get('RU'))) != 3: # skip indels
+                if len(variant.ALT[0])>1: # skip indels
                     continue
                 gt = variant.gt_types  # extracts GTs as a numpy array
                 gt[gt == 3] = 2
-                snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
+                snp = str(variant.CHROM) + '_' + str(variant.POS) + '_' + variant.REF + '-' +variant.ALT[0]
                 df_to_append = pd.DataFrame(gt, columns=[snp])  # creates a temp df to store the GTs for one locus
                 snp_df = pd.concat([snp_df, df_to_append], axis=1)
 
-            # merge the df of the lead variant genotypes and the snp (in the bins) genotypes
+            # Calculate the max R2 for the lead TR and SNVs in the 10kb bins
             merged_df = lead_df.merge(snp_df, on='individual')
+            print(merged_df)
             # Get correlation matrix
             corr_matrix = merged_df.drop(columns='individual').corr()
 
@@ -179,7 +180,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/mut_ex/skip_indels/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/mut_ex/skip_indels/clean_saige_vcf/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
@@ -196,30 +197,23 @@ def main(snp_vcf_dir, str_vcf_dir):
     """
     b = get_batch(name='Lead TR, SNV, and proxy SNV data extraction')
 
-    celltypes = 'CD4_TCM'
-    #,,,,,CD4_Naive,B_naive'
+    celltypes = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
-    for cell_type in celltypes:
+    for cell_type in ['CD4_TCM']:
+        #for chrom in range(1, 23):
         for chrom in [22]:
-        #for chrom in [22]:
             gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/chr{chrom}_{cell_type}_gene_list.json'
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
             for gene in genes:
-                if to_path(output_path(
-            f'ld_decay/test/mut_ex/skip_indels/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_{gene}_summ_stats.tsv',
-            'analysis',
-            )).exists():
-                    print(f'File already exists for {cell_type} and {chrom}')
-                    continue
 
                 j = b.new_python_job(
                     name=f'Get pvals/LD of lead variant and closest SNP proxy {cell_type}: {chrom}, {gene}',
                 )
-                snp_vcf_path = f'{snp_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
+                snp_vcf_path = f'{snp_vcf_dir}/chr{chrom}_common_variants.vcf.bgz'
                 str_vcf_path = f'{str_vcf_dir}/hail_filtered_chr{chrom}.vcf.bgz'
 
-                snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.tbi'})
+                snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'tbi': snp_vcf_path + '.csi'})
                 str_input = get_batch().read_input_group(**{'vcf': str_vcf_path, 'tbi': str_vcf_path + '.tbi'})
                 j.call(
                     genes_parser,
