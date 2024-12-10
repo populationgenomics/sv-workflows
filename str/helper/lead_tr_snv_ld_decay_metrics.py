@@ -134,6 +134,8 @@ def genes_parser(
             snp_df['individual'] = snp_vcf.samples
             print(bin)
             for variant in snp_vcf(bin):
+                if len(str(variant.INFO.get('RU'))) != 3: # skip indels
+                    continue
                 gt = variant.gt_types  # extracts GTs as a numpy array
                 gt[gt == 3] = 2
                 snp = variant.CHROM + '_' + str(variant.POS) + '_' + str(variant.INFO.get('RU'))
@@ -177,7 +179,7 @@ def genes_parser(
             max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
     max_corr_master_df.to_csv(
         output_path(
-            f'ld_decay/test/mut_ex/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/mut_ex/skip_indels/{cell_type}/{chromosome}/{cell_type}_{chromosome}_{gene}_summ_stats.tsv',
             'analysis',
         ),
         sep='\t',
@@ -198,14 +200,14 @@ def main(snp_vcf_dir, str_vcf_dir):
     #,,,,,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
     for cell_type in celltypes:
-        for chrom in range(1, 22):
+        for chrom in [22]:
         #for chrom in [22]:
             gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/chr{chrom}_{cell_type}_gene_list.json'
             with to_path(gene_file).open() as file:
                 genes = json.load(file)
             for gene in genes:
                 if to_path(output_path(
-            f'ld_decay/test/mut_ex/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_{gene}_summ_stats.tsv',
+            f'ld_decay/test/mut_ex/skip_indels/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_{gene}_summ_stats.tsv',
             'analysis',
             )).exists():
                     print(f'File already exists for {cell_type} and {chrom}')
