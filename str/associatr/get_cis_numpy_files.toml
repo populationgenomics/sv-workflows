@@ -1,12 +1,12 @@
 [get_cis_numpy]
 # GCS directory to the input AnnData objects
-input_h5ad_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_anndata'
+input_h5ad_dir = 'gs://cpg-tenk10k-test/saige-qtl/300-libraries/anndata_objects_from_HPC'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/pseudobulk'
+input_pseudobulk_dir = 'gs://cpg-tenk10k-test/str/associatr/final-freeze/input_files/pseudobulk/tob_ids_n1055'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/covariates/7_rna_pcs'
-chromosomes = 'chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
-cell_types = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
+input_cov_dir = 'gs://cpg-tenk10k-test/str/associatr/rna_calib/tob_n950/input_files/covariates/covariates/10_rna_pcs'
+chromosomes = 'chr1'
+cell_types = 'CD8_TEM'
 # cis window size in bp
 cis_window = 100000
 version = 'v1'
@@ -17,5 +17,3 @@ job_storage = '0G'
 max_parallel_jobs = 500
 # filter out genes that are expressed in fewer than XX% of cells
 min_pct = 1
-# GCS path to the file containing the list of samples to remove
-remove_samples_file = 'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
