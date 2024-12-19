@@ -69,7 +69,6 @@ def cis_window_numpy_extractor(
     version,
     chrom_len,
     min_pct,
-
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -116,7 +115,6 @@ def cis_window_numpy_extractor(
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
         gene_pheno = pseudobulk[['sample_id', gene]]
 
-
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
         gene_pheno.loc[:, 'gene_rank'] = gene_pheno[gene].rank()
@@ -127,8 +125,6 @@ def cis_window_numpy_extractor(
         gene_pheno = gene_pheno[['sample_id', 'gene_inverse_normal']]
 
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
-
-
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
