@@ -17,5 +17,5 @@ job_storage = '0G'
 max_parallel_jobs = 500
 # filter out genes that are expressed in fewer than XX% of cells
 min_pct = 1
-snp_vcf_dir = "None"
-remove_samples_file= "None"
+snp_vcf_dir = "gs://None"
+remove_samples_file= "gs://None"

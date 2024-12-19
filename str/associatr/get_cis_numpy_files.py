@@ -119,7 +119,7 @@ def cis_window_numpy_extractor(
         gene_pheno = pseudobulk[['sample_id', gene]]
 
         # remove samples that are in the remove_samples_file
-        if remove_samples_file != "None":
+        if remove_samples_file != "gs://None":
             with to_path(remove_samples_file).open() as f:
                 array_string = f.read().strip()
                 remove_samples = literal_eval(array_string)
@@ -137,7 +137,7 @@ def cis_window_numpy_extractor(
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
         # add SNP genotypes we would like to condition on
-        if snp_input != "None":
+        if snp_input != "gs://None":
             snp_genotype_df = extract_genotypes(snp_input['vcf'], snp_loci)
             gene_pheno_cov = gene_pheno_cov.merge(snp_genotype_df, on='sample_id', how='inner')
 
