@@ -4,7 +4,7 @@ input_h5ad_dir = 'gs://cpg-tenk10k-test/saige-qtl/300-libraries/anndata_objects_
 # GCS directory to the input pseudobulk CSV files
 input_pseudobulk_dir = 'gs://cpg-tenk10k-test/str/associatr/final-freeze/input_files/pseudobulk/tob_ids_n1055'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-tenk10k-test/str/associatr/rna_calib/tob_n950/input_files/covariates/covariates/1_rna_pcs'
+input_cov_dir = 'gs://cpg-tenk10k-test/str/associatr/rna_calib/tob_n950/input_files/covariates/covariates/10_rna_pcs'
 chromosomes = 'chr1'
 cell_types = 'CD8_TEM'
 # cis window size in bp
@@ -17,5 +17,3 @@ job_storage = '0G'
 max_parallel_jobs = 500
 # filter out genes that are expressed in fewer than XX% of cells
 min_pct = 1
-snp_vcf_dir = "gs://cpg-tenk10k-test/str"
-remove_samples_file= "gs://cpg-tenk10k-test/str"
