@@ -14,13 +14,10 @@ analysis-runner --access-level test --dataset bioheart --image australia-southea
 import logging
 
 import click
-import pandas as pd
-import scanpy as sc
 
-import hail as hl
 
-from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
+
+from cpg_utils.hail_batch import get_batch
 
 
 def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_path, num_pcs):
@@ -28,6 +25,13 @@ def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_
     Calculates cell-type specific PCs from the pseudobulk data (genome-wide),
     merges them with other pre-calculated covariates, and writes file to GCP
     """
+    from cpg_utils import to_path
+    import scanpy as sc
+    import pandas as pd
+    from cpg_utils.hail_batch import init_batch, output_path
+
+    import hail as hl
+
     init_batch()
 
     # read in and concatenate pseudobulk data (chr-specific --> genome-wide anndata)
