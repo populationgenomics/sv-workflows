@@ -119,7 +119,7 @@ def cis_window_numpy_extractor(
         gene_pheno = pseudobulk[['sample_id', gene]]
 
         # remove samples that are in the remove_samples_file
-        if remove_samples_file != "gs://cpg-tenk10k-test/None":
+        if remove_samples_file != "gs://cpg-tenk10k-test/str":
             with to_path(remove_samples_file).open() as f:
                 array_string = f.read().strip()
                 remove_samples = literal_eval(array_string)
@@ -137,7 +137,7 @@ def cis_window_numpy_extractor(
         gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
         # add SNP genotypes we would like to condition on
-        if snp_input != "gs://cpg-tenk10k-test/None":
+        if snp_input != "gs://cpg-tenk10k-test/str":
             snp_genotype_df = extract_genotypes(snp_input['vcf'], snp_loci)
             gene_pheno_cov = gene_pheno_cov.merge(snp_genotype_df, on='sample_id', how='inner')
 
@@ -187,7 +187,7 @@ def main():
             j.memory(get_config()['get_cis_numpy']['job_memory'])
             j.storage(get_config()['get_cis_numpy']['job_storage'])
 
-            if get_config()['get_cis_numpy']['snp_vcf_dir'] != 'gs://cpg-tenk10k-test/None':
+            if get_config()['get_cis_numpy']['snp_vcf_dir'] != 'gs://cpg-tenk10k-test/str':
                 snp_vcf_dir = get_config()['get_cis_numpy']['snp_vcf_dir']
                 snp_vcf_path = f'{snp_vcf_dir}/{chrom}_common_variants.vcf.bgz'
                 snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_path, 'csi': snp_vcf_path + '.csi'})
