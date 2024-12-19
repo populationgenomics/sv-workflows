@@ -69,9 +69,7 @@ def cis_window_numpy_extractor(
     version,
     chrom_len,
     min_pct,
-    remove_samples_file,
-    snp_input,
-    snp_loci,
+
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
