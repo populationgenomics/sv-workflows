@@ -122,7 +122,7 @@ def main():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
             job.cpu(0.25)
-            job.call(cell_chrom_parser, chrom, estrs_coord_chrom)
+            job.call(cell_chrom_parser, cell,chrom, estrs_coord_chrom)
 
         #master_df.to_csv(
             #f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_nullbeta_se/chr22/all_cell_chr22_beta_se.tsv',
