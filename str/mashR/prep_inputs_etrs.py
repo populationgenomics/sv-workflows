@@ -101,7 +101,7 @@ def main():
         for chrom in range(1,23):
         #for chrom in [22]:
             df = pd.read_csv(
-                f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv',
+                f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
                 sep='\t',
             )
         #df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr22/beta_se.tsv',
