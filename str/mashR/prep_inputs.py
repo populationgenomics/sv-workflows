@@ -28,18 +28,18 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
         gene_name = row['gene_name']
         pos = row['pos']
         motif = row['motif']
-        #ref_len = row['ref_len']
+        ref_len = row['ref_len']
         try:
-            #df = pd.read_csv(
-            #    f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
-            #    sep='\t',
-            #)
             df = pd.read_csv(
-                f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
+                f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
                 sep='\t',
             )
-            #df = df[(df['pos'] == pos) & (df['motif'] == motif) & (df['ref_len'] == ref_len)]
-            df = df[(df['pos'] == pos) & (df['motif'] == motif)]
+            #df = pd.read_csv(
+            #    f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
+            #    sep='\t',
+            #)
+            df = df[(df['pos'] == pos) & (df['motif'] == motif) & (df['ref_len'] == ref_len)]
+            #df = df[(df['pos'] == pos) & (df['motif'] == motif)]
             beta = df['coeff_meta'].iloc[0]
             se = df['se_meta'].iloc[0]
             # save the beta and se into a row:
@@ -60,7 +60,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
             continue
 
     cell_df.to_csv(
-        f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
         sep='\t',
         index=False,
     )
@@ -87,48 +87,49 @@ def cell_chrom_parser_null(cell, chrom):
 
 def main():
     #b = get_batch(name='Prep eSNPS for mashr NULL')
+    b = get_batch(name='Prep eTRs for mashr')
     cell_types = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
 
     celltypes = cell_types.split(',')
     # load in the list of esnps passing FDR <5% across all cell types:
     estrs_coord = pd.read_csv(
-        'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_coord_gene.csv',
+        'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/cell-type-spec/estrs.csv',
     )
 
     for cell in celltypes:
-        master_df = pd.DataFrame()
+        #master_df = pd.DataFrame()
         for chrom in range(1,23):
         #for chrom in [22]:
-            df = pd.read_csv(
-                f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
-                sep='\t',
-            )
+            #df = pd.read_csv(
+            #    f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
+            #    sep='\t',
+            #)
         #df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr22/beta_se.tsv',
             #sep='\t')
-            if master_df.empty:
-                master_df = df
-            else:
+            #if master_df.empty:
+            #    master_df = df
+            #else:
                 #master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'gene'], how='inner')
-                master_df = pd.concat([master_df, df], axis=0)
-        master_df.to_csv(
-            f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
-            sep='\t',
-            index=False,
-        )
+               # master_df = pd.concat([master_df, df], axis=0)
+        #master_df.to_csv(
+            #f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
+            #sep='\t',
+            #index=False,
+        #)
 
-            #estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
-            #if to_path(f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/esnps_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
-                #continue
-            #job = b.new_python_job(f'Prep eSNPs for mashr {cell} {chrom}')
-            #job.cpu(0.25)
-            #job.call(cell_chrom_parser_null, cell, chrom)
+            estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
+            if to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
+                continue
+            job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
+            job.cpu(0.25)
+            job.call(cell_chrom_parser, chrom, estrs_coord_chrom)
 
         #master_df.to_csv(
             #f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_nullbeta_se/chr22/all_cell_chr22_beta_se.tsv',
             #sep='\t',
             #index=False,
         #)
-    #b.run(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
