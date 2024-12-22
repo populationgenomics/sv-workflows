@@ -6,7 +6,7 @@ This script prepares eSTR inputs from every cell type.
 analysis-runner --dataset "bioheart" \
     --description "Prepare inputs for mashr" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --access-level "test" \
+    --access-level "test" --memory=64G --storage=50G \
     --output-dir "potato" \
     prep_inputs_etrs.py
 """
@@ -109,7 +109,7 @@ def main():
             if master_df.empty:
                 master_df = df
             else:
-                master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'gene', 'ref_len'], how='inner')
+                master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'gene','ref_len'], how='inner')
                 master_df = pd.concat([master_df, df], axis=0)
         master_df.to_csv(
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
@@ -124,11 +124,7 @@ def main():
             #job.cpu(0.25)
             #job.call(cell_chrom_parser_null, cell,chrom)
 
-    master_df.to_csv(
-        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/chr22_null_beta_se/chr22/all_cell_chr22_beta_se.tsv',
-        sep='\t',
-        index=False,
-    )
+
     b.run(wait=False)
 
 
