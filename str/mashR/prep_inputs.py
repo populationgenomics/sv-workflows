@@ -66,7 +66,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
     )
 
 def cell_chrom_parser_null(cell, chrom):
-    gene_files = list(to_path(f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results/{cell}/chr{chrom}').rglob('*.tsv'))
+    gene_files = list(to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/{cell}/chr{chrom}').rglob('*.tsv'))
     master_df = pd.DataFrame()
     for gene_file in gene_files:
         gene_name = str(gene_file).split('/')[-1].split('_')[0]
@@ -79,15 +79,15 @@ def cell_chrom_parser_null(cell, chrom):
 
 
     master_df.to_csv(
-            f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv',
+            f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv',
             sep='\t',
             index=False,
         )
 
 
 def main():
-    #b = get_batch(name='Prep eSNPS for mashr NULL')
-    b = get_batch(name='Prep eTRs for mashr')
+    b = get_batch(name='Prep eTRs for mashr NULL')
+    #b = get_batch(name='Prep eTRs for mashr')
     cell_types = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
 
     celltypes = cell_types.split(',')
@@ -98,8 +98,8 @@ def main():
 
     for cell in celltypes:
         #master_df = pd.DataFrame()
-        for chrom in range(1,23):
-        #for chrom in [22]:
+        #for chrom in range(1,23):
+        for chrom in [22]:
             #df = pd.read_csv(
             #    f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr{chrom}/beta_se.tsv',
             #    sep='\t',
@@ -122,7 +122,7 @@ def main():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
             job.cpu(0.25)
-            job.call(cell_chrom_parser, cell,chrom, estrs_coord_chrom)
+            job.call(cell_chrom_parser_null, cell,chrom)
 
         #master_df.to_csv(
             #f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/chr22_nullbeta_se/chr22/all_cell_chr22_beta_se.tsv',
