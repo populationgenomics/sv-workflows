@@ -42,6 +42,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
         for cell_type2 in cell_type_array:
             if cell_type2 != cell_type:
                 file = f'{associatr_dir}/{cell_type2}/{chrom}/{gene}_100000bp_meta_results.tsv'
+                print ('Parsing file:', file)
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
@@ -76,9 +77,13 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                             'se_2': [eqtl_df2_se],
                         },
                     )
+                    print ('Adding row:', new_row)
                     meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
+                    print(meta_input_df)
                     if row['coeff'] * eqtl_df2_coeff < 0:
                         opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
+                    print('Parsed file:', file)
+                    break
                 except FileNotFoundError:
                     logging.info(f'File {file} not found')
                     continue
@@ -94,8 +99,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
 @click.command()
 def main(eqtl_file, associatr_dir):
     df = pd.read_csv(eqtl_file)
-    for cell_type in df['cell_type'].unique():
-        # for cell_type in ['ASDC']:
+    #for cell_type in df['cell_type'].unique():
+    for cell_type in ['ASDC']:
         cell_type_eqtls = df[df['cell_type'] == cell_type]
         j = get_batch(name='meta_eqt_file_prep').new_python_job(name=f'{cell_type}_meta_eqt_file_prep')
         j.call(meta_eqt_file_prep, cell_type_eqtls, cell_type, associatr_dir)
