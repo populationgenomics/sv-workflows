@@ -90,7 +90,9 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
     o_file_path_opposite = output_path(f'prep_files/{cell_type}/opposite_signed_betas.csv')
     meta_input_df.to_csv(o_file_path, index=False)
+    print('Meta input file saved to:', o_file_path)
     opposite_signed_betas.to_csv(o_file_path_opposite, index=False)
+    print('Opposite signed betas file saved to:', o_file_path_opposite)
 
 
 @click.option('--eqtl-file', help='File containing eQTLs passing FDR threshold')
