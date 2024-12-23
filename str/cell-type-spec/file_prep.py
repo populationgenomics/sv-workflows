@@ -83,7 +83,6 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     if row['coeff'] * eqtl_df2_coeff < 0:
                         opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
                     print('Parsed file:', file)
-                    break
                 except FileNotFoundError:
                     logging.info(f'File {file} not found')
                     continue
