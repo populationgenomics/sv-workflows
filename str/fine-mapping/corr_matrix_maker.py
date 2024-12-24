@@ -200,10 +200,17 @@ def main(
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    def get_first_pval(pval):
-        if isinstance(pval, (list, np.ndarray)):
-            return float(pval[0]) if len(pval) > 0 else np.nan
-        return float(pval)
+    def parse_pval(pval):
+        try:
+            if isinstance(pval, str) and pval.startswith('['):
+                # Parse string representation of list
+                pval_list = ast.literal_eval(pval)
+                return float(pval_list[0]) if pval_list else np.nan
+            else:
+                # Handle case where it's already a float
+                return float(pval)
+        except (ValueError, SyntaxError, IndexError):
+            return np.nan
 
     b = get_batch(name='Correlation matrix runner')
     for celltype in celltypes.split(','):
