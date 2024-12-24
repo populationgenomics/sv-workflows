@@ -40,8 +40,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r('library(tidyverse)')
 
     # read in raw associaTR results for each cohort for a particular gene
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',error_bad_lines=False,)
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',error_bad_lines=False,)
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',on_bad_lines='skip')
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',on_bad_lines='skip')
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
