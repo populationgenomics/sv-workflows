@@ -22,8 +22,8 @@ analysis-runner --dataset "bioheart" \
     --celltypes=gdT \
     --job-storage=10G \
     --max-parallel-jobs=50 \
-    --str-fdr-dir=gs://ccpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/fdr_qvals/using_acat \
-    --associatr-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results \
+    --str-fdr-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/fdr_qvals/using_acat \
+    --associatr-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results \
     --chromosomes=chr22
 
 
@@ -200,12 +200,20 @@ def main(
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
+    def get_first_pval(pval):
+        if isinstance(pval, (list, np.ndarray)):
+            return pval[0] if len(pval) > 0 else np.nan
+        return pval
+
     b = get_batch(name='Correlation matrix runner')
     for celltype in celltypes.split(','):
         # read in eSTR file
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
+        str_fdr['pval_pooled_first'] = str_fdr['pval_pooled'].apply(get_first_pval)
+        #subset to eSTRs where pval_pooled < 5e-8
+        str_fdr = str_fdr[str_fdr['pval_pooled_first'] < 5e-8]
         for chrom in chromosomes.split(','):
             # filter eSTRs by chromosome
             str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'" + chrom + "'")]
