@@ -218,7 +218,7 @@ def main(
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
-        str_fdr['pval_pooled_first'] = str_fdr['pval_pooled'].apply(get_first_pval)
+        str_fdr['pval_pooled_first'] = str_fdr['pval_pooled'].apply(parse_pval)
         #subset to eSTRs where pval_pooled < 5e-8
         str_fdr = str_fdr[str_fdr['pval_pooled_first'] < 5e-8]
         for chrom in chromosomes.split(','):
