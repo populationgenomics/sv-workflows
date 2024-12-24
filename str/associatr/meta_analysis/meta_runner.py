@@ -6,14 +6,13 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055/results/v4 \
-    --results-dir-2=gs://cpg-bioheart-test/str/associatr/common_variants_snps/bioheart_n990/results/v4 \
-    --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --output-dir "tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975_and_tob_n950" \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975/results/v1 \
+    --results-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v1 \
+    --gene-list-dir-1=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --gene-list-dir-2=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/1_min_pct_cells_expressed \
     --cell-types=B_intermediate \
-    --chromosomes=chr1 \
-    --always-run
+    --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
 """
 import json
 
@@ -41,8 +40,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r('library(tidyverse)')
 
     # read in raw associaTR results for each cohort for a particular gene
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',error_bad_lines=False,)
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',error_bad_lines=False,)
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
