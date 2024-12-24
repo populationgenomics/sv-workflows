@@ -202,8 +202,8 @@ def main(
 
     def get_first_pval(pval):
         if isinstance(pval, (list, np.ndarray)):
-            return pval[0] if len(pval) > 0 else np.nan
-        return pval
+            return float(pval[0]) if len(pval) > 0 else np.nan
+        return float(pval)
 
     b = get_batch(name='Correlation matrix runner')
     for celltype in celltypes.split(','):
