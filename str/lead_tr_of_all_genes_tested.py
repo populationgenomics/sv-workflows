@@ -48,7 +48,7 @@ def gene_with_lead_tr_parser(
             print(f'Lead signal(s) is a SNP for {gene}... skipping')
             continue
         else:
-            gene_name = str(gene).stem.split('_')[0]
+            gene_name = str(gene).split('/')[-1].split('_')[0]
             genes_with_lead_tr.append(gene_name)
 
     with to_path(
