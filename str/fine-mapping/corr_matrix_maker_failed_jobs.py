@@ -103,9 +103,7 @@ def ld_parser(
                 chrom = row['chr']
                 end = round(pos + row['ref_len'] * row['period'])
                 for variant in str_vcf(f'{chrom}:{pos}'):
-                    if (str(variant.INFO.get('RU')) == motif) and (
-                        int(variant.INFO.get('END')) == end
-                    ):  # check if the motif and end coordinate matches
+                    if (str(variant.INFO.get('RU')) == motif):  # check if the motif and end coordinate matches
                         genotypes = variant.format('REPCN')
                         # Replace '.' with '-99/-99' to handle missing values
                         genotypes = np.where(genotypes == '.', '-99/-99', genotypes)
