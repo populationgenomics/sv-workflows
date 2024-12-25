@@ -91,6 +91,8 @@ def ld_parser(
         for index, row in associatr.iterrows():  # obtain GTs for each STR/SNP listed in the raw associatr file
             pos = row['pos']
             motif = row['motif']
+            if ((pos == 23890666) & (motif == "AGAA")):
+                continue
             if '-' in row['motif']:  # SNP
                 for variant in snp_vcf(f'{chrom}:{pos}-{pos}'):
                     if str(variant.INFO.get('RU')) == motif:
