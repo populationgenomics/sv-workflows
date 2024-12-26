@@ -55,6 +55,7 @@ def genes_parser(
         ]  # get the lead SNV
         lead_snv_coord = chromosome + ':' + str(lead_snv.iloc[0]['pos'])
         lead_snv_motif = lead_snv.iloc[0]['motif']
+        print(f'Lead SNV: {lead_snv_coord}')
 
         proxy_snv_results = snv_meta_results[snv_meta_results.index != lead_snv.index[0]]
         proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
@@ -81,6 +82,7 @@ def genes_parser(
         lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
         lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
         lead_tr_motif = lead_tr.iloc[0]['motif']
+        print(f'Lead TR: {lead_tr_coord}')
 
         proxy_snv_results = eqtl_results[eqtl_results.index != lead_tr.index[0]]  # filter out lead tr
         proxy_snv_results = proxy_snv_results[proxy_snv_results['motif'].str.contains('-')]  # filter for SNVs
