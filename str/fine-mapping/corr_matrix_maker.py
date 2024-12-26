@@ -51,6 +51,7 @@ def ld_parser(
 ) -> str:
     import pandas as pd
     from cyvcf2 import VCF
+    from cpg_utils import to_path
 
     if str_fdr.empty:
         print(f'No eSTRs for {celltype}')
@@ -58,6 +59,8 @@ def ld_parser(
 
     for index, row in str_fdr.iterrows():  # iterate over each gene
         gene = row['gene_name']
+        if to_path(output_path(f'correlation_matrix/{celltype}/{chrom}/{gene}_correlation_matrix.tsv', 'analysis')).exists():
+            continue
         chrom = ast.literal_eval(row['chr'])[0]
         # obtain raw associaTR results for this gene
         try:
@@ -218,9 +221,6 @@ def main(
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
-        str_fdr['pval_pooled_first'] = str_fdr['pval_pooled'].apply(parse_pval)
-        #subset to eSTRs where pval_pooled < 5e-8
-        str_fdr = str_fdr[str_fdr['pval_pooled_first'] < 5e-8]
         for chrom in chromosomes.split(','):
             # filter eSTRs by chromosome
             str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'" + chrom + "'")]
