@@ -55,6 +55,7 @@ def genes_parser(
         ]  # get the lead SNV
         lead_snv_coord = chromosome + ':' + str(lead_snv.iloc[0]['pos'])
         lead_snv_motif = lead_snv.iloc[0]['motif']
+        print(f'Lead SNV motif: {lead_snv_motif}')
         print(f'Lead SNV: {lead_snv_coord}')
 
         proxy_snv_results = snv_meta_results[snv_meta_results.index != lead_snv.index[0]]
