@@ -59,9 +59,9 @@ def ld_parser(
 
     for index, row in str_fdr.iterrows():  # iterate over each gene
         gene = row['gene_name']
+        chrom = ast.literal_eval(row['chr'])[0]
         if to_path(output_path(f'correlation_matrix/{celltype}/{chrom}/{gene}_correlation_matrix.tsv', 'analysis')).exists():
             continue
-        chrom = ast.literal_eval(row['chr'])[0]
         # obtain raw associaTR results for this gene
         try:
             associatr_file = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
