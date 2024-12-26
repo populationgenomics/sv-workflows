@@ -37,14 +37,12 @@ def genes_parser(
 
     genes_with_lead_tr = []
     chromosome = f'chr{chromosome}'
-    genes = list(to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chromosome}').rglob('*.tsv'))
-    for gene_file in genes:
+    for gene_file in ['gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/gdT/chr16/ENSG00000155592_100000bp_meta_results.tsv']:
         eqtl_results = pd.read_csv(
             gene_file,
             sep='\t',)
         gene_name = str(gene_file).split('/')[-1].split('_')[0]
-        if gene_name != 'ENSG00000155592':
-            continue
+
         # get row(s) with minimum p-value
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
