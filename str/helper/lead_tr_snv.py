@@ -42,7 +42,7 @@ def genes_parser(
         eqtl_results = pd.read_csv(
             gene_file,
             sep='\t',)
-        gene_name = str(gene).split('/')[-1].split('_')[0]
+        gene_name = str(gene_file).split('/')[-1].split('_')[0]
         # get row(s) with minimum p-value
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
