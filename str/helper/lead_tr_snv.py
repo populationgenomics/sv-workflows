@@ -7,7 +7,7 @@ We test all genes tested, not just eGenes that pass an FDR.
 Used to generate one stat in the paper.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/estrs" \
+--description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze" \
 python3 lead_tr_snv.py
 
 """
@@ -37,19 +37,12 @@ def genes_parser(
 
     genes_with_lead_tr = []
     chromosome = f'chr{chromosome}'
-    gene_file = f'gs://cpg-bioheart-test/str/associatr/input_files/240_libraries_tenk10kp1_v2/scRNA_gene_lists/1_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
-    with to_path(gene_file).open() as file:
-        genes = json.load(file)
-
-    for gene in genes:
-        try:
-            eqtl_results = pd.read_csv(
-                f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv',
-                sep='\t',
-            )
-        except FileNotFoundError:
-            print(f'No eQTL results found for {gene}... skipping')
-            continue
+    genes = list(to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chromosome}').rglob('*.tsv'))
+    for gene_file in genes:
+        eqtl_results = pd.read_csv(
+            gene_file,
+            sep='\t',)
+        gene_name = str(gene).split('/')[-1].split('_')[0]
         # get row(s) with minimum p-value
         min_pval = eqtl_results['pval_meta'].min()
         smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
@@ -153,7 +146,7 @@ def genes_parser(
                 'lead_pval': [min_pval],
                 'lead_snv_boolean': [at_least_one_lead_SNV],
                 'cell_type': [cell_type],
-                'gene': [gene],
+                'gene': [gene_name],
                 'distance': [distance],
             },
         )
