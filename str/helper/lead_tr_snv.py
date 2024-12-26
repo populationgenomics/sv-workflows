@@ -135,7 +135,11 @@ def genes_parser(
         merged_df = lead_df.merge(proxy_df, on='individual')
 
         # merged_df has only two columns - calculate the correlation
-        correlation = merged_df.drop(columns='individual').corr().iloc[0, 1]
+        try:
+            correlation = merged_df.drop(columns='individual').corr().iloc[0, 1]
+        except:
+            print(correlation)
+            print(gene_name)
 
 
         # save correlation and pval ratio to a df
