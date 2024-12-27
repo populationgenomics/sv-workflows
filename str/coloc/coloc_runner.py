@@ -12,7 +12,6 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='16G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "tenk10k/str/associatr/final_freeze" \
     coloc_runner.py \
@@ -138,7 +137,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
 
     # read in gene annotation file
     var_table = pd.read_csv(
-        'gs://cpg-tenk10k-test/saige-qtl/300libraries_n1925_adata_raw_var.csv',
+        'gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv',
     )
     hg38_map = pd.read_csv(
         snp_gwas_file,
