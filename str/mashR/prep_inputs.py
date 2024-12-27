@@ -97,31 +97,31 @@ def main():
     )
     master_df = pd.DataFrame()
     for cell in celltypes:
-        #for chrom in range(1,23):
-        for chrom in [22]:
-            #df = pd.read_csv(
-            #    f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv',
-            #    sep='\t',
-            #)
+        for chrom in range(1,23):
+        #for chrom in [22]:
+            df = pd.read_csv(
+                f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
+                sep='\t',
+            )
         #df = pd.read_csv(f'gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/{cell}/chr22/beta_se.tsv',
             #sep='\t')
-            #if master_df.empty:
-                #master_df = df
-            #else:
-                #master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'gene', 'ref_len'], how='inner')
-                #master_df = pd.concat([master_df, df], axis=0)
-        #master_df.to_csv(
-            #f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
-            #sep='\t',
-            #index=False,
-        #)
+            if master_df.empty:
+                master_df = df
+            else:
+                master_df = master_df.merge(df, on=['chr', 'pos', 'motif', 'gene'], how='inner')
+                master_df = pd.concat([master_df, df], axis=0)
+        master_df.to_csv(
+            f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/all_chrom/{cell}_beta_se.tsv',
+            sep='\t',
+            index=False,
+        )
 
             #estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
             #if to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
                 #continue
-            job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
-            job.cpu(0.25)
-            job.call(cell_chrom_parser_null, cell,chrom)
+            #job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
+            #job.cpu(0.25)
+            #job.call(cell_chrom_parser_null, cell,chrom)
 
 
     b.run(wait=False)
