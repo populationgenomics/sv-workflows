@@ -60,7 +60,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
             continue
 
     cell_df.to_csv(
-        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv',
         sep='\t',
         index=False,
     )
@@ -93,7 +93,7 @@ def main():
     celltypes = cell_types.split(',')
     # load in the list of esnps passing FDR <5% across all cell types:
     estrs_coord = pd.read_csv(
-        'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/cell-type-spec/estrs.csv',
+        'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/cell-type-spec/esnvs.csv',
     )
     #master_df = pd.DataFrame()
     for cell in celltypes:
@@ -117,7 +117,7 @@ def main():
         #)
 
             estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
-            if to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
+            if to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975_and_tob_n950/mashr/estrs_beta_se/{cell}/{chrom}/beta_se.tsv').exists():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
             job.cpu(0.25)
