@@ -17,9 +17,9 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/coloc-ld/fm_strs_only/v4" \
+    --output-dir "tenk10k/str/associatr/final_freeze/ld_lead_tr_and_snv" \
     lead_tr_pval_ratio.py \
-    --fm-csv=gs://cpg-bioheart-test/str/associatr/fine_mapping/estrs_with_annot.csv
+    --fm-csv=gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/estrs_with_annot.csv
 
 
 """
@@ -54,7 +54,7 @@ def ld_parser(
         lead_str_pval = row['pval_pooled']
         try:
         # get the lead SNV for that gene
-            meta_results = pd.read_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv', sep = '\t')
+            meta_results = pd.read_csv(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv', sep = '\t')
         except:
             continue
         snv_meta_results = meta_results[meta_results['motif'].str.contains('-')] # filter for SNVs
@@ -129,14 +129,14 @@ def ld_parser(
         max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
 
     max_corr_master_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/pval_ratio/{cell_type}/{chrom}/{cell_type}_{chrom}_corr.tsv',
+        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/ld_lead_tr_and_snv/{cell_type}/{chrom}/{cell_type}_{chrom}_corr.tsv',
         sep='\t',
         index=False,
     )
 
 
-@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
-@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific')
+@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps')
+@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific')
 @click.option('--fm-csv', required=True, help='Fine-mapped eSTRs CSV file path')
 @click.command()
 def main(fm_csv, snp_vcf_dir, str_vcf_dir):
@@ -146,7 +146,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     for cell_type in fm['cell_type'].unique():
         fm_cell_type = fm[fm['cell_type'] == cell_type]
         for chrom in fm_cell_type['chr'].unique():
-            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/pval_ratio/{cell_type}/{chrom}/{cell_type}_{chrom}_corr.tsv').exists():
+            if to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/ld_lead_tr_and_snv/{cell_type}/{chrom}/{cell_type}_{chrom}_corr.tsv').exists():
                 print(f'File already exists for {cell_type} and {chrom}')
                 continue
 
