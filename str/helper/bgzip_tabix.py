@@ -26,7 +26,7 @@ BCFTOOLS_IMAGE = config['images']['bcftools']
 @click.option('--job-memory', default='4G', help='Job memory')
 @click.option('--job-storage', default='10G', help='Job storage')
 @click.option('--job-cpu', default=1, help='Job CPU')
-def main(input_vcf, chromosomes, job_memory, job_storage, job_cpu):
+def main(input_vcf, job_memory, job_storage, job_cpu):
     """
     BGZIPs and TABIX a GZIPPED/unzipped VCF input file and writes it to a GCS bucket
 
