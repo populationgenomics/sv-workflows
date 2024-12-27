@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import pandas as pd
-from cpg_utils import to_path, get_batch
+from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch
 
 cell_types = 'B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,CD4_TCM,gdT,dnT'
 
