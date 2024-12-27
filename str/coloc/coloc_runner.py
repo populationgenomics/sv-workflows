@@ -14,7 +14,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='16G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr" \
+    --output-dir "tenk10k/str/associatr/final_freeze" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv \
     --pheno-output-name="Trujillo_methylation_eQTLs" \
@@ -98,7 +98,7 @@ def coloc_runner(gwas, probe, eqtl_file_path, celltype, pheno_output_name):
 
     # write to GCS
     pd_p4_df.to_csv(
-        output_path(f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv", 'analysis'),
+        output_path(f"coloc-tr-snp/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -107,12 +107,12 @@ def coloc_runner(gwas, probe, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/coloc-snp-only/estrs_lead_filtered.csv',
+    default='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv',
 )
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results',
+    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/meta_results',
 )
 @click.option(
     '--snp-gwas-file',
@@ -138,7 +138,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
 
     # read in gene annotation file
     var_table = pd.read_csv(
-        'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
+        'gs://cpg-tenk10k-test/saige-qtl/300libraries_n1925_adata_raw_var.csv',
     )
     hg38_map = pd.read_csv(
         snp_gwas_file,
@@ -184,7 +184,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                 for probe in hg38_map_chr_start_end['ProbeID'].unique():
                     if to_path(
                         output_path(
-                            f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv",
+                            f"coloc-tr-snp/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_{probe}_100kb.tsv",
                             'analysis',
                         ),
                     ).exists():
@@ -193,8 +193,8 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     if hg38_map_chr_start_end_probe.empty:
                         print('No SNP GWAS data for ' + gene + f' {probe} combination' +' in the cis-window: skipping....')
                         continue
-                    # check if the p-value column contains at least one value which is <=5e-8:
-                    if hg38_map_chr_start_end_probe['p_value'].min() > 5e-8:
+                    # check if the p-value column contains at least one value which is <5e-8:
+                    if hg38_map_chr_start_end_probe['p_value'].min() >= 5e-8:
                         print('No significant SNP GWAS data for ' + gene + f' {probe} combination' + ' in the cis-window: skipping....')
                         continue
                     print('Extracted SNP GWAS data for ' +gene + f' {probe} combination')
