@@ -41,7 +41,7 @@ def main():
         _dependent_jobs.append(job)
 
     for chromosome in get_config()['associatr']['chromosomes'].split(','):
-        vcf_file_path = 'gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/fm_estr.vcf.gz'
+        vcf_file_path = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/methyl_eqtl/input_files/finemapped_etrs.vcf.bgz'
 
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{methyl_dir}/{chromosome}').glob('*.npy'))
