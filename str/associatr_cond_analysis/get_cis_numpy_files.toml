@@ -6,15 +6,15 @@ snp_str_meta = 'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_free
 # GCS directory to the input AnnData objects
 input_h5ad_dir = 'gs://cpg-bioheart-test/tenk10k/str/saige-qtl/300-libraries/anndata_objects_from_HPC'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/pseudobulk/bioheart_ids_n1356'
+input_pseudobulk_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/pseudobulk/tob_ids_n1055'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/covariates/6_rna_pcs'
+input_cov_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/covariates/6_rna_pcs'
 # cis window size in bp
 cis_window = 100000
 version = 'v1'
-job_cpu = 1
+job_cpu = 2
 job_memory = 'standard'
-job_storage = '0G'
+job_storage = '20G'
 # To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
 max_parallel_jobs = 500
 # filter out genes that are expressed in fewer than XX% of cells

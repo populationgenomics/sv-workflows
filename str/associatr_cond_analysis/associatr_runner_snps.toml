@@ -1,10 +1,10 @@
 [associatr]
 # egene file
-egene = 'gs://cpg-bioheart-test/str/associatr/cond_analysis/input_files/egenes.csv'
+egene = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv'
 # gs://... to the chr-specific output of qc_filters_associatr.py
-vcf_file_dir='gs://cpg-bioheart-test/str/associatr/bioheart_freeze_1/bgzip_tabix/v4'
-cis_window_dir='gs://cpg-bioheart-test/str/associatr/cond_analysis/bioheart_n990/input_files/cis_window_files/v1'
-pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr/cond_analysis/bioheart_n990/input_files/pheno_cov_numpy/v1'
+vcf_file_dir='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps'
+cis_window_dir='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/bioheart_n975/input_files/cis_window_files/v1'
+pheno_cov_numpy_dir='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/bioheart_n975/input_files/pheno_cov_numpy/v1'
 max_parallel_jobs=5000
 cis_window_size=100000
 # version of the output

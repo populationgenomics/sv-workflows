@@ -10,18 +10,16 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 
  analysis-runner --dataset "bioheart" --config associatr_runner_snps.toml \
     --description "run associatr" \
-     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/common_variants_snps/tob_n1055" \
+    --output-dir "tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/bioheart_n975" \
      python3 associatr_runner.py
 
      analysis-runner --dataset "bioheart" --config associatr_runner.toml \
-     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/tob_n1055" \
+    --output-dir "tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/bioheart_n975" \
      python3 associatr_runner.py
 
 
@@ -61,8 +59,8 @@ def main():
 
     egenes = pd.read_csv(get_config()['associatr']['egene'])
     celltypes = egenes['cell_type'].unique()
-    for cell_type in ['B_naive', 'CD16_Mono','CD8_TEM', 'CD8_TCM', 'B_memory', 'cDC1', 'dnT,', 'NK']:
-    #for cell_type in celltypes:
+    #for cell_type in ['B_naive', 'CD16_Mono','CD8_TEM', 'CD8_TCM', 'B_memory', 'cDC1', 'dnT,', 'NK']:
+    for cell_type in celltypes:
         egenes_cell = egenes[egenes['cell_type'] == cell_type]
         for chrom in range(1, 23):
             egenes_cell_chrom = egenes_cell[egenes_cell['chr'] == f'chr{chrom}']
