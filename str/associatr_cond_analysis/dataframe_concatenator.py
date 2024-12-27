@@ -9,10 +9,10 @@ This helper script will be used to concatenate the results of the meta-analysis 
 Only common genes between the two datasets will be concatenated.
 
 analysis-runner --dataset "bioheart" --description "concatenate meta-analysis results" --access-level "test" \
-    --output-dir "str/associatr/cond_analysis/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results" \
+    --output-dir "tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/snps_and_strs/bioheart_n975_and_tob_n950/meta_results" \
     dataframe_concatenator.py \
-    --input-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results \
-    --input-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis/tob_n1055_and_bioheart_n990/meta_results \
+    --input-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/common_variants_snps/bioheart_n975_and_tob_n950/meta_results \
+    --input-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/bioheart_n975_and_tob_n950/meta_results \
     --celltypes=ASDC
 
 """
