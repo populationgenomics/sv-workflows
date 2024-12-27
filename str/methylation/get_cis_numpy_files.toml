@@ -1,8 +1,7 @@
 [get_cis_numpy]
-input_methyl_dir = 'gs://cpg-bioheart-test/str/pacbio-methylation-v3/combined_bed/filtered_set'
-covariate_path = 'gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/bioheart_covariates_str_run_v1.csv'
-# chromosomes = 'chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
-chromosomes = 'chr18,chr19,chr20,chr21'
+input_methyl_dir = 'gs://cpg-bioheart-test/tenk10k/str/pacbio-methylation/combined_bed/filtered_set_5kb'
+covariate_path = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/bioheart_n975_sample_covariates.csv'
+chromosomes = 'chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
 job_cpu = 0.25
 job_memory = 'standard'
 job_storage = '0G'

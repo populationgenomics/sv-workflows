@@ -15,16 +15,15 @@ analysis-runner --dataset "bioheart" --access-level "test" --description "Concat
 
 import click
 
-
 from cpg_utils.hail_batch import get_batch
-
 
 
 def concatenator(input_methylation_dir, chrom_num):
     import pandas as pd
-    from cpg_utils import to_path
 
+    from cpg_utils import to_path
     from cpg_utils.hail_batch import output_path
+
     methylation_files = list(to_path(f'{input_methylation_dir}').glob('*.combined.bed'))
     chrom = f'chr{chrom_num}'
     print(f'Processing {chrom}...')
@@ -33,7 +32,10 @@ def concatenator(input_methylation_dir, chrom_num):
         file_name = str(file)
         sample = file_name.split('/')[-1].split('.')[0]
         df = pd.read_csv(
-            file, sep='\t', usecols=[0, 1, 3], names=['chrom', 'start', f'{sample}'],
+            file,
+            sep='\t',
+            usecols=[0, 1, 3],
+            names=['chrom', 'start', f'{sample}'],
         )  # col3 corresponds to mod_score
 
         df = df[df['chrom'] == chrom]
@@ -44,11 +46,11 @@ def concatenator(input_methylation_dir, chrom_num):
     output_gcs = output_path(f'methylation_combined_{chrom}.bed')
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
+
 @click.option(
     '--input-methylation-dir',
     help='GCS path to the directory containing the methylation BED files',
     default='gs://cpg-bioheart-test/str/pacbio-methylation',
-
 )
 @click.command()
 def main(input_methylation_dir):
