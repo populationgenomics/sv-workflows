@@ -191,12 +191,6 @@ def cis_window_numpy_extractor(
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
         gene_pheno = pseudobulk[['sample_id', gene]]
 
-        # remove samples that are in the remove_samples_file
-        if remove_samples_file:
-            with to_path(remove_samples_file).open() as f:
-                array_string = f.read().strip()
-                remove_samples = literal_eval(array_string)
-                gene_pheno = gene_pheno[~gene_pheno['sample_id'].isin(remove_samples)]
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
