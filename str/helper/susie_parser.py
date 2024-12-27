@@ -9,13 +9,10 @@ cell_type_list = cell_types.split(',')
 dfs =[]
 for cell in cell_type_list:
     files_list = f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/fine_mapping/susie/{cell}/all_genes.csv'
-    gene_name = str(files_list).split('/')[-1].split('_')[0]
     data = pd.read_csv(files_list)
-    data['celltype'] = cell
-    data['gene'] = gene_name
     data = data[data['susie_pip']>=0.7]
     dfs.append(data)
 result_df = pd.concat(dfs, ignore_index=True)
-result_df.to_csv('gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/fine_mapping/susie/all_cells_all_genes_pip_0.7x.csv', index = False)
+result_df.to_csv('gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/fine_mapping/susie/all_cells_all_genes_pip_0.7.csv', index = False)
 
 
