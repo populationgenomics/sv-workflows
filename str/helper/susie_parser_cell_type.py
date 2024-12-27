@@ -14,6 +14,8 @@ for cell in cell_type_list:
 
     # Define the job
     susie_job = b.new_python_job(f'Parse SuSiE results for {cell}')
+    susie_job.storage('50G')
+    susie_job.memory('32G')
 
     # Define the function to be called by the job
     def parse_susie(cell):
