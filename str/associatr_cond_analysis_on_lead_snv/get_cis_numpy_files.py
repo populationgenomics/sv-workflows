@@ -11,7 +11,7 @@ This script aims to prepare inputs for conditional analysis by:
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/cond_analysis_lead_snv/bioheart_n990" \
+--description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/cond_analysis_on_snv/tob_n950" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -186,12 +186,7 @@ def cis_window_numpy_extractor(
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
         gene_pheno = pseudobulk[['sample_id', gene]]
 
-        # remove samples that are in the remove_samples_file
-        if remove_samples_file:
-            with to_path(remove_samples_file).open() as f:
-                array_string = f.read().strip()
-                remove_samples = literal_eval(array_string)
-                gene_pheno = gene_pheno[~gene_pheno['sample_id'].isin(remove_samples)]
+
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values

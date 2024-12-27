@@ -1,20 +1,20 @@
 [get_cis_numpy]
 # egene file
-egene = 'gs://cpg-bioheart-test/str/associatr/cond_analysis_lead_snv/input_files/egenes.csv'
+egene = 'gs://gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv'
 # snp_str_meta results dir
-snp_str_meta = 'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results'
+snp_str_meta = 'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results'
 # GCS directory to the input AnnData objects
-input_h5ad_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_anndata'
+input_h5ad_dir = 'gs://cpg-bioheart-test/tenk10k/str/saige-qtl/300-libraries/anndata_objects_from_HPC'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/pseudobulk'
+input_pseudobulk_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/pseudobulk/tob_ids_n1055'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/covariates/7_rna_pcs'
+input_cov_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/covariates/6_rna_pcs'
 # cis window size in bp
 cis_window = 100000
 version = 'v1'
-job_cpu = 1
+job_cpu = 2
 job_memory = 'standard'
-job_storage = '0G'
+job_storage = '20G'
 # To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
 max_parallel_jobs = 500
 # filter out genes that are expressed in fewer than XX% of cells
@@ -22,4 +22,4 @@ min_pct = 1
 # GCS path to the file containing the list of samples to remove
 remove_samples_file = 'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
 # set str_vcf_dir == 'gs//cpg-bioheart-test' if no STR loci to condition on
-snv_vcf_dir = 'gs://cpg-bioheart-test/str/associatr/bioheart_freeze_1/bgzip_tabix/v4'
+snv_vcf_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps
