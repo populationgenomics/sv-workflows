@@ -26,10 +26,10 @@ from cpg_utils.hail_batch import get_batch, init_batch, output_path
 def get_fm_estr_vcf(str_input):
     init_batch()
 
-    fm_estr = pd.read_csv('gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/estrs_lead_filtered.csv')
-    fm_estr = fm_estr.drop_duplicates(subset=['chr', 'pos', 'motif_x'])
+    fm_estr = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv')
+    fm_estr = fm_estr.drop_duplicates(subset=['chr', 'pos', 'motif'])
     fm_estr['locus'] = (
-        fm_estr['chr'].astype(str) + ':' + fm_estr['pos'].astype(str) + ':' + fm_estr['motif_x'].astype(str)
+        fm_estr['chr'].astype(str) + ':' + fm_estr['pos'].astype(str) + ':' + fm_estr['motif'].astype(str)
     )
     fm_estr_set = set(fm_estr['locus'])
     str_vcf = VCF(str_input['vcf'])
@@ -43,7 +43,7 @@ def get_fm_estr_vcf(str_input):
             writer.write_record(variant)
 
     writer.close()
-    hl.hadoop_copy(output_vcf, 'gs://cpg-bioheart-test/str/associatr/gwas-cell-prop/input_files/fm_estr.vcf')
+    hl.hadoop_copy(output_vcf, 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/methyl_eqtl/input_files/finemapped_etrs.vcf')
 
 
 def main():
