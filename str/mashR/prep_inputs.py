@@ -95,8 +95,9 @@ def main():
     estrs_coord = pd.read_csv(
         'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/cell-type-spec/estrs.csv',
     )
-    master_df = pd.DataFrame()
+
     for cell in celltypes:
+        master_df = pd.DataFrame()
         for chrom in range(1,23):
         #for chrom in [22]:
             df = pd.read_csv(
