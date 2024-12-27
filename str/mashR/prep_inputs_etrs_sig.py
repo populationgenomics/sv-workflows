@@ -31,15 +31,15 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
         ref_len = row['ref_len']
         try:
             df = pd.read_csv(
-                f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
+                f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975_and_tob_n950/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
                 sep='\t',
             )
             #df = pd.read_csv(
             #    f'gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results/{cell}/{chrom}/{gene_name}_100000bp_meta_results.tsv',
             #    sep='\t',
             #)
-            df = df[(df['pos'] == pos) & (df['motif'] == motif) & (df['ref_len'] == ref_len)]
-            #df = df[(df['pos'] == pos) & (df['motif'] == motif)]
+            #df = df[(df['pos'] == pos) & (df['motif'] == motif) & (df['ref_len'] == ref_len)]
+            df = df[(df['pos'] == pos) & (df['motif'] == motif)]
             beta = df['coeff_meta'].iloc[0]
             se = df['se_meta'].iloc[0]
             # save the beta and se into a row:
@@ -48,7 +48,6 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom):
                     'chrom': chrom,
                     'pos': pos,
                     'motif': motif,
-                    'ref_len': ref_len,
                     'gene': gene_name,
                     f'{cell}_beta': beta,
                     f'{cell}_se': se,
