@@ -19,7 +19,7 @@ analysis-runner --dataset "bioheart" \
     --output-dir "tenk10k/str/associatr/final_freeze/fine_mapping/prep_files/v2" \
     corr_matrix_maker_failed_jobs.py --snp-vcf-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps \
     --str-vcf-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific \
-    --celltypes=Treg \
+    --celltypes=gdT,B_intermediate,MAIT,B_memory,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD8_Naive,NK,B_naive,CD4_Naive \
     --job-storage=10G \
     --max-parallel-jobs=50 \
     --str-fdr-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/fdr_qvals/using_acat \
@@ -220,9 +220,9 @@ def main(
         str_fdr_file = f'{str_fdr_dir}/{celltype}_qval.tsv'
         str_fdr = pd.read_csv(str_fdr_file, sep='\t')
         str_fdr = str_fdr[str_fdr['qval'] < fdr_cutoff]  # subset to eSTRs passing FDR 5% threshold by default
-        str_fdr['pval_pooled_first'] = str_fdr['pval_pooled'].apply(parse_pval)
+        #str_fdr['pval_pooled_first'] = str_fdr['pval_pooled'].apply(parse_pval)
         #subset to eSTRs where pval_pooled < 5e-8
-        str_fdr = str_fdr[str_fdr['pval_pooled_first'] < 5e-8]
+        #str_fdr = str_fdr[str_fdr['pval_pooled_first'] < 5e-8]
         for chrom in chromosomes.split(','):
             # filter eSTRs by chromosome
             str_fdr_chrom = str_fdr[str_fdr['chr'].str.contains("'" + chrom + "'")]
