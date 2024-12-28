@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr" \
+    --output-dir "tenk10k/str/associatr/final_freeze" \
     coloc_ukbb_runner.py \
     --pheno-output-name=gymrek-ukbb-apolipoprotein-a \
     --celltypes "CD16_Mono" \
@@ -110,12 +110,12 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/susie_finemap/all_cell_types_all_genes_sig_only.tsv',
+    default='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv',
 )
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results',
+    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/meta_results',
 )
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
@@ -136,13 +136,13 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
 
     # read in gene annotation file
     var_table = pd.read_csv(
-        'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
+        'gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv',
     )
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file,
         sep='\t',
-        usecols=['chr', 'pos', 'pval_meta', 'motif', 'susie_pip', 'gene', 'finemap_prob', 'celltype', 'ref_len'],
+        usecols=['chr', 'pos', 'pval_meta', 'motif','gene', 'celltype', 'ref_len'],
     )
 
     result_df_cfm = egenes
@@ -152,11 +152,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
-    result_df_cfm_str['gene'] = result_df_cfm_str['gene'].str.replace(
-        '.tsv',
-        '',
-        regex=False,
-    )  # remove .tsv from gene names (artefact of the data file)
+
     b = get_batch(name=f'Run coloc:{pheno_output_name} and {celltypes}')
 
     for celltype in celltypes.split(','):
@@ -192,8 +188,8 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
                     if hg38_map_chr_start_end.empty:
                         print('No GWAS data for ' + gene + ' in the cis-window: skipping....')
                         continue
-                    # check if the p-value column contains at least one value which is <=5e-8:
-                    if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                    # check if the p-value column contains at least one value which is <5e-8:
+                    if hg38_map_chr_start_end['p_value'].min() >= 5e-8:
                         print('No significant SNP STR GWAS data for ' + gene + ' in the cis-window: skipping....')
                         continue
                     print('Extracted GWAS data for ' + gene)
