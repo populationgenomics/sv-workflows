@@ -141,7 +141,6 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file,
-        sep='\t',
         usecols=['chr', 'pos', 'pval_meta', 'motif','gene', 'celltype', 'ref_len'],
     )
 
