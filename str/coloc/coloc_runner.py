@@ -12,9 +12,9 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "bioheart" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='8G' \
+    --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr" \
+    --output-dir "tenk10k/str/associatr/final_freeze" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/Kiryluk_IgAN_parsed.tsv \
     --pheno-output-name="Kiryluk_IgAN" \
@@ -107,12 +107,12 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-bioheart-test-analysis/str/associatr/coloc-snp-only/estrs_lead_filtered.csv',
+    default='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv',
 )
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results/meta_results',
+    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/meta_results',
 )
 @click.option(
     '--snp-gwas-file',
@@ -136,9 +136,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
             job.depends_on(_dependent_jobs[-max_parallel_jobs])
         _dependent_jobs.append(job)
 
-    # read in gene annotation file
+     # read in gene annotation file
     var_table = pd.read_csv(
-        'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
+        'gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv',
     )
     hg38_map = pd.read_csv(
         snp_gwas_file,
@@ -154,10 +154,9 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     #result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
     result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
-        subset=['gene_name', 'cell_type'],
+        subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
-    result_df_cfm_str['gene'] = result_df_cfm_str['gene_name']
-    result_df_cfm_str['celltype'] = result_df_cfm_str['cell_type']
+
     b = get_batch(name=f'Run coloc:{pheno_output_name}')
 
     for celltype in celltypes.split(','):
@@ -188,7 +187,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
                     print('No SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 # check if the p-value column contains at least one value which is <=5e-8:
-                if hg38_map_chr_start_end['p_value'].min() > 5e-8:
+                if hg38_map_chr_start_end['p_value'].min() >= 5e-8:
                     print('No significant SNP GWAS data for ' + gene + ' in the cis-window: skipping....')
                     continue
                 print('Extracted SNP GWAS data for ' + gene)

@@ -15,7 +15,7 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "tenk10k/str/associatr/final_freeze" \
     coloc_ukbb_runner.py \
-    --pheno-output-name=gymrek-ukbb-apolipoprotein-a \
+    --pheno-output-name=gymrek-ukbb-apolipoprotein_a \
     --celltypes "CD16_Mono" \
     --max-parallel-jobs 10000
 
