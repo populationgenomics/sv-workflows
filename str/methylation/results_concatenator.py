@@ -4,8 +4,7 @@ This script concatenates the results from running associatr-methylation on a per
 The output is a single CSV file containing per chromosome results
 
 analysis-runner --dataset bioheart --access-level test --output-dir potato --description "Concatenate associatr-methylation results" python3 results_concatenator.py \
-    --input-dir gs://cpg-bioheart-test-analysis/str/associatr-methylation/bioheart_n25/5kb/v2/results \
-    --chromosomes 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,21
+    --chromosomes 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,21,22
 
 
 """
@@ -40,14 +39,14 @@ def concatenator(input_dir, chrom):
 
     # Concatenate all DataFrames
     master_df = pd.concat(results, ignore_index=True)
-    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-methylation/bioheart_n25/5kb/results/chr{chrom}_concatenated_results.tsv'
+    output_gcs = f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr-methylation/bioheart_n25/5kb/results/chr{chrom}_concatenated_results.tsv'
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
 
 @click.option(
     '--input-dir',
     help='GCS path to the directory containing the associatr-methylation results',
-    default='gs://cpg-bioheart-test-analysis/str/associatr-methylation/bioheart_n25/5kb/results',
+    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr-methylation/bioheart_n25/5kb/results',
 )
 @click.option('--chromosomes', help='Comma-separated list of chromosomes to concatenate', default='22')
 @click.command()
