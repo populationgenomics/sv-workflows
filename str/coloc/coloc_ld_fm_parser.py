@@ -17,7 +17,7 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "tenk10k/str/associatr/final_freeze/coloc-ld" \
     coloc_ld_fm_parser.py \
-    --fm-csv=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/coloc/estrs_fm_coloc_list_for_ld.csv
+    --fm-csv=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/coloc-tr-snp/estrs_fm_coloc_list_for_ld_methyl.csv
 
 
 """
@@ -214,7 +214,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'lymphocytic_leukemia_GCST90011814': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/lymphocytic_leukemia_GCST90011814_parsed.tsv',
             'nephrotic_GCST90258619':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/nephrotic_GCST90258619_parsed.tsv',
             'kiryluk_IgAN':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/Kiryluk_IgAN_parsed.tsv',
-            'trujillo_methylation_eQTLs':'gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv',
+            'Trujillo_methylation_eQTLs':'gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv',
             'ckd_GCST008065':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ckd_GCST008065_parsed.tsv',
             'NHL_GCST90011819':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/NHL_GCST90011819_parsed.tsv',
             }
