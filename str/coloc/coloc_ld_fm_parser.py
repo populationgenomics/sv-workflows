@@ -15,9 +15,9 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/coloc-ld/fm_strs_only/v4" \
+    --output-dir "tenk10k/str/associatr/final_freeze/coloc-ld" \
     coloc_ld_fm_parser.py \
-    --fm-csv=gs://cpg-bioheart-test/str/associatr/coloc/estrs_fm_coloc_list_for_ld_extra_pheno.csv
+    --fm-csv=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/coloc/estrs_fm_coloc_list_for_ld.csv
 
 
 """
@@ -42,7 +42,7 @@ def ld_parser(
     max_corr_master_df = pd.DataFrame()
     pheno_df = pd.read_csv(pheno_csv, sep='\t')
     gene_annotation_table = pd.read_csv(
-        'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/concatenated_gene_info_donor_info_var.csv',
+        'gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv',
     )
     for index,row in fm_chrom.iterrows():
         chrom = row['chr']
@@ -132,27 +132,27 @@ def ld_parser(
         max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=0)
 
     max_corr_master_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v4/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
+        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/coloc-ld/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
         sep='\t',
         index=False,
     )
 
 
-@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
-@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific')
+@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps')
+@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific')
 @click.option('--fm-csv', required=True, help='Fine-mapped eSTRs CSV file path')
 @click.command()
 def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     b = get_batch(name='Calculate LD for fine-mapped eSTRs with GWAS variants')
     fm = pd.read_csv(fm_csv)
-    fm = fm.drop_duplicates(subset=['chr', 'pos', 'end', 'motif_x', 'pheno'])
+    fm = fm.drop_duplicates(subset=['chr', 'pos', 'end', 'motif', 'pheno'])
     pheno_list = fm['pheno'].unique()
     # map pheno to the pheno csv file path:
 
     for pheno in pheno_list:
         fm_pheno = fm[fm['pheno'] == pheno]
         for chrom in fm_pheno['chr'].unique():
-            if to_path(f'gs://cpg-bioheart-test-analysis/str/associatr/coloc-ld/fm_strs_only/v4/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
+            if to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/coloc-ld/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
                 print(f'File already exists for {pheno} and {chrom}')
                 continue
             pheno_map = {
@@ -167,7 +167,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'lymphoma_GCST90018878': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST90018878.h_parsed.tsv',
             'parkinson_GCST009325': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST009325.h_parsed.tsv',
             'prostateca_GCST90274713': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST90274713.h_parsed.tsv',
-            'gymrek-ukbb-alanine-aminotransferase': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_alanine_aminotransferase_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            'gymrek-ukbb-alanine_aminotransferase': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_alanine_aminotransferase_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'gymrek-ukbb-albumin': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_albumin_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'gymrek-ukbb-alkaline_phosphatase': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_alkaline_phosphatase_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'gymrek-ukbb-apolipoprotein_a': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_apolipoprotein_a_snp_str_gwas_results_hg38_{chrom}.tab.gz',
