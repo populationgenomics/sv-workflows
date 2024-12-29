@@ -48,7 +48,7 @@ def ld_parser(
         chrom = row['chr']
         pos = row['pos']
         end = row['end']
-        motif = row['motif_x']
+        motif = row['motif']
         pheno = row['pheno']
         gene = row['gene_name']
         lead_str_locus = f'{chrom}_{pos}_{motif}'
