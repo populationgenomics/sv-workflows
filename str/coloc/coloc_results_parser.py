@@ -5,9 +5,9 @@ This script concatenates the results of running `coloc_runner.py` (output is per
 analysis-runner --dataset "bioheart" \
     --description "Parse coloc results" \
     --access-level "test" \
-    --output-dir "str/associatr/coloc-snp-only/sig_str_and_gwas_hit" \
+    --output-dir "tenk10k/str/associatr/final_freeze/coloc-tr-snp/sig_str_and_gwas_hit" \
     coloc_results_parser.py \
-    --coloc-dir=gs://cpg-bioheart-test-analysis/str/associatr/coloc-snp-only/sig_str_and_gwas_hit \
+    --coloc-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/coloc-tr-snp/sig_str_and_gwas_hit \
     --celltypes=B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,gdT,dnT,CD4_TCM \
     --phenos=Trujillo_methylation_eQTLs
 
