@@ -14,11 +14,11 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/ld_with_lead_tr" \
+    --output-dir "tenk10k/str/associatr/final_freeze/ld_with_lead_tr" \
     ld_with_lead_tr.py \
     --cell-type CD4_Naive \
-    --gene-ensg ENSG00000156475 \
-    --chrom chr5
+    --gene-ensg ENSG00000106070 \
+    --chrom chr7
 
 
 """
@@ -42,7 +42,7 @@ def ld_parser(
     from cyvcf2 import VCF
 
     meta_results = pd.read_csv(
-        f'gs://cpg-bioheart-test-analysis/str/associatr/snps_and_strs/rm_str_indels_dup_strs/v2-whole-copies-only/tob_n1055_and_bioheart_n990/meta_results/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
+        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
         sep='\t',
     )
     meta_results['variant_type'] = np.where(meta_results['motif'].str.contains('-'), 'SNV', 'TR')
@@ -103,14 +103,14 @@ def ld_parser(
     correlation_df['locus'] = correlation_df.index
 
     # write results as a tsv file to gcp
-    correlation_df.to_csv(f'gs://cpg-bioheart-test-analysis/str/associatr/ld_with_lead_tr/{cell_type}/{chrom}/{gene_ensg}_corr.tsv',
+    correlation_df.to_csv(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/ld_with_lead_tr/{cell_type}/{chrom}/{gene_ensg}_corr.tsv',
         sep='\t',
         index=False,
     )
 
 
-@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
-@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific')
+@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps')
+@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific')
 @click.option('--cell-type', required=True, help='Cell type')
 @click.option('--gene-ensg', required=True, help='Gene ENSG')
 @click.option('--chrom', required=True, help='Chromosome')
