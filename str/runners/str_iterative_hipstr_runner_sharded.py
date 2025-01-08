@@ -91,7 +91,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
     help="Only genotype STRs in the provided BED file with length < MAX_BP (Default = 100)",
     default='100',
 )
-@click.option('–-def-stutter-model', is_flag=True, help="Use default stutter model for each locus")
+@click.option('--def-stutter-model', is_flag=True, help="Use default stutter model for each locus")
 @click.command()
 def main(
     job_storage,
@@ -137,10 +137,10 @@ def main(
 
         # Read in HipSTR variant catalog
         hipstr_regions = b.read_input(subcatalog)
-        
+
         # Add --def-stutter-model if specified
         stutter_model_flag = "--def-stutter-model" if def_stutter_model else ""
-        
+
         hipstr_job.command(
             f"""
         HipSTR --bams {cramfuse_path} \\
