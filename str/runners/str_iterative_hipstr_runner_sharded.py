@@ -93,6 +93,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 )
 @click.option('--min-reads', help="Minimum total reads required to genotype a locus (Default = 100)", default='100')
 @click.option('--def-stutter-model', is_flag=True, help="Use default stutter model for each locus")
+@click.option('--output-gls', is_flag=True, help="Write genotype likelihoods to the VCF (Default = False)")
 @click.command()
 def main(
     job_storage,
@@ -103,6 +104,7 @@ def main(
     max_str_len,
     min_reads,
     def_stutter_model,
+    output_gls,
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -140,8 +142,9 @@ def main(
         # Read in HipSTR variant catalog
         hipstr_regions = b.read_input(subcatalog)
 
-        # Add --def-stutter-model if specified
+        # Add flags if specified
         stutter_model_flag = "--def-stutter-model" if def_stutter_model else ""
+        gls_flag = "--output-gls" if output_gls else ""
 
         hipstr_job.command(
             f"""
@@ -154,6 +157,7 @@ def main(
             --max-str-len {max_str_len} \\
             --min-reads {min_reads} \\
             {stutter_model_flag} \\
+            {gls_flag} \\
             --output-filters
         """,
         )
