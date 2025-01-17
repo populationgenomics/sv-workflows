@@ -4,7 +4,7 @@
 """
 This script uses HipSTR to call STRs on WGS cram files, using the joint calling option, and a sharded catalog.
 For example:
-analysis-runner --access-level test --config hipstr.toml --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes --variant-catalog=gs://.... --dataset=hgdp --max-str-len=100
+analysis-runner --access-level test --config hipstr.toml --dataset tob-wgs --description 'hipstr run' --output-dir 'str/sensitivity-analysis/hipstr' str_iterative_hipstr_runner.py  --output-file-name=hipster_90_genomes --variant-catalog=gs://.... --dataset=hgdp --min-reads=100 --max-str-len=100
 
 Required packages: sample-metadata, hail, click, os
 pip install sample-metadata hail click
@@ -91,7 +91,9 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
     help="Only genotype STRs in the provided BED file with length < MAX_BP (Default = 100)",
     default='100',
 )
+@click.option('--min-reads', help="Minimum total reads required to genotype a locus (Default = 100)", default='100')
 @click.option('--def-stutter-model', is_flag=True, help="Use default stutter model for each locus")
+@click.option('--output-gls', is_flag=True, help="Write genotype likelihoods to the VCF (Default = False)")
 @click.command()
 def main(
     job_storage,
@@ -100,7 +102,9 @@ def main(
     dataset,
     output_file_name,
     max_str_len,
+    min_reads,
     def_stutter_model,
+    output_gls,
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -138,8 +142,9 @@ def main(
         # Read in HipSTR variant catalog
         hipstr_regions = b.read_input(subcatalog)
 
-        # Add --def-stutter-model if specified
+        # Add flags if specified
         stutter_model_flag = "--def-stutter-model" if def_stutter_model else ""
+        gls_flag = "--output-gls" if output_gls else ""
 
         hipstr_job.command(
             f"""
@@ -150,7 +155,9 @@ def main(
             --viz-out {hipstr_job.hipstr_output['viz.gz']} \\
             --log {hipstr_job.hipstr_output['log.txt']} \\
             --max-str-len {max_str_len} \\
+            --min-reads {min_reads} \\
             {stutter_model_flag} \\
+            {gls_flag} \\
             --output-filters
         """,
         )
