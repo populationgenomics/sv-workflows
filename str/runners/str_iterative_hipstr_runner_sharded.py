@@ -160,7 +160,7 @@ def main(
             --min-reads {min_reads} \\
             {stutter_model_flag} \\
             {gls_flag} \\
-            --haploid-chrs {haploid-chrs} \\
+            --haploid-chrs {haploid_chrs} \\
             --output-filters
         """,
         )
