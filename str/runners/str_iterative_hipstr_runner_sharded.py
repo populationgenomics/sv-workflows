@@ -94,6 +94,7 @@ def get_cloudfuse_paths(dataset, input_cpg_sids):
 @click.option('--min-reads', help="Minimum total reads required to genotype a locus (Default = 100)", default='100')
 @click.option('--def-stutter-model', is_flag=True, help="Use default stutter model for each locus")
 @click.option('--output-gls', is_flag=True, help="Write genotype likelihoods to the VCF (Default = False)")
+@click.option('--haploid-chrs', help='Comma separated list of chromosomes to treat as haploid (Default = all diploid)')
 @click.command()
 def main(
     job_storage,
@@ -105,6 +106,7 @@ def main(
     min_reads,
     def_stutter_model,
     output_gls,
+    haploid_chrs,
 ):  # pylint: disable=missing-function-docstring
     b = get_batch()
     ref_fasta = 'gs://cpg-common-main/references/hg38/v0/Homo_sapiens_assembly38.fasta'
@@ -158,6 +160,7 @@ def main(
             --min-reads {min_reads} \\
             {stutter_model_flag} \\
             {gls_flag} \\
+            --haploid-chrs {haploid-chrs} \\
             --output-filters
         """,
         )
