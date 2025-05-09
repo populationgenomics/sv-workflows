@@ -45,11 +45,6 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}.tsv', sep='\t')
     print(d2.head())
 
-    # remove loci that failed to be tested in either dataset
-    d1 = d1[d1['locus_filtered'] == 'False']
-    print(d1.head())
-    d2 = d2[d2['locus_filtered'] == 'False']
-    print(d2.head())
 
     # convert to R dataframe
     with (ro.default_converter + pandas2ri.converter).context():
