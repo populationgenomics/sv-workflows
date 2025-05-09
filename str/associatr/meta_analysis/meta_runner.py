@@ -45,7 +45,9 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
+    print(d1.head())
     d2 = d2[d2['locus_filtered'] == 'False']
+    print(d2.head())
 
     # convert to R dataframe
     with (ro.default_converter + pandas2ri.converter).context():
@@ -56,14 +58,16 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     # initialise R variable in the R environment
     ro.globalenv['r_df1'] = r_from_pd_df1
+    print(ro.r('head(r_df1)'))
     ro.globalenv['r_df2'] = r_from_pd_df2
+    print(ro.r('head(r_df2)'))
 
     # clean up dfs and merge
     ro.r(
-        f'r_df1 = r_df1 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene}, motif, period, ref_len,n_samples_tested, `regression_R^2`, allele_frequency)',
+        f'r_df1 = r_df1 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene}, motif, period, ref_len,n_samples_tested, allele_frequency)',
     )
     ro.r(
-        f'r_df2 = r_df2 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene},motif, period, ref_len,n_samples_tested, `regression_R^2`, allele_frequency)',
+        f'r_df2 = r_df2 %>% select(chrom, pos, coeff_{cell_type}_{chr}_{gene},se_{cell_type}_{chr}_{gene},motif, period, ref_len,n_samples_tested, allele_frequency)',
     )
     ro.r(f'r_df1 = r_df1 %>% rename(coeff_1 =coeff_{cell_type}_{chr}_{gene}, se_1 =se_{cell_type}_{chr}_{gene}  )')
     print(ro.r('head(r_df1)'))
