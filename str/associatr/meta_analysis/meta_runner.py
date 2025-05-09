@@ -68,6 +68,7 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r(f'r_df1 = r_df1 %>% rename(coeff_1 =coeff_{cell_type}_{chr}_{gene}, se_1 =se_{cell_type}_{chr}_{gene}  )')
     ro.r(f'r_df2 = r_df2 %>% rename(coeff_2 =coeff_{cell_type}_{chr}_{gene}, se_2 =se_{cell_type}_{chr}_{gene}  )')
     ro.r('df <- merge(r_df1, r_df2, by = c("chrom", "pos", "motif", "period", "ref_len"))')
+    print(ro.r('head(df)'))
 
     # initialise empty df to store meta results
     ro.r(
