@@ -8,9 +8,9 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 - get_covariates.py
 - qc_filters_associatr.py (depends on qc_annotator.py)
 
- analysis-runner --dataset "bioheart" --config associatr_runner_trans.toml \
+ analysis-runner --dataset "bioheart" --config trans_associatr_runner.toml \
     --description "run associatr" \
-    --access-level "full" \
+    --access-level "test" \
     --memory "8G" \
     --output-dir "str/associatr/trans_pilot/bioheart_n975" \
      python3 trans_associatr_runner.py
@@ -49,7 +49,6 @@ def main():
 
     for celltype in get_config()['associatr']['celltypes'].split(','):
         for chromosome in get_config()['associatr']['chromosomes'].split(','):
-            input_dir = get_config()['associatr']['vcf_file_dir']
             vcf_file_path = get_config()['associatr']['vcf_file_path']
             variant_vcf = b.read_input_group(
                 **dict(
