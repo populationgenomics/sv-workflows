@@ -58,7 +58,6 @@ def main(input_dir, cell_types, chromosomes):
                 j = b.new_python_job(
                     name=f'Pval filter for {cell_type} {chromosome}: {gene_file.name}',
                 )
-                j.cpu(0.25).memory('lowmem')
                 j.call(pval_filter, gene_file, cell_type, chromosome)
     b.run(wait=False)
 
