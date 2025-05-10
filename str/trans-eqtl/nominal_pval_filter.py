@@ -57,6 +57,7 @@ def main(input_dir, cell_types, chromosomes):
                 )
                 j.cpu(0.25).memory('lowmem')
                 j.call(pval_filter, gene_file, cell_type, chromosome)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
