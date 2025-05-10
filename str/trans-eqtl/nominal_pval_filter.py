@@ -10,16 +10,17 @@ This script filters meta_results for rows where P<0.05.
 """
 
 import click
-import pandas as pd
 
 from cpg_utils import to_path
-from cpg_utils.hail_batch import output_path
-from cpg_utils.hail_batch import get_batch, reset_batch
+from cpg_utils.hail_batch import get_batch
 
 def pval_filter(gene_file, cell_type, chromosome):
     """
     Filter the meta results for rows where P<0.05
     """
+    import pandas as pd
+    from cpg_utils.hail_batch import output_path
+
     # read the raw results
     gene_results = pd.read_csv(gene_file, sep='\t')
     # filter for pval < 0.05
