@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # pylint: disable=no-value-for-parameter
 import click
-import pandas as pd
+
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch
+
 """
 
 analysis-runner --dataset "bioheart" --description "pval<0.05 filter" --access-level "test" \
@@ -15,11 +16,14 @@ analysis-runner --dataset "bioheart" --description "pval<0.05 filter" --access-l
 
 """
 
+
 def concat_and_filter(gene_files, cell_type, chromosome):
     """
     Concatenate all gene_files into one dataframe.
     Write one TSV per cell_type/chromosome pair.
     """
+    import pandas as pd
+    from cpg_utils.hail_batch import output_path
     all_dfs = []
     for gene_file in gene_files:
         df = pd.read_csv(gene_file, sep='\t')
