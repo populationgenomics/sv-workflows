@@ -27,7 +27,7 @@ def concat_and_filter(gene_files, cell_type, chromosome):
     all_dfs = []
     for gene_file in gene_files:
         df = pd.read_csv(gene_file, sep='\t')
-        df['gene'] = gene_file.split('/')[-1].split('.')[0]
+        df['gene'] = str(gene_file).split('/')[-1].split('.')[0]
         all_dfs.append(df)
 
     combined_df = pd.concat(all_dfs, ignore_index=True)
