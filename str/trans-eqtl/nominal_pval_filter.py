@@ -16,6 +16,18 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import output_path
 from cpg_utils.hail_batch import get_batch, reset_batch
 
+def pval_filter(gene_file, cell_type, chromosome):
+    """
+    Filter the meta results for rows where P<0.05
+    """
+    # read the raw results
+    gene_results = pd.read_csv(gene_file, sep='\t')
+    # filter for pval < 0.05
+    gene_results = gene_results[gene_results['pval_meta'] < 0.05]
+    # write to output file
+    gcs_output = output_path(f'filtered_meta_results/{cell_type}/chr{chromosome}/{gene_file.name}', 'analysis')
+    with to_path(gcs_output).open('w') as f:
+        gene_results.to_csv(f, sep='\t', index=False)
 
 @click.option(
     '--input-dir',
@@ -31,20 +43,6 @@ from cpg_utils.hail_batch import get_batch, reset_batch
     help='Chromosome number eg 1, comma separated if multiple',
 )
 @click.command()
-def pval_filter(gene_file, cell_type, chromosome):
-    """
-    Filter the meta results for rows where P<0.05
-    """
-    # read the raw results
-    gene_results = pd.read_csv(gene_file, sep='\t')
-    # filter for pval < 0.05
-    gene_results = gene_results[gene_results['pval_meta'] < 0.05]
-    # write to output file
-    gcs_output = output_path(f'filtered_meta_results/{cell_type}/chr{chromosome}/{gene_file.name}', 'analysis')
-    with to_path(gcs_output).open('w') as f:
-        gene_results.to_csv(f, sep='\t', index=False)
-
-
 def main(input_dir, cell_types, chromosomes):
     """
     Extracts the raw p-values from the results of associaTR into one text file per cell type.
