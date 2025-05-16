@@ -18,8 +18,8 @@ This script annotates the ExpansionHunter MT with the following annotations:
 - binom_hwep: binomial Hardy-Weinberg equilibrium p-value
 - obs_het: proportion of observed heterozygous calls per locus
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run_n2045/annotated_mt/v2" qc_annotator.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/mt/v1/str.mt
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_n1925" qc_annotator.py \
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str.mt
 
 """
 
@@ -29,6 +29,7 @@ import hail as hl
 
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import init_batch, output_path
+import pandas as pd
 
 config = get_config()
 
@@ -43,6 +44,13 @@ def main(mt_path):
     init_batch(worker_memory='highmem')
     mt = hl.read_matrix_table(mt_path)
     print(f'MT dimensions: {mt.count()}')
+
+    bioheart_ids = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/bioheart_n975_sample_covariates.csv')['sample_id']
+    tob_ids = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/covariates/6_rna_pcs/CD4_TCM_covariates.csv')['sample_id']
+    samples = bioheart_ids.to_list() + tob_ids.to_list()
+
+    # filter the MT to only include samples in the sample list
+    mt = mt.filter_cols(hl.literal(samples).contains(mt.s))
 
     # sample_qc and variant_qc function
     mt = hl.sample_qc(mt)
@@ -103,6 +111,14 @@ def main(mt_path):
         aggregated_table.allele_array_counts,
     )
     aggregated_table = aggregated_table.annotate(mode_allele=max_key_expr)
+
+    # annotate rows with counts of diploid alleles that appear in each VARID
+    ht_diploid = mt.select_rows(REPCNY = hl.agg.collect(mt.REPCN)).rows()
+    exploded_table_diploid = ht_diploid.explode(ht_diploid.REPCNY)
+    aggregated_table_diploid = exploded_table_diploid.group_by(exploded_table_diploid.REPID).aggregate(
+        diploid_allele_array_counts=hl.agg.counter(exploded_table_diploid.REPCNY))
+
+    mt = mt.annotate_rows(aggregated_info_diploid = aggregated_table_diploid[mt.REPID])
 
     # annotate the mode allele and dictionary of frequency of each allele into mt
     mt = mt.annotate_rows(aggregated_info=aggregated_table[mt.REPID])
