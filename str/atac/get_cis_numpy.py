@@ -41,7 +41,7 @@ def cis_window_numpy_extractor(
     init_batch()
     # read in batch_sites and covariate files
     pheno = batch_sites
-    covariates = pd.read_csv(covariate_path)
+
 
 
     for site in pheno['loc']:
@@ -74,6 +74,7 @@ def cis_window_numpy_extractor(
         transposed_df = transposed_df.drop(columns=['sample_id', 'sampleid'])
         print(transposed_df)
 
+        covariates = pd.read_csv(covariate_path)
         # merge with geno PCs, age, sex
         covariates = covariates.merge(transposed_df, left_on = 'sample_id', right_on = 'new_CPG_id').drop(columns=['new_CPG_id'])
         print(covariates)
