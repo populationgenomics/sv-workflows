@@ -71,6 +71,7 @@ def cis_window_numpy_extractor(
         transposed_df = filtered_df.set_index('id').T.reset_index()
         transposed_df = transposed_df.rename(columns={'index': 'sample_id'})
         transposed_df = transposed_df.merge(mapping_key, left_on='sample_id', right_on='sampleid', how='inner')
+        transposed_df = transposed_df.drop(columns=['sample_id', 'sampleid'])
         print(transposed_df)
 
         # merge with geno PCs, age, sex
