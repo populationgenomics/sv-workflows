@@ -1,0 +1,10 @@
+[get_cis_numpy]
+pseudobulk_dir = 'gs://cpg-bioheart-test/str/atac-seq'
+loc_filtered_dir = 'gs://cpg-bioheart-test/str/atac-seq/10kb-estrs-peaks'
+cell_types = 'ASDC'
+covariate_path = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/bioheart_n975_sample_covariates.csv'
+job_cpu = 0.25
+job_memory = 'standard'
+job_storage = '0G'
+# To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
+max_parallel_jobs = 500
