@@ -44,7 +44,7 @@ def main():
         vcf_file_dir = get_config()['associatr']['vcf_dir']
         vcf_file_path = f'{vcf_file_dir}_{cell_type}_estrs.vcf'
         pheno_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-        site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}').glob('*.npy'))
+        site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}/pheno_cov_numpy').glob('*.npy'))
         for i in range(0, len(site_numpy_list), 2000):
             _dependent_jobs = []
             reset_batch()
@@ -77,7 +77,7 @@ def main():
                 cis_window_region = f'{chromosome}:{cis_window_start}-{cis_window_end}'
 
                 pheno_cov_numpy_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-                gene_pheno_cov = b.read_input(f'{pheno_cov_numpy_dir}/{cell_type}/{site}_pheno_cov.npy')
+                gene_pheno_cov = b.read_input(f'{pheno_cov_numpy_dir}/{cell_type}/pheno_cov_numpy/{site}_pheno_cov.npy')
 
                 # run associaTR job on the gene
                 associatr_job = b.new_job(name=f'Run associatr on {site}')

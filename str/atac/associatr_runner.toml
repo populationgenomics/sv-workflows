@@ -1,5 +1,5 @@
 [associatr]
-pheno_cov_numpy_dir='gs://cpg-bioheart-test/tenk10k/str/associatr-methylation/bioheart_n25/input_files/5kb/pheno_cov_numpy'
+pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr-atac/tob/input_files/10kb_estrs'
 cell_types= 'ASDC'
 vcf_dir='gs://cpg-bioheart-test/str/atac-seq/filtered_vcfs/estrs'
 max_parallel_jobs=1000
