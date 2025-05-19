@@ -42,7 +42,7 @@ def main():
 
     for cell_type in get_config()['associatr']['cell_types'].split(','):
         vcf_file_dir = get_config()['associatr']['vcf_dir']
-        vcf_file_path = f'{vcf_file_dir}_{cell_type}_estrs.vcf'
+        vcf_file_path = f'{vcf_file_dir}/{cell_type}_estrs.vcf'
         pheno_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}/pheno_cov_numpy').glob('*.npy'))
         for i in range(0, len(site_numpy_list), 2000):
