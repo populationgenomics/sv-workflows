@@ -5,9 +5,9 @@
 This script aims to:
  - output ATAC-seq site-level phenotype and covariate numpy objects for input into associatr per cell type.
 
- analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
+ analysis-runner  --config get_cis_numpy.toml --dataset "bioheart" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr-atac/tob/input_files/10kb_estrs" \
-python3 get_cis_numpy_files.py
+python3 get_cis_numpy.py
 
 """
 
@@ -71,9 +71,13 @@ def cis_window_numpy_extractor(
         transposed_df = filtered_df.set_index('id').T.reset_index()
         transposed_df = transposed_df.rename(columns={'index': 'sample_id'})
         transposed_df = transposed_df.merge(mapping_key, left_on='sample_id', right_on='sampleid', how='inner')
+        print(transposed_df)
 
         # merge with geno PCs, age, sex
         covariates = covariates.merge(transposed_df, left_on = 'sample_id', right_on = 'new_CPG_id').drop(columns=['new_CPG_id'])
+        print(covariates)
+
+        print(site_pheno)
 
         # merge covariates with pseudobulk atac data
         site_pheno_cov = site_pheno.merge(covariates, on='sample_id', how='inner')
