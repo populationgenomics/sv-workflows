@@ -56,7 +56,7 @@ def main():
                 ),
             )
             for site_numpy in batch_gene_files:
-                cis_window_size = get_batch().get_config()['associatr']['cis_window_size']
+                cis_window_size = get_config()['associatr']['cis_window_size']
                 site_coord = str(site_numpy).split('/')[-1].split('_')[0]
                 start_coord = site_coord.split(':')[1].split('-')[0]
                 chromosome = site_coord.split(':')[0]
