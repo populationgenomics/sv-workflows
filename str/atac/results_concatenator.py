@@ -4,7 +4,7 @@ This script concatenates the results from running associatr-atac on a cell type 
 The output is a single CSV file containing per cell type results
 
 analysis-runner --dataset bioheart --access-level test --output-dir str/associatr-atac/tob/input_files/10kb_estrs/v1 --description "Concatenate associatr-atac results" python3 results_concatenator.py \
-    --cell-types "ASDC"
+    --celltypes "ASDC"
 
 
 """
