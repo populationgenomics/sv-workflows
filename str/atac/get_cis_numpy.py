@@ -90,9 +90,12 @@ def cis_window_numpy_extractor(
 
         site_pheno_cov['sample_id'] = site_pheno_cov['sample_id'].astype(float)
 
+        # shuffle the 'sample_id' column
+        site_pheno_cov['sample_id'] = site_pheno_cov['sample_id'].sample(frac=1).reset_index(drop=True)
+
         site_pheno_cov = site_pheno_cov.to_numpy()
         with hl.hadoop_open(
-            output_path(f'{cell_type}/pheno_cov_numpy/{site}_pheno_cov.npy'),
+            output_path(f'{cell_type}_permuted/pheno_cov_numpy/{site}_pheno_cov.npy'),
             'wb',
         ) as f:
             np.save(f, site_pheno_cov)
