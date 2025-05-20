@@ -6,7 +6,7 @@ This script runs associaTR on atac data.
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr-atac/tob/input_files/10kb_estrs/v1-mac-5" \
+    --output-dir "str/associatr-atac/tob/input_files/10kb_estrs/v1-mac-20" \
      python3 associatr_runner.py
 
 
