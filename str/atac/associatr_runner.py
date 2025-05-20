@@ -78,7 +78,7 @@ def main():
                 cis_window_region = f'{chromosome}:{cis_window_start}-{cis_window_end}'
 
                 pheno_cov_numpy_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-                gene_pheno_cov = b.read_input(f'{pheno_cov_numpy_dir}/{cell_type}/pheno_cov_numpy/{site}_pheno_cov.npy')
+                gene_pheno_cov = b.read_input(f'{pheno_cov_numpy_dir}/{cell_type}_permuted/pheno_cov_numpy/{site}_pheno_cov.npy')
 
                 # run associaTR job on the gene
                 associatr_job = b.new_job(name=f'Run associatr on {site}')
