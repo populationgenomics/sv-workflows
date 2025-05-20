@@ -38,7 +38,7 @@ def concatenator(input_dir, cell_type):
 
     # Concatenate all DataFrames
     master_df = pd.concat(results, ignore_index=True)
-    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1/concat_results/{cell_type}_concatenated_results.tsv'
+    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-mac-5/concat_results/{cell_type}_concatenated_results.tsv'
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
 
