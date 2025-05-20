@@ -17,20 +17,19 @@ from cpg_utils.hail_batch import get_batch
 
 def process_file(file):
     df = pd.read_csv(file, sep='\t')
-    site_chr = str(file).split('/')[-1].split('_')[0]
     site_pos = str(file).split('/')[-1].split('_')[1]
-    site = f'{site_chr}_{site_pos}'
+    site = str(file).split('/')[-1].split('_')[0]
     old_p = f'p_{site}'
     old_coeff = f'coeff_{site}'
     old_se = f'se_{site}'
 
     # Rename the columns to be more generic
     df = df.rename(columns={old_p: 'p', old_coeff: 'coeff', old_se: 'se'})
-    df['atac_site'] = site  # add a column for the Cpg site coordinate
+    df['atac_site'] = site  # add a column for the atac site coordinate
     return df
 
-def concatenator(input_dir, chrom):
-    files = list(to_path(f'{input_dir}/chr{chrom}').glob('*.tsv'))
+def concatenator(input_dir, cell_type):
+    files = list(to_path(f'{input_dir}/{cell_type}').glob('*.tsv'))
     master_df = pd.DataFrame()
 
     # Use ThreadPoolExecutor to process files in parallel
@@ -39,7 +38,7 @@ def concatenator(input_dir, chrom):
 
     # Concatenate all DataFrames
     master_df = pd.concat(results, ignore_index=True)
-    output_gcs = f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr-atac/tob/10kb/results/{cell_type}_concatenated_results.tsv'
+    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1/concat_results/{cell_type}_concatenated_results.tsv'
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
 
@@ -48,13 +47,13 @@ def concatenator(input_dir, chrom):
 @click.option(
     '--input-dir',
     help='GCS path to the directory containing the associatr-methylation results',
-    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr-methylation/bioheart_n25/5kb/results',
+    default='gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1/results',
 )
 @click.option('--celltypes', help='Comma-separated list of cell types to concatenate')
 @click.command()
-def main(input_dir, chromosomes):
+def main(input_dir, celltypes):
     b = get_batch(name='Concatenate associatr-atac results')
-    for chrom in chromosomes.split(','):
+    for cell_type in celltypes.split(','):
         j = b.new_python_job(
             name=f'Concatenate associatr-atac results for {cell_type}',
         )
@@ -64,7 +63,7 @@ def main(input_dir, chromosomes):
         j.call(
             concatenator,
             input_dir,
-            chrom,
+            cell_type,
         )
 
     b.run(wait=False)
