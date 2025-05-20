@@ -1,6 +1,6 @@
 [associatr]
 pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr-atac/tob/input_files/10kb_estrs'
-cell_types= 'ASDC'
+cell_types= 'CD14_Mono,ASDC'
 vcf_dir='gs://cpg-bioheart-test/str/atac-seq/filtered_vcfs/estrs'
 max_parallel_jobs=1000
 cis_window_size=10000
