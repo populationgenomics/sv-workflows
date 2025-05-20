@@ -42,9 +42,9 @@ def main():
 
     for cell_type in get_config()['associatr']['cell_types'].split(','):
         vcf_file_dir = get_config()['associatr']['vcf_dir']
-        vcf_file_path = f'{vcf_file_dir}/{cell_type}_estrs.sorted.vcf.gz'
+        vcf_file_path = f'{vcf_file_dir}/CD14_Mono_estrs.sorted.vcf.gz'
         pheno_dir = get_config()['associatr']['pheno_cov_numpy_dir']
-        site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}/pheno_cov_numpy').glob('*.npy'))
+        site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}_permuted/pheno_cov_numpy').glob('*.npy'))
         for i in range(0, len(site_numpy_list), 2000):
             _dependent_jobs = []
             reset_batch()
@@ -66,7 +66,7 @@ def main():
 
                 if to_path(
                     output_path(
-                        f'results/{cell_type}/{site}_{cis_window_size}bp.tsv',
+                        f'results/{cell_type}_permuted/{site}_{cis_window_size}bp.tsv',
                         'analysis',
                     ),
                 ).exists():
@@ -93,7 +93,7 @@ def main():
                 b.write_output(
                     associatr_job.association_results,
                     output_path(
-                        f'results/{cell_type}/{site}_{cis_window_size}bp',
+                        f'results/{cell_type}_permuted/{site}_{cis_window_size}bp',
                         'analysis',
                     ),
                 )
