@@ -152,10 +152,12 @@ def main(estrs_path):
     for chrom in df['chr'].unique():
         df_chr = df[df['chr'] == chrom]
         for gene in df_chr['gene_name'].unique():
-
-            j = b.new_python_job(name=f'Prepare for {chr} and {gene}')
+            if to_path(f'dosages/{gene}_dosages.csv').exists():
+                print(f"Dosage file for {gene} already exists, skipping.")
+                continue
+            j = b.new_python_job(name=f'Prepare for {chrom} and {gene}')
             j.cpu(0.25)
-            j.storage('5G')
+            j.storage('10G')
             j.call(dosages, gene)
         break  # try only one chromosome for now
     b.run(wait=False)
