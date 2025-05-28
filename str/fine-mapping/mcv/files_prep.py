@@ -3,12 +3,12 @@
 """
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
-analysis-runner --dataset bioheart --access-level test --description "Residualized files prep for SuSie MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files
-files_prep.py --estrs_path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv
+analysis-runner --dataset bioheart --access-level test --description "Residualized files prep for SuSie MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files \
+files_prep.py --estrs-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv
 """
 
 import click
-
+from cpg_utils.hail_batch import get_batch
 
 def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
     """
