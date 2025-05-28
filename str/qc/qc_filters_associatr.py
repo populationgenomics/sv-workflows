@@ -55,8 +55,7 @@ def qc_filter(mt_path, version):
     samples = tob_ids.to_list()
     mt = mt.filter_cols(hl.literal(samples).contains(mt.s))
 
-    ##debug
-    print(f'After sample level filtering:{mt.count()}')
+
 
     # remove monomorphic variants, set locus level call rate >=0.9, observed heterozygosity >=0.00995, locus level HWEP (binom definition) >=10^-6
     mt = mt.filter_rows(
@@ -66,8 +65,7 @@ def qc_filter(mt_path, version):
     # set sample level call rate >=0.99
     mt = mt.filter_cols(mt.sample_qc.call_rate >= 0.99)
 
-    ##debug
-    print(f'After locus level filtering:{mt.count()}')
+
 
     # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
     condition_allele_1 = (mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)
@@ -157,8 +155,6 @@ def qc_filter(mt_path, version):
         ),
     )
 
-    ##debug
-    print(f'After call level filtering large and small exp :{mt.count()}')
 
     # Step 1: Add summed repeat length
     mt = mt.annotate_entries(summed_rep_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
@@ -183,12 +179,7 @@ def qc_filter(mt_path, version):
         REPCN=hl.or_missing(mt.is_common_sum, mt.REPCN),
         SO=hl.or_missing(mt.is_common_sum, mt.SO),
     )
-    ##debug
-    print(f'After call level filtering rare GTs :{mt.count()}')
 
-
-    ##debug
-    print(f'After locus level filtering prop_GT_exists >= 0.9 :{mt.count()}')
 
     # wrangle mt, prepare for export_vcf():
 
@@ -225,8 +216,6 @@ def qc_filter(mt_path, version):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
-    ##debug
-    print(f'After final wrangling:{mt.count()}')
 
     for chr_index in range(21):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
