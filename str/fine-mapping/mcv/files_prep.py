@@ -9,6 +9,8 @@ files_prep.py --estrs-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr
 
 import click
 from cpg_utils.hail_batch import get_batch
+import pandas as pd
+from cpg_utils import to_path, output_path
 
 def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
     """
