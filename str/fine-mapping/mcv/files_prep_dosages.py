@@ -156,7 +156,7 @@ def main(estrs_path):
                 print(f"Dosage file for {gene} already exists, skipping.")
                 continue
             j = b.new_python_job(name=f'Prepare for {chrom} and {gene}')
-            j.cpu(0.25)
+            j.cpu(1)
             j.storage('10G')
             j.call(dosages, gene)
         break  # try only one chromosome for now
