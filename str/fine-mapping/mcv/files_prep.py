@@ -218,12 +218,9 @@ def main(estrs_path):
     # sort by chromosome
     for chrom in df['chr'].unique():
         df_chr = df[df['chr'] == chrom]
-        tr_vcf_file = to_path(
-            f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
-        )
-        snp_vcf_file = to_path(
-            f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
-        )
+        tr_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
+        snp_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
+
         snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_file, 'tbi': snp_vcf_file + '.tbi'})
         tr_input = get_batch().read_input_group(**{'vcf': tr_vcf_file, 'tbi': tr_vcf_file + '.tbi'})
         for row in df_chr.itertuples(index=False):
