@@ -228,7 +228,7 @@ def main(estrs_path):
             j.cpu(0.25)
             j.storage('5G')
             j.call(residualizer, row.cell_type, row.gene_name, snp_input, tr_input)
-    b.runs(wait=False)
+    b.run(wait=False)
 
 
 if __name__ == '__main__':
