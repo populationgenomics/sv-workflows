@@ -13,7 +13,6 @@ import pandas as pd
 from cpg_utils import to_path
 
 
-
 def process_cohort(variant_df, ycov, gene_ensg):
     """
     Aligns phenotype/covariate numpy array with variant_df,
@@ -81,12 +80,13 @@ def residualizer(gene_name, cell_type):
     # === LOAD metadata ===
     gene_info = pd.read_csv('gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv')
 
-
     gene_ensg = gene_name
     gene_info_filtered = gene_info[gene_info['gene_ids'] == gene_ensg]
     chrom = gene_info_filtered.iloc[0]['chr']
 
-    variant_df = pd.read_csv(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{gene_ensg}_dosages.csv')
+    variant_df = pd.read_csv(
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{gene_ensg}_dosages.csv'
+    )
 
     # === REMOVE INDELS THAT LOOK LIKE TRs === #
     meta = pd.read_csv(
@@ -140,7 +140,6 @@ def main(estrs_path):
             for gene in df_cell['gene_name'].unique():
                 if to_path(output_path(f"{gene}_{cell_type}_meta_cleaned_y_resid.csv")).exists():
                     continue
-
 
                 j = b.new_python_job(f'Prepare for {cell_type} {chrom}: {gene}')
                 j.cpu(0.25)
