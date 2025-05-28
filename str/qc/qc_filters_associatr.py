@@ -196,7 +196,10 @@ def qc_filter(mt_path, version):
         'allele_1_REPCI_size',
         'allele_2_REPCI_size',
         'allele_1_is_non_mode',
-        'allele_2_is_non_mode',
+        'allele_2_is_non_mode'
+        'is_common_sum',
+        'rep_len_count_map',
+        'summed_rep_length',
     )
 
     # Set the QUAL field to missing for all rows
