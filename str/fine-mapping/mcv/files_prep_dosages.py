@@ -14,7 +14,7 @@ import pandas as pd
 from cpg_utils import to_path
 
 
-def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
+def tr_extract_genotype_matrix(chrom, start, end):
     """
     Extracts the genotype matrix for tandem repeats from a VCF file.
     (summed repeats)
@@ -23,7 +23,17 @@ def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
     from cyvcf2 import VCF
     import pandas as pd
 
-    vcf = VCF(vcf_path)
+    local_file = 'local.vcf.bgz'
+    local_file_index = 'local.vcf.bgz.tbi'
+
+    tr_file = to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz')
+    tr_file_index =to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz.tbi')
+
+    tr_file.copy(local_file)
+    tr_file_index.copy(local_file_index)
+
+    vcf = VCF(local_file)
+
     region = f"{chrom}:{start}-{end}"
     samples = vcf.samples
     genotype_dict = {sample: {} for sample in samples}
@@ -58,7 +68,7 @@ def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
     return df
 
 
-def snp_extract_genotype_matrix(vcf_path, chrom, start, end):
+def snp_extract_genotype_matrix(chrom, start, end):
     """
     Extracts the genotype matrix for SNPs from a VCF file.
 
@@ -66,7 +76,16 @@ def snp_extract_genotype_matrix(vcf_path, chrom, start, end):
     from cyvcf2 import VCF
     import pandas as pd
 
-    vcf = VCF(vcf_path)
+    local_file = 'local.vcf.bgz'
+    local_file_index = 'local.vcf.bgz.tbi'
+
+    snp_file = to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz')
+    snp_file_index =to_path(f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz.tbi')
+
+    snp_file.copy(local_file)
+    snp_file_index.copy(local_file_index)
+
+    vcf = VCF(local_file)
     region = f"{chrom}:{start}-{end}"
     samples = vcf.samples
     genotype_dict = {sample: {} for sample in samples}
@@ -95,7 +114,7 @@ def snp_extract_genotype_matrix(vcf_path, chrom, start, end):
     return df
 
 
-def dosages(gene, snp_input, tr_input):
+def dosages(gene):
     import pandas as pd
     import numpy as np
     from cpg_utils.hail_batch import output_path
@@ -114,8 +133,8 @@ def dosages(gene, snp_input, tr_input):
     end = int(gene_info_filtered.iloc[0]['end']) + 100_000
     start_body = max(0, start - 100_000)
 
-    tr_df = tr_extract_genotype_matrix(tr_input['vcf'], chrom, start_body, end)
-    snp_df = snp_extract_genotype_matrix(snp_input['vcf'], chrom, start_body, end)
+    tr_df = tr_extract_genotype_matrix( chrom, start_body, end)
+    snp_df = snp_extract_genotype_matrix( chrom, start_body, end)
     variant_df = tr_df.merge(snp_df)
     variant_df['sample'] = variant_df['sample'].astype(float)
 
@@ -133,18 +152,11 @@ def main(estrs_path):
     for chrom in df['chr'].unique():
         df_chr = df[df['chr'] == chrom]
         for gene in df_chr['gene_name'].unique():
-            tr_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
-            snp_vcf_file = (
-                f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
-            )
-
-            snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_file, 'tbi': snp_vcf_file + '.tbi'})
-            tr_input = get_batch().read_input_group(**{'vcf': tr_vcf_file, 'tbi': tr_vcf_file + '.tbi'})
 
             j = b.new_python_job(name=f'Prepare for {chr} and {gene}')
             j.cpu(0.25)
             j.storage('5G')
-            j.call(dosages, gene, snp_input, tr_input)
+            j.call(dosages, gene)
         break  # try only one chromosome for now
     b.run(wait=False)
 
