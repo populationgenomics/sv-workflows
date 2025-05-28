@@ -186,12 +186,6 @@ def qc_filter(mt_path, version):
     ##debug
     print(f'After call level filtering rare GTs :{mt.count()}')
 
-    # calculate proportion of GTs that are defined per locus (after applying call-level filters, variant_qc.call_rate is not accurate anymore)
-    mt = mt.annotate_rows(
-        prop_GT_exists=hl.agg.count_where(hl.is_defined(mt.GT)) / (mt.variant_qc.n_called + mt.variant_qc.n_not_called),
-    )
-    # re-enforce locus level call rate >=0.9
-    mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
     ##debug
     print(f'After locus level filtering prop_GT_exists >= 0.9 :{mt.count()}')
