@@ -8,9 +8,9 @@ files_prep.py --estrs-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr
 """
 
 import click
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 import pandas as pd
-from cpg_utils import to_path, output_path
+from cpg_utils import to_path
 
 def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
     """
@@ -155,7 +155,7 @@ def residualizer(cell_type, gene_name, snp_input, tr_input):
     from cpg_utils import to_path
     import pandas as pd
     import numpy as np
-    from cpg_utils import output_path
+    from cpg_utils.hail_batch import output_path
 
     # === LOAD metadata ===
     gene_info = pd.read_csv('gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv')
