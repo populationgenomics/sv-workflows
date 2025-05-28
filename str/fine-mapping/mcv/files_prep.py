@@ -3,7 +3,7 @@
 """
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
-analysis-runner --dataset bioheart --access-level test --description "Residualized files prep for SuSie MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files \
+analysis-runner --dataset bioheart --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files \
 files_prep.py --estrs-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv
 """
 
@@ -151,7 +151,7 @@ def process_cohort(variant_df, ycov, gene_ensg):
     return y_resid_series, X_resid_df
 
 
-def residualizer(cell_type, gene_name, snp_input, tr_input):
+def residualizer(df, snp_input, tr_input):
     from cpg_utils import to_path
     import pandas as pd
     import numpy as np
@@ -159,54 +159,58 @@ def residualizer(cell_type, gene_name, snp_input, tr_input):
 
     # === LOAD metadata ===
     gene_info = pd.read_csv('gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv')
-    gene_ensg = gene_name
-    gene_info_filtered = gene_info[gene_info['gene_ids'] == gene_ensg]
-    chrom = gene_info_filtered.iloc[0]['chr']
-    start = int(gene_info_filtered.iloc[0]['start'])
-    end = int(gene_info_filtered.iloc[0]['end']) + 100_000
-    start_body = max(0, start - 100_000)
+    for row in df.itertuples():
+        cell_type = row.cell_type
+        gene_name = row.gene_name
 
-    tr_df = tr_extract_genotype_matrix(tr_input['vcf'], chrom, start_body, end)
-    snp_df = snp_extract_genotype_matrix(snp_input['vcf'], chrom, start_body, end)
-    variant_df = tr_df.merge(snp_df)
-    variant_df['sample'] = variant_df['sample'].astype(float)
+        gene_ensg = gene_name
+        gene_info_filtered = gene_info[gene_info['gene_ids'] == gene_ensg]
+        chrom = gene_info_filtered.iloc[0]['chr']
+        start = int(gene_info_filtered.iloc[0]['start'])
+        end = int(gene_info_filtered.iloc[0]['end']) + 100_000
+        start_body = max(0, start - 100_000)
 
-    # === REMOVE INDELS THAT LOOK LIKE TRs === #
-    meta = pd.read_csv(
-        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
-        sep='\t',
-    )
-    meta['variant_id'] = meta['chr'].astype(str) + ':' + meta['pos'].astype(str) + ':' + meta['motif'].astype(str)
-    columns_to_keep = ['sample'] + [col for col in variant_df.columns if col in meta['variant_id'].values]
-    variant_df = variant_df[columns_to_keep]
+        tr_df = tr_extract_genotype_matrix(tr_input['vcf'], chrom, start_body, end)
+        snp_df = snp_extract_genotype_matrix(snp_input['vcf'], chrom, start_body, end)
+        variant_df = tr_df.merge(snp_df)
+        variant_df['sample'] = variant_df['sample'].astype(float)
 
-    # === COHORT 1 ===
-    ycov_1 = np.load(
-        to_path(
-            f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
+        # === REMOVE INDELS THAT LOOK LIKE TRs === #
+        meta = pd.read_csv(
+            f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
+            sep='\t',
         )
-    )
-    y_resid_1, X_resid_1 = process_cohort(variant_df, ycov_1, gene_ensg)
+        meta['variant_id'] = meta['chr'].astype(str) + ':' + meta['pos'].astype(str) + ':' + meta['motif'].astype(str)
+        columns_to_keep = ['sample'] + [col for col in variant_df.columns if col in meta['variant_id'].values]
+        variant_df = variant_df[columns_to_keep]
 
-    # === COHORT 2 ===
-    ycov_2 = np.load(
-        to_path(
-            f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
+        # === COHORT 1 ===
+        ycov_1 = np.load(
+            to_path(
+                f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
+            )
         )
-    )
-    y_resid_2, X_resid_2 = process_cohort(variant_df, ycov_2, gene_ensg)
+        y_resid_1, X_resid_1 = process_cohort(variant_df, ycov_1, gene_ensg)
 
-    # === STACK & EXPORT ===
-    y_resid_combined = pd.concat([y_resid_1, y_resid_2])
-    X_resid_combined = pd.concat([X_resid_1, X_resid_2])
+        # === COHORT 2 ===
+        ycov_2 = np.load(
+            to_path(
+                f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
+            )
+        )
+        y_resid_2, X_resid_2 = process_cohort(variant_df, ycov_2, gene_ensg)
 
-    # Sort by sample ID just in case
-    y_resid_combined = y_resid_combined.sort_index()
-    X_resid_combined = X_resid_combined.sort_index()
+        # === STACK & EXPORT ===
+        y_resid_combined = pd.concat([y_resid_1, y_resid_2])
+        X_resid_combined = pd.concat([X_resid_1, X_resid_2])
 
-    # Save files
-    y_resid_combined.to_csv(output_path(f"{gene_ensg}_{cell_type}_meta_cleaned_y_resid.csv"), header=True)
-    X_resid_combined.to_csv(output_path(f"{gene_ensg}_{cell_type}_meta_cleaned_X_resid.csv"))
+        # Sort by sample ID just in case
+        y_resid_combined = y_resid_combined.sort_index()
+        X_resid_combined = X_resid_combined.sort_index()
+
+        # Save files
+        y_resid_combined.to_csv(output_path(f"{gene_ensg}_{cell_type}_meta_cleaned_y_resid.csv"), header=True)
+        X_resid_combined.to_csv(output_path(f"{gene_ensg}_{cell_type}_meta_cleaned_X_resid.csv"))
 
 
 @click.option('--estrs-path', type=str, required=True, help='Path to the estrs file.')
@@ -218,16 +222,19 @@ def main(estrs_path):
     # sort by chromosome
     for chrom in df['chr'].unique():
         df_chr = df[df['chr'] == chrom]
-        tr_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
-        snp_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
+        for cell_type in df_chr['cell_type'].unique():
+            df_cell = df_chr[df_chr['cell_type'] == cell_type]
+            tr_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
+            snp_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
 
-        snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_file, 'tbi': snp_vcf_file + '.tbi'})
-        tr_input = get_batch().read_input_group(**{'vcf': tr_vcf_file, 'tbi': tr_vcf_file + '.tbi'})
-        for row in df_chr.itertuples(index=False):
-            j = b.new_python_job(f'Prepare for {row.cell_type} {row.gene_name}')
+            snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_file, 'tbi': snp_vcf_file + '.tbi'})
+            tr_input = get_batch().read_input_group(**{'vcf': tr_vcf_file, 'tbi': tr_vcf_file + '.tbi'})
+
+            j = b.new_python_job(f'Prepare for {cell_type} {chr}')
             j.cpu(0.25)
             j.storage('5G')
-            j.call(residualizer, row.cell_type, row.gene_name, snp_input, tr_input)
+            j.call(residualizer, df_cell, snp_input, tr_input)
+        break # try only one chromosome for now
     b.run(wait=False)
 
 
