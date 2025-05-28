@@ -151,35 +151,28 @@ def qc_filter(mt_path, version):
         ),
     )
 
-    # Step 1: Add summed repeat length to each entry
+    # Step 1: Add summed repeat length
     mt = mt.annotate_entries(summed_rep_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
 
-    # Step 2: Create an entry table with locus and alleles
-    entry_table = mt.select_entries('summed_rep_length').entries()
-
-    # Step 3: Count how many times each summed_rep_length occurs per variant
-    rep_length_counts = entry_table.group_by(entry_table.locus, entry_table.alleles).aggregate(
-        rep_len_count_map=hl.agg.counter(entry_table.summed_rep_length)
-    )
-
-    # Step 4: Annotate mt rows using the matching key (locus, alleles)
+    # Step 2: Compute per-row map of repeat length counts using entry aggregation
     mt = mt.annotate_rows(
-        rep_len_count_map=rep_length_counts.index(hl.struct(locus=mt.locus, alleles=mt.alleles)).rep_len_count_map
+        rep_len_count_map=hl.agg.group_by(mt.summed_rep_length, hl.agg.count_where(hl.is_defined(mt.summed_rep_length)))
     )
 
-    # Step 5: Create a mask for common summed genotypes
-    is_common_sum = mt.rep_len_count_map.get(mt.summed_rep_length, 0) >= 5
-
-    # Step 6: Mask entry fields
+    # Step 3: Mask fields based on whether the summed repeat count is ≥ 5
     mt = mt.annotate_entries(
-        GT=hl.or_missing(is_common_sum, mt.GT),
-        ADFL=hl.or_missing(is_common_sum, mt.ADFL),
-        ADIR=hl.or_missing(is_common_sum, mt.ADIR),
-        ADSP=hl.or_missing(is_common_sum, mt.ADSP),
-        LC=hl.or_missing(is_common_sum, mt.LC),
-        REPCI=hl.or_missing(is_common_sum, mt.REPCI),
-        REPCN=hl.or_missing(is_common_sum, mt.REPCN),
-        SO=hl.or_missing(is_common_sum, mt.SO),
+        is_common_sum = mt.rep_len_count_map.get(mt.summed_rep_length, 0) >= 5
+    )
+
+    mt = mt.annotate_entries(
+        GT=hl.or_missing(mt.is_common_sum, mt.GT),
+        ADFL=hl.or_missing(mt.is_common_sum, mt.ADFL),
+        ADIR=hl.or_missing(mt.is_common_sum, mt.ADIR),
+        ADSP=hl.or_missing(mt.is_common_sum, mt.ADSP),
+        LC=hl.or_missing(mt.is_common_sum, mt.LC),
+        REPCI=hl.or_missing(mt.is_common_sum, mt.REPCI),
+        REPCN=hl.or_missing(mt.is_common_sum, mt.REPCN),
+        SO=hl.or_missing(mt.is_common_sum, mt.SO),
     )
     # calculate proportion of GTs that are defined per locus (after applying call-level filters, variant_qc.call_rate is not accurate anymore)
     mt = mt.annotate_rows(
@@ -220,7 +213,7 @@ def qc_filter(mt_path, version):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
-    for chr_index in range(22):  # iterate over chr1-22
+    for chr_index in [22]:  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
