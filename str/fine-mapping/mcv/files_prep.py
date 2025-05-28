@@ -214,10 +214,10 @@ def residualizer(cell_type, gene_name, snp_input, tr_input):
 def main(estrs_path):
     b = get_batch(name='Residualized files prep for SuSie MCV')
     df = pd.read_csv(estrs_path, sep='\t', index_col=0)
-    df = df.drop_duplicates('cell_type', 'gene_name')
+    df = df.drop_duplicates(subset=['cell_type', 'gene_name'])
     # sort by chromosome
-    for chrom in df['chrom'].unique():
-        df_chr = df[df['chrom'] == chrom]
+    for chrom in df['chr'].unique():
+        df_chr = df[df['chr'] == chrom]
         tr_vcf_file = to_path(
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
         )
