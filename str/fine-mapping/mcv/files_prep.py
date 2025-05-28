@@ -12,6 +12,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 import pandas as pd
 from cpg_utils import to_path
 
+
 def tr_extract_genotype_matrix(vcf_path, chrom, start, end):
     """
     Extracts the genotype matrix for tandem repeats from a VCF file.
@@ -225,7 +226,9 @@ def main(estrs_path):
         for cell_type in df_chr['cell_type'].unique():
             df_cell = df_chr[df_chr['cell_type'] == cell_type]
             tr_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
-            snp_vcf_file = f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
+            snp_vcf_file = (
+                f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
+            )
 
             snp_input = get_batch().read_input_group(**{'vcf': snp_vcf_file, 'tbi': snp_vcf_file + '.tbi'})
             tr_input = get_batch().read_input_group(**{'vcf': tr_vcf_file, 'tbi': tr_vcf_file + '.tbi'})
@@ -234,7 +237,7 @@ def main(estrs_path):
             j.cpu(0.25)
             j.storage('5G')
             j.call(residualizer, df_cell, snp_input, tr_input)
-        break # try only one chromosome for now
+        break  # try only one chromosome for now
     b.run(wait=False)
 
 
