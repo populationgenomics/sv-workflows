@@ -216,6 +216,10 @@ def qc_filter(mt_path, version):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
+    checkpoint_path = output_path('qc/atacgt.mt', 'tmp')
+
+    mt = mt.checkpoint(str(checkpoint_path))
+
 
     for chr_index in range(21):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
