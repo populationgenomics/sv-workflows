@@ -118,7 +118,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     # write dataframe to GCS
     susie_output_df.to_csv(
-        output_path(f"susie/{cell_type}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"{cell_type}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -161,7 +161,7 @@ def main(
         cell_type = row.cell_type
         gene = row.gene_name
         if to_path(
-            output_path(f'susie/{cell_type}/{gene}_100kb.tsv', 'analysis'),
+            output_path(f'{cell_type}/{gene}_100kb.tsv', 'analysis'),
         ).exists():
             print(f'SusieR file for {gene} in {cell_type} already exists, skipping.')
             continue
