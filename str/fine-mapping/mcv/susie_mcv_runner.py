@@ -32,17 +32,14 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     ro.r('library(tidyverse)')
 
     # load in X and y file paths
-    X_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_X_resid.csv', index_col=0)
+    X_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_X_resid.csv')
+    y_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_y_resid.csv')
 
-    y_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_y_resid.csv', index_col=0)
+    with (ro.default_converter + pandas2ri.converter).context():
+        X = ro.conversion.get_conversion().py2rpy(X_df)
 
-    # === 2. Prepare y as R vector ===
-    y = ro.FloatVector(y_df.iloc[:, 0].values.tolist())
-
-    # === 3. Prepare X as R matrix ===
-    X_np = X_df.to_numpy(order='F')  # Ensure column-major (Fortran-style) for R
-    X = ro.r['matrix'](ro.FloatVector(X_np.flatten(order='F')), nrow=X_np.shape[0], ncol=X_np.shape[1])
-    ro.r['colnames'](X)[:] = list(X_df.columns)
+    with (ro.default_converter + pandas2ri.converter).context():
+        y = ro.conversion.get_conversion().py2rpy(y_df)
 
     # === 4. Assign to R environment ===
     ro.globalenv['X'] = X
@@ -51,7 +48,11 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     # === 5. Run SuSiE ===
     ro.r('''
     library(susieR)
-    susie_fit <- susie(X, y, L = 10)
+    X <- subset(X, select = -sample)
+    x_input = as.matrix(X)
+    y = subset(y, select=-sample)
+    y_input = y[,1]
+    susie_fit <- susie(x_input, y_input, L = 10)
     ''')
 
 @click.option('--table-s1-path', help='Table S1 with eGenes to run SusieR on')
