@@ -60,7 +60,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     coord_df$chr <- sub("\\..*", "", coord_df$variant_id)
     coord_df$pos <- as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", coord_df$variant_id))
 
-    raw_output = capture.output(summary(susie_fit))
+    # raw_output = capture.output(summary(susie_fit))
 
     # extract CS membership and purity
     susie_cs <- susie_get_cs(susie_fit, X = X)
@@ -106,12 +106,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     })
 
     ''')
-    # convert raw output to python
-    raw_output_python = ro.r('raw_output')
 
-    # write raw output to GCS
-    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
-        file.write(str(raw_output_python))
 
      # convert to pandas df
     with (ro.default_converter + pandas2ri.converter).context():
