@@ -153,7 +153,7 @@ def dosages(gene):
 @click.option('--estrs-path', type=str, required=True, help='Path to the estrs file.')
 @click.command()
 def main(estrs_path):
-    b = get_batch(name='Residualized files prep for SuSie MCV')
+    b = get_batch(name='Dosages files prep for SuSie MCV')
     df = pd.read_csv(estrs_path)
     df = df.drop_duplicates(subset=['gene_name', 'chr'])
     # sort by chromosome
