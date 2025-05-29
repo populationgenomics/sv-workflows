@@ -84,6 +84,28 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     max_pip_in_cs[cs_variants] <- max_pip
     }
 
+    # Create a data frame with PIP and CS information
+    pip_df <- data.frame(
+    variant_id = variant_ids,
+    pip = susie_fit$pip,
+    pip_prune = susie_get_pip(susie_fit, prune_by_cs = TRUE),
+    cs_id = cs_id,
+    cs_size = cs_size,
+    max_pip_in_cs = max_pip_in_cs
+    )
+
+     # Capture the summary outputs (try catch, in case it is empty)
+    p4 <- tryCatch({
+
+    final_df <- merge(pip_df, coord_df, by = "variant_id")
+    final_df <- final_df[order(final_df$chr, final_df$pos), ]
+
+    }, error = function(e) {
+
+    print(paste("An error occurred:", e))
+    0
+    })
+
 
     ''',
     )
