@@ -3,8 +3,8 @@
 This script concatenates the results from running associatr-atac on a cell type basis.
 The output is a single CSV file containing per cell type results
 
-analysis-runner --dataset bioheart --access-level test --output-dir str/associatr-atac/tob/input_files/10kb_estrs/v1 --description "Concatenate associatr-atac results" python3 results_concatenator.py \
-    --celltypes "CD14_Mono,ASDC"
+analysis-runner --dataset bioheart --access-level test --output-dir str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs --description "Concatenate associatr-atac results" python3 results_concatenator.py \
+    --celltypes "CD14_Mono,ASDC,CD14_Mono_permuted"
 
 
 """
@@ -38,7 +38,7 @@ def concatenator(input_dir, cell_type):
 
     # Concatenate all DataFrames
     master_df = pd.concat(results, ignore_index=True)
-    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-mac-20/concat_results/{cell_type}_concatenated_results.tsv'
+    output_gcs = f'gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs/concat_results/{cell_type}_concatenated_results.tsv'
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
 
 
@@ -47,7 +47,7 @@ def concatenator(input_dir, cell_type):
 @click.option(
     '--input-dir',
     help='GCS path to the directory containing the associatr-methylation results',
-    default='gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-mac-20/results',
+    default='gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs/results',
 )
 @click.option('--celltypes', help='Comma-separated list of cell types to concatenate')
 @click.command()
