@@ -36,22 +36,23 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     y_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_y_resid.csv', index_col=0)
 
-    # === Step 2: Extract y as numeric vector ===
-    y_series = y_df.iloc[:, 0]  # drop to 1D
+    # === 2. Prepare y as R vector ===
+    y = ro.FloatVector(y_df.iloc[:, 0].values.tolist())
 
-    # === Step 3: Push into R environment ===
-    with (ro.default_converter + pandas2ri.converter).context():
-        ro.globalenv['X'] = pandas2ri.py2rpy(X_df.to_numpy())  # matrix only, no rownames
-        ro.globalenv['y'] = ro.FloatVector(y_series.tolist())
+    # === 3. Prepare X as R matrix ===
+    X_np = X_df.to_numpy(order='F')  # Ensure column-major (Fortran-style) for R
+    X = ro.r['matrix'](ro.FloatVector(X_np.flatten(order='F')), nrow=X_np.shape[0], ncol=X_np.shape[1])
+    ro.r['colnames'](X)[:] = list(X_df.columns)
 
-    # === Step 4: Run SuSiE ===
+    # === 4. Assign to R environment ===
+    ro.globalenv['X'] = X
+    ro.globalenv['y'] = y
+
+    # === 5. Run SuSiE ===
     ro.r('''
     library(susieR)
     susie_fit <- susie(X, y, L = 10)
     ''')
-
-
-
 
 @click.option('--table-s1-path', help='Table S1 with eGenes to run SusieR on')
 @click.option('--residualized-dir', help='Directory with residualized Y and X files')
