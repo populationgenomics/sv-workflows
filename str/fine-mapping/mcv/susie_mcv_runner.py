@@ -69,11 +69,14 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
 
     ro.r('''
-    coord_df <- data.frame(variant_id = variant_ids)
-    coord_df$chr <- sub("\\..*", "", coord_df$variant_id)
-    # Extract position (the number between the first and second dot)
-    coord_df$pos <- as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", coord_df$variant_id))
+    # Extract chromosome and position from variant IDs (format: chr1.123456.AC)
+    coord_df <- data.frame(
+    variant_id = variant_ids,
+    chr = sub("\\..*", "", variant_ids),
+    pos = as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", variant_ids))
+    )
 
+    # Get credible sets from SuSiE fit
     susie_cs <- susie_get_cs(susie_fit, X = x_input)
 
     # Initialize annotation vectors
@@ -82,33 +85,27 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     cs_size <- rep(NA_integer_, n_variants)
     max_pip_in_cs <- rep(NA_real_, n_variants)
 
-    # Loop over credible sets
+    # Annotate variants with CS membership
     for (i in seq_along(susie_cs$cs)) {
-    cs_variants <- susie_cs$cs[[i]]
-    purity <- susie_cs$purity[[i]]
-    max_pip <- max(susie_fit$pip[cs_variants], na.rm = TRUE)
-
-    cs_id[cs_variants] <- i
-    cs_size[cs_variants] <- length(cs_variants)
-    max_pip_in_cs[cs_variants] <- max_pip
+    idx <- susie_cs$cs[[i]]
+    cs_id[idx] <- i
+    cs_size[idx] <- length(idx)
+    max_pip_in_cs[idx] <- max(susie_fit$pip[idx], na.rm = TRUE)
     }
 
-
-    # -----------------------------
-    # Step 5: Compile final output
-    # -----------------------------
-    pip_df <- data.frame(
+    # Combine results into final dataframe
+    final_df <- data.frame(
     variant_id = variant_ids,
     pip = susie_fit$pip,
     pip_prune = susie_get_pip(susie_fit, prune_by_cs = TRUE),
     cs_id = cs_id,
     cs_size = cs_size,
     max_pip_in_cs = max_pip_in_cs
-    )
+    ) |>
+    merge(coord_df, by = "variant_id") |>
+    dplyr::arrange(pip)
 
-    final_df <- merge(pip_df, coord_df, by = "variant_id")
-    final_df <- final_df[order(final_df$chr, final_df$pos), ] ''')
-
+    ''')
 
 
     with (ro.default_converter + pandas2ri.converter).context():
