@@ -58,7 +58,17 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     #capture susie output results to save later
     raw_output = capture.output(summary(susie_fit))
+         ''')
 
+    # convert raw output to python
+    raw_output_python = ro.r('raw_output')
+
+    # write raw output to GCS
+    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
+        file.write(str(raw_output_python))
+
+
+    ro.r('''
     coord_df <- data.frame(variant_id = variant_ids)
     coord_df$chr <- sub("\\..*", "", coord_df$variant_id)
     # Extract position (the number between the first and second dot)
@@ -97,19 +107,9 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     )
 
     final_df <- merge(pip_df, coord_df, by = "variant_id")
-    final_df <- final_df[order(final_df$chr, final_df$pos), ]
+    final_df <- final_df[order(final_df$chr, final_df$pos), ] ''')
 
 
-
-
-    ''')
-
-    # convert raw output to python
-    raw_output_python = ro.r('raw_output')
-
-    # write raw output to GCS
-    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
-        file.write(str(raw_output_python))
 
     with (ro.default_converter + pandas2ri.converter).context():
         susie_output_df = ro.conversion.get_conversion().rpy2py(ro.r('final_df'))
