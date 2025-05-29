@@ -60,7 +60,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     coord_df$pos <- as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", coord_df$variant_id))
 
     #fit Susie
-    susie_fit <- susie(X, y, L = num_causal_variants, max_iter = num_iterations)
+    susie_fit <- susie(X, y_r, L = num_causal_variants, max_iter = num_iterations)
 
     # extract CS membership and purity
     susie_cs <- susie_get_cs(susie_fit, X = X)
