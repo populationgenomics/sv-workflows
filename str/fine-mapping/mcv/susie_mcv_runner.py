@@ -51,7 +51,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     ro.r(
         '''
     # X <- as.matrix(x_r)
-    X = x_r_matrix
+    X = x_r
     variant_ids = colnames(x_r_matrix)
 
     # extract coordinates from variant ids
