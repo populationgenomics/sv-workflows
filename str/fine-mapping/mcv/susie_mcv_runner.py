@@ -53,8 +53,53 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     variant_ids <- colnames(x_input)
     y = subset(y, select=-sample)
     y_input = y[,1]
+    # run susieR
     susie_fit <- susie(x_input, y_input, L = 10)
+
+    #capture susie output results to save later
     raw_output = capture.output(summary(susie_fit))
+
+    coord_df <- data.frame(variant_id = variant_ids)
+    coord_df$chr <- sub("\\..*", "", coord_df$variant_id)
+    # Extract position (the number between the first and second dot)
+    coord_df$pos <- as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", coord_df$variant_id))
+
+    susie_cs <- susie_get_cs(susie_fit, X = x_input)
+
+    # Initialize annotation vectors
+    n_variants <- length(variant_ids)
+    cs_id <- rep(NA_integer_, n_variants)
+    cs_size <- rep(NA_integer_, n_variants)
+    max_pip_in_cs <- rep(NA_real_, n_variants)
+
+    # Loop over credible sets
+    for (i in seq_along(susie_cs$cs)) {
+    cs_variants <- susie_cs$cs[[i]]
+    purity <- susie_cs$purity[[i]]
+    max_pip <- max(susie_fit$pip[cs_variants], na.rm = TRUE)
+
+    cs_id[cs_variants] <- i
+    cs_size[cs_variants] <- length(cs_variants)
+    max_pip_in_cs[cs_variants] <- max_pip
+    }
+
+
+    # -----------------------------
+    # Step 5: Compile final output
+    # -----------------------------
+    pip_df <- data.frame(
+    variant_id = variant_ids,
+    pip = susie_fit$pip,
+    pip_prune = susie_get_pip(susie_fit, prune_by_cs = TRUE),
+    cs_id = cs_id,
+    cs_size = cs_size,
+    max_pip_in_cs = max_pip_in_cs
+    )
+
+    final_df <- merge(pip_df, coord_df, by = "variant_id")
+    final_df <- final_df[order(final_df$chr, final_df$pos), ]
+
+
 
 
     ''')
@@ -65,6 +110,17 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     # write raw output to GCS
     with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
         file.write(str(raw_output_python))
+
+    with (ro.default_converter + pandas2ri.converter).context():
+        susie_output_df = ro.conversion.get_conversion().rpy2py(ro.r('final_df'))
+    print('converted back to pandas df')
+
+    # write dataframe to GCS
+    susie_output_df.to_csv(
+        output_path(f"susie/{cell_type}/{gene}_100kb.tsv", 'analysis'),
+        sep='\t',
+        index=False,
+    )
 
 
 @click.option('--table-s1-path', help='Table S1 with eGenes to run SusieR on')
