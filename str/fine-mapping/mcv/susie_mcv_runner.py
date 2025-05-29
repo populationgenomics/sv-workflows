@@ -62,6 +62,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     #fit Susie
     susie_fit <- susie(X, y_r, L = num_causal_variants, max_iter = num_iterations)
     print(susie_fit)
+    raw_output = capture.output(summary(susie_fit))
 
     # extract CS membership and purity
     susie_cs <- susie_get_cs(susie_fit, X = X)
@@ -98,6 +99,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     p4 <- tryCatch({
 
     final_df <- merge(pip_df, coord_df, by = "variant_id")
+    print()
     final_df <- final_df[order(final_df$chr, final_df$pos), ]
 
     }, error = function(e) {
@@ -109,9 +111,12 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     ''',
     )
-    with (ro.default_converter + pandas2ri.converter).context():
-        susie_output_df = ro.conversion.get_conversion().rpy2py(ro.r('final_df'))
-    print('converted back to pandas df')
+   # convert raw output to python
+    raw_output_python = ro.r('raw_output')
+
+    # write raw output to GCS
+    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
+        file.write(str(raw_output_python))
 
 
 
