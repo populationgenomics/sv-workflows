@@ -9,7 +9,7 @@ Required inputs:
 - List of eGenes to run SusieR on (ie Table S1 from the manuscript).
 
 analysis-runner --dataset bioheart --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" --description "Run SusiE MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
-susie_mcv_runner.py --table-s1-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv --residualized-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files
+susie_mcv_runner.py --table-s1-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv --residualized-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files  --max-parallel-jobs=1000
 """
 
 import click
