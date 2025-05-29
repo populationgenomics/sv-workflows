@@ -109,7 +109,9 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     ''',
     )
-
+    with (ro.default_converter + pandas2ri.converter).context():
+        susie_output_df = ro.conversion.get_conversion().rpy2py(ro.r('final_df'))
+    print('converted back to pandas df')
 
 
 
