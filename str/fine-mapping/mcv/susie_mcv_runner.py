@@ -38,13 +38,12 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     y_series = y.iloc[:, 0]
 
     with (ro.default_converter + pandas2ri.converter).context():
-        x_r = ro.conversion.get_conversion().py2rpy(x)
-    print('loaded in x_r')
-    with (ro.default_converter + pandas2ri.converter).context():
-        y_r = ro.conversion.get_conversion().py2rpy(y_series)
+        x_r_matrix = ro.r.matrix(pandas2ri.py2rpy(x), nrow=x.shape[0], ncol=x.shape[1])
+        y_r_vector = ro.FloatVector(y_series.tolist())  # explicitly convert to R numeric
+
     print('loaded in y_r')
-    ro.globalenv['y_r'] = y_r
-    ro.globalenv['x_r'] = x_r
+    ro.globalenv['y_r'] = y_r_vector
+    ro.globalenv['x_r'] = x_r_matrix
     ro.globalenv['gene'] = gene
     ro.globalenv['num_iterations'] = num_iterations
     ro.globalenv['num_causal_variants'] = num_causal_variants
