@@ -108,18 +108,6 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     ''')
 
 
-     # convert to pandas df
-    with (ro.default_converter + pandas2ri.converter).context():
-        susie_output_df = ro.conversion.get_conversion().rpy2py(ro.r('final_df'))
-    print('converted back to pandas df')
-
-    # write dataframe to GCS
-    susie_output_df.to_csv(
-        output_path(f"susie/{cell_type}/{gene}_100kb.tsv", 'analysis'),
-        sep='\t',
-        index=False,
-    )
-
 @click.option('--table-s1-path', help='Table S1 with eGenes to run SusieR on')
 @click.option('--residualized-dir', help='Directory with residualized Y and X files')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
