@@ -167,7 +167,6 @@ def main(estrs_path):
             j.cpu(1)
             j.storage('10G')
             j.call(dosages, gene)
-        break  # try only one chromosome for now
     b.run(wait=False)
 
 
