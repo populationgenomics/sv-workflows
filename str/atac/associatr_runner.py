@@ -42,7 +42,7 @@ def main():
 
     for cell_type in get_config()['associatr']['cell_types'].split(','):
         vcf_file_dir = get_config()['associatr']['vcf_dir']
-        vcf_file_path = f'{vcf_file_dir}/{cell_type}_estrs.sorted.vcf.gz'
+        vcf_file_path = f'{vcf_file_dir}/{cell_type}_estrs.vcf.gz'
         pheno_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}/pheno_cov_numpy').glob('*.npy'))
         for i in range(0, len(site_numpy_list), 2000):
@@ -88,7 +88,7 @@ def main():
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
                 associatr_job.declare_resource_group(association_results={'tsv': '{root}.tsv'})
                 associatr_job.command(
-                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.vcf} {site} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh --non-major-cutoff=20",
+                    f" associaTR {associatr_job.association_results['tsv']} {variant_vcf.vcf} {site} {gene_pheno_cov} --region={cis_window_region} --vcftype=eh --non-major-cutoff=0",
                 )
                 b.write_output(
                     associatr_job.association_results,
