@@ -8,7 +8,7 @@ Required inputs:
 - output from`files_prep_residualizer.py` (residualized Y and X files) (which requires files_prep_dosages.py to run first).
 - List of eGenes to run SusieR on (ie Table S1 from the manuscript).
 
-analysis-runner --dataset bioheart --access-level test --memory 4G --description "Run SusiE MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
+analysis-runner --dataset bioheart --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" --description "Run SusiE MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
 susie_mcv_runner.py --table-s1-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv --residualized-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files
 """
 
@@ -93,8 +93,19 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     max_pip_in_cs = max_pip_in_cs
     )
 
+     # Capture the summary outputs (try catch, in case it is empty)
+    p4 <- tryCatch({
+
     final_df <- merge(pip_df, coord_df, by = "variant_id")
     final_df <- final_df[order(final_df$chr, final_df$pos), ]
+
+    }, error = function(e) {
+
+    print(paste("An error occurred:", e))
+    0
+    })
+
+
 
     ''',
     )
