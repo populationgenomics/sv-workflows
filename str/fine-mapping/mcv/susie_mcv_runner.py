@@ -54,10 +54,17 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     y = subset(y, select=-sample)
     y_input = y[,1]
     susie_fit <- susie(x_input, y_input, L = 10)
-
+    raw_output = capture.output(summary(susie_fit))
 
 
     ''')
+
+    # convert raw output to python
+    raw_output_python = ro.r('raw_output')
+
+    # write raw output to GCS
+    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
+        file.write(str(raw_output_python))
 
 
 @click.option('--table-s1-path', help='Table S1 with eGenes to run SusieR on')
