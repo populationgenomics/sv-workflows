@@ -32,91 +32,24 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     ro.r('library(tidyverse)')
 
     # load in X and y file paths
-    x = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_X_resid.csv', index_col=0)
+    X_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_X_resid.csv', index_col=0)
 
-    y = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_y_resid.csv', index_col=0)
-    y_series = y.iloc[:, 0]
+    y_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_y_resid.csv', index_col=0)
 
+    # === Step 2: Extract y as numeric vector ===
+    y_series = y_df.iloc[:, 0]  # drop to 1D
+
+    # === Step 3: Push into R environment ===
     with (ro.default_converter + pandas2ri.converter).context():
-        x_r_matrix = ro.r.matrix(pandas2ri.py2rpy(x), nrow=x.shape[0], ncol=x.shape[1])
-        y_r_vector = ro.FloatVector(y_series.tolist())  # explicitly convert to R numeric
+        ro.globalenv['X'] = pandas2ri.py2rpy(X_df.to_numpy())  # matrix only, no rownames
+        ro.globalenv['y'] = ro.FloatVector(y_series.tolist())
 
-    print('loaded in y_r')
-    ro.globalenv['y_r'] = y_r_vector
-    ro.globalenv['x_r'] = x_r_matrix
-    ro.globalenv['gene'] = gene
-    ro.globalenv['num_iterations'] = num_iterations
-    ro.globalenv['num_causal_variants'] = num_causal_variants
+    # === Step 4: Run SuSiE ===
+    ro.r('''
+    library(susieR)
+    susie_fit <- susie(X, y, L = 10)
+    ''')
 
-    ro.r(
-        '''
-    # X <- as.matrix(x_r)
-    X = x_r
-    variant_ids = colnames(x_r_matrix)
-
-    # extract coordinates from variant ids
-    coord_df <- data.frame(variant_id = variant_ids)
-    coord_df$chr <- sub("\\..*", "", coord_df$variant_id)
-    coord_df$pos <- as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", coord_df$variant_id))
-
-    #fit Susie
-    susie_fit <- susie(X, y_r, L =10)
-    print(susie_fit)
-    raw_output = capture.output(summary(susie_fit))
-
-    # extract CS membership and purity
-    susie_cs <- susie_get_cs(susie_fit, X = X)
-
-
-    # initialize annotation vectors
-    n_variants <- length(variant_ids)
-    cs_id <- rep(NA_integer_, n_variants)
-    cs_size <- rep(NA_integer_, n_variants)
-    max_pip_in_cs <- rep(NA_real_, n_variants)
-
-    # Loop over credible sets
-    for (i in seq_along(susie_cs$cs)) {
-    cs_variants <- susie_cs$cs[[i]]
-    purity <- susie_cs$purity[[i]]
-    max_pip <- max(susie_fit$pip[cs_variants], na.rm = TRUE)
-
-    cs_id[cs_variants] <- i
-    cs_size[cs_variants] <- length(cs_variants)
-    max_pip_in_cs[cs_variants] <- max_pip
-    }
-
-    # Create a data frame with PIP and CS information
-    pip_df <- data.frame(
-    variant_id = variant_ids,
-    pip = susie_fit$pip,
-    pip_prune = susie_get_pip(susie_fit, prune_by_cs = TRUE),
-    cs_id = cs_id,
-    cs_size = cs_size,
-    max_pip_in_cs = max_pip_in_cs
-    )
-
-     # Capture the summary outputs (try catch, in case it is empty)
-    p4 <- tryCatch({
-
-    final_df <- merge(pip_df, coord_df, by = "variant_id")
-    print()
-    final_df <- final_df[order(final_df$chr, final_df$pos), ]
-
-    }, error = function(e) {
-
-    print(paste("An error occurred:", e))
-    0
-    })
-
-
-    ''',
-    )
-   # convert raw output to python
-    raw_output_python = ro.r('raw_output')
-
-    # write raw output to GCS
-    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
-        file.write(str(raw_output_python))
 
 
 
