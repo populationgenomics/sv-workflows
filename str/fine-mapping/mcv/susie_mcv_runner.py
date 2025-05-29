@@ -75,7 +75,10 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     chr = sub("\\..*", "", variant_ids),
     pos = as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", variant_ids))
     )
+    ''')
+    print('extracted coordinates from variant IDs')
 
+    ro.r('''
     # Get credible sets from SuSiE fit
     susie_cs <- susie_get_cs(susie_fit, X = x_input)
 
@@ -83,8 +86,10 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     n_variants <- length(variant_ids)
     cs_id <- rep(NA_integer_, n_variants)
     cs_size <- rep(NA_integer_, n_variants)
-    max_pip_in_cs <- rep(NA_real_, n_variants)
+    max_pip_in_cs <- rep(NA_real_, n_variants) ''')
+    print('obtained credible sets and initialized vectors')
 
+    ro.r('''
     # Annotate variants with CS membership
     for (i in seq_along(susie_cs$cs)) {
     idx <- susie_cs$cs[[i]]
@@ -92,7 +97,10 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     cs_size[idx] <- length(idx)
     max_pip_in_cs[idx] <- max(susie_fit$pip[idx], na.rm = TRUE)
     }
+    ''')
+    print('annotated variants with CS membership')
 
+    ro.r('''
     # Combine results into final dataframe
     final_df <- data.frame(
     variant_id = variant_ids,
@@ -106,6 +114,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     dplyr::arrange(pip)
 
     ''')
+    print('combined results into final dataframe')
 
 
     with (ro.default_converter + pandas2ri.converter).context():
