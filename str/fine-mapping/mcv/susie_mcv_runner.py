@@ -178,7 +178,7 @@ def main(
             num_causal_variants,
             num_iterations,
         )
-        break  # For testing, only run one gene at a time
+
         manage_concurrency_for_job(susie_job)
     b.run(wait=False)
 
