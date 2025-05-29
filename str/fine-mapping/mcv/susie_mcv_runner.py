@@ -61,9 +61,11 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     #fit Susie
     susie_fit <- susie(X, y_r, L = num_causal_variants, max_iter = num_iterations)
+    print(susie_fit)
 
     # extract CS membership and purity
     susie_cs <- susie_get_cs(susie_fit, X = X)
+
 
     # initialize annotation vectors
     n_variants <- length(variant_ids)
