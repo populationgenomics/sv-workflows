@@ -68,14 +68,9 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
         file.write(str(raw_output_python))
 
 
-    ro.r('''
-    # Extract chromosome and position from variant IDs (format: chr1.123456.AC)
-    coord_df <- data.frame(
-    variant_id = variant_ids,
-    chr = sub("\\..*", "", variant_ids),
-    pos = as.integer(sub("^[^\\.]+\\.([^\\.]+)\\..*$", "\\1", variant_ids))
-    )
-    ''')
+    ro.r('coord_df <- data.frame(variant_id = variant_ids)')
+    ro.r('coord_df$chr <- sub("\\\\..*", "", coord_df$variant_id)')
+    ro.r('coord_df$pos <- as.integer(sub("^[^\\\\.]+\\\\.([^\\\\.]+)\\\\..*$", "\\\\1", coord_df$variant_id))')
     print('extracted coordinates from variant IDs')
 
     ro.r('''
