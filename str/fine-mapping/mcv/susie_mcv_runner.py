@@ -70,7 +70,6 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     ro.r('coord_df <- data.frame(variant_id = variant_ids)')
     ro.r('coord_df$chr <- sub("\\\\..*", "", coord_df$variant_id)')
-    ro.r('coord_df$pos <- as.integer(sub("^[^\\\\.]+\\\\.([^\\\\.]+)\\\\..*$", "\\\\1", coord_df$variant_id))')
     print('extracted coordinates from variant IDs')
 
     ro.r('''
@@ -79,8 +78,8 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     # Initialize annotation vectors
     n_variants <- length(variant_ids)
-    cs_id <- rep(NA_integer_, n_variants)
-    cs_size <- rep(NA_integer_, n_variants)
+    cs_id <- rep(NA_real_, n_variants)
+    cs_size <- rep(NA_real_, n_variants)
     max_pip_in_cs <- rep(NA_real_, n_variants) ''')
     print('obtained credible sets and initialized vectors')
 
@@ -128,7 +127,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 @click.option('--residualized-dir', help='Directory with residualized Y and X files')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs', default=500)
 @click.option('--num_iterations', help='Number of iterations for SusieR', default=100)
-@click.option('--susie-cpu', help='CPU for SusieR job', default=8)
+@click.option('--susie-cpu', help='CPU for SusieR job', default=0.25)
 @click.option('--num-causal-variants', help='Number of causal variants to estimate', default=10)
 @click.option('--always-run', help='Job set to always run', is_flag=True)
 @click.command()
