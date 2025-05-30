@@ -46,7 +46,8 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     ro.globalenv['y'] = y
 
     # === 5. Run SuSiE ===
-    ro.r('''
+    ro.r(
+        '''
     library(susieR)
     X <- subset(X, select = -sample)
     x_input = as.matrix(X)
@@ -58,7 +59,8 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     #capture susie output results to save later
     raw_output = capture.output(summary(susie_fit))
-         ''')
+         '''
+    )
 
     # convert raw output to python
     raw_output_python = ro.r('raw_output')
@@ -67,12 +69,12 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
         file.write(str(raw_output_python))
 
-
     ro.r('coord_df <- data.frame(variant_id = variant_ids)')
     ro.r('coord_df$chr <- sub("\\\\..*", "", coord_df$variant_id)')
     print('extracted coordinates from variant IDs')
 
-    ro.r('''
+    ro.r(
+        '''
     # Get credible sets from SuSiE fit
     susie_cs <- susie_get_cs(susie_fit, X = x_input)
 
@@ -80,10 +82,12 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     n_variants <- length(variant_ids)
     cs_id <- rep(NA_real_, n_variants)
     cs_size <- rep(NA_real_, n_variants)
-    max_pip_in_cs <- rep(NA_real_, n_variants) ''')
+    max_pip_in_cs <- rep(NA_real_, n_variants) '''
+    )
     print('obtained credible sets and initialized vectors')
 
-    ro.r('''
+    ro.r(
+        '''
     # Annotate variants with CS membership
     for (i in seq_along(susie_cs$cs)) {
     idx <- susie_cs$cs[[i]]
@@ -91,10 +95,12 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     cs_size[idx] <- length(idx)
     max_pip_in_cs[idx] <- max(susie_fit$pip[idx], na.rm = TRUE)
     }
-    ''')
+    '''
+    )
     print('annotated variants with CS membership')
 
-    ro.r('''
+    ro.r(
+        '''
     # Combine results into final dataframe
     final_df <- data.frame(
     variant_id = variant_ids,
@@ -107,9 +113,9 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     merge(coord_df, by = "variant_id") |>
     dplyr::arrange(pip)
 
-    ''')
+    '''
+    )
     print('combined results into final dataframe')
-
 
     with (ro.default_converter + pandas2ri.converter).context():
         susie_output_df = ro.conversion.get_conversion().rpy2py(ro.r('final_df'))
