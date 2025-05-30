@@ -10,13 +10,13 @@ analysis-runner --dataset bioheart --access-level test --output-dir tenk10k/str/
 """
 
 import click
-import pandas as pd
-from concurrent.futures import ThreadPoolExecutor
 from cpg_utils import to_path
-from cpg_utils.hail_batch import get_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 
 def process_file(file, pip_prune_threshold):
+    import pandas as pd
+
     df = pd.read_csv(file, sep='\t')
     cell_type = str(file).split('/')[-2]
     df['cell_type'] = cell_type  # add a column for the cell type
@@ -25,6 +25,10 @@ def process_file(file, pip_prune_threshold):
     return df
 
 def concatenator(input_dir, cell_type, pip_prune_threshold):
+    import pandas as pd
+    from concurrent.futures import ThreadPoolExecutor
+    from cpg_utils.hail_batch import output_path
+
     files = list(to_path(f'{input_dir}/{cell_type}').glob('*.tsv'))
     master_df = pd.DataFrame()
     with ThreadPoolExecutor() as executor:
