@@ -20,21 +20,16 @@ def process_file(file, pip_prune_threshold):
     df = pd.read_csv(file, sep='\t')
     cell_type = str(file).split('/')[-2]
     df['cell_type'] = cell_type  # add a column for the cell type
-    df[df['pip_prune'] >= pip_prune_threshold]
+    df = df[df['pip_prune'] >= pip_prune_threshold]  # actually filter
     df.drop(columns=['chr'], inplace=True)  # drop the chr column
-
     return df
 
-
-def concatenator(input_dir, cell_type):
+def concatenator(input_dir, cell_type, pip_prune_threshold):
     files = list(to_path(f'{input_dir}/{cell_type}').glob('*.tsv'))
     master_df = pd.DataFrame()
-
-    # Use ThreadPoolExecutor to process files in parallel
     with ThreadPoolExecutor() as executor:
-        results = list(executor.map(process_file, files))
-
-    # Concatenate all DataFrames
+        # Pass pip_prune_threshold to process_file
+        results = list(executor.map(lambda f: process_file(f, pip_prune_threshold), files))
     master_df = pd.concat(results, ignore_index=True)
     output_gcs = output_path(f'concat_results/{cell_type}_concatenated_results.tsv', 'analysis')
     master_df.to_csv(output_gcs, sep='\t', index=False, header=True)
@@ -48,7 +43,7 @@ def concatenator(input_dir, cell_type):
 @click.option('--celltypes', help='Comma-separated list of cell types to concatenate')
 @click.option('--pip-prune-threshold', type=float, default=0.5, help='PIP threshold for pruning results')
 @click.command()
-def main(input_dir, celltypes):
+def main(input_dir, celltypes, pip_prune_threshold):
     b = get_batch(name='Concatenate associatr-atac results')
     for cell_type in celltypes.split(','):
         j = b.new_python_job(
@@ -61,6 +56,7 @@ def main(input_dir, celltypes):
             concatenator,
             input_dir,
             cell_type,
+            pip_prune_threshold
         )
 
     b.run(wait=False)
