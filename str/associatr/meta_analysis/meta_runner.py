@@ -6,14 +6,13 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055/results/v4 \
-    --results-dir-2=gs://cpg-bioheart-test/str/associatr/common_variants_snps/bioheart_n990/results/v4 \
+    --output-dir "str/associatr/common_variants_snps/tob_n950_bioheart_n975/meta_fixed" \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/tob_n950/results/v1/ \
+    --results-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=B_intermediate \
-    --chromosomes=chr1 \
-    --always-run
+    --cell-types=CD4_Naive \
+    --chromosomes=chr1
 """
 import json
 
@@ -125,6 +124,9 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         se_meta = m.gen$seTE.random,
         pval_q_meta = m.gen$pval.Q,
         pval_meta = m.gen$pval.random,
+        pval_meta_fixed = m.gen$pval.fixed,
+        coeff_meta_fixed = m.gen$TE.fixed,
+        se_meta_fixed = m.gen$seTE.fixed,
         lowerCI_meta = m.gen$lower.random,
         upperCI_meta = m.gen$upper.random,
         r2_1 = df[i, "regression_R^2.x"],
@@ -199,7 +201,7 @@ def main(
             intersected_genes = list(set(genes_1) & set(genes_2))
 
             # run meta-analysis for each gene
-            for gene in intersected_genes:
+            for gene in ['ENSG00000226067']:
                 if to_path(
                     output_path(
                         f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
