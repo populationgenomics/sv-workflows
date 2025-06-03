@@ -7,12 +7,25 @@ Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/common_variants_snps/tob_n950_bioheart_n975/meta_fixed" \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v1 \
+    --results-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975/results/v1 \
+    --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --cell-types=NK \
+    --chromosomes=chr7
+
+
+analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
+    --output-dir "str/associatr/tob_n950_bioheart_n975/meta_fixed" \
     meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/tob_n950/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=CD4_Naive \
-    --chromosomes=chr1
+    --cell-types=NK \
+    --chromosomes=chr7
+
+
+    gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/tob_n950/results/v1/
 """
 import json
 
@@ -201,7 +214,7 @@ def main(
             #intersected_genes = list(set(genes_1) & set(genes_2))
 
             # run meta-analysis for each gene
-            for gene in ['ENSG00000226067']:
+            for gene in ['ENSG00000105784']:
                 if to_path(
                     output_path(
                         f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
