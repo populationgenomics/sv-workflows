@@ -7,7 +7,7 @@ Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/common_variants_snps/tob_n950_bioheart_n975/meta_fixed" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/tob_n950/results/v1/ \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/tob_n950/results/v1 \
     --results-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975/results/v1 \
     --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
@@ -192,13 +192,13 @@ def main(
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
             # get the intersection of genes tested in both cohorts
-            gene_file_path_1 = to_path(f'{gene_list_dir_1}/{cell_type}/{chromosome}_CD4_TCM_gene_list.json')
-            gene_file_path_2 = to_path(f'{gene_list_dir_2}/{cell_type}/{chromosome}_CD4_TCM_gene_list.json')
-            with open(gene_file_path_1) as f:
-                genes_1 = json.load(f)
-            with open(gene_file_path_2) as g:
-                genes_2 = json.load(g)
-            intersected_genes = list(set(genes_1) & set(genes_2))
+            #gene_file_path_1 = to_path(f'{gene_list_dir_1}/{cell_type}/{chromosome}_CD4_TCM_gene_list.json')
+            #gene_file_path_2 = to_path(f'{gene_list_dir_2}/{cell_type}/{chromosome}_CD4_TCM_gene_list.json')
+            #with open(gene_file_path_1) as f:
+            #    genes_1 = json.load(f)
+            #with open(gene_file_path_2) as g:
+            #    genes_2 = json.load(g)
+            #intersected_genes = list(set(genes_1) & set(genes_2))
 
             # run meta-analysis for each gene
             for gene in ['ENSG00000226067']:
