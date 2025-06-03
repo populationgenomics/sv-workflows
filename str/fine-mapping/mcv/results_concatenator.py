@@ -4,7 +4,7 @@ This script concatenates the results from running SUSIE-R on a cell type basis.
 The output is a single CSV file containing per cell type results (optional min PIP filtering)
 
 analysis-runner --dataset bioheart --access-level test --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files --description "Concatenate SuSIE results" python3 results_concatenator.py \
-    --celltypes "CD14_Mono"
+    --celltypes "CD14_Mono,ASDC,cDC1,gdT,NK,B_naive,B_memory,CD4_CTL,CD4_TCM,CD8_TCM,cDC2,HSPC,NK_CD56bright,Plasmablast,B_intermediate,CD4_Naive,CD4_TEM,CD8_TEM,dnT,MAIT,NK_Proliferating,Treg,CD16_Mono,CD4_Proliferating,CD8_Naive,pDC,CD8_Proliferating,ILC"
 
 
 """
@@ -20,6 +20,7 @@ def process_file(file, pip_prune_threshold):
     df = pd.read_csv(file, sep='\t')
     cell_type = str(file).split('/')[-2]
     df['cell_type'] = cell_type  # add a column for the cell type
+    df['gene_name']= file.split('/')[-1].split('_')[0]  # extract gene name from file name
     df = df[df['pip_prune'] >= pip_prune_threshold]  # actually filter
     df.drop(columns=['chr'], inplace=True)  # drop the chr column
     return df
