@@ -78,10 +78,17 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     pos = numeric(),
     n_samples_tested_1 = numeric(),
     n_samples_tested_2 = numeric(),
-    coeff_meta = numeric(),
-    se_meta = numeric(),
+    coeff_meta_random = numeric(),
+    se_meta_random = numeric(),
     pval_q_meta = numeric(),
-    pval_meta = numeric(),
+    q_meta = numeric(),
+    tau_meta = numeric(),
+    i2_meta = numeric(),
+    h_meta = numeric(),
+    pval_meta_random = numeric(),
+    pval_meta_fixed = numeric(),
+    coeff_meta_fixed = numeric(),
+    se_meta_fixed = numeric(),
     lowerCI_meta = numeric(),
     upperCI_meta = numeric(),
     r2_1 = numeric(),
@@ -113,18 +120,24 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         coeff = df[i, "coeff_2"]
     )
     result_df <- rbind(row_cohort1, row_cohort2)
-    m.gen = metagen(result_df$coeff, result_df$se, random = TRUE)
-
+    m.gen = metagen(result_df$coeff, result_df$se, random = TRUE,method.tau = "DL")
 
     new_entry = data.frame(
         chr = df[i, "chrom"],
         pos = df[i, "pos"],
         n_samples_tested_1 = df[i, "n_samples_tested.x"],
         n_samples_tested_2 = df[i, "n_samples_tested.y"],
-        coeff_meta = m.gen$TE.random,
-        se_meta = m.gen$seTE.random,
+        coeff_meta_random = m.gen$TE.random,
+        se_meta_random = m.gen$seTE.random,
         pval_q_meta = m.gen$pval.Q,
-        pval_meta = m.gen$pval.random,
+        q_meta = m.gen$Q,
+        tau_meta = m.gen$tau,
+        i2_meta = m.gen$I2,
+        h_meta = m.gen$H,
+        pval_meta_random = m.gen$pval.random,
+        pval_meta_fixed = m.gen$pval.fixed,
+        coeff_meta_fixed = m.gen$TE.fixed,
+        se_meta_fixed = m.gen$seTE.fixed,
         lowerCI_meta = m.gen$lower.random,
         upperCI_meta = m.gen$upper.random,
         r2_1 = df[i, "regression_R^2.x"],
