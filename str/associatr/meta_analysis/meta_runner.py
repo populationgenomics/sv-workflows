@@ -5,12 +5,12 @@ This script runs R's meta package to generate pooled effect sizes for each eQTL.
 Assumes associaTR was run previously on both cohorts and gene lists were generated for each cell type and chromosome.
 Outputs a TSV file with the meta-analysis results for each gene.
 
-analysis-runner --dataset "tenk10k" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/rna_calib/tob_n950_and_bioheart_n975/pc2" \
-    meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/bioheart_n975/results/results/pc2 \
-    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/tob_n950/results/results/pc2 \
-    --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
+analysis-runner --dataset "tenk10k" --description "meta results runner" --access-level "full" \
+    --output-dir "str/associatr/final_freeze/bioheart_n975/results/v1-1Mb/tob_n950_and_bioheart_n975" \
+    meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/bioheart_n975/results/v1-1Mb \
+    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950/results/v1-1Mb \
+    --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
     --cell-types=CD4_TCM \
     --chromosomes=chr1 \
     --always-run
@@ -41,8 +41,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r('library(tidyverse)')
 
     # read in raw associaTR results for each cohort for a particular gene
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_1000000bp.tsv', sep='\t')
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_1000000bp.tsv', sep='\t')
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
@@ -215,7 +215,7 @@ def main(
             for gene in intersected_genes:
                 if to_path(
                     output_path(
-                        f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
+                        f"meta_results/{cell_type}/{chromosome}/{gene}_1000000bp_meta_results.tsv",
                         "analysis",
                     ),
                 ).exists():
