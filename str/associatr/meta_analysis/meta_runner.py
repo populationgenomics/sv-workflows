@@ -5,13 +5,13 @@ This script runs R's meta package to generate pooled effect sizes for each eQTL.
 Assumes associaTR was run previously on both cohorts and gene lists were generated for each cell type and chromosome.
 Outputs a TSV file with the meta-analysis results for each gene.
 
-analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055/results/v4 \
-    --results-dir-2=gs://cpg-bioheart-test/str/associatr/common_variants_snps/bioheart_n990/results/v4 \
-    --gene-list-dir-1=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --gene-list-dir-2=gs://cpg-bioheart-test/str/associatr/bioheart_n990/input_files/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=B_intermediate \
+analysis-runner --dataset "tenk10k" --description "meta results runner" --access-level "test" \
+    --output-dir "str/associatr/rna_calib/tob_n950_and_bioheart_n975/pc2" \
+    meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/bioheart_n975/results/results/pc2 \
+    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/tob_n950/results/results/pc2 \
+    --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
+    --cell-types=CD4_TCM \
     --chromosomes=chr1 \
     --always-run
 """
@@ -89,8 +89,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     pval_meta_fixed = numeric(),
     coeff_meta_fixed = numeric(),
     se_meta_fixed = numeric(),
-    lowerCI_meta = numeric(),
-    upperCI_meta = numeric(),
+    lowerCI_meta_random = numeric(),
+    upperCI_meta_random = numeric(),
     r2_1 = numeric(),
     r2_2 = numeric(),
     motif = character(),
@@ -138,8 +138,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         pval_meta_fixed = m.gen$pval.fixed,
         coeff_meta_fixed = m.gen$TE.fixed,
         se_meta_fixed = m.gen$seTE.fixed,
-        lowerCI_meta = m.gen$lower.random,
-        upperCI_meta = m.gen$upper.random,
+        lowerCI_meta_random = m.gen$lower.random,
+        upperCI_meta_random = m.gen$upper.random,
         r2_1 = df[i, "regression_R^2.x"],
         r2_2 = df[i, "regression_R^2.y"],
         motif = df[i, "motif"],
