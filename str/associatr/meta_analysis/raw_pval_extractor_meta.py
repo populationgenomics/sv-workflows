@@ -11,10 +11,10 @@ analysis-runner --dataset "bioheart" --description "raw pval extractor" --access
     --cell-types=B_memory,B_intermediate --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
 
 
-    analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "full" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990" \
+    analysis-runner --dataset "bioheart" --description "raw pval extractor" --access-level "test" \
+    --output-dir "str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2" \
     --memory="16G" --storage="20G" \
-    raw_pval_extractor_meta.py --input-dir=gs://cpg-bioheart-main-analysis/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results \
+    raw_pval_extractor_meta.py --input-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2 \
     --cell-types=CD4_TCM,B_intermediate --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
 
 """
@@ -55,7 +55,7 @@ def main(input_dir, cell_types, chromosomes):
                     chr = gene_results.iloc[:, 0]
                     pos = gene_results.iloc[:, 1]
                     gene_name = str(gene_file).split('/')[-1].split('_')[0]
-                    pvals = gene_results.iloc[:, 7]
+                    pvals = gene_results.iloc[:, 12]
                     for chr1, pos1, pval1 in zip(chr, pos, pvals):
                         f.write(chr1 + '\t' + str(pos1) + '\t' + gene_name + '\t' + str(pval1) + '\n')
 
