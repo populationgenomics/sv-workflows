@@ -11,9 +11,11 @@ analysis-runner --dataset "tenk10k" --description "meta results runner" --access
     --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950/results/v1 \
     --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --cell-types=cDC1 \
-    --chromosomes=chr6 \
-    --always-run
+    --cell-types=ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TEM,CD8_Naive,CD8_Proliferating,CD8_TCM,CD8_TEM,HSPC,ILC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC \
+    --chromosomes=chr22
+    --always-runCD4_TCM_permuted
+
+
 """
 import json
 
@@ -163,7 +165,7 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     # write to GCS
     pd_meta_df.to_csv(
-        f'{output_path(f"{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv", "analysis")}',
+        f'{output_path(f"meta_results/{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv", "analysis")}',
         sep='\t',
         index=False,
     )
@@ -218,7 +220,7 @@ def main(
             for gene in intersected_genes:
                 if to_path(
                     output_path(
-                        f"{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
+                        f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
                         "analysis",
                     ),
                 ).exists():
