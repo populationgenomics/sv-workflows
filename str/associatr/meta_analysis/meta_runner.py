@@ -6,13 +6,13 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "tenk10k" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/rna_calib/tob_n950_and_bioheart_n975/pc2" \
-    meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/bioheart_n975/results/results/pc2 \
-    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/tob_n950/results/results/pc2 \
-    --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
-    --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
-    --cell-types=CD4_TCM \
-    --chromosomes=chr1 \
+    --output-dir "str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2" \
+    meta_runner.py --results-dir-1=gs:/cpg-tenk10k-test-analysis/str/associatr/final_freeze/bioheart_n975/results/v1 \
+    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950/results/v1 \
+    --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/1_min_pct_cells_expressed \
+    --cell-types=cDC1 \
+    --chromosomes=chr6 \
     --always-run
 """
 import json
@@ -140,8 +140,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
         se_meta_fixed = m.gen$seTE.fixed,
         lowerCI_meta_random = m.gen$lower.random,
         upperCI_meta_random = m.gen$upper.random,
-        r2_1 = df[i, "regression_R^2.x"],
-        r2_2 = df[i, "regression_R^2.y"],
+        r2_1 = df[i, "regression_R.2.x"],
+        r2_2 = df[i, "regression_R.2.y"],
         motif = df[i, "motif"],
         period = df[i, "period"],
         ref_len = df[i, "ref_len"],
@@ -160,7 +160,7 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     # write to GCS
     pd_meta_df.to_csv(
-        f'{output_path(f"meta_results/{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv", "analysis")}',
+        f'{output_path(f"{cell_type}/{chr}/{gene}_100000bp_meta_results.tsv", "analysis")}',
         sep='\t',
         index=False,
     )
@@ -215,7 +215,7 @@ def main(
             for gene in intersected_genes:
                 if to_path(
                     output_path(
-                        f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
+                        f"{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
                         "analysis",
                     ),
                 ).exists():
