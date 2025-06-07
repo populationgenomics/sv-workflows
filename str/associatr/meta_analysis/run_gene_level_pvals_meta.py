@@ -7,10 +7,10 @@ Assumed input files follow the format of output TSV files from meta_runner.py (i
 Output is multiple gene-specific TSV files with the gene name in the first column, and gene-level p-value in the second column.
 The attributes of the locus with the lowest raw p-value are also stored in the TSV file (coordinates, pooled _beta, pooled_se, pooled_pval,pooled_pval_q, motif, ref_len).
 
-analysis-runner --dataset "bioheart" --description "compute gene level pvals" --access-level "test" \
-    --output-dir "str/associatr/tester/cp" \
-    run_gene_level_pvals_meta.py --input-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990\\meta_results \
-    --cell-types=B_intermediate \
+analysis-runner --dataset "tenk10k" --description "compute gene level pvals" --access-level "test" \
+    --output-dir "str/associatr/rna_calib/tob_n950_and_bioheart_n975/pc1" \
+    run_gene_level_pvals_meta.py --input-dir=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/tob_n950_and_bioheart_n975/pc1/meta_results \
+    --cell-types=CD14_Mono,CD4_TCM,CD8_TEM \
     --chromosomes=1 --acat
 """
 import logging
@@ -30,16 +30,16 @@ VALUES_TO_INDEXES = [
     ('pos', 1),
     ('n_samples_tested_1', 2),
     ('n_samples_tested_2', 3),
-    ('coeff', 4),
-    ('se', 5),
+    ('coeff_meta_fixed', 13),
+    ('se_meta_fixed', 14),
     ('pval_q', 6),
-    ('raw_pval', 7),
-    ('r2_1', 10),
-    ('r2_2', 11),
-    ('motif', 12),
-    ('ref_len', 14),
-    ('allele_frequency_1', 15),
-    ('allele_frequency_2', 16),
+    ('pval_meta_fixed',12),
+    ('r2_1', 17),
+    ('r2_2', 18),
+    ('motif', 19),
+    ('ref_len', 21),
+    ('allele_frequency_1', 22),
+    ('allele_frequency_2', 23),
 ]
 
 
@@ -57,12 +57,12 @@ def process_single_file(gene_file: str):
 
     # read the raw results
     gene_results = pd.read_csv(gene_file, sep='\t')
-    pvals = gene_results.iloc[:, 7]  # stored in the 8th column
+    pvals = gene_results.iloc[:, 12]  # stored in the 13th column
     # Find and store the attributes of the locus with lowest raw pval
-    # Find the minimum value in column 8
-    min_value = gene_results.iloc[:, 7].min()
-    # Find the rows with the minimum value in column 8
-    min_rows = gene_results[gene_results.iloc[:, 7] == min_value]
+    # Find the minimum value in column 13
+    min_value = gene_results.iloc[:, 12].min()
+    # Find the rows with the minimum value in column 13
+    min_rows = gene_results[gene_results.iloc[:, 12] == min_value]
 
     # create a dictionary of {key: list}
     row_dict: dict[str, list] = {key: [] for key, value in VALUES_TO_INDEXES}
@@ -179,8 +179,9 @@ def cct(gene_files: list[str], cell_type: str, chromosome: str, og_weights=None)
 
         with to_path(gcs_output).open('w') as f:
             f.write(
-                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\tpval_q\tpval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
+                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff_meta_fixed\tse_meta_fixed\tpval_q\tpval_meta_fixed\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
             )
+
             f.write(f'{gene_name}\t{pval}\t')
             f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
 
@@ -213,7 +214,7 @@ def bonferroni_compute(gene_files, cell_type, chromosome):
 
         with to_path(gcs_output).open('w') as f:
             f.write(
-                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff\tse\tpval_q\tpval_pooled\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
+                'gene_name\tgene_level_pval\tchr\tpos\tn_samples_tested_1\tn_samples_tested_2\tcoeff_meta_fixed\tse_meta_fixed\tpval_q\tpval_meta_fixed\tr2_1\tr2_2\tmotif\tref_len\tallele_freq_1\tallele_freq_2\n',
             )
             f.write(f'{gene_name}\t{pval}\t')
             f.write('\t'.join([str(row_dict[key]) for key, _value in VALUES_TO_INDEXES]) + '\n')
