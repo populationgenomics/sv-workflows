@@ -15,7 +15,7 @@ analysis-runner --dataset "tenk10k" \
 import click
 import pandas as pd
 
-from cpg_utils.hail_batch import get_batch,output_path
+from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
 
@@ -55,7 +55,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
             continue
 
     cell_df.to_csv(
-        output_path('mashr/beta_se/{cell}/{chrom}/beta_se.tsv'),
+        output_path(f'mashr/beta_se/{cell}/{chrom}/beta_se.tsv'),
         sep='\t',
         index=False,
     )
@@ -107,18 +107,18 @@ def main(cell_types, estrs_coord_path, meta_input_dir):
     for cell in celltypes:
         for chrom in range(1, 23):
             estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
-            if to_path(output_path('mashr/beta_se/{cell}/{chrom}/beta_se.tsv')).exists():
+            if to_path(output_path(f'mashr/beta_se/{cell}/{chrom}/beta_se.tsv')).exists():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
             job.cpu(0.25)
             job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom, meta_input_dir)
 
         for chrom in [22]:
-            if to_path(output_path('mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
+            if to_path(output_path(f'mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom} null')
             job.cpu(0.25)
-            job.call(cell_chrom_parser_null, cell, chrom,meta_input_dir)
+            job.call(cell_chrom_parser_null, cell, chrom, meta_input_dir)
 
     b.run(wait=False)
 
