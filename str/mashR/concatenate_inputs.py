@@ -98,7 +98,7 @@ def main(cell_types, mash_process_inputs_dir):
     #find the intersecting list of variant/gene pairs tested across all cell types for chr22
     master_locus_set = {}
     for cell in celltypes:
-        df = pd.read_csv(f'{mash_process_inputs_dir}/chr22_null_beta_se/{cell}/chr22/beta_se.tsv',
+        df = pd.read_csv(f'{mash_process_inputs_dir}/chr2_null_beta_se/{cell}/chr2/beta_se.tsv',
         sep='\t')
         df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
         if not master_locus_set:
