@@ -2,12 +2,12 @@
 """
 This script plots a QQ plot of observed vs expected -log10(p-values) for each cell type.
 
-analysis-runner --dataset "bioheart" --description "plot qq plot" --access-level "test" \
-    --output-dir "str/associatr/tob_n1055_and_bioheart_n990" --memory=8G \
+analysis-runner --dataset "tenk10k" --description "plot qq plot" --access-level "test" \
+    --output-dir "str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2" --memory=32G \
     qqplotter.py \
-    --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/raw_pval_extractor \
-    --cell-types=CD4_TCM,CD4_Naive,NK,CD8_TEM,B_naive,CD8_Naive,CD14_Mono,CD4_TEM,CD8_TCM,B_intermediate,B_memory,Treg,CD4_CTL,gdT,CD16_Mono,MAIT,NK_CD56bright,cDC2,NK_Proliferating,dnT,pDC,Plasmablast,ILC,HSPC,CD8_Proliferating,cDC1,CD4_Proliferating,ASDC,CD4_TCM_permuted \
-    --title='associaTR BioHEART' --ylim=315
+    --input-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2/raw_pval_extractor \
+    --cell-types=CD4_TCM,CD4_Naive,NK,CD8_TEM,B_naive,CD14_Mono,CD8_Naive,CD4_TEM,CD8_TCM,B_intermediate,CD4_CTL,Treg,B_memory,CD16_Mono,MAIT,gdT,NK_CD56bright,cDC2,NK_Proliferating,dnT,pDC,Plasmablast,HSPC,ILC,CD4_Proliferating,CD8_Proliferating,cDC1,ASDC,CD4_TCM_permuted \
+    --ylim=315
 
 
 """
