@@ -15,7 +15,7 @@ Runner scripts support HipSTR, GangSTR, and ExpansionHunter; however, downstream
 
 ## Pseudobulk scRNA association pipeline using associaTR
 
-Assumes scRNA raw data have been processed and cells have been typed using the Powell lab pipeline, producing chromosome and cell-type specific h5ad objects.
+Assumes scRNA raw data have been processed and cells have been typed using the [Powell lab pipeline](https://github.com/powellgenomicslab/tenk10k_phase1), producing chromosome and cell-type specific h5ad objects.
 
 - Perform pseudobulking (mean aggregation) of scRNA data using `pseudobulk.py`.
 - Prepare necessary inputs for associaTR: 1) covariates using `get_covariates.py` and 2) numpy objects containing the covariates and phenotypes (pseudobulked expression) using `get_cis_numpy_files.py`.
