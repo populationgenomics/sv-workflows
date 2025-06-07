@@ -5,7 +5,7 @@ This script concatenates outputs from `process_inputs.py` for input into mashR t
 
 analysis-runner --dataset "tenk10k" \
     --description "Prepare inputs for mashr" \
-    --memory 64G \
+    --memory 32G \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --access-level "test" \
     --output-dir "potato" \
@@ -58,7 +58,7 @@ def main(cell_types, mash_process_inputs_dir):
     for cell in celltypes:
         df = pd.read_csv(f'{mash_process_inputs_dir}/beta_se/all_chrom/{cell}_beta_se.tsv',
         sep='\t')
-        df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
+        df['locus'] = df['chrom'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['gene'].astype(str)
         if not master_locus_set:
             master_locus_set = set(df['locus'])
         else:
@@ -71,7 +71,7 @@ def main(cell_types, mash_process_inputs_dir):
     for cell in celltypes:
         df = pd.read_csv(f'{mash_process_inputs_dir}/beta_se/all_chrom/{cell}_beta_se.tsv',
         sep='\t')
-        df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
+        df['locus'] = df['chrom'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['gene'].astype(str)
         df_filtered = df[df['locus'].isin(locus_list)]
         df_filtered = df_filtered.drop_duplicates('locus')
 
@@ -80,7 +80,7 @@ def main(cell_types, mash_process_inputs_dir):
 
         # Step 3: Sort the DataFrame by the 'locus' column
         df_sorted = df_filtered.sort_values('locus')
-        df_sorted.drop(['chr', 'pos', 'motif', 'ref_len', 'gene'], axis=1, inplace=True)
+        df_sorted.drop(['chrom', 'pos', 'motif', 'gene'], axis=1, inplace=True)
 
         #ensure merged_df and df_sorted are sorted by 'locus' before concatenation
         merged_df = merged_df.sort_values(by='locus').reset_index(drop=True)
