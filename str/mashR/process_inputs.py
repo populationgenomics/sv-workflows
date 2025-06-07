@@ -112,7 +112,7 @@ def main(cell_types, estrs_coord_path, meta_input_dir):
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom} null')
             job.cpu(0.25)
-            job.call(cell_chrom_parser_null, cell, chrom)
+            job.call(cell_chrom_parser_null, cell, chrom,meta_input_dir)
 
     b.run(wait=False)
 
