@@ -5,6 +5,7 @@ This script concatenates outputs from `process_inputs.py` for input into mashR t
 
 analysis-runner --dataset "tenk10k" \
     --description "Prepare inputs for mashr" \
+    --memory 16G \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --access-level "test" \
     --output-dir "potato" \
@@ -52,24 +53,24 @@ def main(cell_types, mash_process_inputs_dir):
             index=False,
         )
     ## Concatenate beta and se files for all cell types across all chromosomes
+    master_df = pd.DataFrame()
     for cell in celltypes:
-        master_df = pd.DataFrame()
         df = pd.read_csv(f'{mash_process_inputs_dir}/beta_se/all_chrom/{cell}_beta_se.tsv', sep='\t')
 
         if master_df.empty:
             master_df = df
         else:
             master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'gene'], how='inner') # variants need to be shared across all cell types
-        master_df.to_csv(
-            f'{mash_process_inputs_dir}/beta_se/all_chrom/all_celltypes_beta_se.tsv',
-            sep='\t',
-            index=False,
-        )
+    master_df.to_csv(
+        f'{mash_process_inputs_dir}/beta_se/all_chrom/all_celltypes_beta_se.tsv',
+        sep='\t',
+        index=False,
+    )
 
     ## Concatenate beta and se files for all cell types across all chromosomes for null model
+    #find the intersecting list of variant/gene pairs tested across all cell types for chr22
+    master_locus_set = {}
     for cell in celltypes:
-        #find the intersecting list of variant/gene pairs tested across all cell types for chr22
-        master_locus_set = {}
         df = pd.read_csv(f'{mash_process_inputs_dir}/chr22_null_beta_se/{cell}/chr22/beta_se.tsv',
         sep='\t')
         df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
