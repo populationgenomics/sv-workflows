@@ -77,7 +77,7 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
         master_df = pd.concat([master_df, df], axis=0)
 
     master_df.to_csv(
-        output_path(f'mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv'),
+        output_path(f'mashr/chr2_null_beta_se/{cell}/chr{chrom}/beta_se.tsv'),
         sep='\t',
         index=False,
     )
@@ -113,8 +113,8 @@ def main(cell_types, estrs_coord_path, meta_input_dir):
             job.cpu(0.25)
             job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom, meta_input_dir)
 
-        for chrom in [22]:
-            if to_path(output_path(f'mashr/chr22_null_beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
+        for chrom in [2]:
+            if to_path(output_path(f'mashr/chr3_null_beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom} null')
             job.cpu(0.25)

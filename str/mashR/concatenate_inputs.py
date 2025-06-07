@@ -112,7 +112,7 @@ def main(cell_types, mash_process_inputs_dir):
 
 
     for cell in celltypes:
-        df = pd.read_csv(f'{mash_process_inputs_dir}/chr22_null_beta_se/{cell}/chr22/beta_se.tsv',
+        df = pd.read_csv(f'{mash_process_inputs_dir}/chr2_null_beta_se/{cell}/chr2/beta_se.tsv',
         sep='\t')
         df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
         df_filtered = df[df['locus'].isin(locus_list)]
@@ -133,7 +133,7 @@ def main(cell_types, mash_process_inputs_dir):
         merged_df = pd.concat([merged_df, df_sorted.drop(columns='locus')], axis=1)
 
     merged_df.to_csv(
-        f'{mash_process_inputs_dir}/chr22_null_beta_se/all_celltypes_beta_se.tsv',
+        f'{mash_process_inputs_dir}/chr2_null_beta_se/all_celltypes_beta_se.tsv',
         sep='\t',
         index=False,
     )
