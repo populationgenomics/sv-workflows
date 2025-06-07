@@ -20,6 +20,9 @@ from cpg_utils import to_path
 
 
 def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
+    from cpg_utils.hail_batch import output_path
+    import pandas as pd
+
     cell_df = pd.DataFrame()
     for index, row in estrs_coord_chrom.iterrows():
         chrom = row['chr']
@@ -59,6 +62,9 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
 
 
 def cell_chrom_parser_null(cell, chrom, meta_input_dir):
+    from cpg_utils.hail_batch import output_path
+    import pandas as pd
+
     gene_files = list(to_path(f'{meta_input_dir}/{cell}/chr{chrom}').rglob('*.tsv'))
     master_df = pd.DataFrame()
     for gene_file in gene_files:
