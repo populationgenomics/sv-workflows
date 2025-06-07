@@ -107,7 +107,7 @@ def main(cell_types, estrs_coord_path, meta_input_dir):
     for cell in celltypes:
         for chrom in range(1, 23):
             estrs_coord_chrom = estrs_coord[estrs_coord['chr'] == f'chr{chrom}']
-            if to_path(output_path(f'mashr/beta_se/{cell}/{chrom}/beta_se.tsv')).exists():
+            if to_path(output_path(f'mashr/beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom}')
             job.cpu(0.25)
