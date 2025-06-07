@@ -15,8 +15,8 @@ analysis-runner --dataset "tenk10k" \
 import click
 import pandas as pd
 
-from cpg_utils.hail_batch import get_batch
-from cpg_utils import to_path, output_path
+from cpg_utils.hail_batch import get_batch,output_path
+from cpg_utils import to_path
 
 
 def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
