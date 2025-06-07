@@ -30,10 +30,11 @@ from cpg_utils import to_path
 )
 @click.command()
 def main(cell_types, mash_process_inputs_dir):
+
     b = get_batch(name='Concatenate files for mashR')
 
     celltypes = cell_types.split(',')
-
+    ## Concatenate beta and se files for each cell type across chromosomes
     for cell in celltypes:
         master_df = pd.DataFrame()
         for chrom in range(1, 23):
@@ -50,6 +51,64 @@ def main(cell_types, mash_process_inputs_dir):
             sep='\t',
             index=False,
         )
+    ## Concatenate beta and se files for all cell types across all chromosomes
+    for cell in celltypes:
+        master_df = pd.DataFrame()
+        df = pd.read_csv(f'{mash_process_inputs_dir}/beta_se/all_chrom/{cell}_beta_se.tsv', sep='\t')
+
+        if master_df.empty:
+            master_df = df
+        else:
+            master_df = master_df.merge(df, on=['chrom', 'pos', 'motif', 'gene'], how='inner') # variants need to be shared across all cell types
+        master_df.to_csv(
+            f'{mash_process_inputs_dir}/beta_se/all_chrom/all_celltypes_beta_se.tsv',
+            sep='\t',
+            index=False,
+        )
+
+    ## Concatenate beta and se files for all cell types across all chromosomes for null model
+    for cell in celltypes:
+        #find the intersecting list of variant/gene pairs tested across all cell types for chr22
+        master_locus_set = {}
+        df = pd.read_csv(f'{mash_process_inputs_dir}/chr22_null_beta_se/{cell}/chr22/beta_se.tsv',
+        sep='\t')
+        df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
+        if not master_locus_set:
+            master_locus_set = set(df['locus'])
+        else:
+            master_locus_set = set(df['locus']) & master_locus_set
+
+    locus_list = list(master_locus_set)
+    merged_df = pd.DataFrame()
+    merged_df['locus'] = locus_list
+
+
+    for cell in celltypes:
+        df = pd.read_csv(f'{mash_process_inputs_dir}/chr22_null_beta_se/{cell}/chr22/beta_se.tsv',
+        sep='\t')
+        df['locus'] = df['chr'].astype(str) + df['pos'].astype(str) + df['motif'].astype(str) + df['ref_len'].astype(str)+ df['gene'].astype(str)
+        df_filtered = df[df['locus'].isin(locus_list)]
+        df_filtered = df_filtered.drop_duplicates('locus')
+
+
+        # Step 2: Convert the 'locus' column to a categorical type with the specified order
+        df_filtered['locus'] = pd.Categorical(df_filtered['locus'], categories=locus_list, ordered=True)
+
+        # Step 3: Sort the DataFrame by the 'locus' column
+        df_sorted = df_filtered.sort_values('locus')
+        df_sorted.drop(['chr', 'pos', 'motif', 'ref_len', 'gene'], axis=1, inplace=True)
+
+        #ensure merged_df and df_sorted are sorted by 'locus' before concatenation
+        merged_df = merged_df.sort_values(by='locus').reset_index(drop=True)
+        df_sorted = df_sorted.sort_values(by='locus').reset_index(drop=True)
+
+        merged_df = pd.concat([merged_df, df_sorted.drop(columns='locus')], axis=1)
+
+    merged_df.to_csv(
+        f'{mash_process_inputs_dir}/chr22_null_beta_se/all_celltypes_beta_se.tsv',
+        sep='\t',
+        index=False,
+    )
 
     b.run(wait=False)
 
