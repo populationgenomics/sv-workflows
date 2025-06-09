@@ -45,7 +45,6 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
-                    print(f'Processing {gene} and {cell_type2}')
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
                     eqtl_df2['end'] = (
                         (
@@ -84,7 +83,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     logging.info(f'File {file} not found')
                     continue
                 except IndexError:
-                    logging.info(f'Index error for {gene} and {cell_type2}')
+                    print(f'Index error for {gene} and {cell_type2} for {chrom}:{pos}-{end} with motif {motif}')
                     break
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
