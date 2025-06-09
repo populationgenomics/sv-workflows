@@ -11,10 +11,11 @@ analysis-runner --dataset "tenk10k" --description "meta results runner" --access
     --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/tob_n950/results/results/pc2 \
     --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
-    --cell-types=CD4_TCM \
+    --cell-types=ASDC \
     --chromosomes=chr1 \
     --always-run
 """
+ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM_permuted,CD4_TEM,CD8_Naive,CD8_Proliferating,CD8_TCM,CD8_TEM,HSPC,ILC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC
 import json
 
 import click
@@ -41,8 +42,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r('library(tidyverse)')
 
     # read in raw associaTR results for each cohort for a particular gene
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',on_bad_lines='skip',dtype={'locus_filtered': str})
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',on_bad_lines='skip',dtype={'locus_filtered': str})
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
