@@ -1,7 +1,7 @@
 [get_cis_numpy]
 pseudobulk_dir = 'gs://cpg-bioheart-test/str/atac-seq'
 loc_filtered_dir = 'gs://cpg-bioheart-test/str/atac-seq/10kb-estrs-peaks/meta_fixed'
-cell_types = 'B_naive'
+cell_types = 'cDC2,dnT,gdT,pDC'
 #CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TEM,CD8_Naive,CD8_TCM,CD8_TEM,HSPC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC'
 covariate_path = 'gs://cpg-bioheart-test//str/associatr/final-freeze/input_files/tob_n950_sample_covariates.csv'
 job_cpu = 0.25
