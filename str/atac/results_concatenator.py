@@ -4,7 +4,9 @@ This script concatenates the results from running associatr-atac on a cell type 
 The output is a single CSV file containing per cell type results
 
 analysis-runner --dataset bioheart --access-level test --output-dir str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs/meta_fixed --description "Concatenate associatr-atac results" python3 results_concatenator.py \
-    --celltypes "B_intermediate,CD4_Naive,CD4_TEM,CD8_TEM,dnT,MAIT,NK_Proliferating,Treg,CD16_Mono,CD4_Proliferating,CD8_Naive"
+    --celltypes "B_memory,B_naive,CD4_CTL,CD4_Proliferating,CD4_TCM,CD8_TCM,HSPC,NK,NK_CD56bright,Plasmablast,cDC1,cDC2,gdT,pDC"
+
+    "B_intermediate,CD4_Naive,CD4_TEM,CD8_TEM,dnT,MAIT,NK_Proliferating,Treg,CD16_Mono,CD4_Proliferating,CD8_Naive"
 
 
 """
@@ -49,7 +51,7 @@ def concatenator(input_dir, cell_type):
 @click.option(
     '--input-dir',
     help='GCS path to the directory containing the associatr-methylation results',
-    default='gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs/metea_fixed/results',
+    default='gs://cpg-bioheart-test-analysis/str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs/meta_fixed/results',
 )
 @click.option('--celltypes', help='Comma-separated list of cell types to concatenate')
 @click.command()
