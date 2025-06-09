@@ -6,8 +6,8 @@ This script is the first step in assessing cell type-specificity of eQTLs.
 It prepares input files for the next step, which is running the meta-analysis; and also outputs a file containing eQTLs with opposite signed betas for each cell type.
 
 analysis-runner --dataset "tenk10k" --description "eqtl_file_prep" --access-level "test" \
---output-dir "str/associatr/cell-type-spec" file_prep.py --eqtl-file=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv \
---associatr-dir=cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2
+--output-dir "str/cell-spec-cuomo" file_prep.py --eqtl-file=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv \
+--associatr-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2
 
 
 
@@ -54,7 +54,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                         .round()
                         .astype(int)
                     )
-                    eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
+                    #eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
                     eqtl_df2_coeff = eqtl_df2['coeff_meta_fixed'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta_fixed'].iloc[0]
