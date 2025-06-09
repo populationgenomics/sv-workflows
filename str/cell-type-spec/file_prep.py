@@ -45,7 +45,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
-                    print(eqtl_df2)
+                    print(f'Processing {gene}')
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
                     eqtl_df2['end'] = (
                         (
@@ -55,9 +55,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                         .round()
                         .astype(int)
                     )
-                    #eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
+                    eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
-                    print(eqtl_df2)
                     eqtl_df2_coeff = eqtl_df2['coeff_meta_fixed'].iloc[0]
                     eqtl_df2_se = eqtl_df2['se_meta_fixed'].iloc[0]
 
