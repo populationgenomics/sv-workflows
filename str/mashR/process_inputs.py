@@ -3,6 +3,11 @@
 """
 This script prepares eTR inputs from every cell type for mash (including the null model).Prerequisite to the concatenate_inputs.py script.
 
+Specifically,this script:
+
+- Extracts the beta and standard error values for each eQTL (FDR <5%) in all cell types.
+- Extracts the beta and standard error values for all tested TRs (significant and not significant) in a given cell type and chromosome (for null model fitting).
+
 analysis-runner --dataset "tenk10k" \
     --description "Prepare inputs for mashr" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
@@ -20,6 +25,9 @@ from cpg_utils import to_path
 
 
 def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
+    """
+    Parses the eSTRs for a given cell and chromosome, extracting beta and standard error values
+    """
     from cpg_utils.hail_batch import output_path
     import pandas as pd
 
@@ -62,6 +70,11 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
 
 
 def cell_chrom_parser_null(cell, chrom, meta_input_dir):
+    """
+    Parses all TRs tested (significant and not significant) in a given cell and chromosome, extracting beta and standard error values
+
+    """
+
     from cpg_utils.hail_batch import output_path
     import pandas as pd
 
@@ -77,7 +90,7 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
         master_df = pd.concat([master_df, df], axis=0)
 
     master_df.to_csv(
-        output_path(f'mashr/chr2_null_beta_se/{cell}/chr{chrom}/beta_se.tsv'),
+        output_path(f'mashr/chr{chrom}_null_beta_se/{cell}/chr{chrom}/beta_se.tsv'),
         sep='\t',
         index=False,
     )
@@ -97,11 +110,12 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
     '--meta-input-dir',
     default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2',
 )
+@click.option('chr-null-model', default=2, help='Chromosome for the null model eTRs')
 @click.command()
-def main(cell_types, estrs_coord_path, meta_input_dir):
+def main(cell_types, estrs_coord_path, meta_input_dir, chr_null_model):
     b = get_batch(name='Process inputs for mashr')
     celltypes = cell_types.split(',')
-    # load in the list of esnps passing FDR <5% across all cell types:
+    # load in the list of eTRs passing FDR <5% across all cell types:
     estrs_coord = pd.read_csv(estrs_coord_path)
 
     for cell in celltypes:
@@ -113,8 +127,8 @@ def main(cell_types, estrs_coord_path, meta_input_dir):
             job.cpu(0.25)
             job.call(cell_chrom_parser, cell, chrom, estrs_coord_chrom, meta_input_dir)
 
-        for chrom in [2]:
-            if to_path(output_path(f'mashr/chr3_null_beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
+        for chrom in [chr_null_model]:
+            if to_path(output_path(f'mashr/chr{chrom}_null_beta_se/{cell}/chr{chrom}/beta_se.tsv')).exists():
                 continue
             job = b.new_python_job(f'Prep eTRs for mashr {cell} {chrom} null')
             job.cpu(0.25)
