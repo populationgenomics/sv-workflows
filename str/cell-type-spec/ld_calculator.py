@@ -76,7 +76,7 @@ def ld_parser(chrom, str_input, egenes_chrom, estrs, gene_lib, samples_list):
         df = build_tr_genotype_matrix(vcf_reader, chrom, gene_start, gene_end, estrs_egene, samples_list)
         ld_matrix = df.corr(method='pearson') ** 2
         ld_matrix.to_csv(output_path(f'ld_files/{gene_name}.csv'))
-        break
+
 
 
 @click.option(
@@ -115,8 +115,7 @@ def main(estrs_path, tr_vcf_dir):
     gene_lib = gene_lib[['gene_ids', 'start', 'end']]
 
     egenes = estrs.drop_duplicates(['chr', 'gene_name'])
-    # for chrom in [estrs['chr'].unique()]:
-    for chrom in ['chr1']:
+    for chrom in [estrs['chr'].unique()]:
         str_vcf_path = f'{tr_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
 
         # run LD calculation for each chrom-celltype combination
