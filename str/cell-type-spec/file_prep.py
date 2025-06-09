@@ -84,7 +84,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     continue
                 except IndexError:
                     print(f'Index error for {gene} and {cell_type2} for {chrom}:{pos}-{end} with motif {motif}')
-                    break
+                    continue
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
     o_file_path_opposite = output_path(f'prep_files/{cell_type}/opposite_signed_betas.csv')
