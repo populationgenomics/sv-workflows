@@ -69,8 +69,8 @@ def ld_parser(chrom, str_input, egenes_chrom, estrs, gene_lib, samples_list):
         if to_path(output_path(f'ld_files/{gene_name}.csv')).exists():
             print(f'LD file for {gene_name} already exists, skipping...')
             continue
-        gene_start = max(gene_lib[gene_lib['gene_ids'] == gene_name]['start'].values[0] - 100_000, 0).astype(int)
-        gene_end = (gene_lib[gene_lib['gene_ids'] == gene_name]['end'].values[0] + 100_000).astype(int)
+        gene_start = int(max(gene_lib[gene_lib['gene_ids'] == gene_name]['start'].values[0] - 100_000, 0))
+        gene_end = int(gene_lib[gene_lib['gene_ids'] == gene_name]['end'].values[0] + 100_000)
 
         estrs_egene = estrs[estrs['gene_name'] == gene_name]
         df = build_tr_genotype_matrix(vcf_reader, chrom, gene_start, gene_end, estrs_egene, samples_list)
