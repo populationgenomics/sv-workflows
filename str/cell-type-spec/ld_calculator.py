@@ -115,7 +115,7 @@ def main(estrs_path, tr_vcf_dir):
     gene_lib = gene_lib[['gene_ids', 'start', 'end']]
 
     egenes = estrs.drop_duplicates(['chr', 'gene_name'])
-    for chrom in [estrs['chr'].unique()]:
+    for chrom in estrs['chr'].unique():
         str_vcf_path = f'{tr_vcf_dir}/hail_filtered_{chrom}.vcf.bgz'
 
         # run LD calculation for each chrom-celltype combination
