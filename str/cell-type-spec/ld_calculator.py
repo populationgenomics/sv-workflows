@@ -63,7 +63,7 @@ def ld_parser(chrom, str_input, egenes_chrom, estrs, gene_lib, samples_list):
     from cpg_utils import to_path
 
     # Create a VCF reader
-    vcf_reader = VCF(str_input['str_input'])
+    vcf_reader = VCF(str_input['vcf'])
 
     for gene_name in egenes_chrom['gene_name'].unique():
         if to_path(output_path(f'ld_files/{gene_name}.csv')).exists():
