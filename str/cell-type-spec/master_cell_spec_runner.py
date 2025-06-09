@@ -175,8 +175,6 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
     results = []
 
     for index, row in estrs.iterrows():
-        if index >= 5:
-            break
         row_dict = {}
         egene = row['gene_name']
         egene_chrom = row['chr']
