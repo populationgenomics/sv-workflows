@@ -99,7 +99,7 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
 @click.option(
     '--cell-types',
     default='CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC',
-    help='File containing eQTLs passing FDR threshold',
+    help='Cell types to parse',
 )
 @click.option(
     '--estrs-coord-path',
