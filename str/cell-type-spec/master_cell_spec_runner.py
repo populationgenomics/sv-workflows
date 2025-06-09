@@ -233,6 +233,7 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
 
     # --- Convert final list of dicts into DataFrame ---
     scenario_df = pd.DataFrame(results)
+    print(scenario_df)
     scenario_df.columns = cell_types
     scenario_df.index = estrs.index  # to align with the original estrs rows
 
