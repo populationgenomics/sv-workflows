@@ -45,7 +45,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                 try:
                     eqtl_df2 = pd.read_csv(file, sep='\t')
                     eqtl_df2 = eqtl_df2[eqtl_df2['pos'] == pos]
-                    print(f'Processing {gene}')
+                    print(f'Processing {gene} and {cell_type2}')
                     eqtl_df2['motif_len'] = eqtl_df2['motif'].str.len()
                     eqtl_df2['end'] = (
                         (
