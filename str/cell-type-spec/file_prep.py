@@ -5,7 +5,7 @@
 This script is the first step in assessing cell type-specificity of eQTLs.
 It prepares input files for the next step, which is running the meta-analysis; and also outputs a file containing eQTLs with opposite signed betas for each cell type.
 
-analysis-runner --dataset "bioheart" --description "eqtl_file_prep" --access-level "test" \
+analysis-runner --dataset "tenk10k" --description "eqtl_file_prep" --access-level "test" \
 --output-dir "str/associatr/cell-type-spec" file_prep.py --eqtl-file=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv \
 --associatr-dir=cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2
 
