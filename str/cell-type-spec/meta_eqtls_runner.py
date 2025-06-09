@@ -102,12 +102,10 @@ def run_meta_gen(file_path, cell_type):
         cell_type2 = df[i, "cell_type2"],
         coeff_2 = df[i, "coeff_2"],
         se_2 = df[i, "se_2"],
-        coeff_meta = m.gen$TE.random,
-        se_meta = m.gen$seTE.random,
+        coeff_meta_fixed = m.gen$TE.fixed,
+        se_meta_fixed = m.gen$seTE.fixed,
         pval_q_meta = m.gen$pval.Q,
-        pval_meta = m.gen$pval.random,
-        lowerCI_meta = m.gen$lower.random,
-        upperCI_meta = m.gen$upper.random)
+        pval_meta_fixed = m.gen$pval.fixed)
 
     print('New entry created')
 
