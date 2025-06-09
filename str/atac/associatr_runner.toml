@@ -1,7 +1,7 @@
 [associatr]
 pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr-atac/tob/input_files/10kb_estrs/meta_fixed'
 #cell_types='B_intermediate,CD4_Naive,CD4_TEM,CD8_TEM,dnT,MAIT,NK_Proliferating,Treg,CD16_Mono,CD4_Proliferating,CD8_Naive'
-cell_types = 'B_naive,B_memory,CD4_CTL,CD4_TCM,CD8_TCM,cDC2,HSPC,NK_CD56bright,Plasmablast,cDC1,gdT,NK,pDC'
+cell_types = 'CD8_TEM,CD8_TCM,CD4_TCM'
 vcf_dir='gs://cpg-bioheart-test/str/atac-seq/filtered_vcfs/meta_fixed'
 max_parallel_jobs=1000
 cis_window_size=10000
