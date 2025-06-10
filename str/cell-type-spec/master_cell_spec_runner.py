@@ -281,7 +281,7 @@ def main(estrs_path, meta_scen2_path, ld_path, associatr_path):
 
     b = get_batch(name='Cell-spec-analysis-Cuomo-2025')
     for chrom in range(1, 23):
-        for cell_type in ['CD4_TCM']:
+        for cell_type in cell_types:
             estrs_celltype_chrom = estrs[(estrs['cell_type'] == cell_type) & (estrs['chr'] == f'chr{chrom}')]
             if estrs_celltype_chrom.empty:
                 print(f"No data for {cell_type} on chromosome {chrom}, skipping.")
