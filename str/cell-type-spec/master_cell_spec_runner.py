@@ -292,6 +292,7 @@ def main(estrs_path, meta_scen2_path, ld_path, associatr_path):
             j = b.new_python_job(
                 name=f'Cell spec for {cell_type} and chromosome {chrom}',
             )
+            j.cpu(0.25)
             j.call(
                 process_cell_type_specificity,
                 estrs_celltype_chrom,
