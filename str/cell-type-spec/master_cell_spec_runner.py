@@ -286,7 +286,7 @@ def main(estrs_path, meta_scen2_path, ld_path, associatr_path):
             if estrs_celltype_chrom.empty:
                 print(f"No data for {cell_type} on chromosome {chrom}, skipping.")
                 continue
-            if to_path(output_path(f'{cell_type}/{chrom}/cell_type_specificity_analysis.csv', 'analysis')).exists():
+            if to_path(output_path(f'{cell_type}/chr{chrom}/cell_type_specificity_analysis.csv', 'analysis')).exists():
                 print(f"Cell type specificity analysis for {cell_type} on chromosome {chrom} already exists, skipping.")
                 continue
             j = b.new_python_job(
