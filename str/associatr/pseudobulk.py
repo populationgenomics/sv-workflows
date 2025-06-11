@@ -9,7 +9,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --config pseudobulk.toml --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/test" python3 pseudobulk.py
+analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/pseudobulk_finemap_mcv/n1925" python3 pseudobulk.py
 
 """
 import csv
@@ -31,12 +31,6 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct):
     """
     expression_h5ad_path = to_path(input_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
-
-    # retain only samples in the id file
-    with to_path(id_file_path).open() as csvfile:
-        cpg_ids = list(csv.reader(csvfile))
-    cpg_ids = cpg_ids[0]  # the function above creates a list in a list
-    adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # filter out lowly expressed genes
     n_all_cells = len(adata.obs.index)

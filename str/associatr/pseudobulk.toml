@@ -1,6 +1,6 @@
 [pseudobulk]
 # GCS Path to the input AnnData object
-input_dir = 'gs://cpg-bioheart-test/str/240_libraries_tenk10kp1_v2/cpg_anndata'
+input_dir = 'gs://cpg-tenk10k-test/str/saige-qtl/300-libraries/anndata_objects_from_HPC'
 # GCS Path to the sample ID file to do the analysis o
 sample_id_file_path = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/tob_ids_n1055.csv'
 # name of the cell type, comma separated if multiple
