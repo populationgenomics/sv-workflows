@@ -93,7 +93,7 @@ def main():
 
     for cell_type in get_config()['pseudobulk']['cell_types'].split(','):
         for chromosome in get_config()['pseudobulk']['chromosomes'].split(','):
-            if to_path(output_path(f'{cell_type}/{cell_type}_chromosome_pseudobulk.csv')).exists():
+            if to_path(output_path(f'{cell_type}/{cell_type}_chr{chromosome}_pseudobulk.csv')).exists():
                 continue
             input_file = f"{get_config()['pseudobulk']['input_dir']}/{cell_type}_chr{chromosome}.h5ad"
             j = b.new_python_job(name=f'Pseudobulk for {cell_type}: chr{chromosome}')
