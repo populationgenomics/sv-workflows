@@ -12,7 +12,7 @@ job_storage = '8G'
 # Memory of the batch job
 job_memory = 'standard'
 # Number of CPUs of Hail batch job
-job_cpu = 8
+job_cpu = 16
 # Target sum of counts per cell (for normalization purposes)
 target_sum = 1e6
 # Minimum percentage of cells expressing a gene to be included in the pseudobulk
