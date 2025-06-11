@@ -4,13 +4,13 @@ input_dir = 'gs://cpg-tenk10k-test/str/saige-qtl/300-libraries/anndata_objects_f
 # GCS Path to the sample ID file to do the analysis o
 sample_id_file_path = 'gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/tob_ids_n1055.csv'
 # name of the cell type, comma separated if multiple
-cell_types ='CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
+cell_types ='CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
 # Chromosome number eg 1, comma separated if multiple
-chromosomes ='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,171,18,19,20,21'
+chromosomes ='1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21'
 # Storage of the batch job eg 30G
 job_storage = '8G'
 # Memory of the batch job
-job_memory = 'standard'
+job_memory = 'highmem'
 # Number of CPUs of Hail batch job
 job_cpu = 16
 # Target sum of counts per cell (for normalization purposes)
