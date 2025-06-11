@@ -78,12 +78,17 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
     for gene_file in gene_files:
         data = pd.read_csv(str(gene_file), sep='\t')
         gene_file_name = str(gene_file).split('/')[-1]
+        if to_path(
+                output_path(f'{celltype}/{chrom}/{gene_file_name}', 'analysis'),
+            ).exists():
+                print(f'Skipping {celltype}:{chrom} as output directory already exists.')
+                continue
         print(f'Processing {gene_file_name}...')
 
         # Find duplicate eSTRs and remove all but the one with the lowest p-value
         duplicates = data[data.duplicated(subset=['chr', 'pos', 'motif'], keep=False)]
         # Group by 'chr', 'pos', 'motif' and keep the one with the lowest 'p-val'
-        lowest_pval_duplicates = duplicates.loc[duplicates.groupby(['chr', 'pos', 'motif'])['pval_meta'].idxmin()]
+        lowest_pval_duplicates = duplicates.loc[duplicates.groupby(['chr', 'pos', 'motif'])['pval_meta_fixed'].idxmin()]
         # Find non-duplicate rows
         non_duplicates = data.drop(duplicates.index)
         # Concatenate the non-duplicates with the lowest p-value duplicates
@@ -177,6 +182,7 @@ def main(
     b = get_batch(name='Remove STR indels and duplicate eSTRs')
     for celltype in celltypes.split(','):
         for chrom in chromosomes.split(','):
+
             filter_job = b.new_python_job(
                 f'Remove STR-indels and duplicate eSTRs {celltype}:{chrom}',
             )
