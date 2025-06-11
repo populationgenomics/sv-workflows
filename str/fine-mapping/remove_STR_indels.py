@@ -83,7 +83,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
         # Find duplicate eSTRs and remove all but the one with the lowest p-value
         duplicates = data[data.duplicated(subset=['chr', 'pos', 'motif'], keep=False)]
         # Group by 'chr', 'pos', 'motif' and keep the one with the lowest 'p-val'
-        lowest_pval_duplicates = duplicates.loc[duplicates.groupby(['chr', 'pos', 'motif'])['pval_meta'].idxmin()]
+        lowest_pval_duplicates = duplicates.loc[duplicates.groupby(['chr', 'pos', 'motif'])['pval_meta_fixed'].idxmin()]
         # Find non-duplicate rows
         non_duplicates = data.drop(duplicates.index)
         # Concatenate the non-duplicates with the lowest p-value duplicates
