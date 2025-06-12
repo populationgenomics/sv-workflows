@@ -194,6 +194,7 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
             & (estrs['end'] == row_end)
             & (estrs['motif'] == row_motif)
         ]
+        print(f'cell types with the same etr: {cell_types_with_same_eTR}')
         if len(cell_types_with_same_eTR) > 1:
             print('Running process same eTR')
             same_etr_dict = process_same_tr(cell_types_with_same_eTR, row_cell_type, row_coeff)
@@ -203,7 +204,7 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
         cell_types_with_same_egene = estrs[
             (estrs['gene_name'] == egene) & (~estrs['cell_type'].isin([k for k, v in row_dict.items() if v == 5]))
         ]
-
+        print(f'cell types with the same egene: {cell_types_with_same_egene}')
         if len(cell_types_with_same_egene) > 1:
             print('Running process same egene')
             same_egene_dict = process_same_egene(
