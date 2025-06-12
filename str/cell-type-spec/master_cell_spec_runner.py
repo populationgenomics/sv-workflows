@@ -240,6 +240,7 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
     scenario_df = pd.DataFrame(results)
     scenario_df.columns = cell_types
     scenario_df.index = estrs_target.index  # to align with the original estrs rows
+    print(scenario_df)
 
     # --- Append back to estrs ---
     estrs_target = pd.concat([estrs_target, scenario_df.add_prefix("scenario_")], axis=1)
