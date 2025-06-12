@@ -39,8 +39,8 @@ def gene_with_lead_tr_parser(chromosome, cell_type, meta_dir):
         )
 
         # get row(s) with minimum p-value
-        min_pval = eqtl_results['pval_meta'].min()
-        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
+        min_pval = eqtl_results['pval_meta_fixed'].min()
+        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta_fixed'] == min_pval]
         # check if all rows are SNPs:
         all_motif_dash = smallest_pval_rows['motif'].str.contains('-').all()
         if all_motif_dash:
