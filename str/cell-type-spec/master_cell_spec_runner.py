@@ -107,7 +107,6 @@ def process_same_egene(cell_types_with_same_egene, row_coeff, row_variantid, row
                 scenario_same_egene[cell_type] = 5  # Opposite sign
             else:
                 scenario_same_egene[cell_type] = 4  # Same sign
-    print(scenario_same_egene)
 
     return scenario_same_egene
 
@@ -195,9 +194,7 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
             & (estrs['end'] == row_end)
             & (estrs['motif'] == row_motif)
         ]
-        print(f'cell types with the same etr: {cell_types_with_same_eTR}')
         if len(cell_types_with_same_eTR) > 1:
-            print('Running process same eTR')
             same_etr_dict = process_same_tr(cell_types_with_same_eTR, row_cell_type, row_coeff)
             row_dict.update(same_etr_dict)
 
@@ -205,9 +202,7 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
         cell_types_with_same_egene = estrs[
             (estrs['gene_name'] == egene) & (~estrs['cell_type'].isin([k for k, v in row_dict.items() if v == 5]))
         ]
-        print(f'cell types with the same egene: {cell_types_with_same_egene}')
         if len(cell_types_with_same_egene) > 1:
-            print('Running process same egene')
             same_egene_dict = process_same_egene(
                 cell_types_with_same_egene, row_coeff, row_variantid, row_cell_type, ld_path
             )
@@ -234,14 +229,13 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
 
         # --- Final step: make sure all cell types are represented ---
         complete_row = {ct: row_dict.get(ct, np.nan) for ct in cell_types}
+        print(complete_row)
         results.append(complete_row)
 
     # --- Convert final list of dicts into DataFrame ---
     scenario_df = pd.DataFrame(results)
-    print(scenario_df)
     scenario_df.columns = cell_types
     scenario_df.index = estrs_target.index  # to align with the original estrs rows
-    print(scenario_df)
 
     # --- Append back to estrs ---
     estrs_target = pd.concat([estrs_target, scenario_df.add_prefix("scenario_")], axis=1)
