@@ -176,6 +176,7 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
 
     results = []
     global_estrs = pd.read_csv(estrs_path)
+    global_estrs['variantid'] = global_estrs['pos'].astype(str) + global_estrs['motif']
 
     for index, row in estrs.iterrows():
         row_dict = {}
