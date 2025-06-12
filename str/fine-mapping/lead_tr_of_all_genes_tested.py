@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-# pylint: disable=too-many-arguments,too-many-locals
+
 
 """
 This script writes out genes for every cell type if the gene has a lead signal that is not a SNP.
 We test all genes tested, not just eGenes that pass an FDR.
 Used to generate one stat in the paper.
 
- analysis-runner  --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze" \
+ analysis-runner  --dataset "tenk10k" --access-level "test" \
+--description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/meta_fixed" \
 python3 lead_tr_of_all_genes_tested.py
 
 """
@@ -18,13 +18,12 @@ import pandas as pd
 import hail as hl
 import hailtop.batch as hb
 
+import click
+
 from cpg_utils.hail_batch import get_batch
 
 
-def gene_with_lead_tr_parser(
-    chromosome,
-    cell_type,
-):
+def gene_with_lead_tr_parser(chromosome, cell_type, meta_dir):
     """ """
     from cpg_utils import to_path
     from cpg_utils.hail_batch import output_path
@@ -32,7 +31,7 @@ def gene_with_lead_tr_parser(
     genes_with_lead_tr = []
     chromosome = f'chr{chromosome}'
 
-    genes = list(to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chromosome}').rglob('*.tsv'))
+    genes = list(to_path(f'{meta_dir}/{cell_type}/{chromosome}').rglob('*.tsv'))
     for gene in genes:
         eqtl_results = pd.read_csv(
             gene,
@@ -59,7 +58,13 @@ def gene_with_lead_tr_parser(
         json.dump(genes_with_lead_tr, write_handle)
 
 
-def main():
+@click.option(
+    '--meta-dir',
+    help='Directory containing the meta-analysis results',
+    default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs',
+)
+@click.command()
+def main(meta_dir):
     """
     Get all genes that have a lead signal that is not a SNP.
     """
