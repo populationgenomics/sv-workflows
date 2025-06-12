@@ -81,6 +81,7 @@ def main(meta_dir):
                 gene_with_lead_tr_parser,
                 chrom,
                 cell_type,
+                meta_dir
             )
 
     b.run(wait=False)
