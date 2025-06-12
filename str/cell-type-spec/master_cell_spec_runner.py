@@ -165,7 +165,7 @@ def reprocess_scenario_2(
     return reprocess_scen2_dict
 
 
-def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, associatr_path,estrs_path):
+def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, meta_scen2_path, associatr_path):
     """
     Helper function to process cell type specificity analysis as per Cuomo et al. 2025 procedure.
     Will call on the other helper functions defined above to process the different scenarios.
@@ -175,9 +175,8 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
     from cpg_utils.hail_batch import output_path
 
     results = []
-    global_estrs = pd.read_csv(estrs_path)
-    global_estrs['variantid'] = global_estrs['pos'].astype(str) + global_estrs['motif']
 
+    estrs = estrs[(estrs['cell_type'] == cell_type) & (estrs['chr'] == f'chr{chrom}')]
     for index, row in estrs.iterrows():
         row_dict = {}
         egene = row['gene_name']
@@ -190,11 +189,11 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
         row_variantid = row['variantid']
 
         # --- Scenario 4/5: same eTR ---
-        cell_types_with_same_eTR = global_estrs[
-            (global_estrs['gene_name'] == egene)
-            & (global_estrs['pos'] == row_pos)
-            & (global_estrs['end'] == row_end)
-            & (global_estrs['motif'] == row_motif)
+        cell_types_with_same_eTR = estrs[
+            (estrs['gene_name'] == egene)
+            & (estrs['pos'] == row_pos)
+            & (estrs['end'] == row_end)
+            & (estrs['motif'] == row_motif)
         ]
         print(f'cell types with the same etr: {cell_types_with_same_eTR}')
         if len(cell_types_with_same_eTR) > 1:
@@ -203,8 +202,8 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
             row_dict.update(same_etr_dict)
 
         # --- Scenario 3/4/5: same gene, different TR ---
-        cell_types_with_same_egene = global_estrs[
-            (global_estrs['gene_name'] == egene) & (~global_estrs['cell_type'].isin([k for k, v in row_dict.items() if v == 5]))
+        cell_types_with_same_egene = estrs[
+            (estrs['gene_name'] == egene) & (~estrs['cell_type'].isin([k for k, v in row_dict.items() if v == 5]))
         ]
         print(f'cell types with the same egene: {cell_types_with_same_egene}')
         if len(cell_types_with_same_egene) > 1:
@@ -217,7 +216,7 @@ def process_cell_type_specificity(estrs, cell_types, ld_path, meta_scen2_path, a
                     row_dict[k] = v
 
         # --- Scenario 1/2: gene not found in other cell types ---
-        cell_types_with_egene = global_estrs[global_estrs['gene_name'] == egene]['cell_type']
+        cell_types_with_egene = estrs[estrs['gene_name'] == egene]['cell_type']
         cell_types_without_egene = set(cell_types) - set(cell_types_with_egene)
         no_egene_dict = process_scenario_1_2(egene, egene_chrom, cell_types_without_egene, associatr_path)
         for k, v in no_egene_dict.items():
@@ -303,13 +302,13 @@ def main(estrs_path, meta_scen2_path, ld_path, associatr_path):
             j.cpu(0.25)
             j.call(
                 process_cell_type_specificity,
-                estrs_celltype_chrom,
+                estrs,
+                cell_type,
+                chrom,
                 cell_types,
                 ld_path,
                 meta_scen2_path,
-                associatr_path,
-                estrs_path
-            )
+                associatr_path            )
 
     b.run(wait=False)
 
