@@ -276,14 +276,13 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
 @click.command()
 def main(estrs_path, meta_scen2_path, ld_path, associatr_path):
     estrs = pd.read_csv(estrs_path)
-    #cell_types = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
-    cell_types = 'ILC'
+    cell_types = 'CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC'
     cell_types = cell_types.split(',')
     estrs['variantid'] = estrs['pos'].astype(str) + estrs['motif']
 
     b = get_batch(name='Cell-spec-analysis-Cuomo-2025')
     for chrom in [8]:
-        for cell_type in cell_types:
+        for cell_type in ['ILC']:
             estrs_celltype_chrom = estrs[(estrs['cell_type'] == cell_type) & (estrs['chr'] == f'chr{chrom}')]
             if estrs_celltype_chrom.empty:
                 print(f"No data for {cell_type} on chromosome {chrom}, skipping.")
