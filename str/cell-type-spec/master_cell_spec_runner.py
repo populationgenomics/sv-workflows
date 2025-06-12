@@ -245,7 +245,7 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
     # --- Append back to estrs ---
     estrs_target = pd.concat([estrs_target, scenario_df.add_prefix("scenario_")], axis=1)
 
-    estrs.to_csv(
+    estrs_target.to_csv(
         output_path(f'{row_cell_type}/{egene_chrom}/cell_type_specificity_analysis.csv', 'analysis'), index=False
     )
 
