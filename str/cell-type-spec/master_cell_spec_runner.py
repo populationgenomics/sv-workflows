@@ -176,8 +176,8 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
 
     results = []
 
-    estrs = estrs[(estrs['cell_type'] == cell_type) & (estrs['chr'] == f'chr{chrom}')]
-    for index, row in estrs.iterrows():
+    estrs_target = estrs[(estrs['cell_type'] == cell_type) & (estrs['chr'] == f'chr{chrom}')]
+    for index, row in estrs_target.iterrows():
         row_dict = {}
         egene = row['gene_name']
         egene_chrom = row['chr']
@@ -240,10 +240,10 @@ def process_cell_type_specificity(estrs, cell_type, chrom,cell_types, ld_path, m
     scenario_df = pd.DataFrame(results)
     print(scenario_df)
     scenario_df.columns = cell_types
-    scenario_df.index = estrs.index  # to align with the original estrs rows
+    scenario_df.index = estrs_target.index  # to align with the original estrs rows
 
     # --- Append back to estrs ---
-    estrs = pd.concat([estrs, scenario_df.add_prefix("scenario_")], axis=1)
+    estrs_target = pd.concat([estrs_target, scenario_df.add_prefix("scenario_")], axis=1)
 
     estrs.to_csv(
         output_path(f'{row_cell_type}/{egene_chrom}/cell_type_specificity_analysis.csv', 'analysis'), index=False
