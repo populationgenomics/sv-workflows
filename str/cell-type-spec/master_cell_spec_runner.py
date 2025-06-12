@@ -3,7 +3,7 @@
 """
 This script performs cell type specificity analysis as per Cuomo et al. 2025 procedure.
 
-analysis-runner --dataset tenk10k --access-level test --description "Cell type spec" --output-dir str/cell-spec-cuomo/cell_spec_results/v2 master_cell_spec_runner.py \
+analysis-runner --dataset tenk10k --access-level test --description "Cell type spec" --output-dir str/cell-spec-cuomo/cell_spec_results/v3-debug master_cell_spec_runner.py \
 --meta-scen2-path=gs://cpg-tenk10k-test-analysis/str/cell-spec-cuomo/ab_effect_sizes/meta_results
 """
 
@@ -282,7 +282,7 @@ def main(estrs_path, meta_scen2_path, ld_path, associatr_path):
     estrs['variantid'] = estrs['pos'].astype(str) + estrs['motif']
 
     b = get_batch(name='Cell-spec-analysis-Cuomo-2025')
-    for chrom in range(8):
+    for chrom in [8]:
         for cell_type in cell_types:
             estrs_celltype_chrom = estrs[(estrs['cell_type'] == cell_type) & (estrs['chr'] == f'chr{chrom}')]
             if estrs_celltype_chrom.empty:
