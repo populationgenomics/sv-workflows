@@ -110,7 +110,7 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
     '--meta-input-dir',
     default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2',
 )
-@click.option('chr-null-model', default =2, help='Chromosome for the null model eTRs')
+@click.option('--chr-null-model', default =2, help='Chromosome for the null model eTRs')
 @click.command()
 def main(cell_types, estrs_coord_path, meta_input_dir,chr_null_model):
     b = get_batch(name='Process inputs for mashr')
