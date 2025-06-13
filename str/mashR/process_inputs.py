@@ -45,7 +45,7 @@ def cell_chrom_parser(cell, chrom, estrs_coord_chrom, meta_input_dir):
 
             df = df[(df['pos'] == pos) & (df['motif'] == motif)]
             beta = df['coeff_meta_fixed'].iloc[0]
-            se = df['coeff_meta_fixed'].iloc[0]
+            se = df['se_meta_fixed'].iloc[0]
             # save the beta and se into a row:
             beta_se = pd.DataFrame(
                 {
@@ -99,7 +99,7 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
 @click.option(
     '--cell-types',
     default='CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC',
-    help='Cell types to parse',
+    help='File containing eQTLs passing FDR threshold',
 )
 @click.option(
     '--estrs-coord-path',
@@ -110,9 +110,9 @@ def cell_chrom_parser_null(cell, chrom, meta_input_dir):
     '--meta-input-dir',
     default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2',
 )
-@click.option('chr-null-model', default=2, help='Chromosome for the null model eTRs')
+@click.option('chr-null-model', default =2, help='Chromosome for the null model eTRs')
 @click.command()
-def main(cell_types, estrs_coord_path, meta_input_dir, chr_null_model):
+def main(cell_types, estrs_coord_path, meta_input_dir,chr_null_model):
     b = get_batch(name='Process inputs for mashr')
     celltypes = cell_types.split(',')
     # load in the list of eTRs passing FDR <5% across all cell types:
