@@ -3,7 +3,7 @@
 """
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "Patch SNP files" --output-dir "tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v2-patch" snp_patch.py \
---cell-types='CD4_CTL' --chromosomes ='chr19'
+--chromosomes=chr2
 """
 
 import click
@@ -20,11 +20,7 @@ def correct_csv_format(file_path, cell, chrom):
 
     try:
         df = pd.read_csv(file_path, sep='\t')
-        df.to_csv(
-        output_path(f'{cell}/{chrom}/{to_path(file_path).name}', 'analysis'),
-        sep='\t',
-        index=False,
-    )
+
     except pd.errors.ParserError:
         corrected_lines = []
         with open(to_path(file_path), "r") as f:
@@ -69,6 +65,7 @@ def main(input_dir, cell_types, chromosomes):
                     continue
                 job = b.new_python_job(f'Patch SNPs for {file.name}')
                 job.cpu(0.25)
+                job.memory('lowmem')
                 job.call(correct_csv_format, str(file), cell_type, chromosome)
     b.run(wait=False)
 
