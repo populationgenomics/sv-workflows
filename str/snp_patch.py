@@ -14,6 +14,7 @@ from cpg_utils import to_path
 
 def correct_csv_format(file_path, cell, chrom):
     from cpg_utils import to_path
+    from cpg_utils.hail_batch import output_path
     import pandas as pd
 
     corrected_lines = []
