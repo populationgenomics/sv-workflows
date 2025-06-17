@@ -5,7 +5,6 @@
 analysis-runner --dataset "bioheart" --access-level "test" --description "Patch SNP files" --output-dir "tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v2-patch" snp_patch.py
 """
 
-import pandas as pd
 import click
 
 
@@ -15,6 +14,7 @@ from cpg_utils import to_path
 
 def correct_csv_format(file_path, cell, chrom):
     from cpg_utils import to_path
+    import pandas as pd
 
     corrected_lines = []
     with open(to_path(file_path), "r") as f:
