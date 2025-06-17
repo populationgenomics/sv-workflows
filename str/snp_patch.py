@@ -46,8 +46,8 @@ def correct_csv_format(file_path, cell, chrom):
     help="Directory containing the input files",
     default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v1',
 )
-@click.option('--cell-types', help='Cell types to process', default='CD4_CTL')
-@click.option('--chromosomes', help='Chromosomes to process', default='chr19')
+@click.option('--cell-types', help='Cell types to process', default='CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC')
+@click.option('--chromosomes', help='Chromosomes to process', default='chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22')
 @click.command()
 def main(input_dir, cell_types, chromosomes):
     b = get_batch(name='SNP file patch')
