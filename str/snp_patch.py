@@ -2,7 +2,7 @@
 
 """
 
-analysis-runner --dataset "bioheart" --access-level "test" --description "Patch SNP files" --output-dir "tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v2-patch"
+analysis-runner --dataset "bioheart" --access-level "test" --description "Patch SNP files" --output-dir "tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v2-patch" snp_patch.py
 """
 
 import pandas as pd
@@ -54,7 +54,7 @@ def main(input_dir, cell_types, chromosomes):
         for chromosome in chromosomes.split(','):
             files = list(to_path(f'{input_dir}/{cell_type}/{chromosome}').glob('*.tsv'))
             for file in files:
-                if output_path(f'{cell_type}/{chromosome}/{to_path(file.name)}', 'analysis').exists():
+                if to_path(output_path(f'{cell_type}/{chromosome}/{to_path(file.name)}', 'analysis')).exists():
                     print(f"File {file} already processed, skipping.")
                     continue
                 job = b.new_python_job(f'Patch SNPs for {file.name}')
