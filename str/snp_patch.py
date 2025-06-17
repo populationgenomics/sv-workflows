@@ -35,7 +35,7 @@ def correct_csv_format(file_path, cell, chrom):
     # Convert to DataFrame using the fixed data
     df = pd.DataFrame(corrected_lines[1:], columns=corrected_lines[0])
     df.to_csv(
-        output_path(f'{cell}/{chrom}/{to_path(file_path.name)}', 'analysis'),
+        output_path(f'{cell}/{chrom}/{to_path(file_path).name}', 'analysis'),
         sep='\t',
         index=False,
     )
