@@ -3,7 +3,7 @@
 """
 
 analysis-runner --dataset "bioheart" --access-level "test" --description "Patch SNP files" --output-dir "tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v2-patch" snp_patch.py \
---chromosomes=chr2
+--chromosomes=chr21 --cell-types=CD4_CTL
 """
 
 import click
@@ -65,7 +65,6 @@ def main(input_dir, cell_types, chromosomes):
                     continue
                 job = b.new_python_job(f'Patch SNPs for {file.name}')
                 job.cpu(0.25)
-                job.memory('lowmem')
                 job.call(correct_csv_format, str(file), cell_type, chromosome)
     b.run(wait=False)
 
