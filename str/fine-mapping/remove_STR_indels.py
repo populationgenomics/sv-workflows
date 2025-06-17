@@ -19,13 +19,13 @@ This script additionally removes duplicate eSTRs (defined by sharing the same co
 
 Usage:
 
-analysis-runner --dataset bioheart --output-dir str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results \
+analysis-runner --dataset tenk10k --output-dir str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/v2-rm_str_indels_dup_strs \
 --description "Remove STR indels and duplicate eSTRs" \
 --access-level "test" \
 remove_STR_indels.py \
---associatr-dir=gs://cpg-bioheart-test/str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990/meta_results/meta_results \
+--associatr-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/v2-patch_meta_with_fixed \
 --celltypes=gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive \
---chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22
+--chromosomes=chr19
 
 
 
@@ -83,7 +83,7 @@ def filter_str_indels_and_duplicates(associatr_dir, celltype, chrom):
         # Find duplicate eSTRs and remove all but the one with the lowest p-value
         duplicates = data[data.duplicated(subset=['chr', 'pos', 'motif'], keep=False)]
         # Group by 'chr', 'pos', 'motif' and keep the one with the lowest 'p-val'
-        lowest_pval_duplicates = duplicates.loc[duplicates.groupby(['chr', 'pos', 'motif'])['pval_meta'].idxmin()]
+        lowest_pval_duplicates = duplicates.loc[duplicates.groupby(['chr', 'pos', 'motif'])['pval_meta_fixed'].idxmin()]
         # Find non-duplicate rows
         non_duplicates = data.drop(duplicates.index)
         # Concatenate the non-duplicates with the lowest p-value duplicates
