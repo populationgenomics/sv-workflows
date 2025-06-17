@@ -6,14 +6,16 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "tenk10k" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/rna_calib/tob_n950_and_bioheart_n975/pc2" \
-    meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/bioheart_n975/results/results/pc2 \
-    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/rna_calib/tob_n950/results/results/pc2 \
+    --output-dir "str/associatr/final_freeze/tob_n950_and_bioheart_n975/common_variant_snps/meta_results/meta_with_fixed/v2-patch" \
+    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/tob_n950/results/v2-patch \
+    --results-dir-2=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/common_variant_snps/bioheart_n975/results/v1 \
     --gene-list-dir-1=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/tob_n950/scRNA_gene_lists/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-tenk10k-test/str/associatr/final_freeze/input_files/bioheart_n975/scRNA_gene_lists/1_min_pct_cells_expressed/1_min_pct_cells_expressed \
-    --cell-types=CD4_TCM \
-    --chromosomes=chr1 \
+    --cell-types=ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TEM,CD8_Naive,CD8_Proliferating,CD8_TCM,CD8_TEM,HSPC,ILC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC \
+    --chromosomes=chr19 \
     --always-run
+ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TCM_permuted,CD4_TEM,CD8_Naive,CD8_Proliferating,CD8_TCM,CD8_TEM,HSPC,ILC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC
+
 """
 import json
 
@@ -41,8 +43,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r('library(tidyverse)')
 
     # read in raw associaTR results for each cohort for a particular gene
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',dtype={'locus_filtered': str})
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',dtype={'locus_filtered': str})
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
