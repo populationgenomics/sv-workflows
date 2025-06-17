@@ -204,14 +204,6 @@ def main(
 
     for cell_type in cell_types.split(','):
         for chromosome in chromosomes.split(','):
-            # get the intersection of genes tested in both cohorts
-            gene_file_path_1 = to_path(f'{gene_list_dir_1}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
-            gene_file_path_2 = to_path(f'{gene_list_dir_2}/{cell_type}/{chromosome}_{cell_type}_gene_list.json')
-            with open(gene_file_path_1) as f:
-                genes_1 = json.load(f)
-            with open(gene_file_path_2) as g:
-                genes_2 = json.load(g)
-            intersected_genes = list(set(genes_1) & set(genes_2))
 
             files = list(to_path(f'{results_dir_1}/{cell_type}/{chromosome}').glob('*.tsv'))
 
