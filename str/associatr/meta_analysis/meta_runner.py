@@ -213,8 +213,11 @@ def main(
                 genes_2 = json.load(g)
             intersected_genes = list(set(genes_1) & set(genes_2))
 
+            files = list(to_path(f'{results_dir_1}/{cell_type}/{chromosome}').glob('*.tsv'))
+
             # run meta-analysis for each gene
-            for gene in intersected_genes:
+            for file in files:
+                gene = str(file).split('/')[-1].split('_')[0]  # extract gene name from file name
                 if to_path(
                     output_path(
                         f"meta_results/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
