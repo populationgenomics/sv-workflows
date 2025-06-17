@@ -19,7 +19,7 @@ def correct_csv_format(file_path, cell, chrom):
     import pandas as pd
 
     try:
-        df = pd.read_csv(file_path, sep='\t', header=None)
+        df = pd.read_csv(file_path, sep='\t')
         df.to_csv(
         output_path(f'{cell}/{chrom}/{to_path(file_path).name}', 'analysis'),
         sep='\t',
