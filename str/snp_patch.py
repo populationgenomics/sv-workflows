@@ -8,7 +8,7 @@ analysis-runner --dataset "bioheart" --access-level "test" --description "Patch 
 
 import click
 
-
+import pandas as pd
 from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
