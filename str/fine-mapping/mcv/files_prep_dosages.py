@@ -171,7 +171,7 @@ def main(estrs_path):
         df_chr = df[df['chr'] == chrom]
 
         j = b.new_python_job(name=f'Prepare for {chrom}')
-        j.cpu(1)
+        j.cpu(2)
         j.storage('10G')
         j.call(dosages, chrom, df_chr)
 
