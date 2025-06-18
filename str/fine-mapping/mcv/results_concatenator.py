@@ -20,10 +20,11 @@ def process_file(file, pip_prune_threshold):
     df = pd.read_csv(file, sep='\t')
     cell_type = str(file).split('/')[-2]
     df['cell_type'] = cell_type  # add a column for the cell type
-    df['gene_name']= str(file).split('/')[-1].split('_')[0]  # extract gene name from file name
+    df['gene_name'] = str(file).split('/')[-1].split('_')[0]  # extract gene name from file name
     df = df[df['pip_prune'] >= pip_prune_threshold]  # actually filter
     df.drop(columns=['chr'], inplace=True)  # drop the chr column
     return df
+
 
 def concatenator(input_dir, cell_type, pip_prune_threshold):
     import pandas as pd
@@ -57,12 +58,7 @@ def main(input_dir, celltypes, pip_prune_threshold):
         j.cpu(1)
         j.storage('5G')
 
-        j.call(
-            concatenator,
-            input_dir,
-            cell_type,
-            pip_prune_threshold
-        )
+        j.call(concatenator, input_dir, cell_type, pip_prune_threshold)
 
     b.run(wait=False)
 

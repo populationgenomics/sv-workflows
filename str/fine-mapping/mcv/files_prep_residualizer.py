@@ -3,8 +3,8 @@
 """
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
-analysis-runner --dataset bioheart --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files \
-files_prep_residualizer.py --estrs-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv
+analysis-runner --dataset tenk10k --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files \
+files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv
 """
 
 import click
@@ -13,7 +13,7 @@ import pandas as pd
 from cpg_utils import to_path
 
 
-def process_cohort(variant_df, ycov, gene_ensg):
+def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
     """
     Aligns phenotype/covariate numpy array with variant_df,
     residualizes both y and X with respect to covariates,
@@ -32,39 +32,70 @@ def process_cohort(variant_df, ycov, gene_ensg):
     import numpy as np
     import statsmodels.api as sm
 
-    # Define covariate column names
+    # --------------------
+    # STEP 1: Create a df based on pseudobulk and joint cohort GENO PCs and RNA PCs and age and sex
+    # --------------------
+
+    # pull out sample_id and phenotype (pseudobulk value from ycov)
     n_covariates = ycov.shape[1] - 2
-    ycov_columns = ['sample', 'phenotype'] + [f'covar{i+1}' for i in range(n_covariates)]
-
-    # Convert to DataFrame
+    ycov_columns = ['sample_id', 'phenotype'] + [f'covar{i+1}' for i in range(n_covariates)]
     ycov_df = pd.DataFrame(ycov, columns=ycov_columns)
-    ycov_df['phenotype'] = ycov_df['phenotype'].astype(float)
-    for c in ycov_columns[2:]:
-        ycov_df[c] = ycov_df[c].astype(float)
+    ycov_df = ycov_df[['sample_id', 'phenotype']]
+    ycov_df['sample_id'] = 'CPG' + ycov_df['sample_id'].astype(int).astype(str)
 
-    # Merge on 'sample'
+    # pull out sample_id, age, sex, and first 12 geno PCs
+    wide_pcs = pd.read_csv(
+        'gs://cpg-tenk10k-main-analysis/saige-qtl/tenk10k-genome-2-3-eur/input_files/241210/covariates/sex_age_geno_pcs_shuffled_ids_tob_bioheart.csv'
+    )
+    wide_pcs = wide_pcs.iloc[:, :15]
+
+    # pull out sample_id and first 6 RNA PCs
+    rna_pcs = pd.read_csv(
+        f'gs://cpg-tenk10k-test/str/pseudobulk_finemap_mcv/n1925/rna_pcs/covariates/10_rna_pcs/{cell_type}_covariates.csv'
+    )
+    rna_pcs = rna_pcs.iloc[:, :7]
+
+    # sequential merging
+    ycov_df = ycov_df.merge(wide_pcs)
+    ycov_df = ycov_df.merge(rna_pcs)
+    ycov_df = ycov_df.rename(columns={'sample_id': 'sample'})
+
+    # --------------------
+    # STEP 2: Merge on sample_id to align
+    # --------------------
     merged = pd.merge(variant_df, ycov_df, on='sample', how='inner')
 
-    # Extract genotype matrix and covariates
+    # --------------------
+    # STEP 3: Extract and mean-impute X
+    # --------------------
     variant_cols = variant_df.columns.drop('sample')
     X = merged[variant_cols].copy()
     X_imputed = X.apply(lambda col: col.fillna(col.mean()), axis=0).values
 
+    # Extract y and covariates
     y = merged['phenotype'].values
-    C = merged[ycov_columns[2:]].values  # only covariates
+    cols = [col for col in ycov_df.columns if col not in ['sample', 'phenotype', 'sample_id']]
+
+    C = merged[cols].values  # covariates only
+
+    # --------------------
+    # STEP 4: Residualize y and X
+    # --------------------
     C = sm.add_constant(C)
 
-    # Residualize y
+    # Residualize phenotype
     model_y = sm.OLS(y, C).fit()
     y_resid = model_y.resid
 
-    # Residualize X
+    # Residualize each variant
     X_resid = np.empty_like(X_imputed)
     for j in range(X_imputed.shape[1]):
         model = sm.OLS(X_imputed[:, j], C).fit()
         X_resid[:, j] = model.resid
 
-    # Format outputs
+    # --------------------
+    # STEP 5: Output residualized data
+    # --------------------
     y_resid_series = pd.Series(y_resid, index=merged['sample'], name='phenotype_resid')
     X_resid_df = pd.DataFrame(X_resid, columns=variant_cols, index=merged['sample'])
 
@@ -90,7 +121,7 @@ def residualizer(gene_name, cell_type):
 
     # === REMOVE INDELS THAT LOOK LIKE TRs === #
     meta = pd.read_csv(
-        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
+        f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
         sep='\t',
     )
     meta['variant_id'] = meta['chr'].astype(str) + ':' + meta['pos'].astype(str) + ':' + meta['motif'].astype(str)
@@ -103,7 +134,7 @@ def residualizer(gene_name, cell_type):
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
         )
     )
-    y_resid_1, X_resid_1 = process_cohort(variant_df, ycov_1, gene_ensg)
+    y_resid_1, X_resid_1 = process_cohort_wide(variant_df, ycov_1, gene_ensg, cell_type)
 
     # === COHORT 2 ===
     ycov_2 = np.load(
@@ -111,7 +142,7 @@ def residualizer(gene_name, cell_type):
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
         )
     )
-    y_resid_2, X_resid_2 = process_cohort(variant_df, ycov_2, gene_ensg)
+    y_resid_2, X_resid_2 = process_cohort_wide(variant_df, ycov_2, gene_ensg, cell_type)
 
     # === STACK & EXPORT ===
     y_resid_combined = pd.concat([y_resid_1, y_resid_2])
@@ -135,7 +166,8 @@ def main(estrs_path):
     # sort by chromosome
     for chrom in df['chr'].unique():
         df_chr = df[df['chr'] == 'chr1']
-        for cell_type in df_chr['cell_type'].unique():
+        # for cell_type in df_chr['cell_type'].unique():
+        for cell_type in ['CD4_TCM']:
             df_cell = df_chr[df_chr['cell_type'] == cell_type]
             for gene in df_cell['gene_name'].unique():
                 if to_path(output_path(f"{gene}_{cell_type}_meta_cleaned_y_resid.csv")).exists():
