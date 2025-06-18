@@ -9,7 +9,7 @@ Required inputs:
 - List of eGenes to run SusieR on (ie Table S1 from the manuscript).
 
 analysis-runner --dataset tenk10k --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" --description "Run SusiE MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
-susie_mcv_runner.py --table-s1-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --residualized-dir=gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files  --max-parallel-jobs=1000
+susie_mcv_runner.py --table-s1-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --residualized-dir=gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized  --max-parallel-jobs=1000
 """
 
 import click
@@ -21,7 +21,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
 
 
-def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations):
+def susie_runner(input_dir, gene, cell_type, chrom, num_causal_variants, num_iterations):
     import pandas as pd
     import rpy2.robjects as ro
     from rpy2.robjects import pandas2ri
@@ -32,8 +32,8 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     ro.r('library(tidyverse)')
 
     # load in X and y file paths
-    X_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_X_resid.csv')
-    y_df = pd.read_csv(f'{input_dir}/{gene}_{cell_type}_meta_cleaned_y_resid.csv')
+    X_df = pd.read_csv(f'{input_dir}/{cell_type}/{chrom}/{gene}_{cell_type}_meta_cleaned_X_resid.csv')
+    y_df = pd.read_csv(f'{input_dir}/{cell_type}/{chrom}/{gene}_{cell_type}_meta_cleaned_y_resid.csv')
 
     with (ro.default_converter + pandas2ri.converter).context():
         X = ro.conversion.get_conversion().py2rpy(X_df)
@@ -44,6 +44,8 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     # === 4. Assign to R environment ===
     ro.globalenv['X'] = X
     ro.globalenv['y'] = y
+    ro.globalenv['num_causal_variants'] = num_causal_variants
+    ro.globalenv['num_iterations'] = num_iterations
 
     # === 5. Run SuSiE ===
     ro.r(
@@ -55,7 +57,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     y = subset(y, select=-sample)
     y_input = y[,1]
     # run susieR
-    susie_fit <- susie(x_input, y_input, L = 10)
+    susie_fit <- susie(x_input, y_input, L = num_causal_variants, num_iterations = num_iterations)
 
     #capture susie output results to save later
     raw_output = capture.output(summary(susie_fit))
@@ -66,7 +68,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
     raw_output_python = ro.r('raw_output')
 
     # write raw output to GCS
-    with to_path(output_path(f"{cell_type}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
+    with to_path(output_path(f"{cell_type}/{chrom}/{gene}_100kb_output.txt", 'analysis')).open('w') as file:
         file.write(str(raw_output_python))
 
     ro.r('coord_df <- data.frame(variant_id = variant_ids)')
@@ -123,7 +125,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 
     # write dataframe to GCS
     susie_output_df.to_csv(
-        output_path(f"{cell_type}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"{cell_type}/{chrom}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -136,6 +138,7 @@ def susie_runner(input_dir, gene, cell_type, num_causal_variants, num_iterations
 @click.option('--susie-cpu', help='CPU for SusieR job', default=0.25)
 @click.option('--num-causal-variants', help='Number of causal variants to estimate', default=10)
 @click.option('--always-run', help='Job set to always run', is_flag=True)
+@click.option('--chromosomes', help='Chromosomes to process, comma separated', default='chr21')
 @click.command()
 def main(
     table_s1_path,
@@ -145,6 +148,7 @@ def main(
     susie_cpu,
     num_causal_variants,
     always_run,
+    chromosomes
 ):
     # Setup MAX concurrency by genes
     _dependent_jobs: list[hb.batch.job.Job] = []
@@ -160,31 +164,34 @@ def main(
     b = get_batch(name='Run susieR')
 
     df = pd.read_csv(table_s1_path)
-    df = df.drop_duplicates(subset=['cell_type', 'gene_name'])
-    for row in df.itertuples():
-        cell_type = row.cell_type
-        gene = row.gene_name
-        if to_path(
-            output_path(f'{cell_type}/{gene}_100kb.tsv', 'analysis'),
-        ).exists():
-            print(f'SusieR file for {gene} in {cell_type} already exists, skipping.')
-            continue
-        susie_job = b.new_python_job(
-            f'SusieR for {gene}: {cell_type}',
-        )
-        susie_job.cpu(susie_cpu)
-        if always_run:
-            susie_job.always_run()
-        susie_job.call(
-            susie_runner,
-            residualized_dir,
-            gene,
-            cell_type,
-            num_causal_variants,
-            num_iterations,
-        )
+    df = df.drop_duplicates(subset=['cell_type', 'gene_name', 'chr'])
+    for chrom in chromosomes.split(','):
+        df_chrom = df[df['chr'] == chrom]
+        for row in df_chrom.itertuples():
+            cell_type = row.cell_type
+            gene = row.gene_name
+            if to_path(
+                output_path(f'{cell_type}/{chrom}/{gene}_100kb.tsv', 'analysis'),
+            ).exists():
+                print(f'SusieR file for {gene} in {cell_type} already exists, skipping.')
+                continue
+            susie_job = b.new_python_job(
+                f'SusieR for {gene}: {cell_type}',
+            )
+            susie_job.cpu(susie_cpu)
+            if always_run:
+                susie_job.always_run()
+            susie_job.call(
+                susie_runner,
+                residualized_dir,
+                gene,
+                cell_type,
+                chrom,
+                num_causal_variants,
+                num_iterations,
+            )
 
-        manage_concurrency_for_job(susie_job)
+            manage_concurrency_for_job(susie_job)
     b.run(wait=False)
 
 
