@@ -14,17 +14,13 @@ import pandas as pd
 from cpg_utils import to_path
 
 
-def tr_extract_genotype_matrix(chrom, start, end,tr_file):
+def tr_extract_genotype_matrix(chrom, start, end,vcf):
     """
     Extracts the genotype matrix for tandem repeats from a VCF file.
     (summed repeats)
     """
 
-    from cyvcf2 import VCF
     import pandas as pd
-
-    # Load the VCF file
-    vcf = VCF(tr_file)
 
     region = f"{chrom}:{start}-{end}"
     samples = vcf.samples
@@ -60,16 +56,14 @@ def tr_extract_genotype_matrix(chrom, start, end,tr_file):
     return df
 
 
-def snp_extract_genotype_matrix(chrom, start, end,snp_file):
+def snp_extract_genotype_matrix(chrom, start, end,vcf):
     """
     Extracts the genotype matrix for SNPs from a VCF file.
 
     """
 
     import pandas as pd
-    from cyvcf2 import VCF
-    # Load the VCF file
-    vcf = VCF(snp_file)
+
     region = f"{chrom}:{start}-{end}"
     samples = vcf.samples
     genotype_dict = {sample: {} for sample in samples}
@@ -155,8 +149,8 @@ def dosages(chrom,df_chr):
         start_body = max(0, start - 100_000)
 
         # Extract genotype matrices for tandem repeats and SNPs
-        tr_df = tr_extract_genotype_matrix(chrom, start_body, end,local_tr_file)
-        snp_df = snp_extract_genotype_matrix(chrom, start_body, end,local_snp_file)
+        tr_df = tr_extract_genotype_matrix(chrom, start_body, end,tr_vcf)
+        snp_df = snp_extract_genotype_matrix(chrom, start_body, end,snp_vcf)
 
         # Merge the two genotype dfs together
         variant_df = tr_df.merge(snp_df)
@@ -174,13 +168,14 @@ def main(estrs_path):
     df = df.drop_duplicates(subset=['gene_name', 'chr'])
     # sort by chromosome
     for chrom in df['chr'].unique():
-        df_chr = df[df['chr'] == chrom]
+        if chrom!= 'chr1':
+            df_chr = df[df['chr'] == chrom]
 
-        j = b.new_python_job(name=f'Prepare for {chrom}')
-        j.cpu(1)
-        j.storage('10G')
-        j.call(dosages, chrom, df_chr)
-        break
+            j = b.new_python_job(name=f'Prepare for {chrom}')
+            j.cpu(1)
+            j.storage('10G')
+            j.call(dosages, chrom, df_chr)
+
     b.run(wait=False)
 
 
