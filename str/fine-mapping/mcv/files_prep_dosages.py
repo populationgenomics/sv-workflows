@@ -167,7 +167,7 @@ def main(estrs_path):
     df = pd.read_csv(estrs_path)
     df = df.drop_duplicates(subset=['gene_name', 'chr'])
     # sort by chromosome
-    for chrom in df['chr'].unique():
+    for chrom in ['chr8']:
         df_chr = df[df['chr'] == chrom]
 
         j = b.new_python_job(name=f'Prepare for {chrom}')
