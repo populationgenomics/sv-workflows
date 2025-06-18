@@ -168,13 +168,12 @@ def main(estrs_path):
     df = df.drop_duplicates(subset=['gene_name', 'chr'])
     # sort by chromosome
     for chrom in df['chr'].unique():
-        if chrom!= 'chr1':
-            df_chr = df[df['chr'] == chrom]
+        df_chr = df[df['chr'] == chrom]
 
-            j = b.new_python_job(name=f'Prepare for {chrom}')
-            j.cpu(1)
-            j.storage('10G')
-            j.call(dosages, chrom, df_chr)
+        j = b.new_python_job(name=f'Prepare for {chrom}')
+        j.cpu(1)
+        j.storage('10G')
+        j.call(dosages, chrom, df_chr)
 
     b.run(wait=False)
 
