@@ -177,6 +177,7 @@ def main(estrs_path):
         j.cpu(1)
         j.storage('10G')
         j.call(dosages, chrom, df_chr)
+        break
     b.run(wait=False)
 
 
