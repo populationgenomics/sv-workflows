@@ -13,7 +13,7 @@ import pandas as pd
 from cpg_utils import to_path
 
 
-def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
+def process_cohort_wide(variant_df, ycov1, ycov2, cell_type):
     """
     Aligns phenotype/covariate numpy array with variant_df,
     residualizes both y and X with respect to covariates,
@@ -34,11 +34,18 @@ def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
 
     # STEP 1: Create a df based on pseudobulk phenotype values; and joint cohort genotype PCs and RNA PCs; age and sex
 
-    # pull out sample_id and phenotype (pseudobulk value from ycov)
-    n_covariates = ycov.shape[1] - 2
+    # pull out sample_id and phenotype (pseudobulk value from ycov) from TOB and BioHEART each (dimensions are the same)
+
+    # start with the first cohort.
+    n_covariates = ycov1.shape[1] - 2
     ycov_columns = ['sample_id', 'phenotype'] + [f'covar{i+1}' for i in range(n_covariates)]
-    ycov_df = pd.DataFrame(ycov, columns=ycov_columns)
-    ycov_df = ycov_df[['sample_id', 'phenotype']]
+    ycov_df_1 = pd.DataFrame(ycov1, columns=ycov_columns)
+    ycov_df_1 = ycov_df_1[['sample_id', 'phenotype']]
+    # repeat for the second cohort
+    ycov_df_2 = pd.DataFrame(ycov2, columns=ycov_columns)
+    ycov_df_2 = ycov_df_2[['sample_id', 'phenotype']]
+    # concatenate the two cohorts
+    ycov_df = pd.concat([ycov_df_1, ycov_df_2], ignore_index=True)
     ycov_df['sample_id'] = 'CPG' + ycov_df['sample_id'].astype(int).astype(str)
 
     # pull out sample_id, age, sex, and first 12 geno PCs
@@ -134,19 +141,13 @@ def residualizer(gene_name, cell_type):
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
         )
     )
-    y_resid_1, X_resid_1 = process_cohort_wide(variant_df, ycov_1, gene_ensg, cell_type)
-
     # === Load in TOB data ===
     ycov_2 = np.load(
         to_path(
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
         )
     )
-    y_resid_2, X_resid_2 = process_cohort_wide(variant_df, ycov_2, gene_ensg, cell_type)
-
-    # === STACK & EXPORT ===
-    y_resid_combined = pd.concat([y_resid_1, y_resid_2])
-    X_resid_combined = pd.concat([X_resid_1, X_resid_2])
+    y_resid_combined, X_resid_combined = process_cohort_wide(variant_df, ycov_1, ycov_2, cell_type)
 
     # Sort by sample ID just in case
     y_resid_combined = y_resid_combined.sort_index()
