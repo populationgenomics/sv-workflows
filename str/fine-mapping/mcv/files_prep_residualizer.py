@@ -118,6 +118,7 @@ def residualizer(gene_name, cell_type):
     variant_df = pd.read_csv(
         f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{gene_ensg}_dosages.csv'
     )
+    variant_df['sample'] = 'CPG' + variant_df['sample'].astype(int).astype(str)
 
     # === REMOVE INDELS THAT LOOK LIKE TRs === #
     meta = pd.read_csv(
