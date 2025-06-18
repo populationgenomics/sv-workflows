@@ -3,7 +3,7 @@
 """
 Calculates LD between lead variant (TR/SNV) and next significant SNV (proxy SNV) for each gene x cell type combination.
 
- analysis-runner  --dataset "bioheart" --access-level "test" \
+ analysis-runner  --dataset "tenk10k" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr/final_freeze/meta_fixed" \
 python3 lead_tr_snv.py
 
