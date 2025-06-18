@@ -4,12 +4,13 @@
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
 analysis-runner --dataset tenk10k --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized \
-files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr21
+files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr20
 """
 
 import click
 from cpg_utils.hail_batch import get_batch
 import pandas as pd
+import math
 
 
 def process_cohort_wide(variant_df, ycov, cell_type):
@@ -159,10 +160,14 @@ def main(estrs_path,chromosomes):
         df_chr = df[df['chr'] == chrom]
         for cell_type in df_chr['cell_type'].unique():
             df_cell = df_chr[df_chr['cell_type'] == cell_type]
-            j = b.new_python_job(f'Prepare for {cell_type} {chrom}')
-            j.cpu(0.25)
-            j.storage('5G')
-            j.call(residualizer, df_cell, chrom, cell_type)
+            # Split df_cell into batches of 30 rows
+            num_batches = math.ceil(len(df_cell) / 30)
+            for i in range(num_batches):
+                df_batch = df_cell.iloc[i*70 : (i+1)*30]
+                j = b.new_python_job(f'Prepare for {cell_type} {chrom} batch {i}')
+                j.cpu(0.25)
+                j.storage('5G')
+                j.call(residualizer, df_batch, chrom, cell_type, i)
 
     b.run(wait=False)
 
