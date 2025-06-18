@@ -4,7 +4,7 @@
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
 analysis-runner --dataset tenk10k --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized \
-files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr1
+files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr21
 """
 
 import click
@@ -119,7 +119,7 @@ def residualizer(df_cell, chrom,cell_type):
 
         # === LOAD VARIANT DOSAGES ===
         variant_df = pd.read_csv(
-            f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{gene_ensg}_dosages.csv'
+            f'gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{chrom}/{gene_ensg}_dosages.csv'
         )
         variant_df['sample'] = 'CPG' + variant_df['sample'].astype(int).astype(str)
 
