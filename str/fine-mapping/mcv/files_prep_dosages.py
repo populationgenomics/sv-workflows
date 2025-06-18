@@ -14,7 +14,7 @@ import pandas as pd
 from cpg_utils import to_path
 
 
-def tr_extract_genotype_matrix(chrom, start, end):
+def tr_extract_genotype_matrix(chrom, start, end,vcf):
     """
     Extracts the genotype matrix for tandem repeats from a VCF file.
     (summed repeats)
@@ -23,20 +23,7 @@ def tr_extract_genotype_matrix(chrom, start, end):
     from cyvcf2 import VCF
     import pandas as pd
 
-    local_file = 'local.vcf.bgz'
-    local_file_index = 'local.vcf.bgz.tbi'
 
-    tr_file = to_path(
-        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
-    )
-    tr_file_index = to_path(
-        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz.tbi'
-    )
-
-    tr_file.copy(local_file)
-    tr_file_index.copy(local_file_index)
-
-    vcf = VCF(local_file)
 
     region = f"{chrom}:{start}-{end}"
     samples = vcf.samples
@@ -72,28 +59,14 @@ def tr_extract_genotype_matrix(chrom, start, end):
     return df
 
 
-def snp_extract_genotype_matrix(chrom, start, end):
+def snp_extract_genotype_matrix(chrom, start, end,vcf):
     """
     Extracts the genotype matrix for SNPs from a VCF file.
 
     """
-    from cyvcf2 import VCF
+
     import pandas as pd
 
-    local_file = 'local.vcf.bgz'
-    local_file_index = 'local.vcf.bgz.tbi'
-
-    snp_file = to_path(
-        f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
-    )
-    snp_file_index = to_path(
-        f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz.tbi'
-    )
-
-    snp_file.copy(local_file)
-    snp_file_index.copy(local_file_index)
-
-    vcf = VCF(local_file)
     region = f"{chrom}:{start}-{end}"
     samples = vcf.samples
     genotype_dict = {sample: {} for sample in samples}
@@ -122,34 +95,72 @@ def snp_extract_genotype_matrix(chrom, start, end):
     return df
 
 
-def dosages(gene):
+def dosages(chrom,df_chr):
     import pandas as pd
     import numpy as np
     from cpg_utils.hail_batch import output_path
-
+    from cyvcf2 import VCF
     """
     Extracts the dosage files for each gene in the df DataFrame.
     """ ""
 
     # Load metadata to extract the window around the gene
     gene_info = pd.read_csv('gs://cpg-bioheart-test/tenk10k/saige-qtl/300libraries_n1925_adata_raw_var.csv')
-    gene_ensg = gene
-    gene_info_filtered = gene_info[gene_info['gene_ids'] == gene_ensg]
-    chrom = gene_info_filtered.iloc[0]['chr']
-    start = int(gene_info_filtered.iloc[0]['start'])
-    end = int(gene_info_filtered.iloc[0]['end']) + 100_000
-    start_body = max(0, start - 100_000)
 
-    # Extract genotype matrices for tandem repeats and SNPs
-    tr_df = tr_extract_genotype_matrix(chrom, start_body, end)
-    snp_df = snp_extract_genotype_matrix(chrom, start_body, end)
+    # Load in the SNP
 
-    # Merge the two genotype dfs together
-    variant_df = tr_df.merge(snp_df)
-    variant_df['sample'] = variant_df['sample'].astype(float)
+    local_snp_file = 'local.snp.vcf.bgz'
+    local_snp_file_index = 'local.snp.vcf.bgz.tbi'
 
-    # Save file
-    variant_df.to_csv(output_path(f"dosages/{gene_ensg}_dosages.csv"), header=True)
+    snp_file = to_path(
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
+    )
+    snp_file_index = to_path(
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz.tbi'
+    )
+
+    snp_file.copy(local_snp_file)
+    snp_file_index.copy(local_snp_file_index)
+    snp_vcf = VCF(local_snp_file)
+
+    # Load in the TR VCFs
+    local_tr_file = 'local.tr.vcf.bgz'
+    local_tr_file_index = 'local.tr.vcf.bgz.tbi'
+
+    tr_file = to_path(
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
+    )
+    tr_file_index = to_path(
+        f'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz.tbi'
+    )
+
+    tr_file.copy(local_tr_file)
+    tr_file_index.copy(local_tr_file_index)
+
+    tr_vcf = VCF(local_tr_file)
+
+    for gene in df_chr['gene_name'].unique():
+        if to_path(output_path(f'dosages/{chrom}/{gene}_dosages.csv')).exists():
+            print(f"Dosage file for {gene} already exists, skipping.")
+            continue
+
+        gene_ensg = gene
+        gene_info_filtered = gene_info[gene_info['gene_ids'] == gene_ensg]
+        chrom = gene_info_filtered.iloc[0]['chr']
+        start = int(gene_info_filtered.iloc[0]['start'])
+        end = int(gene_info_filtered.iloc[0]['end']) + 100_000
+        start_body = max(0, start - 100_000)
+
+        # Extract genotype matrices for tandem repeats and SNPs
+        tr_df = tr_extract_genotype_matrix(chrom, start_body, end,tr_vcf)
+        snp_df = snp_extract_genotype_matrix(chrom, start_body, end,snp_vcf)
+
+        # Merge the two genotype dfs together
+        variant_df = tr_df.merge(snp_df)
+        variant_df['sample'] = variant_df['sample'].astype(float)
+
+        # Save file
+        variant_df.to_csv(output_path(f"dosages/{chrom}/{gene_ensg}_dosages.csv"), header=True)
 
 
 @click.option('--estrs-path', type=str, required=True, help='Path to the estrs file.')
@@ -160,15 +171,12 @@ def main(estrs_path):
     df = df.drop_duplicates(subset=['gene_name', 'chr'])
     # sort by chromosome
     for chrom in df['chr'].unique():
-        df_chr = df[df['chr'] == chrom]
-        for gene in df_chr['gene_name'].unique():
-            if to_path(output_path(f'dosages/{gene}_dosages.csv')).exists():
-                print(f"Dosage file for {gene} already exists, skipping.")
-                continue
-            j = b.new_python_job(name=f'Prepare for {chrom} and {gene}')
-            j.cpu(1)
-            j.storage('10G')
-            j.call(dosages, gene)
+        df_chr = df[df['chr'] == 'chr22']
+
+        j = b.new_python_job(name=f'Prepare for {chrom}')
+        j.cpu(1)
+        j.storage('10G')
+        j.call(dosages, chrom, df_chr)
     b.run(wait=False)
 
 
