@@ -82,15 +82,14 @@ def process_cohort_wide(variant_df, ycov, cell_type):
     # --------------------
     C = sm.add_constant(C)
 
-    # Residualize phenotype
-    model_y = sm.OLS(y, C).fit()
-    y_resid = model_y.resid
+    # Compute hat matrix: H = C @ (CᵗC)⁻¹ @ Cᵗ
+    H = C @ np.linalg.inv(C.T @ C) @ C.T
 
-    # Residualize each variant (the X's)
-    X_resid = np.empty_like(X_imputed)
-    for j in range(X_imputed.shape[1]):
-        model = sm.OLS(X_imputed[:, j], C).fit()
-        X_resid[:, j] = model.resid
+    # Residualize phenotype
+    y_resid = y - H @ y
+
+    # Residualized X: X_resid = (I - H) @ X
+    X_resid = X_imputed - H @ X_imputed
 
     # --------------------
     # STEP 5: Output residualized data
