@@ -8,8 +8,8 @@ Required inputs:
 - output from`files_prep_residualizer.py` (residualized Y and X files) (which requires files_prep_dosages.py to run first).
 - List of eGenes to run SusieR on (ie Table S1 from the manuscript).
 
-analysis-runner --dataset bioheart --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" --description "Run SusiE MCV" --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
-susie_mcv_runner.py --table-s1-path=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/TableS1.csv --residualized-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files  --max-parallel-jobs=1000
+analysis-runner --dataset tenk10k --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" --description "Run SusiE MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
+susie_mcv_runner.py --table-s1-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --residualized-dir=gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files  --max-parallel-jobs=1000
 """
 
 import click
@@ -162,6 +162,7 @@ def main(
     df = pd.read_csv(table_s1_path)
     df = df[df['chr'] == 'chr1']  # For testing, only run on chr1
     df = df.drop_duplicates(subset=['cell_type', 'gene_name'])
+    df= df[df['cell_type']== 'CD4_TCM']  # For testing, only run on CD4_TCM
     for row in df.itertuples():
         cell_type = row.cell_type
         gene = row.gene_name
