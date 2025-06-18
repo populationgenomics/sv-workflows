@@ -14,7 +14,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 
 CATALOG_PATH = 'gs://cpg-bioheart-test/str/ncAnnot.v0.14.jul2024.bed'
 #TR_PATH = 'gs://cpg-bioheart-test/tenk10k/str/arthur/input_files/fm_chr_pos.tsv'
-TR_PATH = 'ggs://cpg-bioheart-test/angli/variants_jul15.bed'
+TR_PATH = 'gs://cpg-bioheart-test/angli/variants_jul15.bed'
 
 
 # Initializing Batch
