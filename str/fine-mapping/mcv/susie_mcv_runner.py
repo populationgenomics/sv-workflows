@@ -160,9 +160,7 @@ def main(
     b = get_batch(name='Run susieR')
 
     df = pd.read_csv(table_s1_path)
-    df = df[df['chr'] == 'chr1']  # For testing, only run on chr1
     df = df.drop_duplicates(subset=['cell_type', 'gene_name'])
-    df= df[df['cell_type']== 'CD4_TCM']  # For testing, only run on CD4_TCM
     for row in df.itertuples():
         cell_type = row.cell_type
         gene = row.gene_name
