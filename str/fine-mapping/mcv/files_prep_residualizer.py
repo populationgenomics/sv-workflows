@@ -32,9 +32,8 @@ def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
     import numpy as np
     import statsmodels.api as sm
 
-    # --------------------
-    # STEP 1: Create a df based on pseudobulk and joint cohort GENO PCs and RNA PCs and age and sex
-    # --------------------
+
+    # STEP 1: Create a df based on pseudobulk phenotype values; and joint cohort genotype PCs and RNA PCs; age and sex
 
     # pull out sample_id and phenotype (pseudobulk value from ycov)
     n_covariates = ycov.shape[1] - 2
@@ -49,7 +48,7 @@ def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
     )
     wide_pcs = wide_pcs.iloc[:, :15]
 
-    # pull out sample_id and first 6 RNA PCs
+    # pull out sample_id and first 6 RNA PCs of the relevant clel type
     rna_pcs = pd.read_csv(
         f'gs://cpg-tenk10k-test/str/pseudobulk_finemap_mcv/n1925/rna_pcs/covariates/10_rna_pcs/{cell_type}_covariates.csv'
     )
@@ -66,7 +65,7 @@ def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
     merged = pd.merge(variant_df, ycov_df, on='sample', how='inner')
 
     # --------------------
-    # STEP 3: Extract and mean-impute X
+    # STEP 3: Extract and mean-impute X (missing GTs will not work.)
     # --------------------
     variant_cols = variant_df.columns.drop('sample')
     X = merged[variant_cols].copy()
@@ -87,7 +86,7 @@ def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
     model_y = sm.OLS(y, C).fit()
     y_resid = model_y.resid
 
-    # Residualize each variant
+    # Residualize each variant (the X's)
     X_resid = np.empty_like(X_imputed)
     for j in range(X_imputed.shape[1]):
         model = sm.OLS(X_imputed[:, j], C).fit()
@@ -115,21 +114,22 @@ def residualizer(gene_name, cell_type):
     gene_info_filtered = gene_info[gene_info['gene_ids'] == gene_ensg]
     chrom = gene_info_filtered.iloc[0]['chr']
 
+    # === LOAD VARIANT DOSAGES ===
     variant_df = pd.read_csv(
         f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{gene_ensg}_dosages.csv'
     )
     variant_df['sample'] = 'CPG' + variant_df['sample'].astype(int).astype(str)
 
-    # === REMOVE INDELS THAT LOOK LIKE TRs === #
+    # === REMOVE INDELS THAT LOOK LIKE TRs === # (keeping TR-looking indels can mess up fine-mapping when comparing their signal with the TR)
     meta = pd.read_csv(
         f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
         sep='\t',
-    )
+    ) # a bit of a hack - this file contains summary stats for a list of variants where TR-looking indels and duplicate TRs have been removed.
     meta['variant_id'] = meta['chr'].astype(str) + ':' + meta['pos'].astype(str) + ':' + meta['motif'].astype(str)
     columns_to_keep = ['sample'] + [col for col in variant_df.columns if col in meta['variant_id'].values]
     variant_df = variant_df[columns_to_keep]
 
-    # === COHORT 1 ===
+    # === Load in bioheart data ===
     ycov_1 = np.load(
         to_path(
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
@@ -137,7 +137,7 @@ def residualizer(gene_name, cell_type):
     )
     y_resid_1, X_resid_1 = process_cohort_wide(variant_df, ycov_1, gene_ensg, cell_type)
 
-    # === COHORT 2 ===
+    # === Load in TOB data ===
     ycov_2 = np.load(
         to_path(
             f'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/pheno_cov_numpy/v1/{cell_type}/{chrom}/{gene_ensg}_pheno_cov.npy'
@@ -166,19 +166,16 @@ def main(estrs_path):
     df = df.drop_duplicates(subset=['cell_type', 'gene_name', 'chr'])
     # sort by chromosome
     for chrom in df['chr'].unique():
-        df_chr = df[df['chr'] == 'chr1']
-        # for cell_type in df_chr['cell_type'].unique():
-        for cell_type in ['CD4_TCM']:
+        df_chr = df[df['chr'] == chrom]
+        for cell_type in df_chr['cell_type'].unique():
             df_cell = df_chr[df_chr['cell_type'] == cell_type]
             for gene in df_cell['gene_name'].unique():
                 if to_path(output_path(f"{gene}_{cell_type}_meta_cleaned_y_resid.csv")).exists():
                     continue
-
                 j = b.new_python_job(f'Prepare for {cell_type} {chrom}: {gene}')
                 j.cpu(0.25)
                 j.storage('5G')
                 j.call(residualizer, gene, cell_type)
-        break  # try only one chromosome for now
     b.run(wait=False)
 
 
