@@ -153,6 +153,7 @@ def residualizer(df_cell, chrom,cell_type):
 def main(estrs_path):
     b = get_batch(name='Residualized files prep for SuSie MCV')
     df = pd.read_csv(estrs_path)
+    df = df[(df['cell_type']== 'CD4_TCM') & (df['chr'] == 'chr1')]  # Filter for a specific cell type and chromosome
     df = df.drop_duplicates(subset=['cell_type', 'gene_name', 'chr'])
     # sort by chromosome
     for chrom in df['chr'].unique():
