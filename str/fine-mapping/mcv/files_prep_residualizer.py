@@ -163,11 +163,11 @@ def main(estrs_path,chromosomes):
             # Split df_cell into batches of 30 rows
             num_batches = math.ceil(len(df_cell) / 30)
             for i in range(num_batches):
-                df_batch = df_cell.iloc[i*70 : (i+1)*30]
+                df_batch = df_cell.iloc[i*30 : (i+1)*30]
                 j = b.new_python_job(f'Prepare for {cell_type} {chrom} batch {i}')
                 j.cpu(0.25)
                 j.storage('5G')
-                j.call(residualizer, df_batch, chrom, cell_type, i)
+                j.call(residualizer, df_batch, chrom, cell_type)
 
     b.run(wait=False)
 
