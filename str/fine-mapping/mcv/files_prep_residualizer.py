@@ -4,7 +4,7 @@
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
 analysis-runner --dataset tenk10k --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized \
-files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv
+files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr1
 """
 
 import click
@@ -147,16 +147,15 @@ def residualizer(df_cell, chrom,cell_type):
         y_resid_combined.to_csv(output_path(f"{cell_type}/{chrom}/{gene_ensg}_{cell_type}_meta_cleaned_y_resid.csv"), header=True)
         X_resid_combined.to_csv(output_path(f"{cell_type}/{chrom}/{gene_ensg}_{cell_type}_meta_cleaned_X_resid.csv"))
 
-
+@click.option('--chromosomes', type=str, required=True, help='Chromosome to process.')
 @click.option('--estrs-path', type=str, required=True, help='Path to the estrs file.')
 @click.command()
-def main(estrs_path):
+def main(estrs_path,chromosomes):
     b = get_batch(name='Residualized files prep for SuSie MCV')
     df = pd.read_csv(estrs_path)
-    df = df[(df['cell_type']== 'CD4_TCM') & (df['chr'] == 'chr1')]  # Filter for a specific cell type and chromosome
     df = df.drop_duplicates(subset=['cell_type', 'gene_name', 'chr'])
     # sort by chromosome
-    for chrom in df['chr'].unique():
+    for chrom in chromosomes.split(','):
         df_chr = df[df['chr'] == chrom]
         for cell_type in df_chr['cell_type'].unique():
             df_cell = df_chr[df_chr['cell_type'] == cell_type]
