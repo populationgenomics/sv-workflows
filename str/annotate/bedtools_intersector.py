@@ -14,7 +14,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 
 CATALOG_PATH = 'gs://cpg-bioheart-test/str/ncAnnot.v0.14.jul2024.bed'
 #TR_PATH = 'gs://cpg-bioheart-test/tenk10k/str/arthur/input_files/fm_chr_pos.tsv'
-TR_PATH = 'gs://cpg-bioheart-test/angli/variants_jul15.bed'
+TR_PATH = 'gs://cpg-bioheart-test/angli/DML.bed'
 
 
 # Initializing Batch
@@ -35,6 +35,6 @@ tr = b.read_input(TR_PATH)
 bedtools_job.command(f'bedtools intersect -a {tr} -b {catalog} -wo > {bedtools_job.ofile}')
 
 # write output to GCP bucket for this dataset
-b.write_output(bedtools_job.ofile, 'gs://cpg-bioheart-test/angli/arthur/o_files/top_snps_jul15intersect.bed')
+b.write_output(bedtools_job.ofile, 'gs://cpg-bioheart-test/angli/arthur/o_files/DMLintersect.bed')
 
 b.run(wait=False)
