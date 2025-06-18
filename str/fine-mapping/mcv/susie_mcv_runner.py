@@ -57,7 +57,7 @@ def susie_runner(input_dir, gene, cell_type, chrom, num_causal_variants, num_ite
     y = subset(y, select=-sample)
     y_input = y[,1]
     # run susieR
-    susie_fit <- susie(x_input, y_input, L = num_causal_variants, num_iterations = num_iterations)
+    susie_fit <- susie(x_input, y_input, L = num_causal_variants, max_iter = num_iterations)
 
     #capture susie output results to save later
     raw_output = capture.output(summary(susie_fit))
