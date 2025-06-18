@@ -165,7 +165,7 @@ def genes_parser(
 
 
 @click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps')
-@click.option('--str-vcf-dir', default='gs:/cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific')
+@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific')
 @click.command()
 def main(snp_vcf_dir, str_vcf_dir):
     """
