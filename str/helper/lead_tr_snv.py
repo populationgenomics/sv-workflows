@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-# pylint: disable=too-many-arguments,too-many-locals
 
 """
-This script writes out genes for every cell type if the gene has a lead signal that is not a SNP.
-We test all genes tested, not just eGenes that pass an FDR.
-Used to generate one stat in the paper.
+Calculates LD between lead variant (TR/SNV) and next significant SNV (proxy SNV) for each gene x cell type combination.
 
  analysis-runner  --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze" \
+--description "get cis and numpy" --output-dir "str/associatr/final_freeze/meta_fixed" \
 python3 lead_tr_snv.py
 
 """
@@ -18,6 +15,7 @@ import pandas as pd
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import output_path
 
 
 def genes_parser(
@@ -35,29 +33,28 @@ def genes_parser(
 
     max_corr_master_df = pd.DataFrame()
 
-    genes_with_lead_tr = []
     chromosome = f'chr{chromosome}'
-    genes = list(to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results/{cell_type}/{chromosome}').rglob('*.tsv'))
+    genes = list(to_path(f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chromosome}').rglob('*.tsv'))
     for gene_file in genes:
         eqtl_results = pd.read_csv(
             gene_file,
             sep='\t',)
         gene_name = str(gene_file).split('/')[-1].split('_')[0]
         # get row(s) with minimum p-value
-        min_pval = eqtl_results['pval_meta'].min()
-        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
+        min_pval = eqtl_results['pval_meta_fixed'].min()
+        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta_fixed'] == min_pval]
         # check if all rows are SNPs:
         at_least_one_lead_SNV = smallest_pval_rows['motif'].str.contains('-').any()
         if at_least_one_lead_SNV:
             snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')]  # filter for SNVs
             lead_snv = snv_meta_results[
-                snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()
+                snv_meta_results['pval_meta_fixed'] == snv_meta_results['pval_meta_fixed'].min()
             ]  # get the lead SNV
             lead_snv_coord = chromosome + ':' + str(lead_snv.iloc[0]['pos'])
             lead_snv_motif = lead_snv.iloc[0]['motif']
 
             proxy_snv_results = snv_meta_results[snv_meta_results.index != lead_snv.index[0]]
-            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
+            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta_fixed'] == proxy_snv_results['pval_meta_fixed'].min()]
             proxy_snv_coord = f"{chromosome}:{proxy_snv.iloc[0]['pos']}"
             proxy_snv_motif = proxy_snv.iloc[0]['motif']
             distance = abs(int(lead_snv.iloc[0]['pos']) - int(proxy_snv.iloc[0]['pos']))
@@ -78,13 +75,13 @@ def genes_parser(
                 print('Finished reading SNP VCF')
 
         else:
-            lead_tr = eqtl_results[eqtl_results['pval_meta'] == min_pval]
+            lead_tr = eqtl_results[eqtl_results['pval_meta_fixed'] == min_pval]
             lead_tr_coord = chromosome + ':' + str(lead_tr.iloc[0]['pos'])
             lead_tr_motif = lead_tr.iloc[0]['motif']
 
             proxy_snv_results = eqtl_results[eqtl_results.index != lead_tr.index[0]]  # filter out lead tr
             proxy_snv_results = proxy_snv_results[proxy_snv_results['motif'].str.contains('-')]  # filter for SNVs
-            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta'] == proxy_snv_results['pval_meta'].min()]
+            proxy_snv = proxy_snv_results[proxy_snv_results['pval_meta_fixed'] == proxy_snv_results['pval_meta_fixed'].min()]
             proxy_snv_coord = f"{chromosome}:{proxy_snv.iloc[0]['pos']}"
             proxy_snv_motif = proxy_snv.iloc[0]['motif']
             distance = abs(int(lead_tr.iloc[0]['pos']) - int(proxy_snv.iloc[0]['pos']))
@@ -147,7 +144,7 @@ def genes_parser(
         results_df = pd.DataFrame(
             {
                 'correlation': [correlation],
-                'proxy_pval': [proxy_snv.iloc[0]['pval_meta']],
+                'proxy_pval': [proxy_snv.iloc[0]['pval_meta_fixed']],
                 'lead_pval': [min_pval],
                 'lead_snv_boolean': [at_least_one_lead_SNV],
                 'cell_type': [cell_type],
@@ -167,23 +164,22 @@ def genes_parser(
         )
 
 
-@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/tob_freeze_1/bgzip_tabix/v4')
-@click.option('--str-vcf-dir', default='gs://cpg-bioheart-test/str/associatr/input_files/vcf/v1-chr-specific')
+@click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps')
+@click.option('--str-vcf-dir', default='gs:/cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific')
 @click.command()
 def main(snp_vcf_dir, str_vcf_dir):
     """
-    Get all genes that have a lead signal that is not a SNP.
+    Calculates LD between lead variant (TR/SNV) and next significant SNV (proxy SNV) for each gene x cell type combination.
     """
     b = get_batch(name='Lead TR, SNV, and proxy SNV data extraction')
 
     celltypes = 'gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive'
     celltypes = celltypes.split(',')
     for cell_type in ['CD4_TCM']:
-        #for chrom in range(1, 23):
-        for chrom in [6]:
+        for chrom in range(1, 23):
             if to_path(
-                f'gs://cpg-bioheart-test-analysis/str/associatr/estrs/lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
-            ).exists():
+                output_path(f'lead_tr_snv_proxy/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
+            )).exists():
                 print(f'File already exists for {cell_type} and {chrom}')
                 continue
             j = b.new_python_job(
