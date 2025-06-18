@@ -5,9 +5,9 @@ merges them with other pre-calculated covariates, and writes the file to GCP.
 
 
 analysis-runner --access-level test --dataset bioheart --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --output-dir "str/associatr/tob_n1055/input_files" get_covariates.py --input-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/pseudobulk \
+--description "Get covariates" --output-dir "str/pseudobulk_finemap_mcv/n1925/rna_pcs" get_covariates.py --input-dir=gs://cpg-tenk10k-test/str/pseudobulk_finemap_mcv/n1925 \
 --cell-types=CD4_TCM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 --covariate-file-path=gs://gs://cpg-bioheart-test/str/associatr/tob_n1055/input_files/tob_covariates_str_run_v1.csv \
---num-pcs=20
+--num-pcs=10
 
 """
 
@@ -67,13 +67,8 @@ def get_covariates(pseudobulk_input_dir, cell_type, chromosomes, covariate_file_
     # rename PC columns: rna_PC{num}
     df_pcs = df_pcs.rename(columns={i: f'rna_PC{i+1}' for i in range(num_pcs)})
 
-    # read in covariates
-    cov = pd.read_csv(covariate_file_path)
-
-    merged_df = cov.merge(df_pcs, on='sample_id')
-
     # write to GCP
-    merged_df.to_csv(
+    df_pcs.to_csv(
         output_path(f'covariates/{num_pcs}_rna_pcs/{cell_type}_covariates.csv'),
         index=False,
     )
