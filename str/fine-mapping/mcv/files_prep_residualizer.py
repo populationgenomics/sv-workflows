@@ -45,7 +45,7 @@ def process_cohort_wide(variant_df, ycov, gene_ensg, cell_type):
 
     # pull out sample_id, age, sex, and first 12 geno PCs
     wide_pcs = pd.read_csv(
-        'gs://cpg-tenk10k-main-analysis/saige-qtl/tenk10k-genome-2-3-eur/input_files/241210/covariates/sex_age_geno_pcs_shuffled_ids_tob_bioheart.csv'
+        'gs://cpg-tenk10k-test-analysis/saige-qtl/tenk10k-genome-2-3-eur/input_files/241210/covariates/sex_age_geno_pcs_shuffled_ids_tob_bioheart.csv'
     )
     wide_pcs = wide_pcs.iloc[:, :15]
 
