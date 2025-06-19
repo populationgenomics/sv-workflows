@@ -113,7 +113,7 @@ def residualizer(df_cell, chrom,cell_type):
     from cpg_utils.hail_batch import output_path
 
     for gene in df_cell['gene_name'].unique():
-        if to_path(output_path(f"{cell_type}/{chrom}/{gene}_{cell_type}_meta_cleaned_y_resid.csv")).exists():
+        if to_path(output_path(f"{cell_type}/{chrom}/{gene}_{cell_type}_meta_cleaned_X_resid.csv")).exists():
             continue
         gene_ensg = gene
 
