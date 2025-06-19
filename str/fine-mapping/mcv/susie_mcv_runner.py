@@ -10,7 +10,7 @@ Required inputs:
 
 analysis-runner --dataset tenk10k --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:r-fast" --description "Run SusiE MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
 susie_mcv_runner.py --table-s1-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --residualized-dir=gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized  --max-parallel-jobs=1000 \
---chromosomes=chr2
+--chromosomes=chr4 --job-cpu=0.25
 """
 
 import click
@@ -181,9 +181,9 @@ def main(
         for cell_type in df_chrom['cell_type'].unique():
             df_cell = df_chrom[df_chrom['cell_type'] == cell_type]
             # Split df_cell into batches of 30 rows
-            num_batches = math.ceil(len(df_cell) / 30)
+            num_batches = math.ceil(len(df_cell) / 10)
             for i in range(num_batches):
-                df_batch = df_cell.iloc[i*30 : (i+1)*30]
+                df_batch = df_cell.iloc[i*10 : (i+1)*10]
                 susie_job = b.new_python_job(
                 f'SusieR {cell_type} {chrom} batch {i}',
                 )
