@@ -42,7 +42,7 @@ def run_concatenator(cell, meta_dir):
                 .astype(int)
             )
             data = data[
-                ['chr', 'pos', 'end' ,'motif', 'cell_type', 'coeff_meta_fixed', 'se_meta_fixed', 'pval_meta_fixed']
+                ['chr', 'pos', 'end' ,'motif', 'celltype', 'coeff_meta_fixed', 'se_meta_fixed', 'pval_meta_fixed']
             ]
             dfs.append(data)
         print(f'Processed {cell} and chr{chrom}')
