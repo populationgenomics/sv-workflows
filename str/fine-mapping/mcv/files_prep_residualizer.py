@@ -4,7 +4,7 @@
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
 analysis-runner --dataset tenk10k --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized \
-files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19
+files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr20
 """
 
 import click
@@ -122,12 +122,16 @@ def residualizer(df_cell, chrom,cell_type):
             f'gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/dosages/{chrom}/{gene_ensg}_dosages.csv'
         )
         variant_df['sample'] = 'CPG' + variant_df['sample'].astype(int).astype(str)
-
-        # === REMOVE INDELS THAT LOOK LIKE TRs === # (keeping TR-looking indels can mess up fine-mapping when comparing their signal with the TR)
-        meta = pd.read_csv(
-            f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
-            sep='\t',
-        )  # a bit of a hack - this file contains summary stats for a list of variants where TR-looking indels and duplicate TRs have been removed.
+        try:
+            # === REMOVE INDELS THAT LOOK LIKE TRs === # (keeping TR-looking indels can mess up fine-mapping when comparing their signal with the TR)
+            meta = pd.read_csv(
+                f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
+                sep='\t',
+            )  # a bit of a hack - this file contains summary stats for a list of variants where TR-looking indels and duplicate TRs have been removed.
+        except FileNotFoundError:
+            if gene_ensg == 'ENSG00000291100':
+                # this gene has no snps so we skip it
+                continue
         meta['variant_id'] = meta['chr'].astype(str) + ':' + meta['pos'].astype(str) + ':' + meta['motif'].astype(str)
         columns_to_keep = ['sample'] + [col for col in variant_df.columns if col in meta['variant_id'].values]
         variant_df = variant_df[columns_to_keep]
