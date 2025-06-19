@@ -1,4 +1,4 @@
-#!/usr/bin/env python3Add commentMore actions
+#!/usr/bin/env python3
 
 import click
 
