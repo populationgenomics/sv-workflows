@@ -17,6 +17,7 @@ import click
 import math
 import hailtop.batch as hb
 import pandas as pd
+import gc
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, output_path
@@ -137,6 +138,8 @@ def susie_runner(input_dir, df_batch, cell_type, chrom, num_causal_variants, num
             sep='\t',
             index=False,
         )
+        del X_df, y_df, X, y,susie_output_df
+        gc.collect()
 
 
 @click.option('--table-s1-path', help='Table S1 with eGenes to run SusieR on')
