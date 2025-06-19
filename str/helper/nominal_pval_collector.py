@@ -26,7 +26,7 @@ def run_concatenator(cell, meta_dir):
     dfs = []
     for chrom in range(1, 23):
         try:
-            files_list = list(to_path(f'{meta_dir}{cell}/chr{chrom}').glob('*.tsv'))
+            files_list = list(to_path(f'{meta_dir}/{cell}/chr{chrom}').glob('*.tsv'))
         except:
             continue
         for file in files_list:
