@@ -3,7 +3,7 @@
 This script concatenates the results from running SUSIE-R on a cell type basis.
 The output is a single CSV file containing per cell type results (optional min PIP filtering)
 
-analysis-runner --dataset bioheart --access-level test --output-dir tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files --description "Concatenate SuSIE results" python3 results_concatenator.py \
+analysis-runner --dataset bioheart --access-level test --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/output_files --description "Concatenate SuSIE results" python3 results_concatenator.py \
     --celltypes "CD14_Mono,ASDC,cDC1,gdT,NK,B_naive,B_memory,CD4_CTL,CD4_TCM,CD8_TCM,cDC2,HSPC,NK_CD56bright,Plasmablast,B_intermediate,CD4_Naive,CD4_TEM,CD8_TEM,dnT,MAIT,NK_Proliferating,Treg,CD16_Mono,CD4_Proliferating,CD8_Naive,pDC,CD8_Proliferating,ILC"
 
 
@@ -31,7 +31,7 @@ def concatenator(input_dir, cell_type, pip_prune_threshold):
     from concurrent.futures import ThreadPoolExecutor
     from cpg_utils.hail_batch import output_path
 
-    files = list(to_path(f'{input_dir}/{cell_type}').glob('*.tsv'))
+    files = list(to_path(f'{input_dir}/{cell_type}').rglob('*.tsv'))
     master_df = pd.DataFrame()
     with ThreadPoolExecutor() as executor:
         # Pass pip_prune_threshold to process_file
@@ -44,7 +44,7 @@ def concatenator(input_dir, cell_type, pip_prune_threshold):
 @click.option(
     '--input-dir',
     help='GCS path to the directory containing the SusiE results',
-    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files',
+    default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/fine_mapping/susie_mcv/output_files',
 )
 @click.option('--celltypes', help='Comma-separated list of cell types to concatenate')
 @click.option('--pip-prune-threshold', type=float, default=0.5, help='PIP threshold for pruning results')
