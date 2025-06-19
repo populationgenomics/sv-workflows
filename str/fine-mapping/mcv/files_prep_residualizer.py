@@ -4,7 +4,7 @@
 This script prepares the X and Y residualized files for SuSiE multiple causal variant assumption mapping.
 
 analysis-runner --dataset tenk10k --access-level test --memory 8G --description "Residualized files prep for SuSie MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized \
-files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr20
+files_prep_residualizer.py --estrs-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --chromosomes=chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22 --job-cpu=1
 """
 
 import click
@@ -153,8 +153,9 @@ def residualizer(df_cell, chrom,cell_type):
 
 @click.option('--chromosomes', type=str, required=True, help='Chromosome to process.')
 @click.option('--estrs-path', type=str, required=True, help='Path to the estrs file.')
+@click.option('--job-cpu', type=float, default=0.25, help='CPU allocation for each job.')
 @click.command()
-def main(estrs_path,chromosomes):
+def main(estrs_path,chromosomes,job_cpu):
     b = get_batch(name='Residualized files prep for SuSie MCV')
     df = pd.read_csv(estrs_path)
     df = df.drop_duplicates(subset=['cell_type', 'gene_name', 'chr'])
@@ -168,7 +169,7 @@ def main(estrs_path,chromosomes):
             for i in range(num_batches):
                 df_batch = df_cell.iloc[i*70 : (i+1)*70]
                 j = b.new_python_job(f'Prepare for {cell_type} {chrom} batch {i}')
-                j.cpu(0.25)
+                j.cpu(job_cpu)
                 j.storage('5G')
                 j.call(residualizer, df_batch, chrom, cell_type)
 
