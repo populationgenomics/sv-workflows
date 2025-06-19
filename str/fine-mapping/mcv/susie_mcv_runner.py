@@ -8,9 +8,9 @@ Required inputs:
 - output from`files_prep_residualizer.py` (residualized Y and X files) (which requires files_prep_dosages.py to run first).
 - List of eGenes to run SusieR on (ie Table S1 from the manuscript).
 
-analysis-runner --dataset tenk10k --access-level test --memory 4G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:r-fast" --description "Run SusiE MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
+analysis-runner --dataset tenk10k --access-level test --memory 8G  --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:r-fast" --description "Run SusiE MCV" --output-dir str/associatr/final_freeze/fine_mapping/susie_mcv/output_files \
 susie_mcv_runner.py --table-s1-path=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv --residualized-dir=gs://cpg-tenk10k-test/str/associatr/final_freeze/fine_mapping/susie_mcv/prep_files/residualized  --max-parallel-jobs=1000 \
---chromosomes=chr4 --job-cpu=0.25
+--chromosomes=chr9,chr10,chr13,chr14,chr15,chr16 --susie-cpu=0.5
 """
 
 import click
@@ -181,9 +181,9 @@ def main(
         for cell_type in df_chrom['cell_type'].unique():
             df_cell = df_chrom[df_chrom['cell_type'] == cell_type]
             # Split df_cell into batches of 30 rows
-            num_batches = math.ceil(len(df_cell) / 10)
+            num_batches = math.ceil(len(df_cell) / 30)
             for i in range(num_batches):
-                df_batch = df_cell.iloc[i*10 : (i+1)*10]
+                df_batch = df_cell.iloc[i*30 : (i+1)*30]
                 susie_job = b.new_python_job(
                 f'SusieR {cell_type} {chrom} batch {i}',
                 )
