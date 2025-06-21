@@ -6,9 +6,9 @@ Assumes associaTR was run previously on both cohorts and gene lists were generat
 Outputs a TSV file with the meta-analysis results for each gene.
 
 analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
-    --output-dir "str/associatr/cond_analysis_lead_snv/common_variants_snps/tob_n1055_and_bioheart_n990" \
-    meta_runner.py --results-dir-1=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis_lead_snv/common_variants_snps/tob_n1055/results/v1 \
-    --results-dir-2=gs://cpg-bioheart-test-analysis/str/associatr/cond_analysis_lead_snv/common_variants_snps/bioheart_n990/results/v1
+    --output-dir "str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/bioheart_n975_tob_n950" \
+    meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/bioheart_n975/results/v1-meta-fixed \
+    --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/tob_n950/results/v1-meta-fixed
 """
 
 import click
@@ -35,8 +35,8 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     ro.r('library(tidyverse)')
 
     # read in raw associaTR results for each cohort for a particular gene
-    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
-    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t')
+    d1 = pd.read_csv(f'{input_dir_1}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',dtype={'locus_filtered': str})
+    d2 = pd.read_csv(f'{input_dir_2}/{cell_type}/{chr}/{gene}_100000bp.tsv', sep='\t',dtype={'locus_filtered': str})
 
     # remove loci that failed to be tested in either dataset
     d1 = d1[d1['locus_filtered'] == 'False']
@@ -72,12 +72,19 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
     pos = numeric(),
     n_samples_tested_1 = numeric(),
     n_samples_tested_2 = numeric(),
-    coeff_meta = numeric(),
-    se_meta = numeric(),
+    coeff_meta_random = numeric(),
+    se_meta_random = numeric(),
     pval_q_meta = numeric(),
-    pval_meta = numeric(),
-    lowerCI_meta = numeric(),
-    upperCI_meta = numeric(),
+    q_meta = numeric(),
+    tau_meta = numeric(),
+    i2_meta = numeric(),
+    h_meta = numeric(),
+    pval_meta_random = numeric(),
+    pval_meta_fixed = numeric(),
+    coeff_meta_fixed = numeric(),
+    se_meta_fixed = numeric(),
+    lowerCI_meta_random = numeric(),
+    upperCI_meta_random = numeric(),
     r2_1 = numeric(),
     r2_2 = numeric(),
     motif = character(),
@@ -119,17 +126,24 @@ def run_meta_gen(input_dir_1, input_dir_2, cell_type, chr, gene):
 
     if (skip_to_next) next
 
-    new_entry <- data.frame(
+    new_entry = data.frame(
         chr = df[i, "chrom"],
         pos = df[i, "pos"],
         n_samples_tested_1 = df[i, "n_samples_tested.x"],
         n_samples_tested_2 = df[i, "n_samples_tested.y"],
-        coeff_meta = m.gen$TE.random,
-        se_meta = m.gen$seTE.random,
+        coeff_meta_random = m.gen$TE.random,
+        se_meta_random = m.gen$seTE.random,
         pval_q_meta = m.gen$pval.Q,
-        pval_meta = m.gen$pval.random,
-        lowerCI_meta = m.gen$lower.random,
-        upperCI_meta = m.gen$upper.random,
+        q_meta = m.gen$Q,
+        tau_meta = m.gen$tau,
+        i2_meta = m.gen$I2,
+        h_meta = m.gen$H,
+        pval_meta_random = m.gen$pval.random,
+        pval_meta_fixed = m.gen$pval.fixed,
+        coeff_meta_fixed = m.gen$TE.fixed,
+        se_meta_fixed = m.gen$seTE.fixed,
+        lowerCI_meta_random = m.gen$lower.random,
+        upperCI_meta_random = m.gen$upper.random,
         r2_1 = df[i, "regression_R^2.x"],
         r2_2 = df[i, "regression_R^2.y"],
         motif = df[i, "motif"],
