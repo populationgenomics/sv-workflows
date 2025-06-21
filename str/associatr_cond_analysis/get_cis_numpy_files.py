@@ -10,8 +10,8 @@ This script aims to prepare inputs for conditional analysis by:
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
- analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/cond_analysis_on_tr/bioheart_n975" \
+ analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
+--description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/tob_n950" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -160,8 +160,8 @@ def cis_window_numpy_extractor(
             print(f'No eQTL results found for {gene}... skipping')
             continue
         # get row(s) with minimum p-value
-        min_pval = eqtl_results['pval_meta'].min()
-        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta'] == min_pval]
+        min_pval = eqtl_results['pval_meta_fixed'].min()
+        smallest_pval_rows = eqtl_results[eqtl_results['pval_meta_fixed'] == min_pval]
         # check if all rows are SNPs:
         all_motif_dash = smallest_pval_rows['motif'].str.contains('-').all()
         if all_motif_dash:
