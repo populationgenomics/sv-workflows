@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 
-
 """
 Intersect with Arthur's annotations
 
@@ -15,6 +14,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 import click
 
 CATALOG_PATH = 'gs://cpg-bioheart-test/str/ncAnnot.v0.14.jul2024.bed'
+
 
 @click.option('--tr-path', type=str, help='Path to the tandem repeats file')
 @click.command()
@@ -32,7 +32,7 @@ def main(tr_path):
     # read input files
     catalog = b.read_input(CATALOG_PATH)
     tr = b.read_input(tr_path)
-    tr_file_name = str(tr).split('/')[-1].split('.')[0]
+    tr_file_name = str(tr_path).split('/')[-1].split('.')[0]
 
     # set the job command
     bedtools_job.command(f'bedtools intersect -a {tr} -b {catalog} -wo > {bedtools_job.ofile}')
@@ -41,6 +41,7 @@ def main(tr_path):
     b.write_output(bedtools_job.ofile, output_path(f'o_files/{tr_file_name}_intersect.bed', 'analysis'))
 
     b.run(wait=False)
+
 
 if __name__ == '__main__':
     main()
