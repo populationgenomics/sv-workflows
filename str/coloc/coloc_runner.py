@@ -57,8 +57,8 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
         eqtl_file_path,
         sep='\t',
     )
-    eqtl['beta'] = eqtl['coeff_meta']
-    eqtl['se'] = eqtl['se_meta']
+    eqtl['beta'] = eqtl['coeff_meta_fixed']
+    eqtl['se'] = eqtl['se_meta_fixed']
     eqtl['position'] = eqtl['pos']
     eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
