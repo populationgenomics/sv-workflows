@@ -9,12 +9,12 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 3) Run coloc for each eGene (if the SNP GWAS data has at least one variant with pval <5e-8)
 4) Write the results to a TSV file
 
-analysis-runner --dataset "bioheart" \
+analysis-runner --dataset "tenk10k" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "tenk10k/str/associatr/final_freeze" \
+    --output-dir "str/associatr/final_freeze/meta_fixed" \
     coloc_runner.py \
     --snp-gwas-file=gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/Kiryluk_IgAN_parsed.tsv \
     --pheno-output-name="Kiryluk_IgAN" \
@@ -107,12 +107,12 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv',
+    default='gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv',
 )
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/meta_results',
+    default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/common_variant_snps/meta_results/meta_with_fixed/meta_results',
 )
 @click.option(
     '--snp-gwas-file',
@@ -150,9 +150,7 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         egenes_file)
 
     result_df_cfm_str = egenes
-    #result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
-    #result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
-    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8]  # filter for STRs with p-value < 5e-8
+    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene', 'celltype'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
