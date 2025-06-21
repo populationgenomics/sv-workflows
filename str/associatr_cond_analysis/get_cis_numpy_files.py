@@ -11,7 +11,7 @@ This script aims to prepare inputs for conditional analysis by:
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
---description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/tob_n950" \
+--description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/bioheart_n975" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
