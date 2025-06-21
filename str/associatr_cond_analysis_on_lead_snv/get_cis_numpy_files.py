@@ -10,8 +10,8 @@ This script aims to prepare inputs for conditional analysis by:
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr, with lead STR genotypes as a covariate.
 
- analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/cond_analysis_on_snv/tob_n950" \
+ analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
+--description "get cis and numpy" --output-dir "tenk10k/str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/tob_n950" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -162,7 +162,7 @@ def cis_window_numpy_extractor(
         # get row(s) with minimum p-value
 
         snv_meta_results = eqtl_results[eqtl_results['motif'].str.contains('-')]  # filter for SNVs
-        lead_snv = snv_meta_results[snv_meta_results['pval_meta'] == snv_meta_results['pval_meta'].min()]
+        lead_snv = snv_meta_results[snv_meta_results['pval_meta_fixed'] == snv_meta_results['pval_meta_fixed'].min()]
 
         # get characteristics of the lead snv
         lead_snv_motif = [lead_snv.iloc[0]['motif']]
