@@ -152,17 +152,17 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
     result_df_cfm_str = egenes
     result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
-        subset=['gene', 'celltype'],
+        subset=['gene_name', 'cell_type'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
 
     b = get_batch(name=f'Run coloc:{pheno_output_name}')
 
     for celltype in celltypes.split(','):
         result_df_cfm_str_celltype = result_df_cfm_str[
-            result_df_cfm_str['celltype'] == celltype
+            result_df_cfm_str['cell_type'] == celltype
         ]  # filter for the celltype of interest
-        for gene in result_df_cfm_str_celltype['gene']:
-            chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene'] == gene]['chr'].iloc[0]
+        for gene in result_df_cfm_str_celltype['gene_name']:
+            chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['gene_name'] == gene]['chr'].iloc[0]
             if to_path(
                 output_path(
                     f"coloc-snp-only/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
