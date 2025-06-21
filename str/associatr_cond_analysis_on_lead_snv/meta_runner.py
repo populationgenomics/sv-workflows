@@ -5,7 +5,7 @@ This script runs R's meta package to generate pooled effect sizes for each eQTL.
 Assumes associaTR was run previously on both cohorts and gene lists were generated for each cell type and chromosome.
 Outputs a TSV file with the meta-analysis results for each gene.
 
-analysis-runner --dataset "bioheart" --description "meta results runner" --access-level "test" \
+analysis-runner --dataset "tenk10k" --description "meta results runner" --access-level "test" \
     --output-dir "str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/bioheart_n975_tob_n950" \
     meta_runner.py --results-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/bioheart_n975/results/v1-meta-fixed \
     --results-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/tob_n950/results/v1-meta-fixed
