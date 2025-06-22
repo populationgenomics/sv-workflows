@@ -16,8 +16,8 @@ analysis-runner --dataset "tenk10k" \
     --output-dir "str/associatr/final_freeze/meta_fixed" \
     coloc_ukbb_runner.py \
     --pheno-output-name=gymrek-ukbb-apolipoprotein_a \
-    --celltypes "CD16_Mono" \
-    --max-parallel-jobs 10000 \
+    --celltypes "ASDC" \
+    --max-parallel-jobs 10000
 
 
 """
@@ -61,8 +61,8 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
         sep='\t',
     )
     gene = eqtl_file_path.split('/')[-1].split('_')[0]
-    eqtl['beta'] = eqtl['coeff_meta']
-    eqtl['se'] = eqtl['se_meta']
+    eqtl['beta'] = eqtl['coeff_meta_fixed']
+    eqtl['se'] = eqtl['se_meta_fixed']
     eqtl['position'] = eqtl['pos']
     eqtl['snp'] = eqtl['chr'] + '_' + eqtl['position'].astype(str) + '_' + eqtl['motif']
     eqtl['snp'] = eqtl['snp'].str.replace('-', '_', regex=False)
