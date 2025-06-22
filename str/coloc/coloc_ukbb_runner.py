@@ -13,7 +13,7 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "tenk10k/str/associatr/final_freeze" \
+    --output-dir "str/associatr/final_freeze/meta_fixed" \
     coloc_ukbb_runner.py \
     --pheno-output-name=gymrek-ukbb-apolipoprotein_a \
     --celltypes "CD16_Mono" \
@@ -110,12 +110,12 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/finemapped_etrs.csv',
+    default='gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv',
 )
 @click.option(
     '--snp-cis-dir',
     help='Path to the directory containing the SNP cis results',
-    default='gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/meta_results',
+    default='gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/common_variant_snps/meta_results/meta_with_fixed/meta_results',
 )
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
@@ -141,22 +141,22 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file,
-        usecols=['chr', 'pos', 'pval_meta', 'motif','gene', 'celltype', 'ref_len'],
+        usecols=['chr', 'pos', 'pval_meta_fixed', 'motif','gene_name', 'cell_type', 'ref_len'],
     )
 
     result_df_cfm = egenes
     result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
     result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
-    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta'] < 5e-8]  # filter for STRs with p-value < 5e-8
+    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
-        subset=['gene', 'celltype'],
+        subset=['gene_name', 'cell_type'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
 
     b = get_batch(name=f'Run coloc:{pheno_output_name} and {celltypes}')
 
     for celltype in celltypes.split(','):
         result_df_cfm_str_celltype = result_df_cfm_str[
-            result_df_cfm_str['celltype'] == celltype
+            result_df_cfm_str['cell_type'] == celltype
         ]  # filter for the celltype of interest
         for chrom in result_df_cfm_str_celltype['chr'].unique():
             result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['chr'] == chrom]
