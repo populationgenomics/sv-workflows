@@ -8,7 +8,7 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 3) Run coloc for each eGene (if the GWAS data has at least one variant with pval <5e-8)
 4) Write the results to a TSV file
 
-analysis-runner --dataset "bioheart" \
+analysis-runner --dataset "tenk10k" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
     --memory='4G' \
@@ -17,7 +17,8 @@ analysis-runner --dataset "bioheart" \
     coloc_ukbb_runner.py \
     --pheno-output-name=gymrek-ukbb-apolipoprotein_a \
     --celltypes "CD16_Mono" \
-    --max-parallel-jobs 10000
+    --max-parallel-jobs 10000 \
+
 
 """
 
@@ -166,7 +167,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
             with gzip.open(to_path(chr_gwas_file), 'rb') as f:
                 hg38_map = pd.read_csv(f, sep='\t')
 
-            for gene in result_df_cfm_str_celltype_chrom['gene']:
+            for gene in result_df_cfm_str_celltype_chrom['gene_name']:
                 if to_path(
                     output_path(
                         f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
