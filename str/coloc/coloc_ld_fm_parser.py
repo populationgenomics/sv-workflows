@@ -10,14 +10,14 @@ Workflow:
 3) Calculate pairwise correlation of the lead eSTR locus and other variants.
 4) Save results of the top correlated variant in a TSV file.
 
-analysis-runner --dataset "bioheart" \
+analysis-runner --dataset "tenk10k" \
     --description "Calculate LD for fine-mapped eSTRs with GWAS variants" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/final_freeze/meta_fixed" \
     coloc_ld_fm_parser.py \
-    --fm-csv=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv
+    --fm-csv=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/coloc/estrs_fm_coloc_list_for_ld.csv
 
 
 """
@@ -38,6 +38,8 @@ def ld_parser(
 ):
     import numpy as np
     from cyvcf2 import VCF
+    from cpg_utils.hail_batch import output_path
+
 
     max_corr_master_df = pd.DataFrame()
     pheno_df = pd.read_csv(pheno_csv, sep='\t')
