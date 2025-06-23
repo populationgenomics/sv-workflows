@@ -35,7 +35,7 @@ def genes_parser(
 
     fm = pd.read_csv('gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv')
     fm = fm[fm['cell_type'] == cell_type]
-    fm = fm[fm['chromosome'] == f'chr{chromosome}']
+    fm = fm[fm['chr'] == f'chr{chromosome}']
     fm = fm.drop_duplicates(subset=['chr', 'pos', 'end', 'motif', 'gene_name'])
 
     for row in fm.itertuples():
@@ -125,7 +125,7 @@ def genes_parser(
         max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
         max_corr_master_df.to_csv(
             output_path(
-                f'fm_tr_ld_snv/{cell_type}/{chromosome}/{cell_type}_{chromosome}_summ_stats.tsv',
+                f'fm_tr_ld_snv/{cell_type}/chr{chromosome}/{cell_type}_chr{chromosome}_summ_stats.tsv',
                 'analysis',
             ),
             sep='\t',
@@ -147,7 +147,7 @@ def main(snp_vcf_dir, str_vcf_dir):
     for cell_type in celltypes:
         for chrom in range(1, 23):
             if to_path(
-                output_path(f'fm_tr_ld_snv/{cell_type}/{chrom}/{cell_type}_{chrom}_summ_stats.tsv',
+                output_path(f'fm_tr_ld_snv/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_summ_stats.tsv',
             )).exists():
                 print(f'File already exists for {cell_type} and {chrom}')
                 continue
