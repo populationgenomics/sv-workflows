@@ -8,14 +8,14 @@ Outputs results as a TSV file.
 This helper script will be used to concatenate the results of the meta-analysis for eSNPs and eSTRs together, with each gene having its own file.
 Only common genes between the two datasets will be concatenated.
 
-analysis-runner --dataset "bioheart" --description "concatenate meta-analysis results" --access-level "test" \
-    --output-dir "str/associatr/snps_and_strs/tob_n1055_and_bioheart_n990\meta_results" \
+analysis-runner --dataset "tenk10k" --description "concatenate meta-analysis results" --access-level "test" --memory='8G' \
+    --output-dir "str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/trs_snps/bioheart_n975_tob_n950/meta_results" \
     dataframe_concatenator.py \
-    --input-dir-1=gs://cpg-bioheart-test/str/associatr/common_variants_snps/tob_n1055_and_bioheart_n990/meta_results \
-    --input-dir-2=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results \
-    --celltypes=B_intermediate \
+    --input-dir-1=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/common_variants_snps/bioheart_n975_tob_n950/meta_results \
+    --input-dir-2=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/bioheart_n975_tob_n950/meta_results \
+    --celltypes=ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TEM,CD8_Naive,CD8_Proliferating,CD8_TCM,CD8_TEM,HSPC,ILC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC \
     --chromosomes=chr1 \
-    --max-parallel-jobs=10
+    --max-parallel-jobs=1000
 
 """
 
