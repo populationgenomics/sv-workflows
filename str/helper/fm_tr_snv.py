@@ -40,6 +40,8 @@ def genes_parser(
 
     for row in fm.itertuples():
         gene = row.gene_name
+        if gene == 'ENSG00000291100':
+            continue
         eqtl_results = pd.read_csv(
             f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/chr{chromosome}/{gene}_100000bp_meta_results.tsv',
             sep='\t')
