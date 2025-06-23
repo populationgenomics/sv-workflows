@@ -12,19 +12,19 @@ For each gene,
 3) Obtain the genotypes for each extracted STR and SNP in 2)
 4) Calculate the correlation matrix between STR and SNP genotypes.
 
-analysis-runner --dataset "bioheart" \
+analysis-runner --dataset "tenk10k" \
     --description "Calculate LD between STR and SNPs" \
     --access-level "test" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "tenk10k/str/associatr/final_freeze/fine_mapping/prep_files/v1" \
+    --output-dir "str/associatr/final_freeze/fine_mapping/prep_files/meta_fixed" \
     corr_matrix_maker.py --snp-vcf-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps \
     --str-vcf-dir=gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific \
-    --celltypes=gdT \
+    --celltypes=CD4_TCM \
     --job-storage=10G \
     --max-parallel-jobs=50 \
     --str-fdr-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/fdr_qvals/using_acat \
     --associatr-dir=gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/snps_and_strs/bioheart_n975_and_tob_n950/rm_str_indels_dup_strs/meta_results \
-    --chromosomes=chr22
+    --chromosomes=chr1,chr2,chr3,chr4,chr5
 
 
 """
