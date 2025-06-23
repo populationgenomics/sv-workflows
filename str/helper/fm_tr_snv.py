@@ -150,7 +150,7 @@ def main(snp_vcf_dir, str_vcf_dir):
     for cell_type in celltypes:
         for chrom in range(1, 23):
             if to_path(
-                output_path(f'etr_ld_snv/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_summ_stats.tsv',
+                output_path(f'etr_ld_snv/{cell_type}/chr{chrom}/{cell_type}_chr{chrom}_summ_stats.tsv', 'analysis'
             )).exists():
                 print(f'File already exists for {cell_type} and {chrom}')
                 continue
