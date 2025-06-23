@@ -39,54 +39,44 @@ def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations, num_c
     ro.r('library(tidyverse)')
 
     # load in LD matrix and associatr file into R environment
-    # Load LD matrix
     ld_matrix = pd.read_csv(ld_path, sep='\t')
     ld_matrix = ld_matrix.rename(columns={'Unnamed: 0': 'X'})
+
     gene = ld_path.split('/')[-1].split('_')[0]
-    # Load and clean sumstats
-    associatr_sum_stats = pd.read_csv(associatr_path, sep='\t')
-    associatr_sum_stats = associatr_sum_stats.dropna(subset=['coeff_meta_fixed', 'se_meta_fixed'])
-
-    # Generate varid for matching
-    associatr_sum_stats['varid'] = associatr_sum_stats['chr'].astype(str) + ":" + associatr_sum_stats['pos'].astype(str)
-    associatr_sum_stats['varid'] = associatr_sum_stats['varid'] + "_" + associatr_sum_stats['motif']
-
-    # Filter LD matrix to match only valid rows
-    ld_matrix = ld_matrix[ld_matrix['X'].isin(associatr_sum_stats['varid'])]
-
-    # Subset associatr to only what matches LD
-    associatr_sum_stats = associatr_sum_stats[associatr_sum_stats['varid'].isin(ld_matrix['X'])]
-
-    # Reorder associatr to match LD
-    associatr_sum_stats = associatr_sum_stats.set_index('varid').loc[ld_matrix['X']].reset_index()
-
-    # Drop 'X' column from LD matrix to make it numeric
-    corr_x = ld_matrix.drop(columns='X')
-
-    # Convert to R
     with (ro.default_converter + pandas2ri.converter).context():
-        ro.globalenv['ld_r'] = ro.conversion.get_conversion().py2rpy(corr_x)
-        ro.globalenv['associatr_r'] = ro.conversion.get_conversion().py2rpy(associatr_sum_stats)
-        ro.globalenv['gene'] = gene
-        ro.globalenv['num_iterations'] = num_iterations
-        ro.globalenv['num_causal_variants'] = num_causal_variants
+        ld_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
+    print('loaded in ld_r')
+    associatr_sum_stats = pd.read_csv(associatr_path, sep='\t')
+    with (ro.default_converter + pandas2ri.converter).context():
+        associatr_r = ro.conversion.get_conversion().py2rpy(associatr_sum_stats)
+    print('loaded in associatr_r')
+    ro.globalenv['associatr_r'] = associatr_r
+    ro.globalenv['ld_r'] = ld_r
+    ro.globalenv['gene'] = gene
+    ro.globalenv['num_iterations'] = num_iterations
+    ro.globalenv['num_causal_variants'] = num_causal_variants
 
-    # R code stays clean now
-    ro.r('''
-    corr_x <- as.matrix(ld_r)
+    ro.r(
+        '''
+    df_subset <- subset(ld_r, select = -X)
+    corr_x = as.matrix(df_subset)
     rownames(corr_x) <- NULL
     colnames(corr_x) <- NULL
 
-    # Run SuSiE
-    fitted_rss1 <- susie_rss(
-        bhat = associatr_r$coeff_meta_fixed,
-        shat = associatr_r$se_meta_fixed,
-        n = associatr_r$n_samples_tested_1[1] + associatr_r$n_samples_tested_2[1],
-        R = corr_x,
-        var_y = 1,
-        L = num_causal_variants,
-        max_iter = num_iterations
-    )
+    # Create a new variable directly with the desired format
+    associatr_r$varid <- paste(associatr_r$chr, associatr_r$pos, sep = ":")
+    associatr_r$varid <- paste(associatr_r$varid, associatr_r$motif, sep = "_")
+
+    # Create an index based on the order vector
+    index <- match(ld_r$X, associatr_r$varid)
+
+    # Reorder the associatr data frame using the index
+    df_ordered <- associatr_r[index, ]
+
+    # Run SusieR
+    fitted_rss1 <- susie_rss(bhat = df_ordered$coeff_meta_fixed, shat = df_ordered$se_meta_fixed, n = df_ordered$n_samples_tested_1[1]+df_ordered$n_samples_tested_2[1], R = corr_x, var_y = 1, L = num_causal_variants,
+    max_iter =num_iterations)
+
    # Append SusieR results to dataframe
     df_ordered$susie_pip = susie_get_pip(fitted_rss1, prune_by_cs = TRUE)
 
