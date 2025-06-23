@@ -15,9 +15,9 @@ analysis-runner --dataset "bioheart" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "tenk10k/str/associatr/final_freeze/coloc-ld" \
+    --output-dir "str/associatr/final_freeze/meta_fixed" \
     coloc_ld_fm_parser.py \
-    --fm-csv=gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/coloc-tr-snp/estrs_fm_coloc_list_for_ld_methyl.csv
+    --fm-csv=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv
 
 
 """
@@ -26,7 +26,7 @@ analysis-runner --dataset "bioheart" \
 import click
 import pandas as pd
 
-from cpg_utils.hail_batch import get_batch
+from cpg_utils.hail_batch import get_batch, output_path
 from cpg_utils import to_path
 
 
@@ -132,9 +132,9 @@ def ld_parser(
         max_corr_master_df = pd.concat([max_corr_master_df, max_correlation_row], axis=0)
 
     max_corr_master_df.to_csv(
-        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/coloc-ld/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv',
+        output_path(f'coloc-ld/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv', 'analysis'),
         sep='\t',
-        index=False,
+        index=False
     )
 
 
@@ -152,7 +152,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     for pheno in pheno_list:
         fm_pheno = fm[fm['pheno'] == pheno]
         for chrom in fm_pheno['chr'].unique():
-            if to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/coloc-ld/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv').exists():
+            if to_path(output_path('coloc-ld/{pheno}/{chrom}/{pheno}_{chrom}_corr.tsv', 'analysis')).exists():
                 print(f'File already exists for {pheno} and {chrom}')
                 continue
             pheno_map = {
