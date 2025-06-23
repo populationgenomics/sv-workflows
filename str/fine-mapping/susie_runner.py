@@ -7,17 +7,17 @@ This script will run SusieR, fine-mapping tool.
 Required inputs:
 - output from`corr_matrix_maker.py` (ie LD matrix)
 - associaTR raw outputs (eSNPs and eSTRs combined), preferably also run with `remove_STR_indels.py`.
-analysis-runner --dataset "bioheart" \
+analysis-runner --dataset "tenk10k" \
     --description "Run susieR for eGenes identified by STR analysis" \
     --access-level "test" \
     --image "australia-southeast1-docker.pkg.dev/cpg-common/images/r-meta:susie" \
-    --output-dir "str/associatr/fine_mapping/v2" \
+    --output-dir "str/associatr/final_freeze/fine_mapping" \
     susie_runner.py \
-    --celltypes "gdT,B_intermediate,ILC,Plasmablast,dnT,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,CD4_TCM,NK,CD8_TEM,CD4_Naive,B_naive" \
-    --chromosomes "chr22" \
+    --celltypes "CD4_TCM" \
+    --chromosomes "chr1,chr2,chr3,chr4,chr5" \
     --ld-dir "gs://cpg-bioheart-test-analysis/str/associatr/fine_mapping/prep_files/v2/correlation_matrix" \
-    --associatr-dir "gs://cpg-bioheart-test/str/associatr/snps_and_strs/rm_str_indels_dup_strs/tob_n1055_and_bioheart_n990/meta_results" \
-    --max-parallel-jobs 100
+    --associatr-dir "gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3" \
+    --max-parallel-jobs 100 --num-causal-variants=1
 """
 
 import click
@@ -74,7 +74,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations, num_c
     df_ordered <- associatr_r[index, ]
 
     # Run SusieR
-    fitted_rss1 <- susie_rss(bhat = df_ordered$coeff_meta, shat = df_ordered$se_meta, n = df_ordered$n_samples_tested_1[1]+df_ordered$n_samples_tested_2[1], R = corr_x, var_y = 1, L = num_causal_variants,
+    fitted_rss1 <- susie_rss(bhat = df_ordered$coeff_meta_fixed, shat = df_ordered$se_meta_fixed, n = df_ordered$n_samples_tested_1[1]+df_ordered$n_samples_tested_2[1], R = corr_x, var_y = 1, L = num_causal_variants,
     max_iter =num_iterations)
 
    # Append SusieR results to dataframe
@@ -114,7 +114,7 @@ def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations, num_c
 
     # write dataframe to GCS
     susie_associatr_df.to_csv(
-        output_path(f"susie/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis'),
+        output_path(f"susie_summstats/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis'),
         sep='\t',
         index=False,
     )
@@ -162,7 +162,7 @@ def main(
                 gene = ld_file.split('/')[-1].split('_')[0]
                 print(f'Processing {gene}...')
                 if to_path(
-                    output_path(f"susie/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis'),
+                    output_path(f"susie_summstats/{celltype}/{chrom}/{gene}_100kb.tsv", 'analysis'),
                 ).exists():
                     continue
                 associatr_path = f'{associatr_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv'
