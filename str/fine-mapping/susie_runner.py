@@ -47,6 +47,8 @@ def susie_runner(ld_path, associatr_path, celltype, chrom, num_iterations, num_c
         ld_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
     print('loaded in ld_r')
     associatr_sum_stats = pd.read_csv(associatr_path, sep='\t')
+    #drop rows with missing values
+    associatr_sum_stats = associatr_sum_stats.dropna(subset=['coeff_meta_fixed', 'se_meta_fixed'])
     with (ro.default_converter + pandas2ri.converter).context():
         associatr_r = ro.conversion.get_conversion().py2rpy(associatr_sum_stats)
     print('loaded in associatr_r')
