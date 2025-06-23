@@ -124,14 +124,14 @@ def genes_parser(
         )
 
         max_corr_master_df = pd.concat([max_corr_master_df, results_df], axis=0)
-        max_corr_master_df.to_csv(
-            output_path(
-                f'fm_tr_ld_snv/{cell_type}/chr{chromosome}/{cell_type}_chr{chromosome}_summ_stats.tsv',
-                'analysis',
-            ),
-            sep='\t',
-            index=False,
-        )
+    max_corr_master_df.to_csv(
+        output_path(
+            f'fm_tr_ld_snv/{cell_type}/chr{chromosome}/{cell_type}_chr{chromosome}_summ_stats.tsv',
+            'analysis',
+        ),
+        sep='\t',
+        index=False,
+    )
 
 
 @click.option('--snp-vcf-dir', default='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps')
