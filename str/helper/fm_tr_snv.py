@@ -44,6 +44,7 @@ def genes_parser(
             f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/chr{chromosome}/{gene}_100000bp_meta_results.tsv',
             sep='\t')
         tr_pos = row.pos
+        tr_coord = f'chr{chromosome}:' + str(tr_pos)
         tr_motif = row.motif
 
         #find the lead SNV
@@ -51,7 +52,7 @@ def genes_parser(
         min_pval = eqtl_results_snp['pval_meta_fixed'].min()
         smallest_pval_rows = eqtl_results_snp[eqtl_results_snp['pval_meta_fixed'] == min_pval]
 
-        lead_snv_coord = chromosome + ':' + str(smallest_pval_rows.iloc[0]['pos'])
+        lead_snv_coord = f'chr{chromosome}' + ':' + str(smallest_pval_rows.iloc[0]['pos'])
         lead_snv_motif = smallest_pval_rows.iloc[0]['motif']
 
 
@@ -77,7 +78,7 @@ def genes_parser(
         str_vcf = VCF(str_input['vcf'])
         tr_df['individual'] = str_vcf.samples
         print('Starting to subset STR VCF for window...')
-        for variant in str_vcf(tr_pos):
+        for variant in str_vcf(tr_coord):
             if str(variant.INFO.get('RU')) == tr_motif:
                 genotypes = variant.format('REPCN')
                 # Replace '.' with '-99/-99' to handle missing values
