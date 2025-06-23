@@ -20,7 +20,6 @@ def run_concatenator(cell, meta_dir):
     """
     Concatenate two dataframes together.
     """
-    import pandas as pd
 
     # read input files
     dfs = []
