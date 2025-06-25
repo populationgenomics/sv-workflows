@@ -19,7 +19,7 @@ from cpg_utils.hail_batch import get_batch
 def sharder(phenotype):
     import gzip
 
-    gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v2/white_british_{phenotype}_snp_str_gwas_results_hg38.tab.gz'
+    gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v4/white_british_{phenotype}_snp_str_gwas_results_hg38.tab.gz'
     with gzip.open(to_path(gwas_file), 'rb') as f:
         gwas = pd.read_csv(
             f,
@@ -30,7 +30,7 @@ def sharder(phenotype):
         chrom = f'chr{chrom_num}'
         gwas_chrom = gwas[gwas['chromosome'] == chrom]
         gwas_chrom.to_csv(
-            f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v2/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v4/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             sep='\t',
             index=False,
         )
