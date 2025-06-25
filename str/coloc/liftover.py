@@ -106,9 +106,10 @@ def main():
         "vitamin_d",
         "white_blood_cell_count",
     ]
-    for pheno in phenotypes:
+    for pheno in ['white_blood_cell_count']:
         liftover_job = b.new_python_job('Liftover variants from hg19 to hg38: ' + pheno)
-        liftover_job.memory('64G')
+        liftover_job.cpu(16)
+        liftover_job.memory('highmem')
         liftover_job.storage('30G')
         liftover_job.call(liftover, pheno)
     b.run(wait=False)
