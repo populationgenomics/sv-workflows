@@ -4,13 +4,13 @@ chromosomes='chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr1
 # gs://... to the chr-specific output of qc_filters_associatr.py
 vcf_file_dir='gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific'
 #vcf_file_dir='gs://cpg-bioheart-main/str/associatr/tob_freeze_1/bgzip_tabix/v4'
-cis_window_dir='gs://cpg-tenk10k-test/str/associatr/bioheart_n975/power_analysis/cis_window_files/sample_975'
-pheno_cov_numpy_dir='gs://cpg-tenk10k-test/str/associatr/bioheart_n975/power_analysis/pheno_cov_numpy/sample_975'
+cis_window_dir='gs://cpg-tenk10k-test/str/associatr/bioheart_n975/power_analysis/cis_window_files/sample_400'
+pheno_cov_numpy_dir='gs://cpg-tenk10k-test/str/associatr/bioheart_n975/power_analysis/pheno_cov_numpy/sample_400'
 gene_list_dir ='gs://cpg-tenk10k-test/str/associatr/bioheart_n975/power_analysis/scRNA_gene_lists/1_min_pct_cells_expressed'
 max_parallel_jobs=500
 cis_window_size=100000
 # version of the output
-version='sample_975'
+version='sample_400'
 # job storage
 job_storage = '0G'
 job_cpu =1
