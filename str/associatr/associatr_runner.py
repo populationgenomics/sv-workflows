@@ -8,11 +8,11 @@ Ensure prior scripts have been run to generate dependent files, particularly:
 - get_covariates.py
 - qc_filters_associatr.py (depends on qc_annotator.py)
 
- analysis-runner --dataset "bioheart" --config associatr_runner.toml \
+ analysis-runner --dataset "tenk10k" --config associatr_runner.toml \
     --description "run associatr" \
-    --access-level "full" \
-    --memory "8G" \
-    --output-dir "str/associatr/common_variants_snps/tob_n1055" \
+    --access-level "test" \
+    --memory "4G" \
+    --output-dir "str/associatr/bioheart_n975/power_analysis" \
      python3 associatr_runner.py
 
 
