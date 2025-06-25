@@ -150,7 +150,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
     egenes = egenes.drop_duplicates(
         subset=['gene_name', 'cell_type'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
-
+    egenes['chr'] = egenes['variant_id'].str.split(':').str[0]  # extract chromosome from variant_id
     b = get_batch(name=f'Run coloc:{pheno_output_name} and {celltypes}')
 
     for celltype in celltypes.split(','):
