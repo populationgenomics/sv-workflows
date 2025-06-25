@@ -28,7 +28,7 @@ def liftover(phenotype):
 
     columns = ['chr', 'position', 'refhg38', 'althg38', 'info']
     liftover_df = pd.read_csv(
-        'gs://cpg-bioheart-test/str/gymrek_ukbb_snp_gwas_catalogs_v2/ukbb_snps_hg38.sorted.chr_lo_variants.tsv',
+        'gs://cpg-bioheart-test/str/gymrek_ukbb_snp_gwas_catalogs_v2/ukbb_snps_v2_lo_variants.tsv',
         sep='\t',
         header=None,
         names=columns
@@ -44,7 +44,7 @@ def liftover(phenotype):
 
     # Write out the results
     df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv(
-        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v2/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
+        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v3/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
         sep='\t',
         index=False,
     )
