@@ -13,10 +13,10 @@ analysis-runner --dataset "tenk10k" \
     --access-level "test" \
     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/final_freeze/meta_fixed" \
+    --output-dir "str/associatr/final_freeze/meta_fixed/v2" \
     coloc_ukbb_runner.py \
     --pheno-output-name=gymrek-ukbb-apolipoprotein_a \
-    --celltypes "ASDC" \
+    --celltypes "B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,gdT,dnT,CD4_TCM" \
     --max-parallel-jobs 10000
 
 
@@ -111,7 +111,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv',
+    default='gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs_v2.csv',
 )
 @click.option(
     '--snp-cis-dir',
@@ -142,32 +142,30 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
     # read in eGenes file
     egenes = pd.read_csv(
         egenes_file,
-        usecols=['chr', 'pos', 'pval_meta_fixed', 'motif','gene_name', 'cell_type', 'ref_len'],
     )
 
-    result_df_cfm = egenes
-    result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
-    result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
-    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
-    result_df_cfm_str = result_df_cfm_str.drop_duplicates(
+    #result_df_cfm['variant_type'] = result_df_cfm['motif'].str.contains('-').map({True: 'SNV', False: 'STR'})
+    #result_df_cfm_str = result_df_cfm[result_df_cfm['variant_type'] == 'STR']  # filter for STRs
+    #result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
+    egenes = egenes.drop_duplicates(
         subset=['gene_name', 'cell_type'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
 
     b = get_batch(name=f'Run coloc:{pheno_output_name} and {celltypes}')
 
     for celltype in celltypes.split(','):
-        result_df_cfm_str_celltype = result_df_cfm_str[
-            result_df_cfm_str['cell_type'] == celltype
+        egenes_cell_type = egenes[
+            egenes['cell_type'] == celltype
         ]  # filter for the celltype of interest
-        for chrom in result_df_cfm_str_celltype['chr'].unique():
-            result_df_cfm_str_celltype_chrom = result_df_cfm_str_celltype[result_df_cfm_str_celltype['chr'] == chrom]
+        for chrom in egenes_cell_type['chr'].unique():
+            egenes_cell_type_chrom = egenes_cell_type[egenes_cell_type['chr'] == chrom]
             phenotype = pheno_output_name.split('-')[-1]
-            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz'
+            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v2/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz'
 
             with gzip.open(to_path(chr_gwas_file), 'rb') as f:
                 hg38_map = pd.read_csv(f, sep='\t')
 
-            for gene in result_df_cfm_str_celltype_chrom['gene_name']:
+            for gene in egenes_cell_type_chrom['gene_name']:
                 if to_path(
                     output_path(
                         f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",

@@ -56,17 +56,16 @@ phenotypes=(
 )
 
 # Loop through each cell type and phenotype
-for celltype in "${celltype_array[@]}"; do
-    for pheno in "${phenotypes[@]}"; do
-        analysis-runner --dataset "tenk10k" \
-        --description "Run coloc for eGenes identified by STR analysis" \
-        --access-level "test" \
-        --memory='4G' \
-        --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-        --output-dir "str/associatr/final_freeze/meta_fixed" \
-        coloc_ukbb_runner.py \
-        --pheno-output-name="$pheno" \
-        --celltypes "$celltype" \
-        --max-parallel-jobs 10000
-    done
+
+for pheno in "${phenotypes[@]}"; do
+    analysis-runner --dataset "tenk10k" \
+    --description "Run coloc for eGenes identified by STR analysis" \
+    --access-level "test" \
+    --memory='4G' \
+    --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
+    --output-dir "str/associatr/final_freeze/meta_fixed/v2" \
+    coloc_ukbb_runner.py \
+    --pheno-output-name="$pheno" \
+    --celltypes "$celltypes" \
+    --max-parallel-jobs 10000
 done
