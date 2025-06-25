@@ -9,8 +9,8 @@ This script aims to:
  - perform rank-based inverse normal transformation on pseudobulk data (per gene basis)
  - output gene-level phenotype and covariate numpy objects for input into associatr
 
- analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
---description "get cis and numpy" --output-dir "str/associatr/tob_n1055/tester" \
+ analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
+--description "get cis and numpy" --output-dir "str/associatr/bioheart_n975/power_analysis" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -115,16 +115,16 @@ def cis_window_numpy_extractor(
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
         gene_pheno = pseudobulk[['sample_id', gene]]
 
+        gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
+
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
-        gene_pheno.loc[:, 'gene_rank'] = gene_pheno[gene].rank()
+        gene_pheno_cov.loc[:, 'gene_rank'] = gene_pheno_cov[gene].rank()
         # Calculate the percentile of each rank
-        gene_pheno.loc[:, 'gene_percentile'] = (gene_pheno.loc[:, 'gene_rank'] - 0.5) / (len(gene_pheno))
+        gene_pheno_cov.loc[:, 'gene_percentile'] = (gene_pheno_cov.loc[:, 'gene_rank'] - 0.5) / (len(gene_pheno_cov))
         # Use the inverse normal cumulative distribution function (quantile function) to transform percentiles to normal distribution values
-        gene_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(gene_pheno.loc[:, 'gene_percentile'])
-        gene_pheno = gene_pheno[['sample_id', 'gene_inverse_normal']]
-
-        gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
+        gene_pheno_cov.loc[:, 'gene_inverse_normal'] = norm.ppf(gene_pheno_cov.loc[:, 'gene_percentile'])
+        gene_pheno_cov = gene_pheno_cov[['sample_id', 'gene_inverse_normal']]
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
