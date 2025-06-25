@@ -24,24 +24,28 @@ def liftover(phenotype):
     file_path = to_path(
         f'gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_{phenotype}_snp_gwas_results.tab.gz',
     )
-
+    columns = ['chr', 'pos', 'ref', 'alt', 'info']
     df = pd.read_csv(file_path, sep='\t', compression='gzip', usecols=['ID', 'REF', 'ALT', 'BETA', 'SE', 'P'])
+
+    columns = ['chr', 'position', 'refhg38', 'althg38', 'info']
     liftover_df = pd.read_csv(
-        'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/ukbb_snp_chr_pos_hg38_liftover.bed',
+        'gs://cpg-bioheart-test/str/gymrek_ukbb_snp_gwas_catalogs_v2/ukbb_snps_hg38.sorted.chr_lo_variants.tsv',
         sep='\t',
         header=None,
-        names=['chromosome', 'position', 'end38', 'rsid'],
+        names=columns
     )
+    liftover_df['SRC_ID'] = liftover_df['info'].str.extract(r'SRC_ID=([^;]+)')
 
-    df = pd.merge(df, liftover_df, left_on='ID', right_on='rsid')  # noqa: PD015
+    df = pd.merge(df, liftover_df, left_on='ID', right_on='SRC_ID')  # noqa: PD015
     df['varbeta'] = df['SE'] ** 2
     df['beta'] = df['BETA']
-    df['snp'] = df['chromosome'] + '_' + df['position'].astype(str) + '_' + df['REF'] + '_' + df['ALT']
+    df['chromosome'] = df['chr']
+    df['snp'] = df['chr'] + '_' + df['position'].astype(str) + '_' + df['refhg38'] + '_' + df['althg38']
     df['p_value'] = df['P']
 
     # Write out the results
     df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv(
-        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
+        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v2/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
         sep='\t',
         index=False,
     )
@@ -95,10 +99,10 @@ def main():
         "vitamin_d",
         "white_blood_cell_count",
     ]
-    for pheno in phenotypes:
+    for pheno in ["white_blood_cell_count"]:
         liftover_job = b.new_python_job('Liftover variants from hg19 to hg38: ' + pheno)
         liftover_job.memory('64G')
-        liftover_job.storage('10G')
+        liftover_job.storage('30G')
         liftover_job.call(liftover, pheno)
     b.run(wait=False)
 
