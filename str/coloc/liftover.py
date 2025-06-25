@@ -25,6 +25,7 @@ def liftover(phenotype):
         f'gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_{phenotype}_snp_gwas_results.tab.gz',
     )
     df = pd.read_csv(file_path, sep='\t', compression='gzip', usecols=['ID', 'REF', 'ALT', 'BETA', 'SE', 'P'])
+    df['composite_key'] = df['ID'] + '_' + df['REF'] + '_' + df['ALT'] # there are some multi-allelic variants with the same ID but different REF/ALT alleles
 
     columns = ['chr', 'position', 'refhg38', 'althg38', 'info']
     liftover_df = pd.read_csv(
@@ -34,8 +35,15 @@ def liftover(phenotype):
         names=columns
     )
     liftover_df['SRC_ID'] = liftover_df['info'].str.extract(r'SRC_ID=([^;]+)')
+    liftover_df['SRC_REF_ALT'] = liftover_df['info'].str.extract(r'SRC_REF_ALT=([^;]+)')
 
-    df = pd.merge(df, liftover_df, left_on='ID', right_on='SRC_ID')  # noqa: PD015
+    # Step 2: Split SRC_REF_ALT into SRC_REF and SRC_ALT, and assign them to new columns
+    liftover_df[['SRC_REF', 'SRC_ALT']] = liftover_df['SRC_REF_ALT'].str.split(',', expand=True)
+    liftover_df['composite_key'] = (
+        liftover_df['SRC_ID'] + '_' + liftover_df['SRC_REF'] + '_' + liftover_df['SRC_ALT']
+    )
+
+    df = pd.merge(df, liftover_df, on='composite_key')  # noqa: PD015
     df['varbeta'] = df['SE'] ** 2
     df['beta'] = df['BETA']
     df['chromosome'] = df['chr']
@@ -44,7 +52,7 @@ def liftover(phenotype):
 
     # Write out the results
     df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv(
-        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v3/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
+        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v4/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
         sep='\t',
         index=False,
     )
