@@ -40,6 +40,7 @@ def main():
     b = get_batch(name='catalog sharder')
     phenotypes = [
         "alanine_aminotransferase",
+        "albumin",
         "alkaline_phosphatase",
         "apolipoprotein_a",
         "apolipoprotein_b",
