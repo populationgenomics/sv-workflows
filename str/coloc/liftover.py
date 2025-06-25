@@ -24,7 +24,6 @@ def liftover(phenotype):
     file_path = to_path(
         f'gs://cpg-bioheart-test-upload/str/ukbb-snp-catalogs/white_british_{phenotype}_snp_gwas_results.tab.gz',
     )
-    columns = ['chr', 'pos', 'ref', 'alt', 'info']
     df = pd.read_csv(file_path, sep='\t', compression='gzip', usecols=['ID', 'REF', 'ALT', 'BETA', 'SE', 'P'])
 
     columns = ['chr', 'position', 'refhg38', 'althg38', 'info']
@@ -40,7 +39,7 @@ def liftover(phenotype):
     df['varbeta'] = df['SE'] ** 2
     df['beta'] = df['BETA']
     df['chromosome'] = df['chr']
-    df['snp'] = df['chr'] + '_' + df['position'].astype(str) + '_' + df['refhg38'] + '_' + df['althg38']
+    df['snp'] = df[['chr', 'position', 'refhg38', 'althg38']].astype(str).agg('_'.join, axis=1)
     df['p_value'] = df['P']
 
     # Write out the results
@@ -99,7 +98,7 @@ def main():
         "vitamin_d",
         "white_blood_cell_count",
     ]
-    for pheno in ["white_blood_cell_count"]:
+    for pheno in phenotypes:
         liftover_job = b.new_python_job('Liftover variants from hg19 to hg38: ' + pheno)
         liftover_job.memory('64G')
         liftover_job.storage('30G')
