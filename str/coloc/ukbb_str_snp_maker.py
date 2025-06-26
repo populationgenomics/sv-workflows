@@ -115,7 +115,7 @@ def main():
     pheno2 = ["c_reactive_protein", "cholesterol", "creatinine", "cystatin_c",
         "eosinophil_count", "eosinophil_percent", "gamma_glutamyltransferase",
         "glucose"]
-    for pheno in ['shbg']:
+    for pheno in ['hdl_cholesterol', 'total_protein']:
         liftover_job = b.new_python_job('Parse STR UKBB and combine with SNP ' + pheno)
         liftover_job.memory('32G')
         liftover_job.storage('10G')
