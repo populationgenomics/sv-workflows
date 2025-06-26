@@ -7,7 +7,7 @@ The liftover is obtained from the Broad Institute liftover API.
 It uses BCFTools liftover internally to get the liftover variant id.
 New as of 2024 with support for multi-allelic variants.
 
-analysis-runner --dataset "bioheart" --description "Liftover variants from hg19 to hg38" --access-level "test" \
+analysis-runner --dataset "tenk10k" --description "Liftover variants from hg19 to hg38" --access-level "test" \
     --output-dir "str/associatr/liftover" \
     --memory "4G" \
     --storage "5G" \
@@ -29,7 +29,7 @@ def liftover(phenotype):
 
     columns = ['chr', 'position', 'refhg38', 'althg38', 'info']
     liftover_df = pd.read_csv(
-        'gs://cpg-bioheart-test/str/gymrek_ukbb_snp_gwas_catalogs_v6/ukbb_snps_v2_lo_variants.tsv',
+        'gs://cpg-bioheart-test/str/gymrek_ukbb_snp_gwas_catalogs_v5/ukbb_snps_v2_lo_variants.tsv',
         sep='\t',
         header=None,
         names=columns
