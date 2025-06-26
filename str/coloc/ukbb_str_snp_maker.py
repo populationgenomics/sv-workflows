@@ -52,13 +52,13 @@ def liftover(phenotype):
     # Write out the results
     df = df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']]
 
-    snp_gwas_parsed_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v5/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz'
+    snp_gwas_parsed_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v6/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz'
     with gzip.open(to_path(snp_gwas_parsed_file), 'rb') as f_snp:
         snp_gwas = pd.read_csv(f_snp, sep='\t')
 
     df_combined = pd.concat([df, snp_gwas])
     df_combined.to_csv(
-        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v5/white_british_{phenotype}_snp_str_gwas_results_hg38.tab.gz',
+        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/white_british_{phenotype}_snp_str_gwas_results_hg38.tab.gz',
         sep='\t',
         index=False,
     )
@@ -115,7 +115,7 @@ def main():
     pheno2 = ["alkaline_phosphatase",
         "apolipoprotein_a", "vitamin_d",
         "white_blood_cell_count"]
-    for pheno in pheno2:
+    for pheno in phenotypes:
         liftover_job = b.new_python_job('Parse STR UKBB and combine with SNP ' + pheno)
         liftover_job.memory('32G')
         liftover_job.storage('10G')
