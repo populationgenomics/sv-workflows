@@ -50,9 +50,13 @@ def liftover(phenotype):
     df['snp'] = df[['chr', 'position', 'refhg38', 'althg38']].astype(str).agg('_'.join, axis=1)
     df['p_value'] = df['P']
 
+    #drop entries with duplicate SNPs (this occurs when 2 variants in hg19 map to the same coordinate in hg38 with the same REF/ALT alleles)
+    df = df[~df['snp'].duplicated(keep=False)]
+
+
     # Write out the results
     df[['chromosome', 'position', 'varbeta', 'beta', 'snp', 'p_value']].to_csv(
-        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v4/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
+        f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-gwas-catalogs_v5/white_british_{phenotype}_snp_gwas_results_hg38.tab.gz',
         sep='\t',
         index=False,
     )
@@ -106,7 +110,7 @@ def main():
         "vitamin_d",
         "white_blood_cell_count",
     ]
-    for pheno in ['white_blood_cell_count']:
+    for pheno in phenotypes:
         liftover_job = b.new_python_job('Liftover variants from hg19 to hg38: ' + pheno)
         liftover_job.cpu(16)
         liftover_job.memory('highmem')
