@@ -13,10 +13,10 @@ analysis-runner --dataset "tenk10k" \
     --access-level "test" \
     --memory='4G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/final_freeze/meta_fixed/v2" \
+    --output-dir "str/associatr/final_freeze/meta_fixed/v4" \
     coloc_ukbb_runner.py \
-    --pheno-output-name=gymrek-ukbb-apolipoprotein_a \
-    --celltypes "B_intermediate,ILC,Plasmablast,ASDC,cDC1,pDC,NK_CD56bright,MAIT,B_memory,CD4_CTL,CD4_Proliferating,CD8_Proliferating,HSPC,NK_Proliferating,cDC2,CD16_Mono,Treg,CD14_Mono,CD8_TCM,CD4_TEM,CD8_Naive,NK,CD8_TEM,CD4_Naive,B_naive,gdT,dnT,CD4_TCM" \
+    --pheno-output-name=white_blood_cell_count \
+    --celltypes "CD4_TCM" \
     --max-parallel-jobs 10000
 
 
@@ -160,7 +160,7 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
         for chrom in egenes_cell_type['chr'].unique():
             egenes_cell_type_chrom = egenes_cell_type[egenes_cell_type['chr'] == chrom]
             phenotype = pheno_output_name.split('-')[-1]
-            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v2/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz'
+            chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v4/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz'
 
             with gzip.open(to_path(chr_gwas_file), 'rb') as f:
                 hg38_map = pd.read_csv(f, sep='\t')
