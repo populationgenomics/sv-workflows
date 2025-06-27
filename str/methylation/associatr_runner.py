@@ -3,10 +3,10 @@
 """
 This script runs associaTR on methylation data.
 
- analysis-runner --dataset "bioheart" --config associatr_runner.toml \
+ analysis-runner --dataset "tenk10k" --config associatr_runner.toml \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr-methylation/bioheart_n25/5kb/v2" \
+    --output-dir "str/associatr-methylation/bioheart_n25/5kb" \
      python3 associatr_runner.py
 
 
@@ -41,7 +41,7 @@ def main():
         _dependent_jobs.append(job)
 
     for chromosome in get_config()['associatr']['chromosomes'].split(','):
-        vcf_file_path = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/methyl_eqtl/input_files/finemapped_etrs.vcf.bgz'
+        vcf_file_path = 'gs://cpg-tenk10k-test/str/associatr-methylation/bioheart_n25/input_files/5kb/methylation_input.sorted.vcf.gz'
 
         methyl_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{methyl_dir}/{chromosome}').glob('*.npy'))

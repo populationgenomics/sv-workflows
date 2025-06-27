@@ -1,6 +1,7 @@
 [associatr]
 chromosomes='chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr1'
-pheno_cov_numpy_dir='gs://cpg-bioheart-test/tenk10k/str/associatr-methylation/bioheart_n25/input_files/5kb/pheno_cov_numpy'
+pheno_cov_numpy_dir='gs://cpg-tenk10k-test/str/associatr-methylation/bioheart_n25/input_files/5kb/pheno_cov_numpy'
+methyl_dir =
 max_parallel_jobs=1000
 cis_window_size=5000
 job_storage = '0G'
