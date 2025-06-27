@@ -84,7 +84,7 @@ def main():
         "vitamin_d",
         "white_blood_cell_count",
     ]
-    for pheno in phenotypes:
+    for pheno in ['hdl_cholesterol']:
         liftover_job = b.new_python_job('Catalog sharder for' + pheno)
         liftover_job.memory('32G')
         liftover_job.storage('10G')
