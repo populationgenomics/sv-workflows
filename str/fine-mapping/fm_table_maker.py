@@ -5,6 +5,7 @@
 
 This scripts pulls out the coeff_meta_fixed and pval_meta_fixed for each fm TR
 
+analysis-runner --dataset tenk10k --access-level test --output-dir potato --description "make fm table" python3 fm_table_maker.py
 
 """
 
