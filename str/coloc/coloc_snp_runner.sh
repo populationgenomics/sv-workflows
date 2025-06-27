@@ -61,3 +61,15 @@ for i in "${!pheno_names[@]}"; do
     --max-parallel-jobs 10000
 
 done
+
+analysis-runner --dataset "tenk10k" \
+    --description "Run coloc for eGenes identified by STR analysis" \
+    --access-level "test" \
+    --memory='8G' \
+    --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
+    --output-dir "str/associatr/final_freeze/meta_fixed/v6" \
+    coloc_runner.py \
+    --snp-gwas-file="gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST011071_parsed.tsv" \
+    --pheno-output-name="covid_GCST011071" \
+    --celltypes="CD4_TCM" \
+    --max-parallel-jobs 10000
