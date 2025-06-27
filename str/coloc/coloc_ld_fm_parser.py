@@ -146,7 +146,7 @@ def ld_parser(
 def main(fm_csv, snp_vcf_dir, str_vcf_dir):
     b = get_batch(name='Calculate LD for fine-mapped eSTRs with GWAS variants')
     fm = pd.read_csv(fm_csv)
-    fm = fm.drop_duplicates(subset=['chr', 'pos', 'end', 'motif', 'pheno'])
+    fm = fm.drop_duplicates(subset=['chr', 'pos', 'motif', 'pheno'])
     pheno_list = fm['pheno'].unique()
     # map pheno to the pheno csv file path:
 
