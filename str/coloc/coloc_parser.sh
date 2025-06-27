@@ -60,9 +60,9 @@ for pheno in "${pheno_names[@]}"; do
     analysis-runner --dataset "tenk10k" \
     --description "Parse coloc results" \
     --access-level "test" \
-    --output-dir "str/associatr/final_freeze/meta_fixed/coloc/sig_str_and_gwas_hit" \
+    --output-dir "str/associatr/final_freeze/meta_fixed/v6/coloc/sig_str_and_gwas_hit" \
     coloc_results_parser.py \
-    --coloc-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/coloc/sig_str_and_gwas_hit \
+    --coloc-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/v6/coloc/sig_str_and_gwas_hit \
     --celltypes "$celltypes" \
     --phenos="$pheno"
 done
