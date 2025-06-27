@@ -107,7 +107,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option(
     '--egenes-file',
     help='Path to the eGenes file with FINEMAP and SUSIE probabilities',
-    default='gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv',
+    default='gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs_v2.csv',
 )
 @click.option(
     '--snp-cis-dir',
@@ -122,7 +122,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
-@click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
+@click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.5)
 @click.command()
 def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, max_parallel_jobs, job_cpu):
     # Setup MAX concurrency by genes
@@ -150,7 +150,8 @@ def main(snp_cis_dir, egenes_file, celltypes, snp_gwas_file, pheno_output_name, 
         egenes_file)
 
     result_df_cfm_str = egenes
-    result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
+    result_df_cfm_str['chr'] = result_df_cfm_str['variant_id'].str.split(':').str[0]  # extract chromosome from variant_id
+    #result_df_cfm_str = result_df_cfm_str[result_df_cfm_str['pval_meta_fixed'] < 5e-8]  # filter for STRs with p-value < 5e-8
     result_df_cfm_str = result_df_cfm_str.drop_duplicates(
         subset=['gene_name', 'cell_type'],
     )  # drop duplicates (ie pull out the distinct genes in each celltype)
