@@ -35,6 +35,7 @@ for row in estrs_fm.itertuples():
     eqtl['pval_meta_fixed'] = eqtl['pval_meta_fixed'].astype(float)
     eqtl_row = eqtl.sort_values('pval_meta_fixed').iloc[0]
     eqtl_row['gene_name']= gene
+    eqtl_row['cell_type'] = cell_type
 
     # Append as DataFrame row (convert Series to DataFrame first)
     rows_list.append(eqtl_row.to_frame().T)
