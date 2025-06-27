@@ -4,10 +4,9 @@
 """
 This script aims to:
  - output list of CpG sites for each chromosome
- - perform rank-based inverse normal transformation on methylation (mod_score) (per CpG site basis)
  - output CpG site-level phenotype and covariate numpy objects for input into associatr
 
- analysis-runner  --config get_cis_numpy_files.toml --dataset "bioheart" --access-level "test" \
+ analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
 --description "get cis and numpy" --output-dir "str/associatr-methylation/bioheart_n25/input_files/5kb" \
 python3 get_cis_numpy_files.py
 
@@ -56,11 +55,12 @@ def cis_window_numpy_extractor(
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
-        site_pheno.loc[:, 'gene_rank'] = site_pheno[site].rank()
+        #site_pheno.loc[:, 'gene_rank'] = site_pheno[site].rank()
         # Calculate the percentile of each rank
-        site_pheno.loc[:, 'gene_percentile'] = (site_pheno.loc[:, 'gene_rank'] - 0.5) / (len(site_pheno))
+        #site_pheno.loc[:, 'gene_percentile'] = (site_pheno.loc[:, 'gene_rank'] - 0.5) / (len(site_pheno))
         # Use the inverse normal cumulative distribution function (quantile function) to transform percentiles to normal distribution values
-        site_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(site_pheno.loc[:, 'gene_percentile'])
+        #site_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(site_pheno.loc[:, 'gene_percentile'])
+        site_pheno['gene_inverse_normal'] = site_pheno[site] # Assuming 'site' is the column with mod_score values
         site_pheno = site_pheno[['sample_id', 'gene_inverse_normal']]
 
         # match up FS ID with CPG IDs
@@ -72,6 +72,8 @@ def cis_window_numpy_extractor(
         site_pheno = site_pheno.rename(columns={'s': 'sample_id'})
         site_pheno = site_pheno[['sample_id', 'gene_inverse_normal']]
 
+        # use the first 3 geno PCs only because of sample size
+        covariates = covariates[['sample_id','sex','age','score_1','score_2','score_3']]
         site_pheno_cov = site_pheno.merge(covariates, on='sample_id', how='inner')
 
         site_pheno_cov['sample_id'] = site_pheno_cov['sample_id'].str[
