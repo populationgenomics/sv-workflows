@@ -5,7 +5,7 @@
 This script aims to:
  - output ATAC-seq site-level phenotype and covariate numpy objects for input into associatr per cell type.
 
- analysis-runner  --config get_cis_numpy.toml --dataset "bioheart" --access-level "test" --memory 8G \
+ analysis-runner  --config get_cis_numpy.toml --dataset "bioheart" --access-level "test" --memory 16G \
 --description "get cis and numpy" --output-dir "str/associatr-atac/tob/input_files/fm-etrs/10kb_estrs/meta_fixed" \
 python3 get_cis_numpy.py
 
