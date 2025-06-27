@@ -6,7 +6,7 @@ This script runs associaTR on atac data.
  analysis-runner --dataset "bioheart" --config associatr_runner.toml \
     --description "run associatr" \
     --access-level "test" \
-    --output-dir "str/associatr-atac/tob/input_files/10kb_estrs/v1-remove-rare-GTs/meta_fixed" \
+    --output-dir "str/associatr-atac/tob/input_files/fm-etrs/10kb_estrs/v1-remove-rare-GTs/meta_fixed" \
      python3 associatr_runner.py
 
 
@@ -42,7 +42,7 @@ def main():
 
     for cell_type in get_config()['associatr']['cell_types'].split(','):
         vcf_file_dir = get_config()['associatr']['vcf_dir']
-        vcf_file_path = f'{vcf_file_dir}/{cell_type}_estrs.vcf.gz'
+        vcf_file_path = f'{vcf_file_dir}/{cell_type}_fm_estrs.sorted.vcf.gz'
         pheno_dir = get_config()['associatr']['pheno_cov_numpy_dir']
         site_numpy_list = list(to_path(f'{pheno_dir}/{cell_type}/pheno_cov_numpy').glob('*.npy'))
         for i in range(0, len(site_numpy_list), 2000):
