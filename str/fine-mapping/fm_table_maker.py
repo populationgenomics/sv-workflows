@@ -21,7 +21,7 @@ for row in estrs_fm.itertuples():
     cell_type = row.cell_type
     gene = row.gene_name
     chrom = row.chr
-    pos = row.pos
+    pos = int(row.pos)
     motif = row.motif
 
     eqtl_file_path =f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chrom}/{gene}_100000bp_meta_results.tsv'
