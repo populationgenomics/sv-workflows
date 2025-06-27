@@ -121,7 +121,7 @@ def coloc_runner(gwas, eqtl_file_path, celltype, pheno_output_name):
 @click.option('--celltypes', help='Cell types to run', default='ASDC')
 @click.option('--max-parallel-jobs', help='Maximum number of parallel jobs to run', default=500)
 @click.option('--pheno-output-name', help='Phenotype output name', default='covid_GCST011071')
-@click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.25)
+@click.option('--job-cpu', help='Number of CPUs to use for each job', default=0.5)
 @click.command()
 def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jobs, job_cpu):
     # Setup MAX concurrency by genes
