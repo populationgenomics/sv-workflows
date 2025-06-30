@@ -181,6 +181,8 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
                         print('No GWAS data for ' + gene + ' in the cis-window: skipping....')
                         continue
                     # check if the p-value column contains at least one value which is <5e-8:
+                    print(start, end)
+                    print(hg38_map_chr_start_end['p_value'].min())
                     if hg38_map_chr_start_end['p_value'].min() >= 5e-8:
                         print('No significant SNP STR GWAS data for ' + gene + ' in the cis-window: skipping....')
                         continue
