@@ -16,9 +16,9 @@ analysis-runner --dataset "bioheart" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "tenk10k/str/associatr/final_freeze/ld_with_lead_tr" \
     ld_with_lead_tr.py \
-    --cell-type CD4_Naive \
-    --gene-ensg ENSG00000106070 \
-    --chrom chr7
+    --cell-type NK \
+    --gene-ensg ENSG00000107099 \
+    --chrom chr9
 
 
 """
@@ -42,12 +42,12 @@ def ld_parser(
     from cyvcf2 import VCF
 
     meta_results = pd.read_csv(
-        f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
+        f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell_type}/{chrom}/{gene_ensg}_100000bp_meta_results.tsv',
         sep='\t',
     )
     meta_results['variant_type'] = np.where(meta_results['motif'].str.contains('-'), 'SNV', 'TR')
     meta_results_tr = meta_results[meta_results['variant_type'] == 'TR']  # filter for TRs
-    lead_tr = meta_results_tr[meta_results_tr['pval_meta'] == meta_results_tr['pval_meta'].min()]  # get the lead tr
+    lead_tr = meta_results_tr[meta_results_tr['pval_meta_fixed'] == meta_results_tr['pval_meta_fixed'].min()]  # get the lead tr
     lead_tr_coord = str(lead_tr.iloc[0]['pos'])
     lead_tr_motif = lead_tr.iloc[0]['motif']
     lead_str_locus = f'{chrom}_{lead_tr_coord}_{lead_tr_motif}'
