@@ -205,6 +205,9 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
                 else:
                     print('No cis results for ' + gene + ' exist: skipping....')
                 break
+            break
+        break
+
 
 
     b.run(wait=False)
