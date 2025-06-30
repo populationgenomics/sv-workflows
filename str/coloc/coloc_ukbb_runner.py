@@ -11,12 +11,12 @@ Assumes that the SNP GWAS data has been pre-processed with the following columns
 analysis-runner --dataset "tenk10k" \
     --description "Run coloc for eGenes identified by STR analysis" \
     --access-level "test" \
-    --memory='4G' \
+    --memory='16G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/final_freeze/meta_fixed/v6" \
     coloc_ukbb_runner.py \
-    --pheno-output-name=white_blood_cell_count \
-    --celltypes "CD4_TCM" \
+    --pheno-output-name=gymrek-ukbb-mean_sphered_cell_volume \
+    --celltypes "CD4_Naive" \
     --max-parallel-jobs 10000
 
 
@@ -158,21 +158,15 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
             egenes['cell_type'] == celltype
         ]  # filter for the celltype of interest
         for chrom in egenes_cell_type['chr'].unique():
-            egenes_cell_type_chrom = egenes_cell_type[egenes_cell_type['chr'] == chrom]
-            phenotype = pheno_output_name.split('-')[-1]
+            chrom = 'chr10'
+            phenotype = 'mean_sphered_cell_volume'
             chr_gwas_file = f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_{phenotype}_snp_str_gwas_results_hg38_{chrom}.tab.gz'
 
             with gzip.open(to_path(chr_gwas_file), 'rb') as f:
                 hg38_map = pd.read_csv(f, sep='\t')
 
-            for gene in egenes_cell_type_chrom['gene_name']:
-                if to_path(
-                    output_path(
-                        f"coloc/sig_str_and_gwas_hit/{pheno_output_name}/{celltype}/{gene}_100kb.tsv",
-                        'analysis',
-                    ),
-                ).exists():
-                    continue
+            for gene in ['ENSG00000107611']:
+
                 if to_path(f'{snp_cis_dir}/{celltype}/{chrom}/{gene}_100000bp_meta_results.tsv').exists():
                     print('Cis results for ' + gene + ' exist: proceed with coloc')
 
@@ -206,10 +200,12 @@ def main(snp_cis_dir, egenes_file, celltypes, pheno_output_name, max_parallel_jo
                         celltype,
                         pheno_output_name,
                     )
-                    manage_concurrency_for_job(coloc_job)
+                    break
 
                 else:
                     print('No cis results for ' + gene + ' exist: skipping....')
+                break
+
 
     b.run(wait=False)
 
