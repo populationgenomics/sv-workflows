@@ -18,7 +18,7 @@ This script annotates the ExpansionHunter MT with the following annotations:
 - binom_hwep: binomial Hardy-Weinberg equilibrium p-value
 - obs_het: proportion of observed heterozygous calls per locus
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_bioheart_n975" qc_annotator.py \
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_tob_n950" qc_annotator.py \
 --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str.mt
 
 """
@@ -45,9 +45,9 @@ def main(mt_path):
     mt = hl.read_matrix_table(mt_path)
     print(f'MT dimensions: {mt.count()}')
 
-    bioheart_ids = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/bioheart_n975_sample_covariates.csv')['sample_id']
-    #tob_ids = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/covariates/6_rna_pcs/CD4_TCM_covariates.csv')['sample_id']
-    samples = bioheart_ids.to_list()
+    #bioheart_ids = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/bioheart_n975_sample_covariates.csv')['sample_id']
+    tob_ids = pd.read_csv('gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/covariates/6_rna_pcs/CD4_TCM_covariates.csv')['sample_id']
+    samples = tob_ids.to_list()
 
     # filter the MT to only include samples in the sample list
     mt = mt.filter_cols(hl.literal(samples).contains(mt.s))
