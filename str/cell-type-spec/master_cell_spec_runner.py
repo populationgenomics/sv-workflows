@@ -3,7 +3,7 @@
 """
 This script performs cell type specificity analysis as per Cuomo et al. 2025 procedure.
 
-analysis-runner --dataset tenk10k --access-level test --description "Cell type spec" --output-dir str/cell-spec-cuomo/cell_spec_results/v4 master_cell_spec_runner.py \
+analysis-runner --dataset tenk10k --access-level test --description "Cell type spec" --output-dir str/cell-spec-cuomo/cell_spec_results/v5-haplo master_cell_spec_runner.py \
 --meta-scen2-path=gs://cpg-tenk10k-test-analysis/str/cell-spec-cuomo/ab_effect_sizes/meta_results
 """
 
@@ -103,7 +103,7 @@ def process_same_egene(cell_types_with_same_egene, row_coeff, row_variantid, row
                 continue  # Safety check
             secondary_sign = int(np.sign(secondary_coeff[0]))
 
-            if secondary_sign != main_effect_size_sign:
+            if (secondary_sign != main_effect_size_sign) and (max_ld_value <0.8):
                 scenario_same_egene[cell_type] = 5  # Opposite sign
             else:
                 scenario_same_egene[cell_type] = 4  # Same sign
