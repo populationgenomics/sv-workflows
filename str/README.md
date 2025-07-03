@@ -2,6 +2,7 @@
 
 This folder contains scripts to genotype and characterise STRs using Hail Batch and GCP.
 Runner scripts support HipSTR, GangSTR, and ExpansionHunter; however, downstream merging and QC scripts support ExpansionHunter VCFs only and are compatible with both sharded and unsharded catalogs.
+Sample VCFs can be obtained from the [TRTools Git] (https://github.com/gymrek-lab/TRTools/tree/master/example-files) and are fully compatible with this pipeline. Users may run the workflow with these files to verify installation and become familiar with the expected input format before applying it to their own data. 
 
 ## ExpansionHunter genome-wide genotyping
 
