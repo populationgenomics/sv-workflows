@@ -17,7 +17,7 @@ analysis-runner --dataset "tenk10k" \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
     --output-dir "str/associatr/final_freeze/meta_fixed/v6" \
     coloc_ld_fm_parser.py \
-    --fm-csv=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/coloc/estrs_fm_coloc_list_for_ld_v2.csv
+    --fm-csv=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/coloc/estrs_fm_coloc_list_for_ld_v3.csv
 
 
 """
@@ -218,6 +218,12 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'Trujillo_methylation_eQTLs':'gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv',
             'ckd_GCST008065':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ckd_GCST008065_parsed.tsv',
             'NHL_GCST90011819':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/NHL_GCST90011819_parsed.tsv',
+            'albert_t1dm':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/t1dm_from_albert_parsed.tsv',
+            'albert_uc':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/uc_from_albert_parsed.tsv',
+            'albert_crohns':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/crohns_from_albert_parsed.tsv',
+            'albert_ms':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ms_from_albert_parsed.tsv',
+            'albert_asthma':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/asthma_from_albert_parsed.tsv',
+
             }
             ld_job = b.new_python_job(
                 f'LD calc for {chrom}; {pheno}',
