@@ -218,11 +218,11 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'Trujillo_methylation_eQTLs':'gs://cpg-bioheart-test/str/Trujillo_methylation_eQTLs/hg38_STRs_SNVs_parsed.tsv',
             'ckd_GCST008065':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ckd_GCST008065_parsed.tsv',
             'NHL_GCST90011819':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/NHL_GCST90011819_parsed.tsv',
-            'albert_t1dm':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/t1dm_from_albert_parsed.tsv',
-            'albert_uc':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/uc_from_albert_parsed.tsv',
-            'albert_crohns':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/crohns_from_albert_parsed.tsv',
-            'albert_ms':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ms_from_albert_parsed.tsv',
-            'albert_asthma':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/asthma_from_albert_parsed.tsv',
+            't1dm_albert':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/t1dm_from_albert_parsed.tsv',
+            'uc_albert':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/uc_from_albert_parsed.tsv',
+            'crohns_albert':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/crohns_from_albert_parsed.tsv',
+            'ms_albert':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ms_from_albert_parsed.tsv',
+            'asthma_albert':'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/asthma_from_albert_parsed.tsv',
 
             }
             ld_job = b.new_python_job(
