@@ -17,9 +17,8 @@ Applied filters:
  analysis-runner --dataset "bioheart" \
     --description "Hail QC for associaTR" \
     --access-level "test" \
-    --output-dir "str/associatr/input_files" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
-    --version=v1-chr-specific
+    --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_n1925/default_filters" \
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_annotated.mt
 
 """
 
@@ -148,23 +147,19 @@ def qc_filter(mt_path, version):
     # re-enforce locus level call rate >=0.9
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
-    # wrangle mt, prepare for export_vcf():
-
-    # drop unneccessary columns prior to writing out
-    mt = mt.drop(
-        'allele_1_rep_length',
-        'allele_2_rep_length',
-        'allele_1_bp_length',
-        'allele_2_bp_length',
-        'allele_1_REPCI_over_CN',
-        'allele_2_REPCI_over_CN',
-        'allele_1_minus_mode',
-        'allele_2_minus_mode',
-        'allele_1_REPCI_size',
-        'allele_2_REPCI_size',
-        'allele_1_is_non_mode',
-        'allele_2_is_non_mode',
+    # sum the alleles
+    mt = mt.annotate_entries(
+    sum_alleles = mt.allele_1_rep_length + mt.allele_2_rep_length
     )
+    # get the minimum dosage per locus
+    mt = mt.annotate_rows(
+        min_dosage = hl.agg.filter(
+            hl.is_defined(mt.sum_alleles),
+            hl.agg.min(mt.sum_alleles)
+        )
+    )
+
+
 
     # Set the QUAL field to missing for all rows
     mt = mt.annotate_entries(QUAL=hl.missing('float64'))
@@ -175,22 +170,9 @@ def qc_filter(mt_path, version):
     # Key by locus and alleles
     mt = mt.key_rows_by('locus', 'alleles')
 
-    # Remove 'CPG' prefix from ID (associaTR expects ID to be numeric)
-    mt = mt.annotate_cols(s_no_prefix=mt.s[3:])
-    mt = mt.key_cols_by(s=mt.s_no_prefix)
-    mt.drop('s_no_prefix')
+    mt.write(output_path('str_annotated.mt'))
 
-    for chr_index in range(22):  # iterate over chr1-22
-        mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
-        gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
-        # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
-        hl.export_vcf(
-            mt_chr,
-            gcs_output_path,
-            append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
-            tabix=True,
-        )
-
+    mt.rows().export(output_path('str_annotated_rows.tsv.bgz'))
 
 @click.option(
     '--mt-path',
