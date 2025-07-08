@@ -27,7 +27,7 @@ import click
 import hail as hl
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 config = get_config()
 
@@ -38,6 +38,8 @@ def qc_filter(mt_path, version):
     """
     Applies QC filters to the input MT
     """
+    from cpg_utils.hail_batch import init_batch, output_path
+
     init_batch(worker_memory='highmem')
 
     # read in mt
