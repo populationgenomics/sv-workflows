@@ -45,6 +45,8 @@ def qc_filter(mt_path, version):
     # read in mt
     mt = hl.read_matrix_table(mt_path)
 
+    mt = mt.annotate_entries(
+    sum_alleles = mt.allele_1_rep_length + mt.allele_2_rep_length)
     # get the minimum dosage per locus
     mt = mt.annotate_rows(
         min_dosage = hl.agg.filter(
