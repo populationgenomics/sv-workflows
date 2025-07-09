@@ -4,7 +4,7 @@
 This script makes QC plots
 
 analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_annotated.mt
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt
 
 """
 import hail as hl
@@ -27,32 +27,40 @@ def main(mt_path):
 
     print(f'MT dimensions: {mt.count()}')
 
-    #mt = mt.filter_rows(mt.locus.contig != 'chrX')
+    mt = mt.filter_rows(mt.locus.contig != 'chrX')
 
-    #print(f'MT dimensions after filtering out chrX: {mt.count()}')
+    print(f'MT dimensions after filtering out chrX: {mt.count()}')
 
-    #mt = mt.filter_rows(mt.num_alleles > 1)
+    mt = mt.filter_rows(mt.num_alleles > 1)
 
-    #print(f'MT rows with >1 allele: {mt.count()}')
+    print(f'MT rows with >1 allele: {mt.count()}')
 
-    #mt = mt.filter_rows(mt.variant_qc.call_rate >= 0.9)
+    mt = mt.filter_rows(mt.variant_qc.call_rate >= 0.9)
 
-    #print(f'MT rows with 90% call rate: {mt.count()}')
+    print(f'MT rows with 90% call rate: {mt.count()}')
 
-    #mt = mt.filter_rows(mt.obs_het >= 0.00995)
+    mt = mt.filter_rows(mt.obs_het >= 0.00995)
 
-    #print(f'MT rows with obs_het >= 0.00995: {mt.count()}')
+    print(f'MT rows with obs_het >= 0.00995: {mt.count()}')
 
-    #mt = mt.filter_rows(mt.binom_hwep >= 0.000001)
+    mt = mt.filter_rows(mt.binom_hwep >= 0.000001)
 
-    #print(f'MT rows with binom_hwep >= 0.000001: {mt.count()}')
+    print(f'MT rows with binom_hwep >= 0.000001: {mt.count()}')
 
-    #print(f'MT entries count is {mt.entries().count()}')
+    print(f'MT entries count is {mt.entries().count()}')
 
     #Set calls outside of [-30,20] relative to mode to NA
-    #mt = mt.filter_entries(((mt.allele_1_minus_mode >= -30) & (mt.allele_1_minus_mode <= 20)) & ((mt.allele_2_minus_mode >= -30) & (mt.allele_2_minus_mode <= 20)))
+    mt = mt.filter_entries(((mt.allele_1_minus_mode >= -30) & (mt.allele_1_minus_mode <= 20)) & ((mt.allele_2_minus_mode >= -30) & (mt.allele_2_minus_mode <= 20)))
 
-    #print(f'MT entries count after filtering [-30,20] relative to mode: {mt.entries().count()}')
+    print(f'MT entries count after filtering [-30,20] relative to mode: {mt.entries().count()}')
+
+    # calculate proportion of GTs that are defined per locus (after applying call-level filters, variant_qc.call_rate is not accurate anymore)
+    mt = mt.annotate_rows(
+        prop_GT_exists=hl.agg.count_where(hl.is_defined(mt.GT)) / (mt.variant_qc.n_called + mt.variant_qc.n_not_called),
+    )
+    # re-enforce locus level call rate >=0.9
+    mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
+    print(f'MT dimensions after enforcing locus level call rate >=0.9: {mt.count()}')
 
 
 
@@ -71,11 +79,11 @@ def main(mt_path):
     #print(f' MT cap [-20,20] rel. to mode: {potato.entries().count()}')
     #mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/str_annotated_rows.tsv.bgz')
 
-    alleles_minus_mode_ht = mt.select_rows(
-    allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
-        .extend(hl.agg.collect(mt.allele_2_minus_mode))
-    ).rows()
-    alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
+    #alleles_minus_mode_ht = mt.select_rows(
+    #allele_minus_mode = hl.agg.collect(mt.allele_1_minus_mode)
+    #    .extend(hl.agg.collect(mt.allele_2_minus_mode))
+    #).rows()
+    #alleles_minus_mode_ht = alleles_minus_mode_ht.explode('allele_minus_mode', name='alleles_minus_mode')
     #alleles_minus_mode_ht.export('gs://cpg-bioheart-test/str/wgs_genotyping/polymorphic_run_n2045/annotated_mt/v2/alleles_minus_mode_ht.tsv.bgz')
     #pq = hl.plot.histogram(alleles_minus_mode_ht.alleles_minus_mode,legend= "Allele relative to mode allele", bins = 30,range = (-20, 20))
     #output_file('local_plot_pq.html')
@@ -84,21 +92,21 @@ def main(mt_path):
     #hl.hadoop_copy('local_plot_pq.html', gcs_path_pq)
 
     # Calculate the frequency of every distinct value of 'alleles_minus_mode'
-    alleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
-        frequency=hl.agg.count()
-    )
-    alleles_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_alleles_minus_mode_freq.tsv.bgz')
+    # alleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
+    #     frequency=hl.agg.count()
+    # )
+    # alleles_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_alleles_minus_mode_freq.tsv.bgz')
 
-    mt = mt.annotate_entries(
-    sum_alleles = mt.allele_1_rep_length + mt.allele_2_rep_length
-    )
-    alleles_ht = mt.select_rows(sum_allele = hl.agg.collect(mt.sum_alleles)).rows()
-    alleles_ht = alleles_ht.explode('sum_allele', name='sum_alleles')
-    # Calculate the frequency of every distinct value of 'sum_alleles'
-    alleles_sum_frequency_ht = alleles_ht.group_by(alleles_ht.sum_alleles).aggregate(
-        frequency=hl.agg.count()
-    )
-    alleles_sum_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_sum_alleles_freq.tsv.bgz')
+    # mt = mt.annotate_entries(
+    # sum_alleles = mt.allele_1_rep_length + mt.allele_2_rep_length
+    # )
+    # alleles_ht = mt.select_rows(sum_allele = hl.agg.collect(mt.sum_alleles)).rows()
+    # alleles_ht = alleles_ht.explode('sum_allele', name='sum_alleles')
+    # # Calculate the frequency of every distinct value of 'sum_alleles'
+    # alleles_sum_frequency_ht = alleles_ht.group_by(alleles_ht.sum_alleles).aggregate(
+    #     frequency=hl.agg.count()
+    # )
+    # alleles_sum_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_sum_alleles_freq.tsv.bgz')
 
     """
     # Export the result to a TSV file
