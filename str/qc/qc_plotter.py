@@ -4,7 +4,7 @@
 This script makes QC plots
 
 analysis-runner --access-level "test" --dataset "bioheart" --description "QC plotter" --output-dir "str/polymorphic_run_n2045/QC" qc_plotter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_annotated.mt
 
 """
 import hail as hl
@@ -87,7 +87,19 @@ def main(mt_path):
     alleles_frequency_ht = alleles_minus_mode_ht.group_by(alleles_minus_mode_ht.alleles_minus_mode).aggregate(
         frequency=hl.agg.count()
     )
-    alleles_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_alleles_minus_mode_freq.tsv.bgz')
+    alleles_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_alleles_minus_mode_freq.tsv.bgz')
+
+    mt = mt.annotate_entries(
+    sum_alleles = mt.allele_1_rep_length + mt.allele_2_rep_length
+    )
+    alleles_ht = mt.select_rows(sum_allele = hl.agg.collect(mt.sum_alleles)).rows()
+    alleles_ht = alleles_ht.explode('sum_allele', name='sum_alleles')
+    # Calculate the frequency of every distinct value of 'sum_alleles'
+    alleles_sum_frequency_ht = alleles_ht.group_by(alleles_ht.sum_alleles).aggregate(
+        frequency=hl.agg.count()
+    )
+    alleles_sum_frequency_ht.export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_sum_alleles_freq.tsv.bgz')
+
     """
     # Export the result to a TSV file
 
