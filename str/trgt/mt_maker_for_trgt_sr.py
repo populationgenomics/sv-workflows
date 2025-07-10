@@ -20,9 +20,9 @@ from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 def main():
     init_batch(worker_memory='highmem')
-    '''
+
     mt = hl.import_vcf(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/MS_sum_all.vcf.gz', force=True, array_elements_required=False,
+        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/output_trgt_all_v2.vcf.gz', force=True, array_elements_required=False,
     )
     # Load the mapping file (assuming it's a CSV with columns 'old_id' and 'new_id')
     mapping_table = hl.import_table(
@@ -43,8 +43,8 @@ def main():
     sr = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/sr_rep_lengths.mt')
     mt = mt.annotate_entries(sr_summed_rep_length=sr[mt.row_key, mt.col_key].sr_summed_rep_length)
 
-    '''
-    mt = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25.mt')
+    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2.mt')
+
 
     qc_table = hl.import_table(
         'gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/str_annotated_rows.tsv.bgz',
@@ -56,11 +56,8 @@ def main():
     repid_set = hl.set(repid_list)
     mt = mt.filter_rows(repid_set.contains(mt.REPID))
 
-    mt.write(
-        'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
-        overwrite=True,)
+    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2_filtered.mt')
 
-    '''
     mt = mt.annotate_entries(lr_summed_rep_length=hl.int(mt.MS[0]))
     mt = mt.annotate_entries(strict_concord=hl.if_else(mt.sr_summed_rep_length == mt.lr_summed_rep_length, 1, 0))
     mt = mt.annotate_entries(
@@ -70,13 +67,10 @@ def main():
         prop_strict_concord=hl.agg.sum(mt.strict_concord) / 25,
         prop_off_by_one_concord=hl.agg.sum(mt.off_by_one_concord) / 25,
     )
-    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_rows.tsv.bgz')
+    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2_filtered_annotated.mt')
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_v2_rows.tsv.bgz')
 
-    #mt.write(
-    #    'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25v1.mt',
-    #    overwrite=True,
-    #)
-    '''
+
 
 
 if __name__ == '__main__':
