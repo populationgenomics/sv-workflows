@@ -20,7 +20,7 @@ from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 def main():
     init_batch(worker_memory='highmem')
-
+    """
     mt = hl.import_vcf(
         'gs://cpg-bioheart-test/str/wgs_genotyping/trgt/output_trgt_all_v2.vcf.gz', force=True, array_elements_required=False,
     )
@@ -45,7 +45,9 @@ def main():
 
     mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2.mt')
 
+    """
 
+    mt = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2.mt')
     qc_table = hl.import_table(
         'gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/str_annotated_rows.tsv.bgz',
         delimiter='\t',
