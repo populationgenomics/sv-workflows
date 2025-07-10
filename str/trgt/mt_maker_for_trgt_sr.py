@@ -49,16 +49,14 @@ def main():
 
     mt = hl.read_matrix_table('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2.mt')
     qc_table = hl.import_table(
-        'gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/str_annotated_rows.tsv.bgz',
-        delimiter='\t',
-        quote=None,
-    )
-    qc_table = qc_table.key_by('REPID')
-    repid_list = qc_table.aggregate(hl.agg.collect(qc_table.REPID))
-    repid_set = hl.set(repid_list)
-    mt = mt.filter_rows(repid_set.contains(mt.REPID))
+    'gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/str_annotated_rows.tsv.bgz',
+    delimiter='\t',
+    quote=None,
+    ).key_by('REPID')
 
-    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2_filtered.mt')
+    mt = mt.filter_rows(hl.is_defined(qc_table[mt.REPID]))
+
+    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2_fast_filtered.mt')
 
     mt = mt.annotate_entries(lr_summed_rep_length=hl.int(mt.MS[0]))
     mt = mt.annotate_entries(strict_concord=hl.if_else(mt.sr_summed_rep_length == mt.lr_summed_rep_length, 1, 0))
@@ -69,8 +67,8 @@ def main():
         prop_strict_concord=hl.agg.sum(mt.strict_concord) / 25,
         prop_off_by_one_concord=hl.agg.sum(mt.off_by_one_concord) / 25,
     )
-    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2_filtered_annotated.mt')
-    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_v2_rows.tsv.bgz')
+    mt.checkpoint('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/trgt_sr_25_v2_fast_filtered_annotated.mt')
+    mt.rows().export('gs://cpg-bioheart-test/str/wgs_genotyping/trgt/analysis-work/final-freeze/filtered_trgt_sr_25_v2_fast_rows.tsv.bgz')
 
 
 
