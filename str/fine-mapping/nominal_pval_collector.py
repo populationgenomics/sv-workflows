@@ -9,7 +9,7 @@ from cpg_utils.hail_batch import get_batch, output_path
 import pandas as pd
 
 """
-analysis-runner --dataset "bioheart" --description "Create a dataframe from all cell types" --access-level "test" \
+analysis-runner --dataset "tenk10k" --description "Create a dataframe from all cell types" --access-level "test" \
     --output-dir "str/associatr/fine_mapping/susie_finemap" \
     nominal_pval_collector.py
 
@@ -25,7 +25,7 @@ def run_concatenator(cell):
     dfs =[]
     for chrom in range(1,23):
         try:
-            files_list = list(to_path(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/{cell}/chr{chrom}').glob('*.tsv'))
+            files_list = list(to_path(f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/{cell}/chr{chrom}').glob('*.tsv'))
         except:
             continue
         for file in files_list:
@@ -33,14 +33,14 @@ def run_concatenator(cell):
             data = pd.read_csv(file, sep = '\t')
             data['celltype'] = cell
             data['gene'] = gene_name
-            data = data[data['pval_meta'] < 0.05] # Filter out non-significant results (0.05)
+            data = data[data['pval_meta_fixed'] < 0.05] # Filter out non-significant results (0.05)
             data['motif_len'] = data['motif'].str.len()
             data['end'] = (data['pos'].astype(float) + data['ref_len'].astype(float) * data['motif_len'].astype(float)).round().astype(int)
-            data = data[['chr', 'pos','end' ,'motif', 'celltype','coeff_meta', 'se_meta', 'pval_meta']]
+            data = data[['chr', 'pos','end' ,'motif', 'celltype','coeff_meta_fixed', 'se_meta_fixed', 'pval_meta_fixed']]
             dfs.append(data)
         print (f'Processed {cell} and chr{chrom}')
     result_df = pd.concat(dfs, ignore_index=True)
-    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/min_p_0.05/{cell}/all_genes_pval_0.05.tsv', sep = '\t', index = False)
+    result_df.to_csv(f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/min_p_0.05/{cell}/all_genes_pval_0.05.tsv', sep = '\t', index = False)
 
 def main():
 
