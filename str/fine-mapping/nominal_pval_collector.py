@@ -52,7 +52,8 @@ def main():
         combiner_job = b.new_python_job(
             f'Concatenate all genes for {cell}',
         )
-        combiner_job.cpu(2)
+        combiner_job.cpu(4)
+        combiner_job.storage('10G')
         combiner_job.call(run_concatenator, cell)
     b.run(wait=False)
 
