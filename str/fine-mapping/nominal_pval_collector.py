@@ -36,7 +36,7 @@ def run_concatenator(cell):
             data = data[data['pval_meta_fixed'] < 0.05] # Filter out non-significant results (0.05)
             data['motif_len'] = data['motif'].str.len()
             data['end'] = (data['pos'].astype(float) + data['ref_len'].astype(float) * data['motif_len'].astype(float)).round().astype(int)
-            data = data[['chr', 'pos','end' ,'motif', 'celltype','coeff_meta_fixed', 'se_meta_fixed', 'pval_meta_fixed']]
+            data = data[['chr', 'pos','end' ,'motif', 'celltype','coeff_meta_fixed', 'se_meta_fixed', 'pval_meta_fixed', 'gene']]
             dfs.append(data)
         print (f'Processed {cell} and chr{chrom}')
     result_df = pd.concat(dfs, ignore_index=True)
