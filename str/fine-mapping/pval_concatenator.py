@@ -23,11 +23,11 @@ def main():
     cell_type_list = cell_types.split(',')
     dfs=[]
     for cell in cell_type_list:
-        df = pd.read_csv(f'gs://gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/min_p_0.05/{cell}/all_genes_pval_0.05.tsv', sep = '\t')
+        df = pd.read_csv(f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/min_p_0.05/{cell}/all_genes_pval_0.05.tsv', sep = '\t')
         dfs.append(df)
     result_df = pd.concat(dfs, ignore_index=True)
-    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/min_p_0.05/all_genes_pval_0.05_noheader.tsv', sep = '\t', index = False, header=False)
-    result_df.to_csv(f'gs://cpg-bioheart-test-analysis/tenk10k/str/associatr/final_freeze/bioheart_n975_and_tob_n950/meta_results/min_p_0.05/all_genes_pval_0.05.tsv', sep = '\t', index = False)
+    result_df.to_csv(f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/min_p_0.05/all_genes_pval_0.05_noheader.tsv', sep = '\t', index = False, header=False)
+    result_df.to_csv(f'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3/min_p_0.05/all_genes_pval_0.05.tsv', sep = '\t', index = False)
 
 
 if __name__ == '__main__':
