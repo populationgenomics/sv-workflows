@@ -17,8 +17,8 @@ Applied filters:
  analysis-runner --dataset "bioheart" \
     --description "Hail QC for associaTR" \
     --access-level "test" \
-    --output-dir "str/associatr/input_files" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
+    --output-dir "str/associatr/final-freeze/input_files" \
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/associatr/final-freeze/input_files/mt/hail_filtered.mt \
     --version=v1-chr-specific
 
 """
@@ -28,16 +28,26 @@ import click
 import hail as hl
 
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
-
+from cpg_utils.hail_batch import init_batch, output_path
 config = get_config()
 
-BCFTOOLS_IMAGE = config['images']['bcftools']
 
 
-def qc_filter(mt_path, version):
+
+@click.option(
+    '--mt-path',
+    help='GCS file path to mt (output of qc_annotator.py)',
+    type=str,
+)
+
+@click.option('--version', help='version of the output files', type=str, default='v1')
+@click.command()
+def main(
+    mt_path,
+    version,
+):
     """
-    Applies QC filters to the input MT
+    Runner to apply QC filters to input MT, and bgzip and tabix.
     """
     init_batch(worker_memory='highmem')
 
@@ -54,7 +64,7 @@ def qc_filter(mt_path, version):
 
     # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
     condition_allele_1 = (mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)
-    condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
+
     mt = mt.annotate_entries(
         GT=hl.if_else(
             condition_allele_1,
@@ -97,7 +107,7 @@ def qc_filter(mt_path, version):
             mt.SO,
         ),
     )
-
+    condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
     mt = mt.annotate_entries(
         GT=hl.if_else(
             condition_allele_2,
@@ -148,6 +158,8 @@ def qc_filter(mt_path, version):
     # re-enforce locus level call rate >=0.9
     mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
+
+
     # wrangle mt, prepare for export_vcf():
 
     # drop unneccessary columns prior to writing out
@@ -180,6 +192,11 @@ def qc_filter(mt_path, version):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
+    mt.write(
+        output_path(f'mt/hail_filtered.mt'),
+        overwrite=True,
+    )
+
     for chr_index in range(22):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
@@ -190,39 +207,6 @@ def qc_filter(mt_path, version):
             append_to_header='gs://cpg-tob-wgs-test/hoptan-str/associatr/input_files/hail/STR_header.txt',
             tabix=True,
         )
-
-
-@click.option(
-    '--mt-path',
-    help='GCS file path to mt (output of qc_annotator.py)',
-    type=str,
-)
-@click.option('--hail-storage', help='Hail storage', type=str, default='0G')
-@click.option('--hail-cpu', help='Hail CPU', type=int, default=1)
-@click.option('--hail-memory', help='Hail memory', type=str, default='standard')
-@click.option('--version', help='version of the output files', type=str, default='v1')
-@click.command()
-def main(
-    mt_path,
-    hail_storage,
-    hail_cpu,
-    hail_memory,
-    version,
-):
-    """
-    Runner to apply QC filters to input MT, and bgzip and tabix.
-    """
-
-    b = get_batch('Apply QC filters to MT and export chr-specific VCFs')
-
-    hail_job = b.new_python_job(name='QC filters')
-    hail_job.image(config['workflow']['driver_image'])
-    hail_job.storage(hail_storage)
-    hail_job.cpu(hail_cpu)
-    hail_job.memory(hail_memory)
-    hail_job.call(qc_filter, mt_path, version)
-
-    b.run(wait=False)
 
 
 if __name__ == '__main__':
