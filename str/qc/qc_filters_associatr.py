@@ -53,7 +53,7 @@ def main(
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
-    '''
+
     # remove monomorphic variants, set locus level call rate >=0.9, observed heterozygosity >=0.00995, locus level HWEP (binom definition) >=10^-6
     mt = mt.filter_rows(
         (mt.num_alleles > 1) & (mt.variant_qc.call_rate >= 0.9) & (mt.obs_het >= 0.00995) & (mt.binom_hwep >= 0.000001),
@@ -196,9 +196,8 @@ def main(
         output_path(f'mt/hail_filtered.mt'),
         overwrite=True,
     )
-    '''
-    #for chr_index in range(22):  # iterate over chr1-22
-    for chr_index in range(10, 22):
+
+    for chr_index in range(22):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
