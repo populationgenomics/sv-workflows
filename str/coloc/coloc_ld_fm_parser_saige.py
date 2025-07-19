@@ -197,7 +197,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'triglycerides': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_triglycerides_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'urate': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_urate_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'urea': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_urea_snp_str_gwas_results_hg38_{chrom}.tab.gz',
-            'vitamin_d': f'gs://cpg-bioheart-test/str/gymrek-ukbb-np-str-gwas-catalogs_v6/chr-specific/white_british_vitamin_d_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            'vitamin_d': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_vitamin_d_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'white_blood_cell_count': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_white_blood_cell_count_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'lymphocyte_count': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_lymphocyte_count_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'lymphocyte_percent': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_lymphocyte_percent_snp_str_gwas_results_hg38_{chrom}.tab.gz',
