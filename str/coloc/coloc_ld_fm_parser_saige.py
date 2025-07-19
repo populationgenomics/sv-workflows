@@ -177,7 +177,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'aspartate_aminotransferase': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_aspartate_aminotransferase_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'c_reactive_protein': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_c_reactive_protein_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'calcium': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_calcium_snp_str_gwas_results_hg38_{chrom}.tab.gz',
-            'cholesterol': f'gs://cpg-bioheart-test/str/gymrek-ukbb-np-str-gwas-catalogs_v6/chr-specific/white_british_cholesterol_snp_str_gwas_results_hg38_{chrom}.tab.gz',
+            'cholesterol': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_cholesterol_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'creatinine': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_creatinine_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'cystatin_c': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_cystatin_c_snp_str_gwas_results_hg38_{chrom}.tab.gz',
             'eosinophil_count': f'gs://cpg-bioheart-test/str/gymrek-ukbb-snp-str-gwas-catalogs_v6/chr-specific/white_british_eosinophil_count_snp_str_gwas_results_hg38_{chrom}.tab.gz',
