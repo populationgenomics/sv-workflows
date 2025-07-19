@@ -15,8 +15,8 @@ analysis-runner --dataset "tenk10k" \
     --access-level "test" \
     --memory='8G' \
     --image "australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d4922e3062565ff160ac2ed62dcdf2fba576b75a-hail-8f6797b033d2e102575c40166cf0c977e91f834e" \
-    --output-dir "str/associatr/final_freeze/meta_fixed/v6" \
-    coloc_ld_fm_parser.py \
+    --output-dir "str/associatr/final_freeze/meta_fixed/v6_saige" \
+    coloc_ld_fm_parser_saige.py \
     --fm-csv=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/coloc/estrs_fm_coloc_list_for_ld_v4.csv
 
 
@@ -161,6 +161,7 @@ def main(fm_csv, snp_vcf_dir, str_vcf_dir):
             'ra_GCST90132223': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST90132223_parsed.tsv',
             'covid_GCST011071': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST011071_parsed.tsv',
             'ibd_liu2023': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ibd_EAS_EUR_SiKJEF_meta_IBD.tsv',
+            'ibd': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/ibd_EAS_EUR_SiKJEF_meta_IBD.tsv',
             'alzheimer_GCST90027158': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST90027158.h_parsed.tsv',
             'breastca_GCST004988': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/GCST004988.h_parsed.tsv',
             'colorectalca_GCST90129505': 'gs://cpg-bioheart-test/str/gwas_catalog/gcst/gcst-gwas-catalogs/colorectalca_GCST90129505_parsed.tsv',
