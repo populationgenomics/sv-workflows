@@ -23,17 +23,13 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     import statsmodels.api as sm
     from patsy import dmatrix
     from cpg_utils.hail_batch import output_path
+    from scipy.linalg import qr
 
-    def drop_colinear_columns(X_df, tol=1e-10):
-        X = X_df.values
-        _, s, Vt = np.linalg.svd(X, full_matrices=False)
-        rank = np.sum(s > tol)
-
-        Q, R, pivot = np.linalg.qr(X, mode='economic', pivoting=True)
-        independent_idx = sorted(pivot[:rank])
-        dependent_idx = sorted(set(range(X.shape[1])) - set(independent_idx))
-
-        return X_df.iloc[:, independent_idx], list(X_df.columns[dependent_idx])
+    def drop_collinear_columns(X, tol=1e-10):
+        Q, R, P = qr(X, mode='economic', pivoting=True)
+        rank = np.sum(np.abs(np.diag(R)) > tol)
+        keep_cols = P[:rank]
+        return X[:, keep_cols], keep_cols
 
     # Load phenotype + covariate data
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
@@ -88,7 +84,7 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     )
 
     # Drop colinear columns
-    X_clean, dropped = drop_colinear_columns(X_all)
+    X_clean, dropped = drop_collinear_columns(X_all)
 
     # Fit OLS model
     model = sm.OLS(y, X_clean).fit()
