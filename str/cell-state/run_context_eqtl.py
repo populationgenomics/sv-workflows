@@ -20,94 +20,74 @@ import pandas as pd
 def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     import pandas as pd
     import numpy as np
-    import statsmodels.api as sm
-    from patsy import dmatrix
+    import os
     from cpg_utils.hail_batch import output_path
-    from scipy.linalg import qr
-
-    def drop_collinear_columns(X, tol=1e-10):
-        X_np = np.asarray(X)  # Ensure it's a NumPy array
-        Q, R, P = qr(X_np, mode='economic', pivoting=True)
-        rank = np.sum(np.abs(np.diag(R)) > tol)
-        keep_cols = P[:rank]
-        X_reduced = X_np[:, keep_cols]
-        return X_reduced, keep_cols
 
     # Load phenotype + covariate data
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
 
-    # Load TR dosage matrix
+    # Load genotype matrix
     dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
     dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
 
-    # Merge by sample ID
+    # Merge
     df = df.merge(dosage, left_on='sample_id', right_on='sample', how='inner')
 
-    # Ensure categorical format
+    # Clean categories
     df['activity'] = pd.Categorical(df['activity'], categories=['low', 'medium', 'high'], ordered=False)
 
-    # Get outcome
+    # Prepare fixed covariates
+    covariate_cols = ['sex', 'age'] + [f'score_{i}' for i in range(1, 13)] + [f'rna_PC{i}' for i in range(1, 7)]
+    activity_dummies = pd.get_dummies(df['activity'], prefix='activity')[['activity_medium', 'activity_high']]
+    sample_dummies = pd.get_dummies(df['sample_id'], prefix='sample')
+
+    # Combine fixed covariates
+    X_fixed = pd.concat([df[covariate_cols], activity_dummies, sample_dummies], axis=1).astype(float).values
     y = df['gene_inverse_normal'].values
 
-    # Base formula (excluding genotype)
-    fixed_formula = (
-        "sex + age + " +
-        " + ".join([f"score_{i}" for i in range(1, 13)]) + " + " +
-        " + ".join([f"rna_PC{i}" for i in range(1, 7)]) + " + " +
-        "C(activity) + C(sample_id)"
-    )
-    X_base = dmatrix(fixed_formula, df, return_type='dataframe')
-
-    # Collect variant IDs
+    # Genotype variants
     variant_cols = [col for col in dosage.columns if col != "sample"]
+    G = df[variant_cols].copy().fillna(df[variant_cols].mean()).astype(float)
+    G -= G.mean()  # Center
 
-    # Genotype matrix (N samples x M variants)
-    G = df[variant_cols].copy()
-
-    # Mean imputation for missing genotypes
-    G_imputed = G.fillna(G.mean())
-
-    # Center genotype (optional, improves interpretability & stability)
-    G_centered = G_imputed - G_imputed.mean()
-
-    # Create interaction terms with activity
-    activity_dummies = pd.get_dummies(df['activity'], prefix='activity')[['activity_medium', 'activity_high']]
-    interaction_med = G_centered.values * activity_dummies['activity_medium'].values[:, np.newaxis]
-    interaction_high = G_centered.values * activity_dummies['activity_high'].values[:, np.newaxis]
-
-    # Add all to design matrix
-    X_all = pd.concat(
-        [X_base.reset_index(drop=True),
-         pd.DataFrame(G_centered.values, columns=[f'genotype_{v}' for v in variant_cols]),
-         pd.DataFrame(interaction_med, columns=[f'{v}:activity_medium' for v in variant_cols]),
-         pd.DataFrame(interaction_high, columns=[f'{v}:activity_high' for v in variant_cols])
-         ],
-        axis=1
-    )
-
-    # Drop colinear columns
-    X_clean, dropped = drop_collinear_columns(X_all)
-
-    # Fit OLS model
-    model = sm.OLS(y, X_clean).fit()
-
-    # Collect results
+    # Fit OLS per variant
     results = []
-    for var_id in variant_cols:
-        result = {
-            'gene': gene,
-            'variant': var_id,
-            'beta_genotype': model.params.get(f'genotype_{var_id}', np.nan),
-            'pval_genotype': model.pvalues.get(f'genotype_{var_id}', np.nan),
-            'beta_genox_med': model.params.get(f'{var_id}:activity_medium', np.nan),
-            'pval_genox_med': model.pvalues.get(f'{var_id}:activity_medium', np.nan),
-            'beta_genox_high': model.params.get(f'{var_id}:activity_high', np.nan),
-            'pval_genox_high': model.pvalues.get(f'{var_id}:activity_high', np.nan),
-        }
-        results.append(result)
+    for v in variant_cols:
+        g = G[v].values
+        gx_med = g * activity_dummies['activity_medium'].values
+        gx_high = g * activity_dummies['activity_high'].values
 
-    results_df = pd.DataFrame(results)
-    results_df.to_csv(
+        # Combine into design matrix
+        X = np.column_stack([X_fixed, g, gx_med, gx_high])
+
+        # OLS via least squares
+        beta, residuals, rank, s = np.linalg.lstsq(X, y, rcond=None)
+        df_resid = len(y) - rank
+        y_hat = X @ beta
+        rss = np.sum((y - y_hat) ** 2)
+        mse = rss / df_resid
+        se = np.sqrt(mse * np.diag(np.linalg.pinv(X.T @ X)))
+
+        # Extract coefficients and p-values
+        beta_g, beta_gx_med, beta_gx_high = beta[-3:]
+        se_g, se_gx_med, se_gx_high = se[-3:]
+        from scipy.stats import t
+        tvals = np.array([beta_g, beta_gx_med, beta_gx_high]) / np.array([se_g, se_gx_med, se_gx_high])
+        pvals = 2 * t.sf(np.abs(tvals), df_resid)
+
+        results.append({
+            'gene': gene,
+            'variant': v,
+            'beta_genotype': beta_g,
+            'pval_genotype': pvals[0],
+            'beta_genox_med': beta_gx_med,
+            'pval_genox_med': pvals[1],
+            'beta_genox_high': beta_gx_high,
+            'pval_genox_high': pvals[2],
+        })
+
+    # Save
+    pd.DataFrame(results).to_csv(
         output_path(f'context_eqtl_results/{pathway}/{cell_type}/{chromosome}/{gene}_context_eqtl_results.csv'),
         index=False,
     )
