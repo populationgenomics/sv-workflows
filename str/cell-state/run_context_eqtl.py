@@ -218,7 +218,7 @@ def process_gene_ultrafast_numpy(pheno_cov_dir, gene, chromosome, cell_type, pat
         Xty = np.concatenate([Xty_fixed, X_var.T @ y])
 
         # Solve for beta
-        beta = np.linalg.solve(XtX, Xty)
+        beta, *_ = np.linalg.lstsq(XtX, Xty, rcond=None)
 
         # Get fitted values and residuals
         y_hat = X_aug @ beta
