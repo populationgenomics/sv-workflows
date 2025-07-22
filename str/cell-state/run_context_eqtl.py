@@ -121,7 +121,7 @@ def main(
             output_path(f'context_eqtl_results/{pathway}/{cell_type}/{chromosome}/{gene}_context_eqtl_results.csv')
         ).exists():
             print(f"Context eQTL results for {gene} already exist, skipping.")
-            continue
+            #continue
         j = b.new_python_job(
             name=f'{cell_type}: {chromosome} {gene}',
         )
