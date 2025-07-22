@@ -26,10 +26,12 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     from scipy.linalg import qr
 
     def drop_collinear_columns(X, tol=1e-10):
-        Q, R, P = qr(X, mode='economic', pivoting=True)
+        X_np = np.asarray(X)  # Ensure it's a NumPy array
+        Q, R, P = qr(X_np, mode='economic', pivoting=True)
         rank = np.sum(np.abs(np.diag(R)) > tol)
         keep_cols = P[:rank]
-        return X[:, keep_cols], keep_cols
+        X_reduced = X_np[:, keep_cols]
+        return X_reduced, keep_cols
 
     # Load phenotype + covariate data
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
