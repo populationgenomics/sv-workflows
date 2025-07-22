@@ -1,0 +1,21 @@
+[get_cis_numpy]
+# GCS directory to the input AnnData objects
+input_h5ad_dir = 'gs://cpg-tenk10k-test/saige-qtl/300-libraries/anndata_objects_from_HPC'
+# GCS directory to the input pseudobulk CSV files
+input_pseudobulk_dir = 'gs://cpg-tenk10k-test/str/cellstate/input_files/pseudobulk/tob'
+# GCS directory to the input covariate CSV files
+input_cov_dir = 'gs://cpg-tenk10k-test/str/cellstate/input_files/tob/covariates/GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype/6_rna_pcs'
+chromosomes = 'chr22'
+cell_types = 'B_naive'
+# cis window size in bp
+cis_window = 100000
+version = 'v1'
+job_cpu = 1
+job_memory = 'standard'
+job_storage = '0G'
+# To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
+max_parallel_jobs = 500
+# filter out genes that are expressed in fewer than XX% of cells
+min_pct = 1
+#pathway GOBP as per gs://cpg-bioheart-test/str/trdeepid/bcells/pathway_attributions_sublabel.h5ad
+pathway = 'GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype'
