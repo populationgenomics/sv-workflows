@@ -157,6 +157,95 @@ def process_gene_fast_no_numba(pheno_cov_dir, gene, chromosome, cell_type, pathw
         index=False,
     )
 
+
+
+def process_gene_ultrafast_numpy(pheno_cov_dir, gene, chromosome, cell_type, pathway):
+    import pandas as pd
+    import numpy as np
+    from scipy.stats import t
+    from cpg_utils.hail_batch import output_path
+
+    df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
+    dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
+    dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
+    df = df.merge(dosage, left_on='sample_id', right_on='sample', how='inner')
+    df['activity'] = pd.Categorical(df['activity'], categories=['low', 'medium', 'high'])
+
+    covariate_cols = ['sex', 'age'] + [f'score_{i}' for i in range(1, 13)] + [f'rna_PC{i}' for i in range(1, 7)]
+    activity_dummies = pd.get_dummies(df['activity'], prefix='activity')[['activity_medium', 'activity_high']]
+    sample_dummies = pd.get_dummies(df['sample_id'], prefix='sample')
+
+    # Prepare fixed design matrix
+    X_fixed = pd.concat([df[covariate_cols], activity_dummies, sample_dummies], axis=1).astype(float).values
+    y = df['gene_inverse_normal'].values
+    n, p_fixed = X_fixed.shape
+
+    # Precompute fixed matrix terms
+    XtX_fixed = X_fixed.T @ X_fixed
+    Xty_fixed = X_fixed.T @ y
+
+    # Genotypes
+    variant_cols = [col for col in dosage.columns if col != "sample"]
+    G = df[variant_cols].copy().fillna(df[variant_cols].mean()).astype(float)
+    G -= G.mean()
+
+    med = activity_dummies['activity_medium'].values
+    high = activity_dummies['activity_high'].values
+
+    results = []
+
+    for v in variant_cols:
+        g = G[v].values
+        gx_med = g * med
+        gx_high = g * high
+
+        # Combine genotype and interactions
+        X_var = np.column_stack([g, gx_med, gx_high])
+        X_aug = np.hstack([X_fixed, X_var])  # Full design matrix (n x [p_fixed + 3])
+
+        # Efficient XtX and Xty computation
+        XtX = np.block([
+            [XtX_fixed, X_fixed.T @ X_var],
+            [X_var.T @ X_fixed, X_var.T @ X_var]
+        ])
+        Xty = np.concatenate([Xty_fixed, X_var.T @ y])
+
+        # Solve for beta
+        beta = np.linalg.solve(XtX, Xty)
+
+        # Get fitted values and residuals
+        y_hat = X_aug @ beta
+        resid = y - y_hat
+        rss = np.sum(resid ** 2)
+        df_resid = n - (p_fixed + 3)
+        mse = rss / df_resid
+
+        # Compute SEs from XtX^-1 diagonal
+        XtX_inv_diag = np.diag(np.linalg.inv(XtX))
+        se = np.sqrt(mse * XtX_inv_diag)
+
+        # Get t and p values
+        beta3 = beta[-3:]
+        se3 = se[-3:]
+        tvals = beta3 / se3
+        pvals = 2 * t.sf(np.abs(tvals), df_resid)
+
+        results.append({
+            'gene': gene,
+            'variant': v,
+            'beta_genotype': beta3[0],
+            'pval_genotype': pvals[0],
+            'beta_genox_med': beta3[1],
+            'pval_genox_med': pvals[1],
+            'beta_genox_high': beta3[2],
+            'pval_genox_high': pvals[2],
+        })
+
+    pd.DataFrame(results).to_csv(
+        output_path(f'context_eqtl_results/{pathway}/{cell_type}/{chromosome}/{gene}_context_eqtl_results.csv'),
+        index=False,
+    )
+
 @click.option('--input-gene-list-dir', default='gs://cpg-tenk10k-test/str/cellstate/input_files/tob/scRNA_gene_lists')
 @click.option('--cis-window-dir', default='gs://ccpg-tenk10k-test/str/cellstate/input_files/tob/cis_window_files')
 @click.option('--pheno-cov-dir', default='gs://cpg-tenk10k-test/str/cellstate/input_files/tob/pheno_cov_csv')
@@ -194,7 +283,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene_fast_no_numba, pheno_cov_dir, gene, chromosome, cell_type, pathway)
+        j.call(process_gene_ultrafast_numpy, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
