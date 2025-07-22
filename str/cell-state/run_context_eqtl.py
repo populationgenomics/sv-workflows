@@ -95,6 +95,9 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
 
 
 def fast_ols_numpy(X, y):
+    import numpy as np
+    from scipy.stats import t
+
     XtX = X.T @ X
     Xty = X.T @ y
     beta = np.linalg.solve(XtX, Xty)
@@ -111,7 +114,11 @@ def fast_ols_numpy(X, y):
     return beta[-3:], pvals[-3:]
 
 def process_gene_fast_no_numba(pheno_cov_dir, gene, chromosome, cell_type, pathway):
+    import pandas as pd
     import numpy as np
+
+    from cpg_utils.hail_batch import output_path
+
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
     dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
     dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
@@ -283,7 +290,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene_ultrafast_numpy, pheno_cov_dir, gene, chromosome, cell_type, pathway)
+        j.call(process_gene_fast_no_numba, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
