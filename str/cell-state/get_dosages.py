@@ -66,12 +66,13 @@ def dosages(chromosome,input_gene_list_dir, cis_window_dir, cell_type, pathway):
     import numpy as np
     from cpg_utils.hail_batch import output_path
     from cyvcf2 import VCF
+    from cpg_utils import to_path
     """
     Extracts the dosage files for each gene in the df DataFrame.
     """
 
     gene_list_path = input_gene_list_dir + f'/{pathway}/1_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
-    with open(gene_list_path, 'r') as f:
+    with open(to_path(gene_list_path), 'r') as f:
         gene_list = json.load(f)
 
 
