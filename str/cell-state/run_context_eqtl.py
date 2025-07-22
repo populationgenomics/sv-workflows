@@ -100,7 +100,7 @@ def fast_ols_numpy(X, y):
 
     XtX = X.T @ X
     Xty = X.T @ y
-    beta = np.linalg.solve(XtX, Xty)
+    beta, *_ = np.linalg.lstsq(XtX, Xty, rcond=None)
     y_hat = X @ beta
     resid = y - y_hat
     rss = np.sum(resid ** 2)
@@ -290,7 +290,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene_fast_no_numba, pheno_cov_dir, gene, chromosome, cell_type, pathway)
+        j.call(process_gene_ultrafast_numpy, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
