@@ -92,6 +92,74 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
         index=False,
     )
 
+
+from numba import njit
+
+@njit
+def fast_ols(X, y):
+    XtX = X.T @ X
+    Xty = X.T @ y
+    beta = np.linalg.solve(XtX, Xty)
+    y_hat = X @ beta
+    resid = y - y_hat
+    rss = np.sum(resid ** 2)
+    n, p = X.shape
+    df = n - p
+    mse = rss / df
+    XtX_inv_diag = np.diag(np.linalg.inv(XtX))
+    se = np.sqrt(mse * XtX_inv_diag)
+    tvals = beta / se
+    pvals = 2 * t.sf(np.abs(tvals), df)
+    return beta[-3:], pvals[-3:]  # Only return variant + interaction terms
+
+def process_gene_ultrafast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
+    import pandas as pd
+    import numpy as np
+    from cpg_utils.hail_batch import output_path
+    from scipy.stats import t
+    df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
+    dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
+    dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
+    df = df.merge(dosage, left_on='sample_id', right_on='sample', how='inner')
+    df['activity'] = pd.Categorical(df['activity'], categories=['low', 'medium', 'high'])
+
+    covariate_cols = ['sex', 'age'] + [f'score_{i}' for i in range(1, 13)] + [f'rna_PC{i}' for i in range(1, 7)]
+    activity_dummies = pd.get_dummies(df['activity'], prefix='activity')[['activity_medium', 'activity_high']]
+    sample_dummies = pd.get_dummies(df['sample_id'], prefix='sample')
+
+    # Fixed design matrix
+    X_fixed = pd.concat([df[covariate_cols], activity_dummies, sample_dummies], axis=1).astype(float).values
+    y = df['gene_inverse_normal'].values
+    variant_cols = [col for col in dosage.columns if col != "sample"]
+    G = df[variant_cols].copy().fillna(df[variant_cols].mean()).astype(float)
+    G -= G.mean()
+
+    med = activity_dummies['activity_medium'].values
+    high = activity_dummies['activity_high'].values
+
+    results = []
+    for i, v in enumerate(variant_cols):
+        g = G[v].values
+        gx_med = g * med
+        gx_high = g * high
+        X = np.column_stack((X_fixed, g, gx_med, gx_high))
+        beta3, pval3 = fast_ols(X, y)
+        results.append({
+            'gene': gene,
+            'variant': v,
+            'beta_genotype': beta3[0],
+            'pval_genotype': pval3[0],
+            'beta_genox_med': beta3[1],
+            'pval_genox_med': pval3[1],
+            'beta_genox_high': beta3[2],
+            'pval_genox_high': pval3[2],
+        })
+
+    pd.DataFrame(results).to_csv(
+        output_path(f'context_eqtl_results/{pathway}/{cell_type}/{chromosome}/{gene}_context_eqtl_results.csv'),
+        index=False,
+    )
+
 @click.option('--input-gene-list-dir', default='gs://cpg-tenk10k-test/str/cellstate/input_files/tob/scRNA_gene_lists')
 @click.option('--cis-window-dir', default='gs://ccpg-tenk10k-test/str/cellstate/input_files/tob/cis_window_files')
 @click.option('--pheno-cov-dir', default='gs://cpg-tenk10k-test/str/cellstate/input_files/tob/pheno_cov_csv')
@@ -129,7 +197,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene_fast, pheno_cov_dir, gene, chromosome, cell_type, pathway)
+        j.call(process_gene_ultrafast, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
