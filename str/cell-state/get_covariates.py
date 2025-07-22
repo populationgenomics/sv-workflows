@@ -32,7 +32,7 @@ def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs
 
     # read in and concatenate pseudobulk data (chr-specific --> genome-wide anndata)
     adatas = []
-    gcs_files = list(to_path(f'{pseudobulk_input_dir}/{cell_type}').rglob(f'{pathway}_pseudobulk.csv'))
+    gcs_files = list(to_path(f'{pseudobulk_input_dir}/{cell_type}').rglob(f'*{pathway}_pseudobulk.csv'))
     for file in gcs_files:
         print(f'Loading {str(file)}...')
 
