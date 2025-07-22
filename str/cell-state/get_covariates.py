@@ -56,18 +56,26 @@ def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs
 
             expression_parts[sample_key].append(expr)
 
-    sample_dfs = []
+    sample_records = []
+    for (individual, activity), expr_parts in expression_parts.items():
+        # Flatten all dataframes into dicts and merge (last value wins for duplicate genes)
+        expr_dict = {}
+        try:
+            for df in expr_parts:
+                expr_dict |= df.iloc[0].to_dict()  # Python 3.9+ dict merge operator (fast)
 
-    for key, expr_parts in expression_parts.items():
-        merged = pd.concat(expr_parts, axis=1)  # concat gene sets from different chromosomes
-        merged = merged.groupby(merged.columns, axis=1).first()  # handle duplicate columns
+            # Add metadata
+            expr_dict["individual"] = individual
+            expr_dict["activity"] = activity
 
-        # Assign metadata before collecting
-        merged = merged.assign(individual=key[0], activity=key[1])
-        sample_dfs.append(merged)
+            # Store as row
+            sample_records.append(expr_dict)
+        except:
+            print(individual,activity)
 
-    # Combine into full dataframe
-    pseudobulk_df = pd.concat(sample_dfs, axis=0)
+    # Create DataFrame from all rows at once (much faster than append + concat)
+    pseudobulk_df = pd.DataFrame.from_records(sample_records)
+
     pseudobulk_df.set_index(["individual", "activity"], inplace=True)
     pseudobulk_df = pseudobulk_df.dropna(axis=1, how="any")
 
