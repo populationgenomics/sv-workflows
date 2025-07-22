@@ -93,10 +93,8 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     )
 
 
-from numba import njit
 
-@njit
-def fast_ols(X, y):
+def fast_ols_numpy(X, y):
     XtX = X.T @ X
     Xty = X.T @ y
     beta = np.linalg.solve(XtX, Xty)
@@ -110,17 +108,14 @@ def fast_ols(X, y):
     se = np.sqrt(mse * XtX_inv_diag)
     tvals = beta / se
     pvals = 2 * t.sf(np.abs(tvals), df)
-    return beta[-3:], pvals[-3:]  # Only return variant + interaction terms
+    return beta[-3:], pvals[-3:]
 
-def process_gene_ultrafast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
-    import pandas as pd
-    import numpy as np
-    from cpg_utils.hail_batch import output_path
-    from scipy.stats import t
+def process_gene_fast_no_numba(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
     dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
     dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
     df = df.merge(dosage, left_on='sample_id', right_on='sample', how='inner')
+
     df['activity'] = pd.Categorical(df['activity'], categories=['low', 'medium', 'high'])
 
     covariate_cols = ['sex', 'age'] + [f'score_{i}' for i in range(1, 13)] + [f'rna_PC{i}' for i in range(1, 7)]
@@ -130,6 +125,7 @@ def process_gene_ultrafast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     # Fixed design matrix
     X_fixed = pd.concat([df[covariate_cols], activity_dummies, sample_dummies], axis=1).astype(float).values
     y = df['gene_inverse_normal'].values
+
     variant_cols = [col for col in dosage.columns if col != "sample"]
     G = df[variant_cols].copy().fillna(df[variant_cols].mean()).astype(float)
     G -= G.mean()
@@ -138,12 +134,12 @@ def process_gene_ultrafast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     high = activity_dummies['activity_high'].values
 
     results = []
-    for i, v in enumerate(variant_cols):
+    for v in variant_cols:
         g = G[v].values
         gx_med = g * med
         gx_high = g * high
         X = np.column_stack((X_fixed, g, gx_med, gx_high))
-        beta3, pval3 = fast_ols(X, y)
+        beta3, pval3 = fast_ols_numpy(X, y)
         results.append({
             'gene': gene,
             'variant': v,
@@ -197,7 +193,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene_ultrafast, pheno_cov_dir, gene, chromosome, cell_type, pathway)
+        j.call(process_gene_fast_no_numba, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
