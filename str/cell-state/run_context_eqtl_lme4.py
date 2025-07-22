@@ -4,8 +4,8 @@
 This script runs context eQTL analysis for a specific cell type and pathway.
 It processes gene lists, extracts dosage data, and performs association tests.
 
-analysis-runner --access-level test --dataset tenk10k --description "Run context eQTL analysis" \
---output-dir "str/cellstate/o_files/tob" run_context_eqtl.py
+analysis-runner --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-meta:lme --description "Run context eQTL analysis" \
+--output-dir "str/cellstate/o_files/tob" run_context_eqtl_lme4.py
 
 """
 import json
