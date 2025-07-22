@@ -113,7 +113,7 @@ def main(
         input_gene_list_dir
         + f'/{pathway}/1_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json'
     )
-    with open(gene_list_path, 'r') as f:
+    with open(to_path(gene_list_path), 'r') as f:
         gene_list = json.load(f)
 
     # Process each gene in the list
