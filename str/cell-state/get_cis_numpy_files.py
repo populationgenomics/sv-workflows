@@ -53,8 +53,7 @@ def cis_window_numpy_extractor(
 
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
-    expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
-    adata = sc.read_h5ad(expression_h5ad_path)
+    adata = sc.read_h5ad(to_path(h5ad_file_path))
 
     # read in covariate files
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
