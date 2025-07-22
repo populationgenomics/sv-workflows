@@ -182,19 +182,19 @@ def process_gene_ultrafast_numpy(pheno_cov_dir, gene, chromosome, cell_type, pat
     activity_dummies = pd.get_dummies(df['activity'], prefix='activity')[['activity_medium', 'activity_high']]
     sample_dummies = pd.get_dummies(df['sample_id'], prefix='sample')
 
-    # Prepare fixed design matrix
+    # Fixed covariates matrix
     X_fixed = pd.concat([df[covariate_cols], activity_dummies, sample_dummies], axis=1).astype(float).values
     y = df['gene_inverse_normal'].values
     n, p_fixed = X_fixed.shape
 
-    # Precompute fixed matrix terms
+    # Precompute fixed matrix products
     XtX_fixed = X_fixed.T @ X_fixed
     Xty_fixed = X_fixed.T @ y
 
-    # Genotypes
+    # Genotype matrix
     variant_cols = [col for col in dosage.columns if col != "sample"]
     G = df[variant_cols].copy().fillna(df[variant_cols].mean()).astype(float)
-    G -= G.mean()
+    G -= G.mean()  # center
 
     med = activity_dummies['activity_medium'].values
     high = activity_dummies['activity_high'].values
@@ -206,34 +206,34 @@ def process_gene_ultrafast_numpy(pheno_cov_dir, gene, chromosome, cell_type, pat
         gx_med = g * med
         gx_high = g * high
 
-        # Combine genotype and interactions
+        # Variant-specific matrix
         X_var = np.column_stack([g, gx_med, gx_high])
-        X_aug = np.hstack([X_fixed, X_var])  # Full design matrix (n x [p_fixed + 3])
+        X_aug = np.hstack([X_fixed, X_var])
 
-        # Efficient XtX and Xty computation
+        # Blockwise construction of XtX and Xty
         XtX = np.block([
             [XtX_fixed, X_fixed.T @ X_var],
             [X_var.T @ X_fixed, X_var.T @ X_var]
         ])
         Xty = np.concatenate([Xty_fixed, X_var.T @ y])
 
-        # Solve for beta
+        # Solve beta using least-squares (safe)
         beta, *_ = np.linalg.lstsq(XtX, Xty, rcond=None)
 
-        # Get fitted values and residuals
+        # Residuals
         y_hat = X_aug @ beta
         resid = y - y_hat
         rss = np.sum(resid ** 2)
         df_resid = n - (p_fixed + 3)
         mse = rss / df_resid
 
-        # Compute SEs from XtX^-1 diagonal
-        XtX_inv_diag = np.diag(np.linalg.inv(XtX))
-        se = np.sqrt(mse * XtX_inv_diag)
+        # Just compute 3x3 inverse of bottom-right block for SEs
+        XtX_var_block = XtX[-3:, -3:]
+        XtX_inv_3 = np.linalg.pinv(XtX_var_block)
+        se3 = np.sqrt(mse * np.diag(XtX_inv_3))
 
-        # Get t and p values
+        # t- and p-values
         beta3 = beta[-3:]
-        se3 = se[-3:]
         tvals = beta3 / se3
         pvals = 2 * t.sf(np.abs(tvals), df_resid)
 
