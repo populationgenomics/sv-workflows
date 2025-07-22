@@ -111,6 +111,7 @@ def fast_ols_numpy(X, y):
     return beta[-3:], pvals[-3:]
 
 def process_gene_fast_no_numba(pheno_cov_dir, gene, chromosome, cell_type, pathway):
+    import numpy as np
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
     dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
     dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
