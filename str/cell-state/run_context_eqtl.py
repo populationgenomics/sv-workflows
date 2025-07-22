@@ -48,37 +48,46 @@ def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     # Make sure activity_bin is categorical
     df["activity"] = pd.Categorical(df["activity"], categories=["low", "medium", "high"], ordered=False)
 
-    results = []
+    from statsmodels.api import OLS
+    from patsy import dmatrices
 
-    # Iterate over TR variants
     variant_cols = [col for col in dosage.columns if col != "sample"]
+
+    # Pre-build fixed covariates matrix
+    y, X_fixed = dmatrices(
+        "gene_inverse_normal ~ C(activity) + sex + age + " +
+        "+".join([f"score_{i}" for i in range(1, 13)]) + " + " +
+        "+".join([f"rna_PC{i}" for i in range(1, 7)]) +
+        " + C(sample_id)",
+        df,
+        return_type="dataframe"
+    )
+
+    results = []
 
     for var_id in variant_cols:
         df["genotype"] = df[var_id]
+        df_model = df.dropna(subset=["genotype", "gene_inverse_normal"])
+
+        X = X_fixed.loc[df_model.index].copy()
+        X["genotype"] = df_model["genotype"]
+        X["genotype:C(activity)[T.medium]"] = df_model["genotype"] * (df_model["activity"] == "medium")
+        X["genotype:C(activity)[T.high]"] = df_model["genotype"] * (df_model["activity"] == "high")
+        y_model = df_model["gene_inverse_normal"]
 
         try:
-            df_model = df.dropna(subset=["genotype", "gene_inverse_normal"])
-            model = smf.ols(
-                "gene_inverse_normal ~ genotype * C(activity) + sex+age+score_1+score_2+score_3+score_4+score_5+score_6+score_7+score_8+score_9+score_10+score_11+score_12+rna_PC1+rna_PC2+rna_PC3+rna_PC4+rna_PC5+rna_PC6+ C(sample_id)",
-                data=df_model,
-            ).fit()
-
-            results.append(
-                {
-                    "gene": gene,
-                    "variant": var_id,
-                    "beta_genotype": model.params.get("genotype", np.nan),
-                    "pval_genotype": model.pvalues.get("genotype", np.nan),
-                    "beta_genox_med": model.params.get("genotype:C(activity)[T.medium]", np.nan),
-                    "pval_genox_med": model.pvalues.get("genotype:C(activity)[T.medium]", np.nan),
-                    "beta_genox_high": model.params.get("genotype:C(activity)[T.high]", np.nan),
-                    "pval_genox_high": model.pvalues.get("genotype:C(activity)[T.high]", np.nan),
-                    "beta_med": model.params.get("C(activity)[T.medium]", np.nan),
-                    "pval_med": model.pvalues.get("C(activity)[T.medium]", np.nan),
-                    "beta_high": model.params.get("C(activity)[T.high]", np.nan),
-                    "pval_high": model.pvalues.get("C(activity)[T.high]", np.nan),
-                }
-            )
+            model = OLS(y_model, X).fit()
+            results.append({
+                "gene":gene,
+                "variant": var_id,
+                "beta_genotype": model.params.get("genotype", np.nan),
+                "pval_genotype": model.pvalues.get("genotype", np.nan),
+                "beta_genox_med": model.params.get("genotype:C(activity)[T.medium]", np.nan),
+                "pval_genox_med": model.pvalues.get("genotype:C(activity)[T.medium]", np.nan),
+                "beta_genox_high": model.params.get("genotype:C(activity)[T.high]", np.nan),
+                "pval_genox_high": model.pvalues.get("genotype:C(activity)[T.high]", np.nan),
+            })
+            print(f'processed {var_id}')
 
         except Exception as e:
             print(f"Model failed for {gene} - {var_id}: {e}")
@@ -99,7 +108,7 @@ def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
 @click.option('--chromosome', default='chr22', help='Chromosome to process')
 @click.option('--job-storage', help='Storage of the batch job eg 30G', default='4G')
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
-@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=1)
+@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=0.25)
 @click.command()
 def main(
     input_gene_list_dir, cis_window_dir, pheno_cov_dir, cell_type, pathway, chromosome, job_storage, job_memory, job_cpu
