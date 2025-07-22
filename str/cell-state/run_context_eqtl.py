@@ -59,22 +59,25 @@ def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
 
         try:
             df_model = df.dropna(subset=["genotype", "gene_inverse_normal"])
-            model = smf.mixedlm(
-                "gene_inverse_normal ~ genotype * C(activity) + sex+age+score_1+score_2+score_3+score_4+score_5+score_6+score_7+score_8+score_9+score_10+score_11+score_12+rna_PC1+rna_PC2+rna_PC3+rna_PC4+rna_PC5+rna_PC6",
+            model = smf.ols(
+                "gene_inverse_normal ~ genotype * C(activity) + sex+age+score_1+score_2+score_3+score_4+score_5+score_6+score_7+score_8+score_9+score_10+score_11+score_12+rna_PC1+rna_PC2+rna_PC3+rna_PC4+rna_PC5+rna_PC6+ C(individual)",
                 data=df_model,
-                groups=df_model["sample_id"],
             ).fit()
 
             results.append(
                 {
                     "gene": gene,
                     "variant": var_id,
-                    "beta_g": model.params.get("genotype", np.nan),
-                    "pval_g": model.pvalues.get("genotype", np.nan),
-                    "beta_gx_med": model.params.get("genotype:C(activity_bin)[T.med]", np.nan),
-                    "pval_gx_med": model.pvalues.get("genotype:C(activity_bin)[T.med]", np.nan),
-                    "beta_gx_high": model.params.get("genotype:C(activity_bin)[T.high]", np.nan),
-                    "pval_gx_high": model.pvalues.get("genotype:C(activity_bin)[T.high]", np.nan),
+                    "beta_genotype": model.params.get("genotype", np.nan),
+                    "pval_genotype": model.pvalues.get("genotype", np.nan),
+                    "beta_genox_med": model.params.get("genotype:C(activity)[T.medium]", np.nan),
+                    "pval_genox_med": model.pvalues.get("genotype:C(activity)[T.medium]", np.nan),
+                    "beta_genox_high": model.params.get("genotype:C(activity)[T.high]", np.nan),
+                    "pval_genox_high": model.pvalues.get("genotype:C(activity)[T.high]", np.nan),
+                    "beta_med": model.params.get("C(activity)[T.medium]", np.nan),
+                    "pval_med": model.pvalues.get("C(activity)[T.medium]", np.nan),
+                    "beta_med": model.params.get("C(activity)[T.high]", np.nan),
+                    "pval_med": model.pvalues.get("C(activity)[T.high]", np.nan),
                 }
             )
 
