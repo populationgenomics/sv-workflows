@@ -76,8 +76,8 @@ def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
                     "pval_genox_high": model.pvalues.get("genotype:C(activity)[T.high]", np.nan),
                     "beta_med": model.params.get("C(activity)[T.medium]", np.nan),
                     "pval_med": model.pvalues.get("C(activity)[T.medium]", np.nan),
-                    "beta_med": model.params.get("C(activity)[T.high]", np.nan),
-                    "pval_med": model.pvalues.get("C(activity)[T.high]", np.nan),
+                    "beta_high": model.params.get("C(activity)[T.high]", np.nan),
+                    "pval_high": model.pvalues.get("C(activity)[T.high]", np.nan),
                 }
             )
 
