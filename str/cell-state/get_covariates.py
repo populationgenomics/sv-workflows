@@ -25,7 +25,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch, init_batch, output_path
 
 
-def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs,pathway):
+def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs, pathway):
     """
     Calculates cell-type specific PCs from the pseudobulk data (genome-wide),
     merges them with other pre-calculated covariates, and writes file to GCP
@@ -71,7 +71,7 @@ def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs
             # Store as row
             sample_records.append(expr_dict)
         except:
-            print(individual,activity)
+            print(individual, activity)
 
     # Create DataFrame from all rows at once (much faster than append + concat)
     pseudobulk_df = pd.DataFrame.from_records(sample_records)
@@ -135,18 +135,11 @@ def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs
 @click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
 @click.option('--covariate-file-path', help='GCS Path to the existing covariate file')
 @click.option('--num-pcs', help='Number of RNA PCs to calculate', default=20)
-@click.option('--pathway', help='GOBP Pathway name for the analysis', default='GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype')
+@click.option(
+    '--pathway', help='GOBP Pathway name for the analysis', default='GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype'
+)
 @click.command()
-def main(
-    input_dir,
-    cell_types,
-    job_storage,
-    job_memory,
-    job_cpu,
-    covariate_file_path,
-    num_pcs,
-    pathway
-):
+def main(input_dir, cell_types, job_storage, job_memory, job_cpu, covariate_file_path, num_pcs, pathway):
     """
     Obtain cell-type specific covariates for pseudobulk associaTR model
     """
@@ -160,14 +153,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(
-            get_covariates,
-            input_dir,
-            cell_type,
-            covariate_file_path,
-            num_pcs,
-            pathway
-        )
+        j.call(get_covariates, input_dir, cell_type, covariate_file_path, num_pcs, pathway)
 
     b.run(wait=False)
 

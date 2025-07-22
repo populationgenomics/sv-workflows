@@ -32,7 +32,6 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
 
-
 def cis_window_numpy_extractor(
     input_h5ad_dir,
     input_pseudobulk_dir,
@@ -43,7 +42,7 @@ def cis_window_numpy_extractor(
     version,
     chrom_len,
     min_pct,
-    pathway
+    pathway,
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -59,18 +58,26 @@ def cis_window_numpy_extractor(
     covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
 
-    master_pseudobulk=[]
-    #read in pseudobulk data
-    pseudobulk_low = pd.read_csv(f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_low_{pathway}_pseudobulk.csv')
-    pseudobulk_medium = pd.read_csv(f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_medium_{pathway}_pseudobulk.csv')
-    pseudobulk_high = pd.read_csv(f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_high_{pathway}_pseudobulk.csv')
+    master_pseudobulk = []
+    # read in pseudobulk data
+    pseudobulk_low = pd.read_csv(
+        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_low_{pathway}_pseudobulk.csv'
+    )
+    pseudobulk_medium = pd.read_csv(
+        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_medium_{pathway}_pseudobulk.csv'
+    )
+    pseudobulk_high = pd.read_csv(
+        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_high_{pathway}_pseudobulk.csv'
+    )
     pseudobulk_low['activity'] = 'low'  # add activity column to pseudobulk df
     pseudobulk_medium['activity'] = 'medium'  # add activity column to pseudobulk df
     pseudobulk_high['activity'] = 'high'  # add activity
 
-    #find the common columns (ie genes) in all pseudobulk dataframes
+    # find the common columns (ie genes) in all pseudobulk dataframes
     # Find common columns in the order they appear in df1
-    common_cols = [col for col in pseudobulk_low.columns if col in pseudobulk_medium.columns and col in pseudobulk_high.columns]
+    common_cols = [
+        col for col in pseudobulk_low.columns if col in pseudobulk_medium.columns and col in pseudobulk_high.columns
+    ]
 
     # Subset all DataFrames using this ordered list
     df1_common = pseudobulk_low[common_cols]
@@ -110,7 +117,7 @@ def cis_window_numpy_extractor(
 
         # make the phenotype-covariate numpy objects
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
-        gene_pheno = pseudobulk[['sample_id', 'activity',gene]]
+        gene_pheno = pseudobulk[['sample_id', 'activity', gene]]
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
@@ -120,7 +127,6 @@ def cis_window_numpy_extractor(
         # Use the inverse normal cumulative distribution function (quantile function) to transform percentiles to normal distribution values
         gene_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(gene_pheno.loc[:, 'gene_percentile'])
         gene_pheno = gene_pheno[['sample_id', 'activity', 'gene_inverse_normal']]
-
 
         gene_pheno_cov = gene_pheno.merge(covariates, on=['sample_id', 'activity'])
 

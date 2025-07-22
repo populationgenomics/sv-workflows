@@ -25,7 +25,7 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
-def pseudobulk(input_file_path, id_file_path, target_sum, min_pct,cell_type,pathway):
+def pseudobulk(input_file_path, id_file_path, target_sum, min_pct, cell_type, pathway):
     """
     Performs pseudobulking in a cell-type chromosome-specific manner
     """
@@ -39,10 +39,12 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct,cell_type,path
     adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # read in adata pathway annotations
-    pathway_annot = sc.read_h5ad(to_path('gs://cpg-bioheart-test/str/trdeepid/bcells/pathway_attributions_sublabel.h5ad'))
-    pathway_annot = pathway_annot[pathway_annot.obs["wg2_scpred_prediction"] == cell_type].copy() #filter to cell type
-    subtype_series = pathway_annot.obs[pathway] #select the specific pathway's annotation
-    adata.obs[pathway] = subtype_series #add the pathway annotation to the adata object
+    pathway_annot = sc.read_h5ad(
+        to_path('gs://cpg-bioheart-test/str/trdeepid/bcells/pathway_attributions_sublabel.h5ad')
+    )
+    pathway_annot = pathway_annot[pathway_annot.obs["wg2_scpred_prediction"] == cell_type].copy()  # filter to cell type
+    subtype_series = pathway_annot.obs[pathway]  # select the specific pathway's annotation
+    adata.obs[pathway] = subtype_series  # add the pathway annotation to the adata object
 
     for activity in ['low', 'medium', 'high']:
         # filter adata to only include cells with the current annotation
@@ -97,7 +99,6 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct,cell_type,path
         )
 
 
-
 def main():
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
@@ -120,7 +121,7 @@ def main():
                 get_config()['pseudobulk']['target_sum'],
                 get_config()['pseudobulk']['min_pct'],
                 cell_type,
-                get_config()['pseudobulk']['pathway']
+                get_config()['pseudobulk']['pathway'],
             )
     b.run(wait=False)
 
