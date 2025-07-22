@@ -122,7 +122,7 @@ def cis_window_numpy_extractor(
         gene_pheno = gene_pheno[['sample_id', 'activity', 'gene_inverse_normal']]
 
 
-        gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id')
+        gene_pheno_cov = gene_pheno.merge(covariates, on=['sample_id', 'activity'])
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
