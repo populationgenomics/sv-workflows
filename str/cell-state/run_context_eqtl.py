@@ -16,6 +16,7 @@ from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
 import pandas as pd
+
 def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     import pandas as pd
     import numpy as np
@@ -23,16 +24,16 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     from patsy import dmatrix
     from cpg_utils.hail_batch import output_path
 
-    """
-    Efficient matrix-based regression of genotype × activity interaction using mean-imputed genotype data.
+    def drop_colinear_columns(X_df, tol=1e-10):
+        X = X_df.values
+        _, s, Vt = np.linalg.svd(X, full_matrices=False)
+        rank = np.sum(s > tol)
 
-    Args:
-        pheno_cov_dir (str): Directory with phenotype + covariate data.
-        gene (str): Ensembl or gene symbol.
-        chromosome (str): Chromosome name (e.g., 'chr22').
-        cell_type (str): Cell type name.
-        pathway (str): Pathway identifier (used as subfolder in GCS).
-    """
+        Q, R, pivot = np.linalg.qr(X, mode='economic', pivoting=True)
+        independent_idx = sorted(pivot[:rank])
+        dependent_idx = sorted(set(range(X.shape[1])) - set(independent_idx))
+
+        return X_df.iloc[:, independent_idx], list(X_df.columns[dependent_idx])
 
     # Load phenotype + covariate data
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
@@ -44,63 +45,69 @@ def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     # Merge by sample ID
     df = df.merge(dosage, left_on='sample_id', right_on='sample', how='inner')
 
-    # Ensure categorical encoding of activity_bin
+    # Ensure categorical format
     df['activity'] = pd.Categorical(df['activity'], categories=['low', 'medium', 'high'], ordered=False)
 
-    # Outcome vector
+    # Get outcome
     y = df['gene_inverse_normal'].values
 
-    # Precompute fixed covariate matrix (excluding genotype terms)
+    # Base formula (excluding genotype)
     fixed_formula = (
         "sex + age + " +
         " + ".join([f"score_{i}" for i in range(1, 13)]) + " + " +
         " + ".join([f"rna_PC{i}" for i in range(1, 7)]) + " + " +
         "C(activity) + C(sample_id)"
     )
-    X_fixed = dmatrix(fixed_formula, df, return_type='dataframe')
+    X_base = dmatrix(fixed_formula, df, return_type='dataframe')
 
-    # Identify genotype variant columns
+    # Collect variant IDs
     variant_cols = [col for col in dosage.columns if col != "sample"]
 
-    # Extract and mean-impute genotype matrix
-    G_raw = df[variant_cols].copy()
-    G_imputed = G_raw.fillna(G_raw.mean())  # mean imputation
-    G_centered = G_imputed - G_imputed.mean()  # center genotypes
+    # Genotype matrix (N samples x M variants)
+    G = df[variant_cols].copy()
 
-    # Build interaction terms
-    interaction_terms = {}
-    for level in ['medium', 'high']:
-        interaction_terms[f'genotype:activity_{level}'] = (
-            G_centered.values * (df['activity'] == level).values[:, None]
-        )
+    # Mean imputation for missing genotypes
+    G_imputed = G.fillna(G.mean())
 
-    # Assemble design matrix
-    X_full = pd.concat(
-        [X_fixed.reset_index(drop=True),
-         pd.DataFrame(G_centered.values, columns=[f'G_{v}' for v in variant_cols]),
-         pd.DataFrame(interaction_terms['genotype:activity_medium'], columns=[f'G_{v}:activity_medium' for v in variant_cols]),
-         pd.DataFrame(interaction_terms['genotype:activity_high'], columns=[f'G_{v}:activity_high' for v in variant_cols])],
+    # Center genotype (optional, improves interpretability & stability)
+    G_centered = G_imputed - G_imputed.mean()
+
+    # Create interaction terms with activity
+    activity_dummies = pd.get_dummies(df['activity'], prefix='activity')[['activity_medium', 'activity_high']]
+    interaction_med = G_centered.values * activity_dummies['activity_medium'].values[:, np.newaxis]
+    interaction_high = G_centered.values * activity_dummies['activity_high'].values[:, np.newaxis]
+
+    # Add all to design matrix
+    X_all = pd.concat(
+        [X_base.reset_index(drop=True),
+         pd.DataFrame(G_centered.values, columns=[f'genotype_{v}' for v in variant_cols]),
+         pd.DataFrame(interaction_med, columns=[f'{v}:activity_medium' for v in variant_cols]),
+         pd.DataFrame(interaction_high, columns=[f'{v}:activity_high' for v in variant_cols])
+         ],
         axis=1
     )
 
-    # Fit model for all variants jointly using matrix regression
-    model = sm.OLS(y, X_full).fit()
+    # Drop colinear columns
+    X_clean, dropped = drop_colinear_columns(X_all)
 
-    # Extract coefficients and p-values for genotype and interaction terms
+    # Fit OLS model
+    model = sm.OLS(y, X_clean).fit()
+
+    # Collect results
     results = []
-    for var in variant_cols:
-        results.append({
-            "gene": gene,
-            "variant": var,
-            "beta_genotype": model.params.get(f'G_{var}', np.nan),
-            "pval_genotype": model.pvalues.get(f'G_{var}', np.nan),
-            "beta_genox_med": model.params.get(f'G_{var}:activity_medium', np.nan),
-            "pval_genox_med": model.pvalues.get(f'G_{var}:activity_medium', np.nan),
-            "beta_genox_high": model.params.get(f'G_{var}:activity_high', np.nan),
-            "pval_genox_high": model.pvalues.get(f'G_{var}:activity_high', np.nan),
-        })
+    for var_id in variant_cols:
+        result = {
+            'gene': gene,
+            'variant': var_id,
+            'beta_genotype': model.params.get(f'genotype_{var_id}', np.nan),
+            'pval_genotype': model.pvalues.get(f'genotype_{var_id}', np.nan),
+            'beta_genox_med': model.params.get(f'{var_id}:activity_medium', np.nan),
+            'pval_genox_med': model.pvalues.get(f'{var_id}:activity_medium', np.nan),
+            'beta_genox_high': model.params.get(f'{var_id}:activity_high', np.nan),
+            'pval_genox_high': model.pvalues.get(f'{var_id}:activity_high', np.nan),
+        }
+        results.append(result)
 
-    # Save results
     results_df = pd.DataFrame(results)
     results_df.to_csv(
         output_path(f'context_eqtl_results/{pathway}/{cell_type}/{chromosome}/{gene}_context_eqtl_results.csv'),
