@@ -2,9 +2,9 @@
 # GCS directory to the input AnnData objects
 input_h5ad_dir = 'gs://cpg-tenk10k-test/str/saige-qtl/300-libraries/anndata_objects_from_HPC'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-tenk10k-test/str/cellstate/input_files/pseudobulk/tob'
+input_pseudobulk_dir = 'gs://cpg-tenk10k-test/str/cellstate/input_files/stratified/tob/pseudobulk'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-tenk10k-test/str/cellstate/input_files/tob/covariates/GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype/6_rna_pcs'
+input_cov_dir = 'gs://cpg-tenk10k-test/str/cellstate/input_files/stratified/tob/covariates/6_rna_pcs'
 chromosomes = 'chr22'
 cell_types = 'B_naive'
 # cis window size in bp

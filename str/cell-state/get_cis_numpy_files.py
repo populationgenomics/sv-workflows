@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=too-many-arguments,too-many-locals
 
 """
 This script aims to:
@@ -10,7 +9,7 @@ This script aims to:
  - output gene-level phenotype and covariate numpy objects for input into eqtl pipeline
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
---description "get cis and numpy" --output-dir "str/cellstate/input_files/tob" \
+--description "get cis and numpy" --output-dir "str/cellstate/input_files/stratified/tob" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -32,6 +31,7 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, init_batch, output_path
 
 
+
 def cis_window_numpy_extractor(
     input_h5ad_dir,
     input_pseudobulk_dir,
@@ -43,6 +43,7 @@ def cis_window_numpy_extractor(
     chrom_len,
     min_pct,
     pathway,
+    activity_level
 ):
     """
     Creates gene-specific cis window files and phenotype-covariate numpy objects
@@ -52,52 +53,22 @@ def cis_window_numpy_extractor(
 
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
     h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
-    adata = sc.read_h5ad(to_path(h5ad_file_path))
+    expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
+    adata = sc.read_h5ad(expression_h5ad_path)
 
-    # read in covariate files
-    covariate_path = f'{input_cov_dir}/{cell_type}_covariates.csv'
+    # read in pseudobulk and covariate files
+    pseudobulk_path = f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_{activity_level}_{pathway}_pseudobulk.csv'
+    pseudobulk = pd.read_csv(pseudobulk_path)
+    covariate_path = f'{input_cov_dir}/{pathway}/{activity_level}/{cell_type}_covariates.csv'
     covariates = pd.read_csv(covariate_path)
 
-    master_pseudobulk = []
-    # read in pseudobulk data
-    pseudobulk_low = pd.read_csv(
-        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_low_{pathway}_pseudobulk.csv'
-    )
-    pseudobulk_medium = pd.read_csv(
-        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_medium_{pathway}_pseudobulk.csv'
-    )
-    pseudobulk_high = pd.read_csv(
-        f'{input_pseudobulk_dir}/{cell_type}/{cell_type}_{chromosome}_high_{pathway}_pseudobulk.csv'
-    )
-    pseudobulk_low['activity'] = 'low'  # add activity column to pseudobulk df
-    pseudobulk_medium['activity'] = 'medium'  # add activity column to pseudobulk df
-    pseudobulk_high['activity'] = 'high'  # add activity
-
-    # find the common columns (ie genes) in all pseudobulk dataframes
-    # Find common columns in the order they appear in df1
-    common_cols = [
-        col for col in pseudobulk_low.columns if col in pseudobulk_medium.columns and col in pseudobulk_high.columns
-    ]
-
-    # Subset all DataFrames using this ordered list
-    df1_common = pseudobulk_low[common_cols]
-    df2_common = pseudobulk_medium[common_cols]
-    df3_common = pseudobulk_high[common_cols]
-
-    # Concatenate the dataframes along the rows
-    master_pseudobulk.append(df1_common)
-    master_pseudobulk.append(df2_common)
-    master_pseudobulk.append(df3_common)
-    # Concatenate all activities into a single DataFrame
-    pseudobulk = pd.concat(master_pseudobulk, axis=0)
-
     # extract genes in pseudobulk df
-    gene_names = [col for col in pseudobulk.columns if col not in ["individual", "activity"]]
+    gene_names = list(pseudobulk.columns[1:])  # individual ID is the first column
 
     # write filtered gene names to a JSON file
     with to_path(
         output_path(
-            f'scRNA_gene_lists/{pathway}/{min_pct}_min_pct_cells_expressed/{cell_type}/{chromosome}_{cell_type}_gene_list.json',
+            f'scRNA_gene_lists/{min_pct}_min_pct_cells_expressed/{pathway}/{activity_level}/{cell_type}/{chromosome}_{cell_type}_gene_list.json',
         ),
     ).open('w') as write_handle:
         json.dump(gene_names, write_handle)
@@ -111,13 +82,13 @@ def cis_window_numpy_extractor(
         right_boundary = min(int(end_coord.iloc[0]) + int(cis_window), chrom_len)
 
         data = {'chromosome': chromosome, 'start': left_boundary, 'end': right_boundary}
-        ofile_path = output_path(f'cis_window_files/{pathway}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed')
+        ofile_path = output_path(f'cis_window_files/{pathway}/{activity_level}/{cell_type}/{chromosome}/{gene}_{cis_window}bp.bed')
         # write cis window file to gcp
         pd.DataFrame(data, index=[gene]).to_csv(ofile_path, sep='\t', header=False, index=False)
 
         # make the phenotype-covariate numpy objects
         pseudobulk.rename(columns={'individual': 'sample_id'}, inplace=True)  # noqa: PD002
-        gene_pheno = pseudobulk[['sample_id', 'activity', gene]]
+        gene_pheno = pseudobulk[['sample_id', gene]]
 
         # rank-based inverse normal transformation based on R's orderNorm()
         # Rank the values
@@ -126,18 +97,25 @@ def cis_window_numpy_extractor(
         gene_pheno.loc[:, 'gene_percentile'] = (gene_pheno.loc[:, 'gene_rank'] - 0.5) / (len(gene_pheno))
         # Use the inverse normal cumulative distribution function (quantile function) to transform percentiles to normal distribution values
         gene_pheno.loc[:, 'gene_inverse_normal'] = norm.ppf(gene_pheno.loc[:, 'gene_percentile'])
-        gene_pheno = gene_pheno[['sample_id', 'activity', 'gene_inverse_normal']]
+        gene_pheno = gene_pheno[['sample_id', 'gene_inverse_normal']]
 
-        gene_pheno_cov = gene_pheno.merge(covariates, on=['sample_id', 'activity'])
+        gene_pheno_cov = gene_pheno.merge(covariates, on='sample_id', how='inner')
 
         # filter for samples that were assigned a CPG ID; unassigned samples after demultiplexing will not have a CPG ID
         gene_pheno_cov = gene_pheno_cov[gene_pheno_cov['sample_id'].str.startswith('CPG')]
 
-        # write out as a csv
-        gene_pheno_cov.to_csv(
-            output_path(f'pheno_cov_csv/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv'),
-            index=False,
-        )
+        gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].str[
+            3:
+        ]  # remove CPG prefix because associatr expects id to be numeric
+
+        gene_pheno_cov['sample_id'] = gene_pheno_cov['sample_id'].astype(float)
+
+        gene_pheno_cov = gene_pheno_cov.to_numpy()
+        with hl.hadoop_open(
+            output_path(f'pheno_cov_numpy/{pathway}/{activity_level}/{cell_type}/{chromosome}/{gene}_pheno_cov.npy'),
+            'wb',
+        ) as f:
+            np.save(f, gene_pheno_cov)
 
 
 def main():
@@ -160,30 +138,32 @@ def main():
     for cell_type in get_config()['get_cis_numpy']['cell_types'].split(','):
         for chrom in get_config()['get_cis_numpy']['chromosomes'].split(','):
             init_batch()
-            chrom_len = hl.get_reference('GRCh38').lengths[chrom]
-            j = b.new_python_job(
-                name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom}',
-            )
-            j.image(image_path('scanpy'))
-            j.cpu(get_config()['get_cis_numpy']['job_cpu'])
-            j.memory(get_config()['get_cis_numpy']['job_memory'])
-            j.storage(get_config()['get_cis_numpy']['job_storage'])
+            for activity_level in ['high', 'medium', 'low']:
+                chrom_len = hl.get_reference('GRCh38').lengths[chrom]
+                j = b.new_python_job(
+                    name=f'Extract cis window & phenotype and covariate numpy object for {cell_type}: {chrom} {activity_level}',
+                )
+                j.image(image_path('scanpy'))
+                j.cpu(get_config()['get_cis_numpy']['job_cpu'])
+                j.memory(get_config()['get_cis_numpy']['job_memory'])
+                j.storage(get_config()['get_cis_numpy']['job_storage'])
 
-            j.call(
-                cis_window_numpy_extractor,
-                get_config()['get_cis_numpy']['input_h5ad_dir'],
-                get_config()['get_cis_numpy']['input_pseudobulk_dir'],
-                get_config()['get_cis_numpy']['input_cov_dir'],
-                chrom,
-                cell_type,
-                get_config()['get_cis_numpy']['cis_window'],
-                get_config()['get_cis_numpy']['version'],
-                chrom_len,
-                get_config()['get_cis_numpy']['min_pct'],
-                get_config()['get_cis_numpy']['pathway'],
-            )
+                j.call(
+                    cis_window_numpy_extractor,
+                    get_config()['get_cis_numpy']['input_h5ad_dir'],
+                    get_config()['get_cis_numpy']['input_pseudobulk_dir'],
+                    get_config()['get_cis_numpy']['input_cov_dir'],
+                    chrom,
+                    cell_type,
+                    get_config()['get_cis_numpy']['cis_window'],
+                    get_config()['get_cis_numpy']['version'],
+                    chrom_len,
+                    get_config()['get_cis_numpy']['min_pct'],
+                    get_config()['get_cis_numpy']['pathway'],
+                    activity_level
+                )
 
-            manage_concurrency_for_job(j)
+                manage_concurrency_for_job(j)
     b.run(wait=False)
 
 
