@@ -5,7 +5,7 @@ merges them with other pre-calculated covariates, and writes the file to GCP.
 
 
 analysis-runner --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --memory=64G --output-dir "str/cellstate/input_files/tob" get_covariates.py --input-dir=gs://cpg-tenk10k-test/str/cellstate/input_files/pseudobulk/tob \
+--description "Get covariates" --output-dir "str/cellstate/input_files/tob" get_covariates.py --input-dir=gs://cpg-tenk10k-test/str/cellstate/input_files/pseudobulk/tob \
 --cell-types=B_naive  --covariate-file-path=gs://cpg-tenk10k-test/str/associatr/final-freeze/input_files/tob_n950_sample_covariates.csv \
 --num-pcs=6
 
@@ -39,11 +39,11 @@ def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs
 
     for file in gcs_files:
         # Extract activity label from filename
-        match = re.search(r"(high|medium|low)", file, re.IGNORECASE)
+        match = re.search(r"(high|medium|low)", str(file), re.IGNORECASE)
         activity = match.group(1).lower() if match else "unknown"
 
         # Load the file (assumes wide format: one row per individual, columns = genes + metadata)
-        df = pd.read_csv(to_path(file))
+        df = pd.read_csv(file)
 
         # Store gene columns (exclude 'individual' and 'activity' if present)
         gene_cols = [col for col in df.columns if col not in ['individual', 'activity']]
@@ -124,7 +124,7 @@ def get_covariates(pseudobulk_input_dir, cell_type, covariate_file_path, num_pcs
 @click.option('--cell-types', help='Name of the cell type, comma separated if multiple')
 @click.option('--job-storage', help='Storage of the batch job eg 30G', default='8G')
 @click.option('--job-memory', help='Memory of the batch job', default='standard')
-@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=2)
+@click.option('--job-cpu', help='Number of CPUs of Hail batch job', default=8)
 @click.option('--covariate-file-path', help='GCS Path to the existing covariate file')
 @click.option('--num-pcs', help='Number of RNA PCs to calculate', default=20)
 @click.option('--pathway', help='GOBP Pathway name for the analysis', default='GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype')
