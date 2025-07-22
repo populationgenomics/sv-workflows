@@ -59,7 +59,7 @@ def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
         try:
             df_model = df.dropna(subset=["genotype", "gene_inverse_normal"])
             model = smf.ols(
-                "gene_inverse_normal ~ genotype * C(activity) + sex+age+score_1+score_2+score_3+score_4+score_5+score_6+score_7+score_8+score_9+score_10+score_11+score_12+rna_PC1+rna_PC2+rna_PC3+rna_PC4+rna_PC5+rna_PC6+ C(individual)",
+                "gene_inverse_normal ~ genotype * C(activity) + sex+age+score_1+score_2+score_3+score_4+score_5+score_6+score_7+score_8+score_9+score_10+score_11+score_12+rna_PC1+rna_PC2+rna_PC3+rna_PC4+rna_PC5+rna_PC6+ C(sample_id)",
                 data=df_model,
             ).fit()
 
