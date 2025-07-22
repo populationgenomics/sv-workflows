@@ -13,6 +13,7 @@ import pandas as pd
 import click
 from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
+from cpg_utils.hail_batch import get_batch
 
 
 def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
@@ -57,10 +58,11 @@ def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
         df["genotype"] = df[var_id]
 
         try:
+            df_model = df.dropna(subset=["genotype", "gene_inverse_normal"])
             model = smf.mixedlm(
                 "gene_inverse_normal ~ genotype * C(activity) + sex+age+score_1+score_2+score_3+score_4+score_5+score_6+score_7+score_8+score_9+score_10+score_11+score_12+rna_PC1+rna_PC2+rna_PC3+rna_PC4+rna_PC5+rna_PC6",
-                data=df,
-                groups=df["sample_id"],
+                data=df_model,
+                groups=df_model["sample_id"],
             ).fit()
 
             results.append(
@@ -125,3 +127,8 @@ def main(
         j.memory(job_memory)
         j.storage(job_storage)
         j.call(process_gene, pheno_cov_dir, cis_window_dir, gene, chromosome, cell_type, pathway, gene)
+
+    b.run(wait=False)
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter
