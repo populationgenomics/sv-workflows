@@ -15,7 +15,6 @@ from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
-
 def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     from cpg_utils.hail_batch import output_path
     import statsmodels.formula.api as smf
@@ -129,7 +128,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene, pheno_cov_dir, cis_window_dir, gene, chromosome, cell_type, pathway, gene)
+        j.call(process_gene, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
