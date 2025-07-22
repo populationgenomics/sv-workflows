@@ -15,90 +15,97 @@ from cpg_utils.hail_batch import output_path
 from cpg_utils import to_path
 from cpg_utils.hail_batch import get_batch
 
-def process_gene(pheno_cov_dir, gene, chromosome, cell_type, pathway):
-    from cpg_utils.hail_batch import output_path
-    import statsmodels.formula.api as smf
+import pandas as pd
+def process_gene_fast(pheno_cov_dir, gene, chromosome, cell_type, pathway):
     import pandas as pd
     import numpy as np
+    import statsmodels.api as sm
+    from patsy import dmatrix
+    from cpg_utils.hail_batch import output_path
 
     """
-    Run genotype × activity_bin interaction model for each TR variant near a gene.
+    Efficient matrix-based regression of genotype × activity interaction using mean-imputed genotype data.
 
     Args:
-        pseudobulk_dir (str): Directory containing per-gene pseudobulk phenotype + covariate data.
-        cis_window_dir (str): Not used here, but kept for possible BED file integration.
-        gene (str): Gene symbol.
-        chromosome (str): Chromosome (e.g., "chr22").
+        pheno_cov_dir (str): Directory with phenotype + covariate data.
+        gene (str): Ensembl or gene symbol.
+        chromosome (str): Chromosome name (e.g., 'chr22').
         cell_type (str): Cell type name.
-        pathway (str): Pathway identifier.
-
-    Returns:
-        results (list of dict): Association statistics for each tested variant.
+        pathway (str): Pathway identifier (used as subfolder in GCS).
     """
+
     # Load phenotype + covariate data
     df = pd.read_csv(f'{pheno_cov_dir}/{pathway}/{cell_type}/{chromosome}/{gene}_pheno_cov.csv')
 
-    # Load dosage data for all TRs near this gene
+    # Load TR dosage matrix
     dosage = pd.read_csv(f'gs://cpg-tenk10k-test/str/cellstate/input_files/dosages/{chromosome}/{gene}_dosages.csv')
     dosage['sample'] = 'CPG' + dosage['sample'].astype(str)
 
-    # Merge dosage into phenotype data
+    # Merge by sample ID
     df = df.merge(dosage, left_on='sample_id', right_on='sample', how='inner')
 
-    # Make sure activity_bin is categorical
-    df["activity"] = pd.Categorical(df["activity"], categories=["low", "medium", "high"], ordered=False)
+    # Ensure categorical encoding of activity_bin
+    df['activity'] = pd.Categorical(df['activity'], categories=['low', 'medium', 'high'], ordered=False)
 
-    from statsmodels.api import OLS
-    from patsy import dmatrices
+    # Outcome vector
+    y = df['gene_inverse_normal'].values
 
+    # Precompute fixed covariate matrix (excluding genotype terms)
+    fixed_formula = (
+        "sex + age + " +
+        " + ".join([f"score_{i}" for i in range(1, 13)]) + " + " +
+        " + ".join([f"rna_PC{i}" for i in range(1, 7)]) + " + " +
+        "C(activity) + C(sample_id)"
+    )
+    X_fixed = dmatrix(fixed_formula, df, return_type='dataframe')
+
+    # Identify genotype variant columns
     variant_cols = [col for col in dosage.columns if col != "sample"]
 
-    # Pre-build fixed covariates matrix
-    y, X_fixed = dmatrices(
-        "gene_inverse_normal ~ C(activity) + sex + age + " +
-        "+".join([f"score_{i}" for i in range(1, 13)]) + " + " +
-        "+".join([f"rna_PC{i}" for i in range(1, 7)]) +
-        " + C(sample_id)",
-        df,
-        return_type="dataframe"
+    # Extract and mean-impute genotype matrix
+    G_raw = df[variant_cols].copy()
+    G_imputed = G_raw.fillna(G_raw.mean())  # mean imputation
+    G_centered = G_imputed - G_imputed.mean()  # center genotypes
+
+    # Build interaction terms
+    interaction_terms = {}
+    for level in ['medium', 'high']:
+        interaction_terms[f'genotype:activity_{level}'] = (
+            G_centered.values * (df['activity'] == level).values[:, None]
+        )
+
+    # Assemble design matrix
+    X_full = pd.concat(
+        [X_fixed.reset_index(drop=True),
+         pd.DataFrame(G_centered.values, columns=[f'G_{v}' for v in variant_cols]),
+         pd.DataFrame(interaction_terms['genotype:activity_medium'], columns=[f'G_{v}:activity_medium' for v in variant_cols]),
+         pd.DataFrame(interaction_terms['genotype:activity_high'], columns=[f'G_{v}:activity_high' for v in variant_cols])],
+        axis=1
     )
 
+    # Fit model for all variants jointly using matrix regression
+    model = sm.OLS(y, X_full).fit()
+
+    # Extract coefficients and p-values for genotype and interaction terms
     results = []
+    for var in variant_cols:
+        results.append({
+            "gene": gene,
+            "variant": var,
+            "beta_genotype": model.params.get(f'G_{var}', np.nan),
+            "pval_genotype": model.pvalues.get(f'G_{var}', np.nan),
+            "beta_genox_med": model.params.get(f'G_{var}:activity_medium', np.nan),
+            "pval_genox_med": model.pvalues.get(f'G_{var}:activity_medium', np.nan),
+            "beta_genox_high": model.params.get(f'G_{var}:activity_high', np.nan),
+            "pval_genox_high": model.pvalues.get(f'G_{var}:activity_high', np.nan),
+        })
 
-    for var_id in variant_cols:
-        df["genotype"] = df[var_id]
-        df_model = df.dropna(subset=["genotype", "gene_inverse_normal"])
-
-        X = X_fixed.loc[df_model.index].copy()
-        X["genotype"] = df_model["genotype"]
-        X["genotype:C(activity)[T.medium]"] = df_model["genotype"] * (df_model["activity"] == "medium")
-        X["genotype:C(activity)[T.high]"] = df_model["genotype"] * (df_model["activity"] == "high")
-        y_model = df_model["gene_inverse_normal"]
-
-        try:
-            model = OLS(y_model, X).fit()
-            results.append({
-                "gene":gene,
-                "variant": var_id,
-                "beta_genotype": model.params.get("genotype", np.nan),
-                "pval_genotype": model.pvalues.get("genotype", np.nan),
-                "beta_genox_med": model.params.get("genotype:C(activity)[T.medium]", np.nan),
-                "pval_genox_med": model.pvalues.get("genotype:C(activity)[T.medium]", np.nan),
-                "beta_genox_high": model.params.get("genotype:C(activity)[T.high]", np.nan),
-                "pval_genox_high": model.pvalues.get("genotype:C(activity)[T.high]", np.nan),
-            })
-            print(f'processed {var_id}')
-
-        except Exception as e:
-            print(f"Model failed for {gene} - {var_id}: {e}")
-            continue
-
+    # Save results
     results_df = pd.DataFrame(results)
     results_df.to_csv(
         output_path(f'context_eqtl_results/{pathway}/{cell_type}/{chromosome}/{gene}_context_eqtl_results.csv'),
         index=False,
     )
-
 
 @click.option('--input-gene-list-dir', default='gs://cpg-tenk10k-test/str/cellstate/input_files/tob/scRNA_gene_lists')
 @click.option('--cis-window-dir', default='gs://ccpg-tenk10k-test/str/cellstate/input_files/tob/cis_window_files')
@@ -137,7 +144,7 @@ def main(
         j.cpu(job_cpu)
         j.memory(job_memory)
         j.storage(job_storage)
-        j.call(process_gene, pheno_cov_dir, gene, chromosome, cell_type, pathway)
+        j.call(process_gene_fast, pheno_cov_dir, gene, chromosome, cell_type, pathway)
 
     b.run(wait=False)
 
