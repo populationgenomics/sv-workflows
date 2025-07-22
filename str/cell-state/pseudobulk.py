@@ -9,7 +9,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/cellstate/input_files/pseudobulk" python3 pseudobulk.py
+analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/cellstate/input_files/stratified/tob/pseudobulk" python3 pseudobulk.py
 
 """
 import csv
@@ -25,7 +25,7 @@ from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, image_path, output_path
 
 
-def pseudobulk(input_file_path, id_file_path, target_sum, min_pct, cell_type, pathway):
+def pseudobulk(input_file_path, id_file_path, target_sum, min_pct,cell_type,pathway):
     """
     Performs pseudobulking in a cell-type chromosome-specific manner
     """
@@ -39,21 +39,19 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct, cell_type, pa
     adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # read in adata pathway annotations
-    pathway_annot = sc.read_h5ad(
-        to_path('gs://cpg-bioheart-test/str/trdeepid/bcells/pathway_attributions_sublabel.h5ad')
-    )
-    pathway_annot = pathway_annot[pathway_annot.obs["wg2_scpred_prediction"] == cell_type].copy()  # filter to cell type
-    subtype_series = pathway_annot.obs[pathway]  # select the specific pathway's annotation
-    adata.obs[pathway] = subtype_series  # add the pathway annotation to the adata object
+    pathway_annot = sc.read_h5ad(to_path('gs://cpg-bioheart-test/str/trdeepid/bcells/pathway_attributions_sublabel.h5ad'))
+    pathway_annot = pathway_annot[pathway_annot.obs["wg2_scpred_prediction"] == cell_type].copy() #filter to cell type
+    subtype_series = pathway_annot.obs[pathway] #select the specific pathway's annotation
+    adata.obs[pathway] = subtype_series #add the pathway annotation to the adata object
+
+    # filter out lowly expressed genes
+    n_all_cells = len(adata.obs.index)
+    min_cells = math.ceil((n_all_cells * min_pct) / 100)
+    sc.pp.filter_genes(adata, min_cells=min_cells)
 
     for activity in ['low', 'medium', 'high']:
         # filter adata to only include cells with the current annotation
         adata_activity = adata[adata.obs[pathway] == activity].copy()
-
-        # filter out lowly expressed genes
-        n_all_cells = len(adata_activity.obs.index)
-        min_cells = math.ceil((n_all_cells * min_pct) / 100)
-        sc.pp.filter_genes(adata_activity, min_cells=min_cells)
 
         # normalisation
         # we can't use pp.normalize_total because the expected input is a chr-specific anndata file, while
@@ -99,6 +97,7 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct, cell_type, pa
         )
 
 
+
 def main():
     """
     Perform pseudobulk (mean aggregation) of an input AnnData object
@@ -121,7 +120,7 @@ def main():
                 get_config()['pseudobulk']['target_sum'],
                 get_config()['pseudobulk']['min_pct'],
                 cell_type,
-                get_config()['pseudobulk']['pathway'],
+                get_config()['pseudobulk']['pathway']
             )
     b.run(wait=False)
 
