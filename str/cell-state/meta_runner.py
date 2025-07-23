@@ -12,7 +12,7 @@ analysis-runner --dataset "tenk10k" --description "meta results runner" --access
     --gene-list-dir-1=gs://cpg-tenk10k-test/str/cellstate/input_files/stratified/bioheart/scRNA_gene_lists/1_min_pct_cells_expressed \
     --gene-list-dir-2=gs://cpg-tenk10k-test/str/cellstate/input_files/stratified/tob/scRNA_gene_lists/1_min_pct_cells_expressed \
     --cell-types=B_naive \
-    --chromosomes=chr22
+    --chromosomes=chr22,chr21
 
 
 
@@ -223,7 +223,7 @@ def main(
                 for gene in intersected_genes:
                     if to_path(
                         output_path(
-                            f"meta_results/{pathway}/{activity_level}{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
+                            f"meta_results/{pathway}/{activity_level}/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv",
                             "analysis",
                         ),
                     ).exists():
