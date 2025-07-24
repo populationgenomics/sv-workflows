@@ -59,6 +59,8 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene
     def load_and_filter(activity_level):
         filepath = f"{meta_dir}/{pathway}/{activity_level}/{cell_type}/{chromosome}/{gene}_100000bp_meta_results.tsv"
         df = pd.read_csv(filepath, sep='\t')
+        df['motif_len'] = df['motif'].str.len()
+        df['end'] = (df['pos'].astype(float) + df['ref_len'].astype(float) * df['motif_len'].astype(float)).round().astype(int)
         row = df[(df['pos'] == pos) & (df['motif'] == motif) &(df['end'] == end)]
         return row
 
