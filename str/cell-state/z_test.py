@@ -143,7 +143,7 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene
 
     results_df = pd.DataFrame(results)
     results_df.to_csv(
-        f"{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_z_test.tsv",
+        f"{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_{pos}_{end}_{motif}_z_test.tsv",
         index=False,
         sep='\t')
 
@@ -180,9 +180,9 @@ def main(meta_dir,pathway,eqtls_to_test, max_parallel_jobs):
         gene = row.gene_name
         ref_activity_level = row.activity_level
 
-        if to_path(f'{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_z_test.tsv').exists():
+        if to_path(f'{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_{pos}_{end}_{motif}_z_test.tsv').exists():
             print(f"Z-test results for {gene} already exists, skipping.")
-            #continue
+            continue
 
         # Create a job for each eQTL
         j = b.new_python_job(
