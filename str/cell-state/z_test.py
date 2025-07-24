@@ -4,7 +4,7 @@
 This script runs z-test to compare TR-eQTL effect sizes between activity bins.
 
 analysis-runner --dataset "tenk10k" --description "z-test for context-spec eQTLs" --access-level "test" \
-    --output-dir "str/cellstate/stratified/meta_results/GOBP_MULTI z-test.py
+    --output-dir "str/cellstate/stratified/meta_results/GOBP_MULTI" z_test.py
 
 """
 
@@ -167,7 +167,7 @@ def main(meta_dir,pathway,eqtls_to_test, max_parallel_jobs):
             gene,
             ref_activity_level,
         )
-
+        break
         manage_concurrency_for_job(j)
     b.run(wait=False)
 
