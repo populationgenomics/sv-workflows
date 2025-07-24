@@ -107,6 +107,38 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene
             "other_beta": other_beta,
             "other_se": other_se
         })
+    # Comparison between the two other  non-ref bins
+    level_a, level_b = other_levels
+    row_a, row_b = row_1, row_2
+
+    beta_a = row_a['coeff_meta_fixed'].values[0]
+    se_a = row_a['se_meta_fixed'].values[0]
+    beta_b = row_b['coeff_meta_fixed'].values[0]
+    se_b = row_b['se_meta_fixed'].values[0]
+
+    delta_beta_ab = beta_a - beta_b
+    denom_ab = np.sqrt(se_a**2 + se_b**2)
+
+    if denom_ab != 0:
+        z_ab = delta_beta_ab / denom_ab
+        pval_ab = 2 * norm.sf(abs(z_ab))
+
+        results.append({
+            "chrom": chromosome,
+            "pos": pos,
+            "motif": motif,
+            "gene": gene,
+            "cell_type": cell_type,
+            "pathway": pathway,
+            "comparison": f"{level_a}_vs_{level_b}",
+            "beta_diff": delta_beta_ab,
+            "z_score": z_ab,
+            "p_value": pval_ab,
+            "ref_beta": beta_b,  # treat 'b' as reference here
+            "ref_se": se_b,
+            "other_beta": beta_a,
+            "other_se": se_a
+        })
 
     results_df = pd.DataFrame(results)
     results_df.to_csv(
@@ -149,7 +181,7 @@ def main(meta_dir,pathway,eqtls_to_test, max_parallel_jobs):
 
         if to_path(f'{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_z_test.tsv').exists():
             print(f"Z-test results for {gene} already exists, skipping.")
-            continue
+            #continue
 
         # Create a job for each eQTL
         j = b.new_python_job(
