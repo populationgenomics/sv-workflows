@@ -20,40 +20,14 @@ import click
 import pandas as pd
 
 
-def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene, ref_activity_level):
+def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end, motif, gene, ref_activity_level):
     import pandas as pd
     import numpy as np
     from scipy.stats import norm
-    """
-    Run Z-tests to compare TR-eQTL effect sizes between activity bins.
+    import os
 
-    Parameters
-    ----------
-    meta_dir : str
-        Root directory containing meta-analysis result files.
-    pathway : str
-        Pathway or activity score name.
-    cell_type : str
-        Major or fine cell type.
-    chromosome : str
-        Chromosome name (e.g. 'chr1').
-    pos : int
-        TR genomic position.
-    motif : str
-        TR motif string.
-    gene : str
-        Gene symbol.
-    ref_activity_level : str
-        Activity level to treat as the reference bin ('low', 'medium', or 'high').
-
-    Returns
-    -------
-    results : list of dict
-        Each dict contains the comparison name, delta_beta, Z, P, and metadata.
-    """
     activity_levels = ['low', 'medium', 'high']
     assert ref_activity_level in activity_levels, "Invalid reference activity level"
-
     other_levels = [lvl for lvl in activity_levels if lvl != ref_activity_level]
 
     def load_and_filter(activity_level):
@@ -61,36 +35,35 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene
         df = pd.read_csv(filepath, sep='\t')
         df['motif_len'] = df['motif'].str.len()
         df['end'] = (df['pos'].astype(float) + df['ref_len'].astype(float) * df['motif_len'].astype(float)).round().astype(int)
-        row = df[(df['pos'] == pos) & (df['motif'] == motif) &(df['end'] == end)]
+        row = df[(df['pos'] == pos) & (df['motif'] == motif) & (df['end'] == end)]
         return row
 
-    ref_row = load_and_filter(ref_activity_level)
-    row_1 = load_and_filter(other_levels[0])
-    row_2 = load_and_filter(other_levels[1])
+    rows = {}
+    for level in activity_levels:
+        row = load_and_filter(level)
+        if row.empty:
+            return []  # Skip this variant if missing in any bin
+        rows[level] = row
 
-    # Check for missing entries
-    if ref_row.empty or row_1.empty or row_2.empty:
-        return []  # No result if any activity level is missing for this variant
+    # Extract values
+    beta_low = rows['low']['coeff_meta_fixed'].values[0]
+    beta_medium = rows['medium']['coeff_meta_fixed'].values[0]
+    beta_high = rows['high']['coeff_meta_fixed'].values[0]
+    se_low = rows['low']['se_meta_fixed'].values[0]
+    se_medium = rows['medium']['se_meta_fixed'].values[0]
+    se_high = rows['high']['se_meta_fixed'].values[0]
 
-    ref_beta = ref_row['coeff_meta_fixed'].values[0]
-    ref_se = ref_row['se_meta_fixed'].values[0]
-
+    # Prepare results for z-tests
     results = []
 
-    for other_level, other_row in zip(other_levels, [row_1, row_2]):
-        other_beta = other_row['coeff_meta_fixed'].values[0]
-        other_se = other_row['se_meta_fixed'].values[0]
-
-        delta_beta = other_beta - ref_beta
-        denom = np.sqrt(ref_se**2 + other_se**2)
-
+    def compare(beta1, se1, beta2, se2, label1, label2, ref_beta_for_row):
+        delta = beta1 - beta2
+        denom = np.sqrt(se1 ** 2 + se2 ** 2)
         if denom == 0:
-            continue  # Avoid division by zero
-
-        z = delta_beta / denom
+            return None
+        z = delta / denom
         pval = 2 * norm.sf(abs(z))
-
-        results.append({
+        return {
             "chrom": chromosome,
             "pos": pos,
             "end": end,
@@ -98,54 +71,78 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene
             "gene": gene,
             "cell_type": cell_type,
             "pathway": pathway,
-            "comparison": f"{other_level}_vs_{ref_activity_level}",
-            "beta_diff": delta_beta,
+            "comparison": f"{label1}_vs_{label2}",
+            "beta_diff": delta,
             "z_score": z,
             "p_value": pval,
-            "ref_beta": ref_beta,
-            "ref_se": ref_se,
-            "other_beta": other_beta,
-            "other_se": other_se
-        })
-    # Comparison between the two other  non-ref bins
-    level_a, level_b = other_levels
-    row_a, row_b = row_1, row_2
+            "ref_beta": ref_beta_for_row,
+            "other_beta": beta1 if ref_beta_for_row == beta2 else beta2,
+            "ref_se": se1 if ref_beta_for_row == beta2 else se2,
+            "other_se": se1 if ref_beta_for_row == beta1 else se2
+        }
 
-    beta_a = row_a['coeff_meta_fixed'].values[0]
-    se_a = row_a['se_meta_fixed'].values[0]
-    beta_b = row_b['coeff_meta_fixed'].values[0]
-    se_b = row_b['se_meta_fixed'].values[0]
+    # Run pairwise comparisons
+    comp1 = compare(rows[other_levels[0]]['coeff_meta_fixed'].values[0],
+                    rows[other_levels[0]]['se_meta_fixed'].values[0],
+                    rows[ref_activity_level]['coeff_meta_fixed'].values[0],
+                    rows[ref_activity_level]['se_meta_fixed'].values[0],
+                    other_levels[0], ref_activity_level,
+                    rows[ref_activity_level]['coeff_meta_fixed'].values[0])
+    if comp1:
+        results.append(comp1)
 
-    delta_beta_ab = beta_a - beta_b
-    denom_ab = np.sqrt(se_a**2 + se_b**2)
+    comp2 = compare(rows[other_levels[1]]['coeff_meta_fixed'].values[0],
+                    rows[other_levels[1]]['se_meta_fixed'].values[0],
+                    rows[ref_activity_level]['coeff_meta_fixed'].values[0],
+                    rows[ref_activity_level]['se_meta_fixed'].values[0],
+                    other_levels[1], ref_activity_level,
+                    rows[ref_activity_level]['coeff_meta_fixed'].values[0])
+    if comp2:
+        results.append(comp2)
 
-    if denom_ab != 0:
-        z_ab = delta_beta_ab / denom_ab
-        pval_ab = 2 * norm.sf(abs(z_ab))
-
-        results.append({
-            "chrom": chromosome,
-            "pos": pos,
-            "end": end,
-            "motif": motif,
-            "gene": gene,
-            "cell_type": cell_type,
-            "pathway": pathway,
-            "comparison": f"{level_a}_vs_{level_b}",
-            "beta_diff": delta_beta_ab,
-            "z_score": z_ab,
-            "p_value": pval_ab,
-            "ref_beta": beta_b,  # treat 'b' as reference here
-            "ref_se": se_b,
-            "other_beta": beta_a,
-            "other_se": se_a
-        })
+    # Comparison between the two non-ref bins
+    comp3 = compare(rows[other_levels[0]]['coeff_meta_fixed'].values[0],
+                    rows[other_levels[0]]['se_meta_fixed'].values[0],
+                    rows[other_levels[1]]['coeff_meta_fixed'].values[0],
+                    rows[other_levels[1]]['se_meta_fixed'].values[0],
+                    other_levels[0], other_levels[1],
+                    rows[other_levels[1]]['coeff_meta_fixed'].values[0])
+    if comp3:
+        results.append(comp3)
 
     results_df = pd.DataFrame(results)
+
+    out_dir = f"{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}"
+
+    # Save z-test results
     results_df.to_csv(
-        f"{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_{pos}_{end}_{motif}_z_test.tsv",
+        f"{out_dir}/{gene}_{pos}_{end}_{motif}_z_test.tsv",
         index=False,
-        sep='\t')
+        sep='\t'
+    )
+
+    # Save single-row summary of all effect sizes
+    beta_se_df = pd.DataFrame([{
+        "chrom": chromosome,
+        "pos": pos,
+        "end": end,
+        "motif": motif,
+        "gene": gene,
+        "coeff_low": beta_low,
+        "coeff_medium": beta_medium,
+        "coeff_high": beta_high,
+        "se_low": se_low,
+        "se_medium": se_medium,
+        "se_high": se_high
+    }])
+    beta_se_df.to_csv(
+        f"{out_dir}/{gene}_{pos}_{end}_{motif}_effect_sizes.tsv",
+        index=False,
+        sep='\t'
+    )
+
+    return results
+
 
 @click.option('--meta-dir', help='Directory containing meta-analysis results', default= 'gs://cpg-tenk10k-test-analysis/str/cellstate/stratified/meta_results')
 @click.option(
@@ -182,7 +179,7 @@ def main(meta_dir,pathway,eqtls_to_test, max_parallel_jobs):
 
         if to_path(f'{meta_dir}/{pathway}/z_test/{cell_type}/{chromosome}/{gene}_{pos}_{end}_{motif}_z_test.tsv').exists():
             print(f"Z-test results for {gene} already exists, skipping.")
-            continue
+            #continue
 
         # Create a job for each eQTL
         j = b.new_python_job(
