@@ -126,6 +126,7 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end,motif, gene
         results.append({
             "chrom": chromosome,
             "pos": pos,
+            "end": end,
             "motif": motif,
             "gene": gene,
             "cell_type": cell_type,
@@ -201,7 +202,7 @@ def main(meta_dir,pathway,eqtls_to_test, max_parallel_jobs):
             gene,
             ref_activity_level,
         )
-        break
+
         manage_concurrency_for_job(j)
     b.run(wait=False)
 
