@@ -9,7 +9,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/cellstate/input_files/meanpool/stratified/tob/pseudobulk" python3 pseudobulk_macro.py
+analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/cellstate/input_files/meanpool/stratified/bioheart/pseudobulk" python3 pseudobulk_macro.py
 
 """
 import csv
@@ -19,6 +19,7 @@ import math
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import anndata as ad
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
@@ -35,7 +36,8 @@ def pseudobulk(input_dir, chromosome,id_file_path, target_sum, min_pct,pathway):
     input_file_path_bmem = f"{input_dir}/B_memory_chr{chromosome}.h5ad"
     adata_bmem = sc.read_h5ad(to_path(input_file_path_bmem))
 
-    adata = adata_bmem.concatenate(adata_bint, join="outer")
+    adata = ad.concat([adata_bmem, adata_bint], axis=0, join="outer", label="batch", keys=["B_memory", "B_intermediate"])
+
 
     # retain only samples in the id file
     with to_path(id_file_path).open() as csvfile:
