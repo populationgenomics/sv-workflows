@@ -9,7 +9,7 @@ This script aims to:
  - output gene-level phenotype and covariate numpy objects for input into eqtl pipeline
 
  analysis-runner  --config get_cis_numpy_files.toml --dataset "tenk10k" --access-level "test" \
---description "get cis and numpy" --output-dir "str/cellstate/input_files/stratified/tob" \
+--description "get cis and numpy" --output-dir "str/cellstate/input_files/meanpool/stratified/tob" \
 --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
 python3 get_cis_numpy_files.py
 
@@ -52,7 +52,7 @@ def cis_window_numpy_extractor(
     init_batch()
 
     # read in anndata object because anndata.vars has the start, end coordinates of each gene
-    h5ad_file_path = f'{input_h5ad_dir}/{cell_type}_{chromosome}.h5ad'
+    h5ad_file_path = f'{input_h5ad_dir}/B_intermediate_{chromosome}.h5ad'
     expression_h5ad_path = to_path(h5ad_file_path).copy('here.h5ad')
     adata = sc.read_h5ad(expression_h5ad_path)
 
