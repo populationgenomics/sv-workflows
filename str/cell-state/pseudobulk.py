@@ -9,7 +9,7 @@ Prior to pseudobulking, the following steps are performed:
 
 Output is a TSV file by cell-type and chromosome-specific. Each row is a sample and each column is a gene.
 
-analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/cellstate/input_files/stratified/tob/pseudobulk" python3 pseudobulk.py
+analysis-runner --config pseudobulk.toml --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 --description "pseudobulk" --output-dir "str/cellstate/input_files/meanpool/stratified/tob/pseudobulk" python3 pseudobulk.py
 
 """
 import csv
@@ -39,7 +39,7 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct,cell_type,path
     adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # read in adata pathway annotations
-    pathway_annot = sc.read_h5ad(to_path('gs://cpg-bioheart-test/str/trdeepid/bcells/pathway_attributions_sublabel.h5ad'))
+    pathway_annot = sc.read_h5ad(to_path('gs://cpg-bioheart-test/str/trdeepid/TR_b_cells_0408/meanpooling/tk_bcell_minimal2_dbhuman_gobp_2024_seed1234_maxg300_maxgs400/pathway_attributions_meanweight_sublabel_20pertype.h5ad'))
     pathway_annot = pathway_annot[pathway_annot.obs["wg2_scpred_prediction"] == cell_type].copy() #filter to cell type
     subtype_series = pathway_annot.obs[pathway] #select the specific pathway's annotation
     adata.obs[pathway] = subtype_series #add the pathway annotation to the adata object
