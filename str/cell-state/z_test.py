@@ -4,7 +4,8 @@
 This script runs z-test to compare TR-eQTL effect sizes between activity bins.
 
 analysis-runner --dataset "tenk10k" --description "z-test for context-spec eQTLs" --access-level "test" \
-    --output-dir "str/cellstate/stratified/meta_results/GOBP_MULTI" z_test.py
+    --output-dir "str/cellstate/stratified/meta_results/GOBP_MULTI" z_test.py \
+    --eqtls-to-test=gs://cpg-tenk10k-test-analysis/str/cellstate/meanpool/stratified/meta_results/GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype/eqtls_to_test.csv
 
 """
 
@@ -144,7 +145,7 @@ def z_test_runner(meta_dir, pathway, cell_type, chromosome, pos, end, motif, gen
     return results
 
 
-@click.option('--meta-dir', help='Directory containing meta-analysis results', default= 'gs://cpg-tenk10k-test-analysis/str/cellstate/stratified/meta_results')
+@click.option('--meta-dir', help='Directory containing meta-analysis results', default= 'gs://cpg-tenk10k-test-analysis/str/cellstate/meanpool/stratified/meta_results')
 @click.option(
     '--pathway', help='GOBP Pathway name for the analysis', default='GOBP_MULTI_MULTICELLULAR_ORGANISM_PROCESS_subtype'
 )
