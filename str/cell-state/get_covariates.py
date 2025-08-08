@@ -5,9 +5,9 @@ merges them with other pre-calculated covariates, and writes the file to GCP.
 
 
 analysis-runner --access-level test --dataset tenk10k --image australia-southeast1-docker.pkg.dev/cpg-common/images/scanpy:1.9.3 \
---description "Get covariates" --output-dir "str/cellstate/stratified/tob/input_files" get_covariates.py --input-dir=gs://cpg-tenk10k-test/str/cellstate/input_files/stratified/tob/pseudobulk \
---cell-types=B_naive  --covariate-file-path=gs://cpg-tenk10k-test/str/associatr/final-freeze/input_files/tob_n950_sample_covariates.csv \
---num-pcs=6
+--description "Get covariates" --output-dir "str/cellstate/input_files/meanpool/stratified/tob" get_covariates.py --input-dir=gs://cpg-tenk10k-test/str/cellstate/input_files/meanpool/stratified/tob/pseudobulk \
+--cell-types=B_intermediate  --covariate-file-path=gs://cpg-tenk10k-test/str/associatr/final-freeze/input_files/tob_n950_sample_covariates.csv \
+--num-pcs=6 --pathway=GOBP_STEROID_HORMONE_MEDIATED_SIGNALING_PATHWAY_subtype
 
 """
 

@@ -12,7 +12,7 @@ Ensure prior scripts have been run to generate dependent files, particularly:
     --description "run associatr" \
     --access-level "test" \
     --memory "4G" \
-    --output-dir "str/cellstate/stratified/tob" \
+    --output-dir "str/cellstate/meanpool/stratified/bioheart" \
      python3 associatr_runner.py
 
 
