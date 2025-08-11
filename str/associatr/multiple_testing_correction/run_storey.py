@@ -6,12 +6,12 @@ This script performs FDR (across gene) correction (the second and final step of 
 Ensure that `run_gene_level_pval.py` has been run to generate the gene-level p-values first.
 Output is one TSV file per cell type with three columns - gene name, gene-level p-value (ACAT/Bonferroni), and q-value.
 
-analysis-runner --dataset "bioheart" --description "compute qvals" --access-level "test" \
-    --output-dir "str/associatr/rna_pc_calibration/5_pcs/results" \
+analysis-runner --dataset "tenk10k" --description "compute qvals" --access-level "test" \
+    --output-dir "str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/bioheart_n975_tob_n950" \
     --image australia-southeast1-docker.pkg.dev/cpg-common/images-dev/r-qvalue:1.0 \
-    run_storey.py --input-dir=gs://cpg-bioheart-test/str/associatr/rna_pc_calibration/5_pcs/results/gene_level_pvals \
-    --cell-types=CD8_TEM --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 \
-    --gene-level-correction=bonferroni
+    run_storey.py --input-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/meta_fixed/cond_analysis_on_snv/bioheart_n975_tob_n950/gene_level_pvals \
+    --cell-types=ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TEM,CD8_Naive,CD8_Proliferating,CD8_TCM,CD8_TEM,HSPC,ILC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC --chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 \
+    --gene-level-correction=acat
 
 """
 
@@ -30,18 +30,18 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
     ro.r('library(qvalue)')
 
     first_iteration = True
-    for chromosome in chromosomes.split(','):
+
         # read in gene-level p-values
-        gene_pval_files = list(
-            to_path(
-                f'{input_dir}/{gene_level_correction}/{cell_type}/chr{chromosome}',
-            ).glob('*.tsv'),
-        )
-        if first_iteration:
-            pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
-            first_iteration = False
-        for gene_pval_file in gene_pval_files[1:]:
-            pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
+    gene_pval_files = list(
+        to_path(
+            f'{input_dir}/{gene_level_correction}/{cell_type}',
+        ).rglob('*.tsv'),
+    )
+    if first_iteration:
+        pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
+        first_iteration = False
+    for gene_pval_file in gene_pval_files[1:]:
+        pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
     pvals = pval_df['gene_level_pval']
     if gene_level_correction == 'bonferroni':
