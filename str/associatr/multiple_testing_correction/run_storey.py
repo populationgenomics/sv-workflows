@@ -44,6 +44,7 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
         pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
 
     pvals = pval_df['gene_level_pval']
+    print(pvals)
     if gene_level_correction == 'bonferroni':
         pvals = list(pvals)
         # set p-values > 1 to 1
