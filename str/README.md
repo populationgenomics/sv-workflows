@@ -34,7 +34,7 @@ Assumes scRNA raw data have been processed and cells have been typed using the [
   - [`qc/qc_annotator.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/qc/qc_annotator.py)
   - [`qc/qc_filters_associatr.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/qc/qc_filters_associatr.py).  
     This produces chromosome-specific VCFs for input into associaTR.
-- Run associaTR with [`associatr_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr_runner.py).
+- Run associaTR with [`associatr_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr/associatr_runner.py).
 - Optional: Meta-analysis runner scripts in [`associatr/meta_analysis`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr/meta_analysis).
 - Perform multiple testing correction (`associatr/multiple_testing_correction`):
   - Gene-level ACAT correction with [`run_gene_level_pval.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr/multiple_testing_correction/run_gene_level_pval.py) (option to use Bonferroni).
