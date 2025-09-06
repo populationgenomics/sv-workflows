@@ -1,6 +1,6 @@
 # STR Colocalisation Utilities
 
-This directory contains scripts to perform colocalisation analyses between STR association signals (e.g.\ eSTRs) and external phenotype summary statistics (GWAS) using the **coloc** framework via Hail Batch.
+This directory contains scripts to perform colocalisation analyses between STR association signals (e.g. eSTRs) and external phenotype summary statistics (GWAS) using the **coloc** framework via Hail Batch.
 
 ---
 
