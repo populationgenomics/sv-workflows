@@ -76,7 +76,6 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 - Consolidate outputs with [`coloc_results_parser.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/coloc/coloc_results_parser.py).
 - If colocalisation was performed using SNP data, check LD with lead eSTRs using [`coloc_ld_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/coloc/coloc_ld_runner.py).
 
----
 
 
 ## Citation and data availability
