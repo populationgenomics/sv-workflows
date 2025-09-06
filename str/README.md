@@ -80,7 +80,7 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 
 📌 **Note:** If you encounter issues or have questions, please open an issue on this repository.  
 
-### Citation and data availability
+## Citation and data availability
 
 - Preprint discussing the work in detail can be accessed at doi.org/10.1101/2024.11.02.621562. 
 
