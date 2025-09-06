@@ -10,6 +10,6 @@ This directory implements the **Multiple-Causal-Variant (MCV)** fine-mapping fra
 |----------------------------------|------------------------------------------------------------------------------------------------------------|
 | `files_prep_dosages.py`                    | Obtains genotype dosages for the relevant cis windows                                  |
 | `files_prep_residualizer.py`   | Regress out covariates from genotype dosages and pseudobulk expression values                  |
-| `susie_mcv_runner.py`                  | Run `susie()` based on inputs from `files_prep_residualizer.py`                       |
+| `susie_mcv_runner.py`                  | Run `susie()` based on outputs from `files_prep_residualizer.py`                       |
 
 ---
