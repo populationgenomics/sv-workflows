@@ -68,7 +68,7 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 - Run [`remove_STR_indels.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/remove_STR_indels.py) to remove indels that represent STRs, as well as duplicate eSTRs in the associaTR outputs.
 - Use [`files_prep_dosages.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/files_prep_dosages.py)) to obtain the genotypes from the VCFs.
 - Run [`files_prep_residualizer.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/files_prep_residualizer.py) to regress out the covariates from the genotypes and the pseudobulked exprssion values. 
-- Run SusieR with [`susie_mcv_runner.py`](str/fine-mapping/mcv/susie_mcv_runner.py).
+- Run SusieR with [`susie_mcv_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/susie_mcv_runner.py).
 
 ### Colocalisation (`coloc`)
 
