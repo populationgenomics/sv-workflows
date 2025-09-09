@@ -1,0 +1,10 @@
+[associatr]
+pheno_cov_numpy_dir='gs://cpg-bioheart-test/str/associatr-atac/tob/input_files/fm-etrs/10kb_estrs/meta_fixed'
+#cell_types='B_intermediate,CD4_Naive,CD4_TEM,CD8_TEM,dnT,MAIT,NK_Proliferating,Treg,CD16_Mono,CD4_Proliferating,CD8_Naive'
+cell_types ='MAIT,NK,NK_CD56bright'
+vcf_dir='gs://cpg-bioheart-test/str/atac-seq/fm-etrs/vcf_input'
+max_parallel_jobs=1000
+cis_window_size=10000
+job_storage = '0G'
+job_cpu =0.25
+always_run=false
