@@ -13,22 +13,22 @@ Applied filters:
 - set calls outside of [-30,20] relative to mode to NA
 - enforce locus-level call rate >=0.9
 
+- FILTERS only for TOB IDs and masks the GT if the GT sum occurs less than 5 times per variant
+
 
  analysis-runner --dataset "bioheart" \
     --description "Hail QC for associaTR" \
     --access-level "test" \
-    --output-dir "str/associatr/input_files" \
-    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run_n2045/annotated_mt/v2/str_annotated.mt \
-    --version=v1-chr-specific
+    --output-dir "str/associatr-atac/tob/input_files" \
+    qc_filters_associatr.py --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/str_annotated.mt \
+    --version=v1-remove-rare-GTs
 
 """
 
 import click
 
-import hail as hl
-
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
+from cpg_utils.hail_batch import get_batch
 
 config = get_config()
 
@@ -39,10 +39,23 @@ def qc_filter(mt_path, version):
     """
     Applies QC filters to the input MT
     """
+    import hail as hl
+    from cpg_utils.hail_batch import init_batch, output_path
     init_batch(worker_memory='highmem')
+    import pandas as pd
+
 
     # read in mt
     mt = hl.read_matrix_table(mt_path)
+
+    # filter for just TOB ids
+    tob_ids = pd.read_csv(
+        'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/tob_n950/covariates/6_rna_pcs/CD4_TCM_covariates.csv'
+    )['sample_id']
+    samples = tob_ids.to_list()
+    mt = mt.filter_cols(hl.literal(samples).contains(mt.s))
+
+
 
     # remove monomorphic variants, set locus level call rate >=0.9, observed heterozygosity >=0.00995, locus level HWEP (binom definition) >=10^-6
     mt = mt.filter_rows(
@@ -52,101 +65,121 @@ def qc_filter(mt_path, version):
     # set sample level call rate >=0.99
     mt = mt.filter_cols(mt.sample_qc.call_rate >= 0.99)
 
+
+
     # set big expansions/deletions beyond [-30,20] relative to mode allele to NA
     condition_allele_1 = (mt.allele_1_minus_mode > 20) | (mt.allele_1_minus_mode < -30)
+    mt = mt.annotate_entries(
+        GT=hl.if_else(
+            condition_allele_1,
+            hl.missing('call'),
+            mt.GT,
+        ),
+        ADFL=hl.if_else(
+            condition_allele_1,
+            hl.missing('str'),
+            mt.ADFL,
+        ),
+        ADIR=hl.if_else(
+            condition_allele_1,
+            hl.missing('str'),
+            mt.ADIR,
+        ),
+        ADSP=hl.if_else(
+            condition_allele_1,
+            hl.missing('str'),
+            mt.ADSP,
+        ),
+        LC=hl.if_else(
+            condition_allele_1,
+            hl.missing('float64'),
+            mt.LC,
+        ),
+        REPCI=hl.if_else(
+            condition_allele_1,
+            hl.missing('str'),
+            mt.REPCI,
+        ),
+        REPCN=hl.if_else(
+            condition_allele_1,
+            hl.missing('str'),
+            mt.REPCN,
+        ),
+        SO=hl.if_else(
+            condition_allele_1,
+            hl.missing('str'),
+            mt.SO,
+        ),
+    )
     condition_allele_2 = (mt.allele_2_minus_mode > 20) | (mt.allele_2_minus_mode < -30)
     mt = mt.annotate_entries(
         GT=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('call'),
             mt.GT,
         ),
         ADFL=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('str'),
             mt.ADFL,
         ),
         ADIR=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('str'),
             mt.ADIR,
         ),
         ADSP=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('str'),
             mt.ADSP,
         ),
         LC=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('float64'),
             mt.LC,
         ),
         REPCI=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('str'),
             mt.REPCI,
         ),
         REPCN=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('str'),
             mt.REPCN,
         ),
         SO=hl.if_else(
-            condition_allele_1,
+            condition_allele_2,
             hl.missing('str'),
             mt.SO,
         ),
+    )
+
+
+    # Step 1: Add summed repeat length
+    mt = mt.annotate_entries(summed_rep_length=mt.allele_1_rep_length + mt.allele_2_rep_length)
+
+    # Step 2: Compute per-row map of repeat length counts using entry aggregation
+    mt = mt.annotate_rows(
+        rep_len_count_map=hl.agg.group_by(mt.summed_rep_length, hl.agg.count_where(hl.is_defined(mt.summed_rep_length)))
+    )
+
+    # Step 3: Mask fields based on whether the summed repeat count is ≥ 5
+    mt = mt.annotate_entries(
+        is_common_sum = mt.rep_len_count_map.get(mt.summed_rep_length, 0) >= 5
     )
 
     mt = mt.annotate_entries(
-        GT=hl.if_else(
-            condition_allele_2,
-            hl.missing('call'),
-            mt.GT,
-        ),
-        ADFL=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.ADFL,
-        ),
-        ADIR=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.ADIR,
-        ),
-        ADSP=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.ADSP,
-        ),
-        LC=hl.if_else(
-            condition_allele_2,
-            hl.missing('float64'),
-            mt.LC,
-        ),
-        REPCI=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.REPCI,
-        ),
-        REPCN=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.REPCN,
-        ),
-        SO=hl.if_else(
-            condition_allele_2,
-            hl.missing('str'),
-            mt.SO,
-        ),
+        GT=hl.or_missing(mt.is_common_sum, mt.GT),
+        ADFL=hl.or_missing(mt.is_common_sum, mt.ADFL),
+        ADIR=hl.or_missing(mt.is_common_sum, mt.ADIR),
+        ADSP=hl.or_missing(mt.is_common_sum, mt.ADSP),
+        LC=hl.or_missing(mt.is_common_sum, mt.LC),
+        REPCI=hl.or_missing(mt.is_common_sum, mt.REPCI),
+        REPCN=hl.or_missing(mt.is_common_sum, mt.REPCN),
+        SO=hl.or_missing(mt.is_common_sum, mt.SO),
     )
 
-    # calculate proportion of GTs that are defined per locus (after applying call-level filters, variant_qc.call_rate is not accurate anymore)
-    mt = mt.annotate_rows(
-        prop_GT_exists=hl.agg.count_where(hl.is_defined(mt.GT)) / (mt.variant_qc.n_called + mt.variant_qc.n_not_called),
-    )
-    # re-enforce locus level call rate >=0.9
-    mt = mt.filter_rows(mt.prop_GT_exists >= 0.9)
 
     # wrangle mt, prepare for export_vcf():
 
@@ -164,6 +197,9 @@ def qc_filter(mt_path, version):
         'allele_2_REPCI_size',
         'allele_1_is_non_mode',
         'allele_2_is_non_mode',
+        'is_common_sum',
+        'rep_len_count_map',
+        'summed_rep_length',
     )
 
     # Set the QUAL field to missing for all rows
@@ -180,7 +216,12 @@ def qc_filter(mt_path, version):
     mt = mt.key_cols_by(s=mt.s_no_prefix)
     mt.drop('s_no_prefix')
 
-    for chr_index in range(22):  # iterate over chr1-22
+    checkpoint_path = output_path('qc/atacgt.mt', 'tmp')
+
+    mt = mt.checkpoint(str(checkpoint_path))
+
+
+    for chr_index in range(21):  # iterate over chr1-22
         mt_chr = mt.filter_rows(mt.locus.contig == f'chr{chr_index + 1}')
         gcs_output_path = output_path(f'vcf/{version}/hail_filtered_chr{chr_index+1}.vcf.bgz')
         # needs STR VCF header text to be recognised by associaTR as an ExpansionHunter VCF
