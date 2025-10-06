@@ -5,9 +5,9 @@
 This script is the first step in assessing cell type-specificity of eQTLs.
 It prepares input files for the next step, which is running the meta-analysis; and also outputs a file containing eQTLs with opposite signed betas for each cell type.
 
-analysis-runner --dataset "bioheart" --description "eqtl_file_prep" --access-level "test" \
---output-dir "str/associatr/cell-type-spec" file_prep.py --eqtl-file=gs://cpg-bioheart-test/str/associatr/cell-type-spec/estrs.csv \
---associatr-dir=gs://cpg-bioheart-test/str/associatr/tob_n1055_and_bioheart_n990/DL_random_model/meta_results
+analysis-runner --dataset "tenk10k" --description "eqtl_file_prep" --access-level "test" \
+--output-dir "str/cell-spec-cuomo" file_prep.py --eqtl-file=gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/cell-type-spec/estrs.csv \
+--associatr-dir=gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/meta_results/meta_with_fixed/v2
 
 
 
@@ -38,7 +38,7 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
         pos = row['pos']
         end = row['end']
         motif = row['motif']
-        pval = row['pval_pooled']
+        pval = row['pval_meta_fixed']
         for cell_type2 in cell_type_array:
             if cell_type2 != cell_type:
                 file = f'{associatr_dir}/{cell_type2}/{chrom}/{gene}_100000bp_meta_results.tsv'
@@ -56,8 +56,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                     )
                     eqtl_df2 = eqtl_df2[eqtl_df2['end'] == end]
                     eqtl_df2 = eqtl_df2[eqtl_df2['motif'] == motif]
-                    eqtl_df2_coeff = eqtl_df2['coeff_meta'].iloc[0]
-                    eqtl_df2_se = eqtl_df2['se_meta'].iloc[0]
+                    eqtl_df2_coeff = eqtl_df2['coeff_meta_fixed'].iloc[0]
+                    eqtl_df2_se = eqtl_df2['se_meta_fixed'].iloc[0]
 
                     ## add a row to the meta_input_df
                     new_row = pd.DataFrame(
@@ -68,8 +68,8 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                             'motif': [motif],
                             'gene_name': [gene],
                             'celltype_main': [cell_type],
-                            'coeff_main': [row['coeff']],
-                            'se_main': [row['se']],
+                            'coeff_main': [row['coeff_meta_fixed']],
+                            'se_main': [row['se_meta_fixed']],
                             'pval_main': [pval],
                             'cell_type2': [cell_type2],
                             'coeff_2': [eqtl_df2_coeff],
@@ -77,10 +77,13 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
                         },
                     )
                     meta_input_df = pd.concat([meta_input_df, new_row], ignore_index=True)
-                    if row['coeff'] * eqtl_df2_coeff < 0:
+                    if row['coeff_meta_fixed'] * eqtl_df2_coeff < 0:
                         opposite_signed_betas = pd.concat([opposite_signed_betas, new_row], ignore_index=True)
                 except FileNotFoundError:
                     logging.info(f'File {file} not found')
+                    continue
+                except IndexError:
+                    print(f'Index error for {gene} and {cell_type2} for {chrom}:{pos}-{end} with motif {motif}')
                     continue
 
     o_file_path = output_path(f'prep_files/{cell_type}/meta_input_df.csv')
@@ -95,7 +98,6 @@ def meta_eqt_file_prep(cell_type_eqtls, cell_type, associatr_dir):
 def main(eqtl_file, associatr_dir):
     df = pd.read_csv(eqtl_file)
     for cell_type in df['cell_type'].unique():
-        # for cell_type in ['ASDC']:
         cell_type_eqtls = df[df['cell_type'] == cell_type]
         j = get_batch(name='meta_eqt_file_prep').new_python_job(name=f'{cell_type}_meta_eqt_file_prep')
         j.call(meta_eqt_file_prep, cell_type_eqtls, cell_type, associatr_dir)

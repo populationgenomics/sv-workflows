@@ -7,12 +7,12 @@ Assumes that file_prep.py has been run.
 
 This script runs R's meta package to generate pooled effect sizes for each eQTL tested between pairs of cell types.
 
-analysis-runner --dataset "bioheart" --description "meta_eqtls_runner" --access-level "test" \
---output-dir "str/associatr/cell-type-spec" meta_eqtls_runner.py --file-input-dir=gs://cpg-bioheart-test/str/associatr/cell-type-spec/prep_files \
---cell-types=ASDC
+analysis-runner --dataset "tenk10k" --description "meta_eqtls_runner" --access-level "test" \
+--output-dir "str/cell-spec-cuomo" meta_eqtls_runner.py --file-input-dir=gs://cpg-tenk10k-test/str/cell-spec-cuomo/prep_files \
+--cell-types=NK
 
 ## --cell-types=CD4_TCM,CD4_Naive,CD4_TEM,CD4_CTL,CD4_Proliferating,CD4_TCM_permuted,NK,NK_CD56bright,NK_Proliferating,CD8_TEM,CD8_TCM,CD8_Proliferating,CD8_Naive,Treg,B_naive,B_memory,B_intermediate,Plasmablast,CD14_Mono,CD16_Mono,cDC1,cDC2,pDC,dnT,gdT,MAIT,ASDC,HSPC,ILC
-
+B_naive,CD8_TEM,NK,CD4_Naive,CD4_TCM
 
 """
 
@@ -85,7 +85,7 @@ def run_meta_gen(file_path, cell_type):
         coeff = df[i, "coeff_2"]
     )
     result_df <- rbind(row_cohort1, row_cohort2)
-    m.gen = metagen(result_df$coeff, result_df$se, random = TRUE)
+    m.gen = metagen(abs(result_df$coeff), result_df$se, random = TRUE)
     print('Meta-analysis ran')
 
 
@@ -102,12 +102,10 @@ def run_meta_gen(file_path, cell_type):
         cell_type2 = df[i, "cell_type2"],
         coeff_2 = df[i, "coeff_2"],
         se_2 = df[i, "se_2"],
-        coeff_meta = m.gen$TE.random,
-        se_meta = m.gen$seTE.random,
+        coeff_meta_fixed = m.gen$TE.fixed,
+        se_meta_fixed = m.gen$seTE.fixed,
         pval_q_meta = m.gen$pval.Q,
-        pval_meta = m.gen$pval.random,
-        lowerCI_meta = m.gen$lower.random,
-        upperCI_meta = m.gen$upper.random)
+        pval_meta_fixed = m.gen$pval.fixed)
 
     print('New entry created')
 
