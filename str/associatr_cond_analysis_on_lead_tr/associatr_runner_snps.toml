@@ -1,0 +1,15 @@
+[associatr]
+# egene file
+egene = 'gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv'
+# gs://... to the chr-specific output of qc_filters_associatr.py
+vcf_file_dir='gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps'
+cis_window_dir='gs://cpg-tenk10k-test/tenk10k/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/tob_n950/input_files/cis_window_files/v1-meta-fixed'
+pheno_cov_numpy_dir='gs://cpg-tenk10k-test/tenk10k/str/associatr/final_freeze/meta_fixed/cond_analysis_on_tr/tob_n950/input_files/pheno_cov_numpy/v1-meta-fixed'
+max_parallel_jobs=5000
+cis_window_size=100000
+# version of the output
+version='v1-meta-fixed'
+# job storage
+job_storage = '0G'
+job_cpu =1
+always_run = false

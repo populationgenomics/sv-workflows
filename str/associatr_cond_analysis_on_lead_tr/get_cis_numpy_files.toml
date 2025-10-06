@@ -1,0 +1,25 @@
+[get_cis_numpy]
+# egene file
+egene = 'gs://cpg-tenk10k-test/str/associatr/final_freeze/meta_fixed/finemapped_etrs.csv'
+# snp_str_meta results dir
+snp_str_meta = 'gs://cpg-tenk10k-test-analysis/str/associatr/final_freeze/tob_n950_and_bioheart_n975/trs_snps/rm_str_indels_dup_strs_v3'
+# GCS directory to the input AnnData objects
+input_h5ad_dir = 'gs://cpg-bioheart-test/tenk10k/str/saige-qtl/300-libraries/anndata_objects_from_HPC'
+# GCS directory to the input pseudobulk CSV files
+input_pseudobulk_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/pseudobulk/bioheart_ids_n1356'
+# GCS directory to the input covariate CSV files
+input_cov_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final_freeze/input_files/bioheart_n975/covariates/6_rna_pcs'
+# cis window size in bp
+cis_window = 100000
+version = 'v1-meta-fixed'
+job_cpu = 2
+job_memory = 'standard'
+job_storage = '20G'
+# To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
+max_parallel_jobs = 500
+# filter out genes that are expressed in fewer than XX% of cells
+min_pct = 1
+# GCS path to the file containing the list of samples to remove
+remove_samples_file = 'gs://cpg-bioheart-test/str/associatr/input_files/remove-samples.txt'
+# set str_vcf_dir == 'gs//cpg-bioheart-test' if no STR loci to condition on
+str_vcf_dir = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific'
