@@ -129,9 +129,7 @@ def residualizer(df_cell, chrom,cell_type):
                 sep='\t',
             )  # a bit of a hack - this file contains summary stats for a list of variants where TR-looking indels and duplicate TRs have been removed.
         except FileNotFoundError:
-            if gene_ensg == 'ENSG00000291100':
-                # this gene has no snps so we skip it
-                continue
+            continue
         meta['variant_id'] = meta['chr'].astype(str) + ':' + meta['pos'].astype(str) + ':' + meta['motif'].astype(str)
         columns_to_keep = ['sample'] + [col for col in variant_df.columns if col in meta['variant_id'].values]
         variant_df = variant_df[columns_to_keep]
