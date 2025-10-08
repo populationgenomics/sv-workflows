@@ -67,7 +67,7 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 - Run [`master_cell_spec_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/cell-type-spec/master_cell_spec_runner.py) to produce output CSV file of cell type specific scores for each sc-eQTL. Assumes the first two scripts above have run.
 
 ### Cell state inference
-- Pseudobulk and z-test comparisons scripts are found in [`cell-state`](https://https://github.com/populationgenomics/sv-workflows/tree/main/str/cell-state).
+- Pseudobulk and z-test comparisons scripts are found in [`cell-state`](https://github.com/populationgenomics/sv-workflows/tree/main/str/cell-state).
 
 ### Finemapping (`fine-mapping`) with SuSIE (multiple causal variant assumption)
 
