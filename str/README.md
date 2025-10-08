@@ -1,18 +1,18 @@
 # STR workflow
 
-This folder contains scripts to genotype and characterise STRs using Hail Batch and GCP.  
-Runner scripts support HipSTR, GangSTR, and ExpansionHunter; however, downstream merging and QC scripts support ExpansionHunter VCFs only and are compatible with both sharded and unsharded catalogs.  
+This folder contains scripts to genotype and characterise STRs using Hail Batch and GCP.
+Runner scripts support HipSTR, GangSTR, and ExpansionHunter; however, downstream merging and QC scripts support ExpansionHunter VCFs only and are compatible with both sharded and unsharded catalogs.
 Sample VCFs can be obtained from the [TRTools Git](https://github.com/gymrek-lab/TRTools/tree/master/example-files) and are fully compatible with this pipeline. Users may run the workflow with these files to verify installation and become familiar with the expected input format before applying it to their own data.
 
 ---
 
 ## ExpansionHunter genome-wide genotyping
 
-- Genotype STRs using [`runners/str_iterative_eh_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/runners/str_iterative_eh_runner.py).  
+- Genotype STRs using [`runners/str_iterative_eh_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/runners/str_iterative_eh_runner.py).
   If the catalog is >200k loci, we recommend sharding the catalog into 100k loci chunks.
-- Prepare VCFs for multi-sample merging using [`trtools/merge_str_prep.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/trtools/merge_str_prep.py).  
+- Prepare VCFs for multi-sample merging using [`trtools/merge_str_prep.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/trtools/merge_str_prep.py).
   If using a sharded catalog, this step should run on each sharded VCF of each sample in the cohort.
-- Create a merged VCF using [`trtools/merge_str_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/trtools/merge_str_runner.py).  
+- Create a merged VCF using [`trtools/merge_str_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/trtools/merge_str_runner.py).
   If using a sharded catalog, this step is performed on each shard separately.
 - If using a sharded catalog, concatenate each sharded merged VCF using [`helper/merge_str_vcf_combiner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/helper/merge_str_vcf_combiner.py).
 - Final output is one VCF containing genotypes for all samples at all loci specified in the catalog, ready for import into Hail:
@@ -32,7 +32,7 @@ Assumes scRNA raw data have been processed and cells have been typed using the [
 - **Note:** Conditional analysis (conditioning on the lead STR or SNP signal) is also specified in [`get_cis_numpy_files.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr/get_cis_numpy_files.py).
 - Annotate and apply QC filters to the STR genotypes matrix table using:
   - [`qc/qc_annotator.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/qc/qc_annotator.py)
-  - [`qc/qc_filters_associatr.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/qc/qc_filters_associatr.py).  
+  - [`qc/qc_filters_associatr.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/qc/qc_filters_associatr.py).
     This produces chromosome-specific VCFs for input into associaTR.
 - Run associaTR with [`associatr_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr/associatr_runner.py).
 - Optional: Meta-analysis runner scripts in [`associatr/meta_analysis`](https://github.com/populationgenomics/sv-workflows/blob/main/str/associatr/meta_analysis).
@@ -58,16 +58,19 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 ## Downstream analysis
 
 ### MashR
-- To do once scripts in main 
+- Use [`process_inputs.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/process_inputs.py) and ['concatenate_inputs.py`] (https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/concatenate_inputs.py) to identify eQTLs shared across all cell types.
+- Run [`mashR_runner.R`](https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/mashR_runner.R)
 
-### Cell specificity 
-- To do once scripts in main 
+### Cell specificity
+- Run [`file_prep.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/cell-type-spec/file_prep.py) to prepare input files for assessing cell-type specificity of eQTLs.
+- Use [`meta_eqtls_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/cell-type-spec/meta_eqtls_runner.py), a helper script to reclassify scenario 2 outcomes as possible scenario 4 or 5 based on the meta-analysis p-value.
+- Run [`master_cell_spec_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/cell-type-spec/master_cell_spec_runner.py) to produce output CSV file of cell type specific scores for each sc-eQTL. Assumes the first two scripts above have run.
 
 ### Finemapping (`fine-mapping`) with SuSIE (multiple causal variant assumption)
 
 - Run [`remove_STR_indels.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/remove_STR_indels.py) to remove indels that represent STRs, as well as duplicate eSTRs in the associaTR outputs.
 - Use [`files_prep_dosages.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/files_prep_dosages.py)) to obtain the genotypes from the VCFs.
-- Run [`files_prep_residualizer.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/files_prep_residualizer.py) to regress out the covariates from the genotypes and the pseudobulked exprssion values. 
+- Run [`files_prep_residualizer.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/files_prep_residualizer.py) to regress out the covariates from the genotypes and the pseudobulked exprssion values.
 - Run SusieR with [`susie_mcv_runner.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/fine-mapping/mcv/susie_mcv_runner.py).
 
 ### Colocalisation (`coloc`)
@@ -80,9 +83,9 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 
 ## Citation and data availability
 
-- Preprint discussing the work in detail can be accessed at doi.org/10.1101/2024.11.02.621562. 
+- Preprint discussing the work in detail can be accessed at doi.org/10.1101/2024.11.02.621562.
 
- - Raw summary association statistics and the polymorphic variant catalog will be available at 10.5281/zenodo.15009519 upon formal publication. 
+ - Raw summary association statistics and the polymorphic variant catalog will be available at 10.5281/zenodo.15009519 upon formal publication.
 
 
-📌 **Note:** If you encounter issues or have questions, please open an issue on this repository.  
+📌 **Note:** If you encounter issues or have questions, please open an issue on this repository.
