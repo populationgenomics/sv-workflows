@@ -58,7 +58,7 @@ Finally, combine eSTR and eSNP associaTR results using [`dataframe_concatenator.
 ## Downstream analysis
 
 ### MashR
-- Use [`process_inputs.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/process_inputs.py) and ['concatenate_inputs.py`] (https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/concatenate_inputs.py) to identify eQTLs shared across all cell types.
+- Use [`process_inputs.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/process_inputs.py) and ['concatenate_inputs.py`](https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/concatenate_inputs.py) to identify eQTLs shared across all cell types.
 - Run [`mashR_runner.R`](https://github.com/populationgenomics/sv-workflows/blob/main/str/mashR/mashR_runner.R)
 
 ### Cell specificity
