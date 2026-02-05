@@ -136,8 +136,8 @@ def main(input_dir, cell_types, title, ylim):
 
 
     # Create QQ plot
-    plt.figure(figsize=(10, 8))
-    fig, ax = plt.subplots(figsize=(10, 8))
+    plt.figure(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(10, 10))
 
     # Set default color for permuted control or any cell type not in color_mapping
     default_color = '#808080'  # grey color for unmapped cell types
