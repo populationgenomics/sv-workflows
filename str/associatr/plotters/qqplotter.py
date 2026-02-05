@@ -17,6 +17,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+import matplotlib
+
 import hail as hl
 
 from cpg_utils import to_path
@@ -82,37 +84,56 @@ def main(input_dir, cell_types, title, ylim):
             np.arange(1, globals()[f'n_{cell_type}'] + 1) / globals()[f'n_{cell_type}'],
         )
 
-    cell_type_mapping = {
-        'ASDC': 'ASDC',
-        'B_intermediate': 'B intermediate',
-        'B_memory': 'B memory',
-        'B_naive': 'B naive',
-        'CD14_Mono': 'CD14+ Monocyte',
-        'CD16_Mono': 'CD16+ Monocyte',
-        'CD4_CTL': 'CD4+ CTL',
-        'CD4_Naive': 'CD4+ Naive',
-        'CD4_Proliferating': 'CD4+ Proliferating',
-        'CD4_TCM': 'CD4+ TCM',
-        'CD4_TCM_permuted': 'Permuted control',
-        'CD4_TEM': 'CD4+ TEM',
-        'CD8_Naive': 'CD8+ Naive',
-        'CD8_Proliferating': 'CD8+ Proliferating',
-        'CD8_TCM': 'CD8+ TCM',
-        'CD8_TEM': 'CD8+ TEM',
-        'cDC1': 'cDC1',
-        'cDC2': 'cDC2',
-        'dnT': 'dnT',
-        'gdT': 'gdT',
-        'HSPC': 'HSPC',
-        'ILC': 'ILC',
-        'MAIT': 'MAIT',
-        'NK': 'NK',
-        'NK_CD56bright': 'NK CD56bright',
-        'NK_Proliferating': 'NK Proliferating',
-        'pDC': 'pDC',
-        'Plasmablast': 'Plasmablast',
-        'Treg': 'Treg',
+    from typing import Dict, List, Optional, Tuple
+
+    matplotlib.rcParams.update(
+    {
+        "font.family": "sans-serif",
+        "font.sans-serif": ["Arial", "Liberation Sans"],
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
     }
+    )
+
+    cell_type_mapping: Dict[str, str] = {
+        "ASDC": "ASDC",
+        "cDC1": "cDC1",
+        "cDC2": "cDC2",
+        "pDC": "pDC",
+        "HSPC": "HSPC",
+        "Plasmablast": "Plasmablast",
+        "gdT": "gdT",
+        "MAIT": "MAIT",
+        "dnT": "dnT",
+        "ILC": "ILC",
+        "NK": "NK",
+        "Treg": "Treg",
+
+        # Subscripted labels — fully upright, Arial-like
+        "B_naive": r"$\mathsf{B}_{\mathsf{Naive}}$",
+        "B_memory": r"$\mathsf{B}_{\mathsf{Memory}}$",
+        "B_intermediate": r"$\mathsf{B}_{\mathsf{Intermediate}}$",
+
+        "NK_CD56bright": r"$\mathsf{NK}_{\mathsf{CD56bright}}$",
+        "NK_Proliferating": r"$\mathsf{NK}_{\mathsf{Proliferating}}$",
+
+        "CD14_Mono": r"$\mathsf{CD14}_{\mathsf{Mono}}$",
+        "CD16_Mono": r"$\mathsf{CD16}_{\mathsf{Mono}}$",
+
+        "CD4_Naive": r"$\mathsf{CD4}_{\mathsf{Naive}}$",
+        "CD4_TCM": r"$\mathsf{CD4}_{\mathsf{TCM}}$",
+        "CD4_TEM": r"$\mathsf{CD4}_{\mathsf{TEM}}$",
+        "CD4_CTL": r"$\mathsf{CD4}_{\mathsf{CTL}}$",
+        "CD4_Proliferating": r"$\mathsf{CD4}_{\mathsf{Proliferating}}$",
+
+        "CD8_Naive": r"$\mathsf{CD8}_{\mathsf{Naive}}$",
+        "CD8_TCM": r"$\mathsf{CD8}_{\mathsf{TCM}}$",
+        "CD8_TEM": r"$\mathsf{CD8}_{\mathsf{TEM}}$",
+        "CD8_Proliferating": r"$\mathsf{CD8}_{\mathsf{Proliferating}}$",
+
+        "CD4_TCM_permuted": "Permuted control",
+    }
+
 
     # Create QQ plot
     plt.figure(figsize=(10, 8))
