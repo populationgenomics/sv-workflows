@@ -71,6 +71,7 @@ def main(input_dir, cell_types, title, ylim):
             sep='\t',
         )
         df = df.dropna()
+        df = df[df['raw_pval'] !=0]
 
         globals()[f'observed_log_pvals_{cell_type}'] = -np.log10(df['raw_pval'])
         globals()[f'n_{cell_type}'] = len(globals()[f'observed_log_pvals_{cell_type}'])
@@ -173,7 +174,7 @@ def main(input_dir, cell_types, title, ylim):
 
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.png', 'analysis')
+    gcs_output_path = output_path('summary_plots/publish/v2-remove-p/qq_plot.png', 'analysis')
     fig.tight_layout()
     fig.savefig('qqplot.png')
     hl.hadoop_copy('qqplot.png', gcs_output_path)
