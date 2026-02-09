@@ -3,7 +3,7 @@
 """
 
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925" qc_annotator.py \
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925" qc_sum_freq.py \
 --mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925/str_annotated.mt
 
 """
@@ -36,6 +36,7 @@ def main(mt_path):
             mt.allele_1_rep_length + mt.allele_2_rep_length
         )
     )
+    mt2 = mt2.filter_entries(hl.is_defined(mt2.sum_rep_len))
 
     # Count frequencies across all entries (variant x sample)
     # Option A: use aggregate + hl.agg.counter (returns a Dict)
@@ -46,8 +47,6 @@ def main(mt_path):
         [hl.struct(sum_rep_len=k, n=v) for k, v in global_freq.items()],
         key='sum_rep_len'
     )
-
-    global_freq_ht = global_freq_ht.order_by(global_freq_ht.sum_rep_len)
 
     global_freq_ht.export("gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925/sum_rep_len_global_freq.tsv.bgz")
 
