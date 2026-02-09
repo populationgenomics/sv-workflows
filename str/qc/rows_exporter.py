@@ -3,8 +3,8 @@
 """
 This script exports the rows of the MT to a TSV file.
 
-analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_n1925" rows_exporter.py \
---mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/str_annotated.mt
+analysis-runner --access-level "test" --dataset "bioheart" --description "QC annotator" --output-dir "str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925" rows_exporter.py \
+--mt-path=gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925/str_annotated.mt
 
 """
 
@@ -29,7 +29,7 @@ def main(mt_path):
     init_batch(worker_memory='highmem')
     mt = hl.read_matrix_table(mt_path)
 
-    mt.rows().export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n1925/rows.tsv.bgz')
+    mt.rows().export('gs://cpg-bioheart-test/str/polymorphic_run/mt/bioheart_tob/v1_n2412/v1-default-filters/v1_n1925/rows.tsv.bgz')
 
     # print mt schema
     mt.describe()
