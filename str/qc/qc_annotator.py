@@ -53,6 +53,8 @@ def main(mt_path):
     #mt = mt.filter_cols(hl.literal(samples).contains(mt.s))
 
     # sample_qc and variant_qc function
+    mt = mt.key_rows_by('locus', 'alleles')
+
     mt = hl.sample_qc(mt)
     mt = hl.variant_qc(mt)
 
