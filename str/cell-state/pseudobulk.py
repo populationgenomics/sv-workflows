@@ -39,7 +39,7 @@ def pseudobulk(input_file_path, id_file_path, target_sum, min_pct,cell_type,path
     adata = adata[adata.obs['cpg_id'].isin(cpg_ids)]
 
     # read in adata pathway annotations
-    pathway_annot = sc.read_h5ad(to_path('gs://cpg-bioheart-test/str/trdeepid/TR_b_cells_Feb2026/pathway_attributions_NK.h5ad'))
+    pathway_annot = sc.read_h5ad(to_path('gs://cpg-bioheart-test/str/trdeepid/TR_b_cells_Feb2026/pathway_attributions_sublabel_20pertype.h5ad'))
     pathway_annot = pathway_annot[pathway_annot.obs["wg2_scpred_prediction"] == cell_type].copy() #filter to cell type
     subtype_series = pathway_annot.obs[pathway] #select the specific pathway's annotation
     adata.obs[pathway] = subtype_series #add the pathway annotation to the adata object
