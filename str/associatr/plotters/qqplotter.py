@@ -223,8 +223,8 @@ def main(input_dir: str, cell_types: str, title: Optional[str], ylim: float) -> 
     fig.tight_layout()
 
     # Save locally then copy to GCS
-    local_out = "qqplot.png"
-    fig.savefig(local_out, dpi=300)
+    local_out = "qqplot.pdf"
+    fig.savefig(local_out)
 
     gcs_output_path = output_path("summary_plots/publish/v1/qq_plot.pdf", "analysis")
     hl.hadoop_copy(local_out, gcs_output_path)
