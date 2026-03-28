@@ -173,10 +173,10 @@ def main(input_dir, cell_types, title, ylim):
 
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.png', 'analysis')
+    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.pdf', 'analysis')
     fig.tight_layout()
-    fig.savefig('qqplot.png')
-    hl.hadoop_copy('qqplot.png', gcs_output_path)
+    fig.savefig('qqplot.pdf')
+    hl.hadoop_copy('qqplot.pdf', gcs_output_path)
 
 if __name__ == '__main__':
     main()
