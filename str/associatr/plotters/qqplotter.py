@@ -226,7 +226,7 @@ def main(input_dir: str, cell_types: str, title: Optional[str], ylim: float) -> 
     local_out = "qqplot.png"
     fig.savefig(local_out, dpi=300)
 
-    gcs_output_path = output_path("summary_plots/publish/v1/qq_plot.png", "analysis")
+    gcs_output_path = output_path("summary_plots/publish/v1/qq_plot.pdf", "analysis")
     hl.hadoop_copy(local_out, gcs_output_path)
 
 
