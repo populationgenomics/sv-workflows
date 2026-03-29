@@ -174,8 +174,8 @@ def main(input_dir, cell_types, title, ylim):
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
     gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.pdf', 'analysis')
-    fig.tight_layout()
-    fig.savefig('qqplot.pdf')
+    fig.savefig('qqplot.pdf', bbox_inches='tight')
+
     hl.hadoop_copy('qqplot.pdf', gcs_output_path)
 
 if __name__ == '__main__':
