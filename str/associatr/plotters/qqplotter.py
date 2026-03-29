@@ -152,6 +152,7 @@ def main(input_dir, cell_types, title, ylim,test):
             color=color,
             label=output_label,
             s=9,
+            rasterized = True
         )
 
     # Create a legend for permuted control and other items separately
@@ -186,9 +187,9 @@ def main(input_dir, cell_types, title, ylim,test):
 
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot1.pdf', 'analysis')
+    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot_raster.pdf', 'analysis')
     fig.tight_layout()
-    fig.savefig('qqplot.pdf')
+    fig.savefig('qqplot.pdf', dpi = 300)
 
     hl.hadoop_copy('qqplot.pdf', gcs_output_path)
 
