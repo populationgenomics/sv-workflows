@@ -16,11 +16,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib as mpl
+
 
 import hail as hl
 
 from cpg_utils import to_path
 from cpg_utils.hail_batch import init_batch, output_path
+
+mpl.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Liberation Sans", "DejaVu Sans"],
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
+})
 
 # Define the color mapping
 color_mapping = {
@@ -177,8 +186,9 @@ def main(input_dir, cell_types, title, ylim,test):
 
     ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
 
-    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.pdf', 'analysis')
-    fig.savefig('qqplot.pdf', bbox_inches='tight')
+    gcs_output_path = output_path('summary_plots/publish/v1/qq_plot1.pdf', 'analysis')
+    fig.tight_layout()
+    fig.savefig('qqplot.pdf')
 
     hl.hadoop_copy('qqplot.pdf', gcs_output_path)
 
