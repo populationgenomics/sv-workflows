@@ -58,8 +58,10 @@ color_mapping = {
 @click.option('--ylim', help='Y-axis limit for the QQ plot', default=335)
 @click.option('--input-dir', help='GCS path directory to the input gene-level p-value files')
 @click.option('--cell-types', help='Comma-separated list of cell types to plot')
+@click.option('--test', is_flag=True, help='Run in test mode with limited data')
+
 @click.command()
-def main(input_dir, cell_types, title, ylim):
+def main(input_dir, cell_types, title, ylim,test):
     init_batch()
     cell_type_list = cell_types.split(',')
 
@@ -69,7 +71,9 @@ def main(input_dir, cell_types, title, ylim):
             header=None,
             names=['CHR', 'BP', 'raw_pval'],
             sep='\t',
+            nrows=100 if test else None,
         )
+
         df = df.dropna()
 
         globals()[f'observed_log_pvals_{cell_type}'] = -np.log10(df['raw_pval'])
@@ -111,7 +115,7 @@ def main(input_dir, cell_types, title, ylim):
     }
 
     # Create QQ plot
-    plt.figure(figsize=(10, 8))
+    plt.close('all')
     fig, ax = plt.subplots(figsize=(10, 8))
 
     # Set default color for permuted control or any cell type not in color_mapping
