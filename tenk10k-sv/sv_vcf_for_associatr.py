@@ -21,7 +21,7 @@ Please note ad-hoc changes:
   written as "./.". The monomorphic-site drop uses CN directly for these
   records.
 
-analysis-runner --dataset tenk10k-sv --access-level test --output-dir str/associatr --description "sv vcf for associatr" \
+analysis-runner --dataset tenk10k-sv --access-level test --output-dir pub-analysis/final-vcf/filtered --description "sv vcf for associatr" \
     sv_vcf_for_associatr.py --vcf-path=gs://cpg-tenk10k-sv-test/pub-analysis/final-vcf/filtered/bioheart_common_maf_gte_1pct.vcf.gz \
     --job-storage=10G --job-cpu=8
 """
@@ -209,7 +209,7 @@ def main(vcf_path, job_storage, job_cpu):
 
     sv_vcf = vcf_path
     output_file = output_path(
-        f'results/sv_vcf_for_associatr/{os.path.basename(vcf_path)}',
+        f'sv_vcf_for_associatr/{os.path.basename(vcf_path)}',
     )
 
     reformatting_job = b.new_python_job(name=f'Reformatting VCF')
