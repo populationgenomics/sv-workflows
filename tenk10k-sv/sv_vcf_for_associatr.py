@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""
+This script converts an existing GATK-SV VCF file (chromosome-specific) into a
+mock ExpansionHunter-style VCF for direct use with associaTR.
+
+Please note ad-hoc changes:
+- RU field stores the REF and ALT alleles in the format of 'REF-ALT' (REF/ALT
+  here are the SV's symbolic alleles, e.g. 'N-<DEL>', not sequence bases)
+- RL field is set to 0 for all loci so that the REF allele is coded as 0
+  (https://github.com/gymrek-lab/TRTools/blob/master/trtools/utils/tr_harmonizer.py#L515)
+- REF field (INFO) is set to 3 (arbitrary filler value, matches SNP version)
+- SVTYPE and END are taken from the original GATK-SV INFO field (not faked),
+  since GATK-SV already provides these and they're meaningful for SVs
+- GT is extracted from whichever FORMAT slot it occupies (GATK-SV FORMAT is
+  typically GT:ECN:EV:GQ:OGQ:RD_CN:RD_GQ:SL), not assumed to be field 0 only
+  based on position -- it's located by name in the FORMAT header each time
+- Multi-allelic CNVs (FILTER contains MULTIALLELIC) do not carry meaningful
+  GT calls in GATK-SV; for these records we read FORMAT/CN (copy number) per
+  sample and emit it as "CN/0" in the mock GT slot. associaTR sums the two
+  alleles per sample, so effective per-sample dosage = CN. Missing CN is
+  written as "./.". The monomorphic-site drop uses CN directly for these
+  records.
+
+analysis-runner --dataset tenk10k-sv --access-level test --output-dir str/associatr --description "sv vcf for associatr" \
+    sv_vcf_for_associatr.py --vcf-path=gs://cpg-tenk10k-sv-test/pub-analysis/final-vcf/filtered/bioheart_common_maf_gte_1pct.vcf.gz \
+    --job-storage=10G --job-cpu=8
+"""
+
+import gzip
+import os
+
+import click
+from cpg_utils import to_path
+from cpg_utils.config import output_path
+from cpg_utils.hail_batch import get_batch
+
+NEW_FORMAT_FIELDS = [
+    '##FORMAT=<ID=GT,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=ADFL,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=ADIR,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=ADSP,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=LC,Number=1,Type=Float,Description="">\n',
+    '##FORMAT=<ID=REPCI,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=REPCN,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=SO,Number=1,Type=String,Description="">\n',
+    '##FORMAT=<ID=QUAL,Number=1,Type=Float,Description="">\n',
+]
+
+NEW_INFO_FIELDS = [
+    '##INFO=<ID=END,Number=1,Type=Integer,Description="">\n',
+    '##INFO=<ID=REF,Number=1,Type=Integer,Description="">\n',
+    '##INFO=<ID=REPID,Number=1,Type=String,Description="">\n',
+    '##INFO=<ID=RL,Number=1,Type=Integer,Description="">\n',
+    (
+        '##INFO=<ID=RU,Number=1,Type=String,Description="Storing the REF/ALT info instead of '
+        'Repeat Unit to retain the REF/ALT info in the association output files, which is '
+        'crucial where there are multiple variants with the same CHR:POS coordinates '
+        '(eg multi allelic loci)">\n'
+    ),
+    '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="">\n',
+    '##INFO=<ID=VARID,Number=1,Type=String,Description="">\n',
+]
+
+
+def parse_info_field(info_field):
+    """Parse a VCF INFO string into a dict, handling flag-only entries."""
+    info = {}
+    for entry in info_field.split(';'):
+        if '=' in entry:
+            key, value = entry.split('=', 1)
+            info[key] = value
+        else:
+            info[entry] = True
+    return info
+
+
+def reformat_vcf(vcf_file_path, output_file_path):
+    vcf_file = to_path(vcf_file_path)
+    output_file = to_path(output_file_path)
+
+    with gzip.open(vcf_file, 'rt') as fin, open('temporary_gt_file.txt', 'w') as fout:
+        for line in fin:
+            if line.startswith('#CHROM'):
+                # Insert the mock ExpansionHunter-style header fields right before
+                # the #CHROM line (GATK-SV VCFs don't have a ##hailversion line to
+                # key off of, unlike the hail-derived SNP VCFs).
+                fout.writelines(NEW_FORMAT_FIELDS)
+                fout.writelines(NEW_INFO_FIELDS)
+                fout.write('##ALT=<ID=STR1>\n')
+                # associaTR requires sample IDs to be strictly numeric, so we
+                # remove the 'CPG' prefix
+                fout.write(line.replace('CPG', ''))
+
+            elif line.startswith('##'):
+                # Write meta-information lines as they are
+                fout.write(line)
+
+            else:
+                # Process variant lines
+                parts = line.strip().split('\t')
+
+                chrom = parts[0]
+                if not chrom.startswith('chr'):
+                    parts[0] = 'chr' + chrom
+
+                filter_field = parts[6]
+                info_field = parts[7]
+                format_field = parts[8]
+                sample_data = parts[9:]
+
+                is_multiallelic = 'MULTIALLELIC' in filter_field.split(';')
+
+                info = parse_info_field(info_field)
+
+                # Pull real END/SVTYPE from the GATK-SV INFO field rather than
+                # faking them -- these are meaningful for SVs (unlike the SNP
+                # version, where END is just set equal to POS).
+                end = info.get('END', parts[1])
+                svtype = info.get('SVTYPE', 'UNKNOWN')
+
+                # RU stores ref/alt (here, the SV's symbolic alleles) so we can
+                # discriminate between loci sharing the same CHR:POS
+                new_info_fields = [
+                    f'END={end}',
+                    'REF=3',
+                    'REPID=.',
+                    'RL=0',
+                    f'RU={parts[3]}-{parts[4]}',
+                    f'SVTYPE={svtype}',
+                    'VARID=.',
+                ]
+                updated_info_field = ';'.join(new_info_fields)
+
+                # Update FORMAT field
+                updated_format_field = 'GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO:QUAL'
+
+                # Locate GT within the original FORMAT string by name, since
+                # GATK-SV FORMAT has several subfields
+                # (GT:ECN:EV:GQ:OGQ:RD_CN:RD_GQ:SL) and GT isn't guaranteed to
+                # be the only field even though it is field 0 by VCF spec --
+                # this makes the lookup explicit rather than assumed.
+                format_keys = format_field.split(':')
+
+                # Build the mock per-sample GT strings and the paired
+                # per-sample dosage values used for the monomorphic drop.
+                # MULTIALLELIC CNVs go through the CN path (emit "CN/0");
+                # everything else goes through the standard GT path.
+                mock_gts = []
+                summed_gt_values = []
+
+                if is_multiallelic:
+                    if 'CN' not in format_keys:
+                        # No CN available for a multi-allelic CNV -> no dosage
+                        # to recover; drop the site.
+                        continue
+                    cn_index = format_keys.index('CN')
+                    for sample in sample_data:
+                        sample_parts = sample.split(':')
+                        cn_val = sample_parts[cn_index] if cn_index < len(sample_parts) else '.'
+                        if cn_val in ('', '.'):
+                            mock_gts.append('./.')
+                            continue
+                        try:
+                            cn_int = int(cn_val)
+                        except ValueError:
+                            mock_gts.append('./.')
+                            continue
+                        mock_gts.append(f'{cn_int}/0')
+                        summed_gt_values.append(cn_int)
+                else:
+                    gt_index = format_keys.index('GT') if 'GT' in format_keys else 0
+                    for sample in sample_data:
+                        sample_parts = sample.split(':')
+                        gt = sample_parts[gt_index].replace('|', '/')
+                        mock_gts.append(gt if gt not in ('', '.') else './.')
+                        if gt in ('', '.', './.'):
+                            continue
+                        alleles = gt.split('/')
+                        if any(a == '.' for a in alleles):
+                            continue
+                        try:
+                            summed_gt_values.append(sum(int(a) for a in alleles))
+                        except ValueError:
+                            continue
+
+                if len(summed_gt_values) == 0 or all(sum_gt == summed_gt_values[0] for sum_gt in summed_gt_values):
+                    continue
+
+                updated_sample_data = [':'.join([gt] + ['.'] * 8) for gt in mock_gts]
+
+                # Update ALT column
+                parts[4] = '<STR1>'
+
+                # Write the updated line to the output file
+                updated_line = '\t'.join(
+                    parts[:7] + [updated_info_field, updated_format_field] + updated_sample_data,
+                )
+                fout.write(updated_line + '\n')
+
+    output_file.upload_from('temporary_gt_file.txt')
+
+
+@click.option('--vcf-path', required=True, help='Input VCF file')
+@click.option('--job-storage', default='20G')
+@click.option('--job-cpu', default=1)
+@click.command()
+def main(vcf_path, job_storage, job_cpu):
+    b = get_batch(name='SV VCF maker for associaTR')
+
+    sv_vcf = vcf_path
+    output_file = output_path(
+        f'results/sv_vcf_for_associatr/{os.path.basename(vcf_path)}',
+    )
+
+    reformatting_job = b.new_python_job(name=f'Reformatting VCF')
+    reformatting_job.storage(job_storage)
+    reformatting_job.cpu(job_cpu)
+    reformatting_job.call(reformat_vcf, sv_vcf, output_file)
+
+    b.run(wait=False)
+
+
+if __name__ == '__main__':
+    main()
