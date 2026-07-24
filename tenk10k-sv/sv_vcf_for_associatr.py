@@ -28,11 +28,24 @@ analysis-runner --dataset tenk10k-sv --access-level test --output-dir pub-analys
 
 import gzip
 import os
+import sys
 
 import click
 from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
+
+
+def _log_drop(reason, chrom, pos, record_id, svtype, extra=''):
+    """Emit a single-line drop record to stderr.
+
+    Format: DROP<TAB>reason<TAB>chrom<TAB>pos<TAB>id<TAB>svtype<TAB>extra
+    Grep-friendly, one line per dropped variant; also feeds the end-of-run summary.
+    """
+    print(
+        f'DROP\t{reason}\t{chrom}\t{pos}\t{record_id}\t{svtype}\t{extra}',
+        file=sys.stderr,
+    )
 
 NEW_FORMAT_FIELDS = [
     '##FORMAT=<ID=GT,Number=1,Type=String,Description="">\n',
@@ -78,6 +91,14 @@ def reformat_vcf(vcf_file_path, output_file_path):
     vcf_file = to_path(vcf_file_path)
     output_file = to_path(output_file_path)
 
+    drop_counts = {
+        'multiallelic_no_cn': 0,
+        'monomorphic_no_callable': 0,
+        'monomorphic_uniform_dosage': 0,
+    }
+    n_seen = 0
+    n_written = 0
+
     with gzip.open(vcf_file, 'rt') as fin, open('temporary_gt_file.txt', 'w') as fout:
         for line in fin:
             if line.startswith('#CHROM'):
@@ -98,11 +119,13 @@ def reformat_vcf(vcf_file_path, output_file_path):
             else:
                 # Process variant lines
                 parts = line.strip().split('\t')
+                n_seen += 1
 
                 chrom = parts[0]
                 if not chrom.startswith('chr'):
                     parts[0] = 'chr' + chrom
 
+                record_id = parts[2] if parts[2] not in ('', '.') else 'NA'
                 filter_field = parts[6]
                 info_field = parts[7]
                 format_field = parts[8]
@@ -152,6 +175,12 @@ def reformat_vcf(vcf_file_path, output_file_path):
                     if 'CN' not in format_keys:
                         # No CN available for a multi-allelic CNV -> no dosage
                         # to recover; drop the site.
+                        drop_counts['multiallelic_no_cn'] += 1
+                        _log_drop(
+                            'multiallelic_no_cn',
+                            parts[0], parts[1], record_id, svtype,
+                            extra=f'FORMAT={format_field}',
+                        )
                         continue
                     cn_index = format_keys.index('CN')
                     for sample in sample_data:
@@ -183,10 +212,25 @@ def reformat_vcf(vcf_file_path, output_file_path):
                         except ValueError:
                             continue
 
-                if len(summed_gt_values) == 0 or all(sum_gt == summed_gt_values[0] for sum_gt in summed_gt_values):
+                if len(summed_gt_values) == 0:
+                    drop_counts['monomorphic_no_callable'] += 1
+                    _log_drop(
+                        'monomorphic_no_callable',
+                        parts[0], parts[1], record_id, svtype,
+                        extra=f'n_samples={len(sample_data)}',
+                    )
+                    continue
+                if all(sum_gt == summed_gt_values[0] for sum_gt in summed_gt_values):
+                    drop_counts['monomorphic_uniform_dosage'] += 1
+                    _log_drop(
+                        'monomorphic_uniform_dosage',
+                        parts[0], parts[1], record_id, svtype,
+                        extra=f'dosage={summed_gt_values[0]};n_callable={len(summed_gt_values)}',
+                    )
                     continue
 
                 updated_sample_data = [':'.join([gt] + ['.'] * 8) for gt in mock_gts]
+                n_written += 1
 
                 # Update ALT column
                 parts[4] = '<STR1>'
@@ -196,6 +240,14 @@ def reformat_vcf(vcf_file_path, output_file_path):
                     parts[:7] + [updated_info_field, updated_format_field] + updated_sample_data,
                 )
                 fout.write(updated_line + '\n')
+
+    total_dropped = sum(drop_counts.values())
+    print(
+        f'SUMMARY\tinput={vcf_file_path}\tseen={n_seen}\twritten={n_written}\t'
+        f'dropped={total_dropped}\t'
+        + '\t'.join(f'{k}={v}' for k, v in drop_counts.items()),
+        file=sys.stderr,
+    )
 
     output_file.upload_from('temporary_gt_file.txt')
 
