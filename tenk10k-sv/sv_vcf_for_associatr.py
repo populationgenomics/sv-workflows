@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-This script converts an existing GATK-SV VCF file (chromosome-specific) into a
+This script converts an existing GATK-SV VCF file into a
 mock ExpansionHunter-style VCF for direct use with associaTR.
 
 Please note ad-hoc changes:
@@ -22,7 +22,7 @@ Please note ad-hoc changes:
   records.
 
 analysis-runner --dataset tenk10k-sv --access-level test --output-dir pub-analysis/final-vcf/filtered --description "sv vcf for associatr" \
-    sv_vcf_for_associatr.py --vcf-path=gs://cpg-tenk10k-sv-test/pub-analysis/final-vcf/filtered/bioheart_common_maf_gte_1pct.vcf.gz \
+    sv_vcf_for_associatr.py --vcf-path=gs://cpg-tenk10k-sv-test/pub-analysis/final-vcf/filtered/tob_common_maf_gte_1pct.vcf.gz \
     --job-storage=10G --job-cpu=8
 """
 
@@ -34,6 +34,39 @@ import click
 from cpg_utils import to_path
 from cpg_utils.config import output_path
 from cpg_utils.hail_batch import get_batch
+
+
+# IDs that the EH-style header block below redefines. Any matching header line
+# from the source GATK-SV VCF is skipped on passthrough so the output does not
+# contain two definitions for the same INFO/FORMAT id 
+_REDEFINED_HEADER_IDS = {
+    ('INFO', 'END'),
+    ('INFO', 'REF'),
+    ('INFO', 'REPID'),
+    ('INFO', 'RL'),
+    ('INFO', 'RU'),
+    ('INFO', 'SVTYPE'),
+    ('INFO', 'VARID'),
+    ('FORMAT', 'GT'),
+    ('FORMAT', 'ADFL'),
+    ('FORMAT', 'ADIR'),
+    ('FORMAT', 'ADSP'),
+    ('FORMAT', 'LC'),
+    ('FORMAT', 'REPCI'),
+    ('FORMAT', 'REPCN'),
+    ('FORMAT', 'SO'),
+    ('FORMAT', 'QUAL'),
+}
+
+
+def _is_redefined_header(header_line):
+    """Return True if header_line declares an INFO/FORMAT id the EH block redefines."""
+    for kind in ('INFO', 'FORMAT'):
+        prefix = f'##{kind}=<ID='
+        if header_line.startswith(prefix):
+            hid = header_line[len(prefix):].split(',', 1)[0]
+            return (kind, hid) in _REDEFINED_HEADER_IDS
+    return False
 
 
 def _log_drop(reason, chrom, pos, record_id, svtype, extra=''):
@@ -99,7 +132,11 @@ def reformat_vcf(vcf_file_path, output_file_path):
     n_seen = 0
     n_written = 0
 
-    with gzip.open(vcf_file, 'rt') as fin, open('temporary_gt_file.txt', 'w') as fout:
+    # Write the temp file gzip-compressed so the uploaded blob's contents match
+    # its .vcf.gz extension (inherited from the input basename in main()).
+    # A downstream bgzip+tabix step is still required before this VCF can be
+    # consumed by associatr_runner_sv.py, which expects a .vcf.bgz + .tbi pair.
+    with gzip.open(vcf_file, 'rt') as fin, gzip.open('temporary_gt_file.vcf.gz', 'wt') as fout:
         for line in fin:
             if line.startswith('#CHROM'):
                 # Insert the mock ExpansionHunter-style header fields right before
@@ -113,7 +150,11 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 fout.write(line.replace('CPG', ''))
 
             elif line.startswith('##'):
-                # Write meta-information lines as they are
+                # Pass meta-information lines through, but drop any INFO/FORMAT
+                # header whose ID we redefine below (see _REDEFINED_HEADER_IDS)
+                # so the output has exactly one definition per ID.
+                if _is_redefined_header(line):
+                    continue
                 fout.write(line)
 
             else:
@@ -249,7 +290,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
         file=sys.stderr,
     )
 
-    output_file.upload_from('temporary_gt_file.txt')
+    output_file.upload_from('temporary_gt_file.vcf.gz')
 
 
 @click.option('--vcf-path', required=True, help='Input VCF file')
