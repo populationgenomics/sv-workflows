@@ -144,7 +144,13 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 # key off of, unlike the hail-derived SNP VCFs).
                 fout.writelines(NEW_FORMAT_FIELDS)
                 fout.writelines(NEW_INFO_FIELDS)
-                fout.write('##ALT=<ID=STR1>\n')
+                # Declare a range of <STRn> symbolic alleles up front. MULTIALLELIC
+                # CN records emit ALT = <STR1>,<STR2>,...,<STRmax_cn> so allele
+                # indices in the mock GT (e.g. "3/0" for CN=3) resolve to a valid
+                # allele. associaTR reads <STRn> as an allele of length n
+                # (given RL=0 and a 1-char RU) so summed dosage = CN.
+                for _n in range(1, 201):
+                    fout.write(f'##ALT=<ID=STR{_n}>\n')
                 # associaTR requires sample IDs to be strictly numeric, so we
                 # remove the 'CPG' prefix
                 fout.write(line.replace('CPG', ''))
@@ -273,8 +279,19 @@ def reformat_vcf(vcf_file_path, output_file_path):
                 updated_sample_data = [':'.join([gt] + ['.'] * 8) for gt in mock_gts]
                 n_written += 1
 
-                # Update ALT column
-                parts[4] = '<STR1>'
+                # Update ALT column. MULTIALLELIC CN records emit GTs like "3/0",
+                # "4/0", ... so the ALT column must declare enough symbolic
+                # alleles for those indices to resolve; otherwise associaTR
+                # crashes with IndexError inside GetLengthGenotypes (allele_lens
+                # lookup out of bounds). associaTR reads <STRn> as an allele of
+                # length n, so ALT = <STR1>,<STR2>,...,<STRmax_cn> gives:
+                #   GT 0/0 -> summed dosage 0
+                #   GT k/0 -> summed dosage k   (equal to CN)
+                if is_multiallelic:
+                    max_cn = max(summed_gt_values)  # >=1 here (0-only would have been dropped as monomorphic)
+                    parts[4] = ','.join(f'<STR{i}>' for i in range(1, max_cn + 1))
+                else:
+                    parts[4] = '<STR1>'
 
                 # Write the updated line to the output file
                 updated_line = '\t'.join(
