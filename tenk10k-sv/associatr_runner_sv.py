@@ -125,8 +125,7 @@ def main():
                 )
                 associatr_job.command(
                     f"associaTR {associatr_job.association_results['tsv']} "
-                    #f"{filter_job.filtered_vcf['vcf.bgz']} "
-                    f"{variant_vcf.base} "
+                    f"{filter_job.filtered_vcf['vcf.bgz']} "
                     f"{celltype}_{chromosome}_{gene} {gene_pheno_cov} "
                     f"--region={cis_chrom}:1-{chrom_len} --vcftype=eh",
                 )
