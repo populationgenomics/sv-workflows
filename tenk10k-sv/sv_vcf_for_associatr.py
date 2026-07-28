@@ -198,7 +198,7 @@ def reformat_vcf(vcf_file_path, output_file_path):
                     'REF=3',
                     'REPID=.',
                     'RL=0',
-                    f'RU={parts[3]}-{parts[4]}',
+                    f'RU={parts[3]}-{parts[4]}-END:{end}-{parts[2]}',
                     f'SVTYPE={svtype}',
                     'VARID=.',
                 ]
