@@ -88,28 +88,44 @@ def main():
                     f'{pheno_cov_numpy_dir}/{celltype}/{chromosome}/{gene}_pheno_cov.npy',
                 )
 
+                # Job 1: bcftools pre-filter to the SVs whose [POS, INFO/END]
+                # intersects [cis_start, cis_end] by >=1 bp. Runs on the
+                # bcftools image because the trtools image does not ship
+                # bcftools/htslib. Output is a bgzip+tabix pair carried through
+                # the batch as a resource group to the associaTR job below.
+                filter_job = b.new_job(name=f'Filter SV VCF for {gene} [{celltype};{chromosome}]')
+                if get_config()['associatr']['always_run']:
+                    filter_job.always_run()
+                filter_job.image(get_config()['images']['bcftools'])
+                filter_job.storage(get_config()['associatr']['job_storage'])
+                filter_job.cpu(get_config()['associatr']['job_cpu'])
+                filter_job.declare_resource_group(
+                    filtered_vcf={
+                        'vcf.bgz': '{root}.vcf.bgz',
+                        'vcf.bgz.tbi': '{root}.vcf.bgz.tbi',
+                    },
+                )
+                filter_job.command(
+                    f"bcftools view -r {cis_chrom}:1-{cis_end} "
+                    f"-i 'INFO/END>={cis_start}' "
+                    f"{variant_vcf.base} -Oz -o {filter_job.filtered_vcf['vcf.bgz']} && "
+                    f"tabix -f -p vcf {filter_job.filtered_vcf['vcf.bgz']}",
+                )
+
+                # Job 2: associaTR on the per-gene filtered VCF. --region spans
+                # the full chromosome so associaTR walks every surviving record.
                 associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}] SV')
                 if get_config()['associatr']['always_run']:
                     associatr_job.always_run()
-
                 associatr_job.image(get_config()['images']['trtools'])
                 associatr_job.storage(get_config()['associatr']['job_storage'])
                 associatr_job.cpu(get_config()['associatr']['job_cpu'])
                 associatr_job.declare_resource_group(
                     association_results={'tsv': '{root}.tsv'},
                 )
-
-                # Overlap semantics: any SV whose [POS, INFO/END] intersects
-                # [cis_start, cis_end] by >=1 bp. Tabix -r restricts to POS<=cis_end;
-                # -i 'INFO/END>=cis_start' then keeps SVs whose right edge reaches
-                # into the window. associaTR is invoked over the full chromosome
-                # so every surviving record contributes.
                 associatr_job.command(
-                    f"bcftools view -r {cis_chrom}:1-{cis_end} "
-                    f"-i 'INFO/END>={cis_start}' "
-                    f"{variant_vcf.base} -Oz -o filtered.vcf.gz && "
-                    f"tabix -f -p vcf filtered.vcf.gz && "
-                    f"associaTR {associatr_job.association_results['tsv']} filtered.vcf.gz "
+                    f"associaTR {associatr_job.association_results['tsv']} "
+                    f"{filter_job.filtered_vcf['vcf.bgz']} "
                     f"{celltype}_{chromosome}_{gene} {gene_pheno_cov} "
                     f"--region={cis_chrom}:1-{chrom_len} --vcftype=eh",
                 )

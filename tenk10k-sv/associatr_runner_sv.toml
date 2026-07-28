@@ -12,9 +12,8 @@ gene_list_dir = 'gs://cpg-tenk10k-test/pub_analysis/input_files/tob/scRNA_gene_l
 max_parallel_jobs = 500
 cis_window_size = 1000000
 version = 'v1'
-job_storage = '10G'
-job_cpu = 1
+job_storage = '1G'
+job_cpu = 0.5
 always_run = false
 
-[images]
-trtools = 'australia-southeast1-docker.pkg.dev/cpg-common/images/trtools:latest'
+
