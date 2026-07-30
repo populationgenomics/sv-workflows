@@ -72,6 +72,34 @@ def main(
         dict=reference_fasta.replace('.fasta', '.dict'),
     )
 
+    # ---- Preprocess: drop multiallelic <CNV> records from each cohort VCF.
+    # SVCluster's CanonicalSVCollapser only handles biallelic DEL/DUP/INS/INV/BND;
+    # SVTYPE=CNV records trigger "Unsupported CNV alt allele: <CNV>".
+    def filter_cnv_job(name, vcf_group):
+        j = b.new_job(name=f'Filter <CNV> from {name}')
+        j.image(get_config()['images']['bcftools'])
+        j.storage('20G')
+        j.cpu(2)
+        j.declare_resource_group(
+            filtered={
+                'vcf.gz': '{root}.vcf.gz',
+                'vcf.gz.tbi': '{root}.vcf.gz.tbi',
+            },
+        )
+        j.command(
+            f"""
+            set -euxo pipefail
+            bcftools view -e 'INFO/SVTYPE="CNV"' {vcf_group.base} \\
+                -Oz -o {j.filtered['vcf.gz']}
+            bcftools index -t -o {j.filtered['vcf.gz.tbi']} {j.filtered['vcf.gz']}
+            echo "Kept: $(bcftools view -H {j.filtered['vcf.gz']} | wc -l)"
+            """,
+        )
+        return j
+
+    bh_filter = filter_cnv_job('bioheart', bh_vcf)
+    tb_filter = filter_cnv_job('tob', tb_vcf)
+
     # ---- Job 1: SVCluster --------------------------------------------------
     cluster_job = b.new_job(name='SVCluster BioHeart + TOB')
     cluster_job.image(get_config()['images']['gatk'])
@@ -89,8 +117,8 @@ def main(
         set -euxo pipefail
 
         gatk --java-options "-Xmx{cluster_memory.rstrip('G')}g" SVCluster \\
-            -V {bh_vcf.base} \\
-            -V {tb_vcf.base} \\
+            -V {bh_filter.filtered['vcf.gz']} \\
+            -V {tb_filter.filtered['vcf.gz']} \\
             -O {cluster_job.clustered['vcf.gz']} \\
             -R {ref.fasta} \\
             --ploidy-table {r_ploidy} \\
