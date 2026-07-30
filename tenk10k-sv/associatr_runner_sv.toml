@@ -3,12 +3,12 @@ celltypes = 'CD8_TEM'
 chromosomes = 'chr1'
 # GCS directory holding bgzipped+tabixed EH-style SV VCFs
 # (produced by sv_vcf_for_associatr.py then bgzip_tabix.py)
-vcf_file_dir = 'gs://cpg-tenk10k-sv-test/pub-analysis/final-vcf/filtered/sv_vcf_for_associatr/tob_common_chr_specific'
+vcf_file_dir = 'gs://cpg-tenk10k-sv-test/pub-analysis/final-vcf/filtered/sv_vcf_for_associatr/bioheart_common_chr_specific'
 # 1 Mb per-gene cis window bed files produced by str/associatr/get_cis_numpy_files.py
 # using tenk10k-sv/get_cis_numpy_files_sv.toml
-cis_window_dir = 'gs://cpg-tenk10k-test/pub_analysis/input_files/tob/cis_window_files/v1'
-pheno_cov_numpy_dir = 'gs://cpg-tenk10k-test/pub_analysis/input_files/tob/pheno_cov_numpy/v1'
-gene_list_dir = 'gs://cpg-tenk10k-test/pub_analysis/input_files/tob/scRNA_gene_lists/1_min_pct_cells_expressed'
+cis_window_dir = 'gs://cpg-tenk10k-test/sv/sensitivity_analysis/bioheart_n968/10pc/cis_window_files/v1'
+pheno_cov_numpy_dir = 'gs://cpg-tenk10k-test/sv/sensitivity_analysis/bioheart_n968/10pc/pheno_cov_numpy/v1'
+gene_list_dir = 'gs://cpg-tenk10k-test/sv/sensitivity_analysis/bioheart_n968/10pc/scRNA_gene_lists/1_min_pct_cells_expressed'
 max_parallel_jobs = 500
 cis_window_size = 1000000
 version = 'v1'

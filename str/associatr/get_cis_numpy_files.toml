@@ -1,14 +1,14 @@
 [get_cis_numpy]
 # GCS directory to the input AnnData objects
-input_h5ad_dir = 'gs://cpg-tenk10k-test/saige-qtl/300-libraries/anndata_objects_from_HPC'
+input_h5ad_dir = 'gs://cpg-bioheart-test/tenk10k/str/saige-qtl/300-libraries/anndata_objects_from_HPC'
 # GCS directory to the input pseudobulk CSV files
-input_pseudobulk_dir = 'gs://cpg-tenk10k-test/str/associatr/final-freeze/input_files/pseudobulk/tob_ids_n1055'
+input_pseudobulk_dir = 'gs://cpg-tenk10k-test/sv/input_files/bioheart_n968/pseudobulk'
 # GCS directory to the input covariate CSV files
-input_cov_dir = 'gs://cpg-tenk10k-test/str/associatr/rna_calib/tob_n950/input_files/covariates/covariates/10_rna_pcs'
+input_cov_dir = 'gs://cpg-tenk10k-test/sv/input_files/bioheart_n968/covariates/10_rna_pcs'
 chromosomes = 'chr1'
 cell_types = 'CD8_TEM'
 # cis window size in bp
-cis_window = 100000
+cis_window = 1000000
 version = 'v1'
 job_cpu = 1
 job_memory = 'standard'

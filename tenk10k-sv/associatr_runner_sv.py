@@ -19,7 +19,7 @@ Difference vs. str/associatr/associatr_runner.py:
     --description "run associatr on SVs" \
     --access-level test \
     --memory "8G" \
-    --output-dir "tenk10k-sv/pub_analysis/common/tob" \
+    --output-dir "tenk10k-sv/sv/sensitivity_analysis/tob_n935/1pc" \
     python3 associatr_runner_sv.py
 """
 
