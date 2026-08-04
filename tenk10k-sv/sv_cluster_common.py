@@ -39,9 +39,10 @@ from cpg_utils.hail_batch import get_batch, output_path
     required=True,
     help='GRCh38 fasta; .fai and .dict siblings expected',
 )
-@click.option('--cluster-storage', default='100G', help='Disk for the SVCluster job')
-@click.option('--cluster-memory', default='64G', help='Memory for the SVCluster job')
-@click.option('--cluster-cpu', default=4, type=int, help='CPUs for the SVCluster job')
+@click.option('--cluster-storage', default='10G', help='Disk for the SVCluster job')
+@click.option('--cluster-memory', default='highmem', help='Memory for the SVCluster job')
+@click.option('--cluster-cpu', default=16, type=int, help='CPUs for the SVCluster job')
+@click.option('--cluster-java-mem-gb', default=100, type=int, help='JVM -Xmx (GB) for SVCluster')
 @click.option(
     '--cluster-algorithm',
     default='SINGLE_LINKAGE',
@@ -56,6 +57,7 @@ def main(
     cluster_storage,
     cluster_memory,
     cluster_cpu,
+    cluster_java_mem_gb,
     cluster_algorithm,
 ):
     b = get_batch(name='SVCluster BioHeart + TOB -> common SVs')
@@ -109,7 +111,7 @@ def main(
         f"""
         set -euxo pipefail
 
-        gatk --java-options "-Xmx{cluster_memory.rstrip('G')}g" SVCluster \\
+        gatk SVCluster \\
             -V {bh_prefixed.out['vcf.gz']} \\
             -V {tb_prefixed.out['vcf.gz']} \\
             -O {cluster_job.clustered['vcf.gz']} \\
