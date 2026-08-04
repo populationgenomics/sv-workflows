@@ -120,7 +120,7 @@ def main(
 
     # ---- Job 1: SVCluster --------------------------------------------------
     cluster_job = b.new_job(name='SVCluster BioHeart + TOB')
-    cluster_job.image(get_config()['images']['gatk'])
+    cluster_job.image('australia-southeast1-docker.pkg.dev/cpg-common/images/sv/gatk:2025-05-20-4.6.2.0-4-g1facd911e-NIGHTLY-SNAPSHOT')
     cluster_job.storage(cluster_storage)
     cluster_job.memory(cluster_memory)
     cluster_job.cpu(cluster_cpu)
