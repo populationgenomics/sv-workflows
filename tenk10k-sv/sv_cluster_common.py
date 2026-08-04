@@ -90,8 +90,8 @@ def main(
         set -euxo pipefail
 
         gatk --java-options "-Xmx{cluster_memory.rstrip('G')}g" SVCluster \\
-            -V {bh_vcf.fixed['vcf.gz']} \\
-            -V {tb_vcf.fixed['vcf.gz']} \\
+            -V {bh_vcf.base} \\
+            -V {tb_vcf.base} \\
             -O {cluster_job.clustered['vcf.gz']} \\
             -R {ref.fasta} \\
             --ploidy-table {r_ploidy} \\
