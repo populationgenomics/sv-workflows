@@ -16,7 +16,7 @@ Inputs (all in GCS):
   --reference-fasta    GRCh38 fasta (expects .fai and .dict siblings)
 
 analysis-runner --dataset tenk10k --access-level test \
-    --output-dir pub-analysis/sv-cluster-common \
+    --output-dir pub-analysis/sv-cluster-common/cohort-header \
     --description "SVCluster across BioHeart + TOB" \
     sv_cluster_common.py \
         --bioheart-vcf=gs://cpg-tenk10k-test/pub-analysis/final-vcf/filtered/bioheart_common_maf_gte_1pct.vcf.gz \
@@ -71,11 +71,10 @@ def main(
         dict=reference_fasta.replace('.fasta', '.dict'),
     )
 
-    bcftools_image = 'australia-southeast1-docker.pkg.dev/cpg-common/images/bcftools:1.19'
 
     def prefix_ids_job(name: str, cohort: str, in_vcf):
         j = b.new_job(name=f'Prefix variant IDs ({cohort})')
-        j.image(bcftools_image)
+        j.image(get_config()['images']['bcftools'])
         j.declare_resource_group(
             out={
                 'vcf.gz': '{root}.vcf.gz',
