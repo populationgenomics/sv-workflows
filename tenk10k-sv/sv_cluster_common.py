@@ -26,7 +26,6 @@ analysis-runner --dataset tenk10k --access-level test \
 """
 
 import click
-
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import get_batch, output_path
 
@@ -41,7 +40,7 @@ from cpg_utils.hail_batch import get_batch, output_path
     help='GRCh38 fasta; .fai and .dict siblings expected',
 )
 @click.option('--cluster-storage', default='100G', help='Disk for the SVCluster job')
-@click.option('--cluster-memory', default='32G', help='Memory for the SVCluster job')
+@click.option('--cluster-memory', default='64G', help='Memory for the SVCluster job')
 @click.option('--cluster-cpu', default=4, type=int, help='CPUs for the SVCluster job')
 @click.option(
     '--cluster-algorithm',
