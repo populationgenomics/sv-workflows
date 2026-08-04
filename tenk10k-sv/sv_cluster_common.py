@@ -15,7 +15,7 @@ Inputs (all in GCS):
   --tob-ploidy         TOB ploidy table (TSV, GATK-SV format)
   --reference-fasta    GRCh38 fasta (expects .fai and .dict siblings)
 
-analysis-runner --dataset tenk10k-sv --access-level test \
+analysis-runner --dataset tenk10k --access-level test \
     --output-dir pub-analysis/sv-cluster-common \
     --description "SVCluster across BioHeart + TOB" \
     sv_cluster_common.py \
@@ -72,51 +72,6 @@ def main(
         dict=reference_fasta.replace('.fasta', '.dict'),
     )
 
-    # ---- Preprocess: add missing FORMAT header declarations so htsjdk will
-    # emit records that carry CNV-related per-sample fields. Only lines not
-    # already present in the header are appended, so this is a no-op if the
-    # source VCF is already complete.
-    def reheader_job(name, vcf_group):
-        j = b.new_job(name=f'Reheader {name}')
-        j.image(get_config()['images']['bcftools'])
-        j.storage('20G')
-        j.cpu(2)
-        j.declare_resource_group(
-            fixed={
-                'vcf.gz': '{root}.vcf.gz',
-                'vcf.gz.tbi': '{root}.vcf.gz.tbi',
-            },
-        )
-        j.command(
-            f"""
-            set -euxo pipefail
-
-            bcftools view -h {vcf_group.base} > hdr.txt
-
-            add_format() {{
-                local id="$1" number="$2" type="$3" desc="$4"
-                grep -q "^##FORMAT=<ID=${{id}}," hdr.txt || \\
-                    sed -i "/^#CHROM/i ##FORMAT=<ID=${{id}},Number=${{number}},Type=${{type}},Description=\\"${{desc}}\\">" hdr.txt
-            }}
-
-            add_format CN   1 Integer "Copy number"
-            add_format CNQ  1 Integer "Copy number genotype quality"
-            add_format ECN  1 Integer "Expected copy number"
-            add_format RD_CN 1 Integer "Read-depth-based copy number"
-            add_format RD_GQ 1 Integer "Read-depth-based genotype quality"
-            add_format SL   1 Integer "Second-best likelihood"
-            add_format OGQ  1 Integer "Original genotype quality"
-            add_format EV   . String  "Classes of evidence supporting the call"
-
-            bcftools reheader -h hdr.txt {vcf_group.base} -o {j.fixed['vcf.gz']}
-            bcftools index -t -o {j.fixed['vcf.gz.tbi']} {j.fixed['vcf.gz']}
-            echo "Records: $(bcftools view -H {j.fixed['vcf.gz']} | wc -l)"
-            """,
-        )
-        return j
-
-    bh_filter = reheader_job('bioheart', bh_vcf)
-    tb_filter = reheader_job('tob', tb_vcf)
 
     # ---- Job 1: SVCluster --------------------------------------------------
     cluster_job = b.new_job(name='SVCluster BioHeart + TOB')
@@ -135,8 +90,8 @@ def main(
         set -euxo pipefail
 
         gatk --java-options "-Xmx{cluster_memory.rstrip('G')}g" SVCluster \\
-            -V {bh_filter.fixed['vcf.gz']} \\
-            -V {tb_filter.fixed['vcf.gz']} \\
+            -V {bh_vcf.fixed['vcf.gz']} \\
+            -V {tb_vcf.fixed['vcf.gz']} \\
             -O {cluster_job.clustered['vcf.gz']} \\
             -R {ref.fasta} \\
             --ploidy-table {r_ploidy} \\
