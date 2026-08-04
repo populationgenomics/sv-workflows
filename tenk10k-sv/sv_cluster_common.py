@@ -71,6 +71,28 @@ def main(
         dict=reference_fasta.replace('.fasta', '.dict'),
     )
 
+    bcftools_image = 'australia-southeast1-docker.pkg.dev/cpg-common/images/bcftools:1.19'
+
+    def prefix_ids_job(name: str, cohort: str, in_vcf):
+        j = b.new_job(name=f'Prefix variant IDs ({cohort})')
+        j.image(bcftools_image)
+        j.declare_resource_group(
+            out={
+                'vcf.gz': '{root}.vcf.gz',
+                'vcf.gz.tbi': '{root}.vcf.gz.tbi',
+            },
+        )
+        j.command(
+            f"""
+            set -euxo pipefail
+            bcftools annotate --set-id '{cohort}_%ID' {in_vcf.base} -Oz -o {j.out['vcf.gz']}
+            bcftools index -t {j.out['vcf.gz']} -o {j.out['vcf.gz.tbi']}
+            """,
+        )
+        return j
+
+    bh_prefixed = prefix_ids_job('prefix-bioheart', 'bioheart', bh_vcf)
+    tb_prefixed = prefix_ids_job('prefix-tob', 'tob', tb_vcf)
 
     # ---- Job 1: SVCluster --------------------------------------------------
     cluster_job = b.new_job(name='SVCluster BioHeart + TOB')
@@ -89,8 +111,8 @@ def main(
         set -euxo pipefail
 
         gatk --java-options "-Xmx{cluster_memory.rstrip('G')}g" SVCluster \\
-            -V {bh_vcf.base} \\
-            -V {tb_vcf.base} \\
+            -V {bh_prefixed.out['vcf.gz']} \\
+            -V {tb_prefixed.out['vcf.gz']} \\
             -O {cluster_job.clustered['vcf.gz']} \\
             -R {ref.fasta} \\
             --ploidy-table {r_ploidy} \\
