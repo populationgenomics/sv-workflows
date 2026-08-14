@@ -155,7 +155,7 @@ tar -cf {filter_job.ofile} -C filtered .
                     f"""set -euo pipefail
 mkdir -p filtered results
 tar -xf {filter_job.ofile} -C filtered
-cat > pheno.tsv <<'PHENO'
+cat > pheno.tsv <<PHENO
 {pheno_tsv}
 PHENO
 fail=0
