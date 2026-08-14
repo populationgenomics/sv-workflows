@@ -30,6 +30,11 @@ def sv_proximal_loc_extractor(
     """
     Writes the subset of peaks lying within window_size of an SV to {cell_type}_loc.csv
 
+    The window covers the whole SV span plus flanks ([POS - window_size, END + window_size])
+    rather than a window around each breakpoint, so that peaks inside a large SV are retained -
+    a peak within a DEL or DUP is affected by it regardless of its distance from either
+    breakpoint. 
+
     """
     import numpy as np
     import pandas as pd
