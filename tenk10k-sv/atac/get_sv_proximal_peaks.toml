@@ -1,6 +1,6 @@
 [get_sv_proximal_peaks]
 pseudobulk_dir = 'gs://cpg-bioheart-test/str/atac-seq'
-sv_vcf_path = 'gs://cpg-tenk10k-test/pub-analysis/final-vcf/filtered/tob_common_maf_gte_1pct.vcf.gz'  # TODO path to the SV VCF (bgzipped)
+sv_vcf_path = 'gs://cpg-tenk10k-test/pub-analysis/final-vcf/filtered/tob_common_maf_gte_1pct.vcf.gz'
 window_size = 1000000
 
 # start with one cell type, then swap in the full list of 26 below
