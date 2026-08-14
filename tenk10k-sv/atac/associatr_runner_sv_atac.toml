@@ -1,0 +1,26 @@
+[associatr_sv_atac]
+pheno_cov_numpy_dir = 'gs://cpg-tenk10k-test/sv/atac/cis-numpy-1mb'
+vcf_file_dir = 'gs://cpg-tenk10k-test/pub-analysis/final-vcf/filtered/sv_vcf_for_associatr/tob_common_chr_specific'  # expects hail_filtered_{chrom}.vcf.bgz + .tbi
+cis_window_size = 1000000
+
+# start with one cell type, then swap in the full list of 26 below
+cell_types = 'ASDC'
+# cell_types = 'ASDC,B_intermediate,B_memory,B_naive,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TCM,CD4_TEM,CD8_Naive,CD8_TCM,CD8_TEM,HSPC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,cDC2,dnT,gdT,pDC'
+
+# peaks per job pair. Higher is cheaper (the per-chromosome VCF is localised once per chunk),
+# but a preempted job loses more work - at ~4s/peak, 300 peaks is roughly a 20min job.
+peaks_per_job = 300
+
+# cap the number of peaks per cell type, taken in position order. Set to 0 to run everything.
+max_peaks = 5000
+
+trtools_image = 'trtools'  # skip-if-monomorphic build, as used by str/atac/associatr_runner.py
+vcftype = 'eh'
+non_major_cutoff = 20
+
+filter_job_cpu = 1
+filter_job_storage = '10G'
+job_cpu = 1
+job_storage = '10G'
+# To avoid exceeding Google Cloud quotas, set a concurrency as a limit.
+max_parallel_jobs = 1000
