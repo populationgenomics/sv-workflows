@@ -29,19 +29,28 @@ def compute_storey(input_dir, cell_type, chromosomes, gene_level_correction):
     """
     ro.r('library(qvalue)')
 
-    first_iteration = True
+    # Collect every gene-level file across all requested chromosomes first, then read once.
+    # The previous version kept `first_iteration` outside this loop, so gene_pval_files[0] was
+    # read only for the first chromosome while every chromosome concatenated [1:] -- silently
+    # dropping the first gene of each subsequent chromosome (21 genes over a 22-chromosome run).
+    gene_pval_files = []
     for chromosome in chromosomes.split(','):
         # read in gene-level p-values
-        gene_pval_files = list(
+        gene_pval_files.extend(
             to_path(
                 f'{input_dir}/{gene_level_correction}/{cell_type}/chr{chromosome}',
             ).glob('*.tsv'),
         )
-        if first_iteration:
-            pval_df = pd.read_csv(gene_pval_files[0], sep='\t')
-            first_iteration = False
-        for gene_pval_file in gene_pval_files[1:]:
-            pval_df = pd.concat([pval_df, pd.read_csv(gene_pval_file, sep='\t')])
+    if not gene_pval_files:
+        raise ValueError(
+            f'no gene-level p-value files found for {cell_type} under '
+            f'{input_dir}/{gene_level_correction} (chromosomes: {chromosomes})',
+        )
+    pval_df = pd.concat(
+        [pd.read_csv(gene_pval_file, sep='\t') for gene_pval_file in gene_pval_files],
+        ignore_index=True,
+    )
+    print(f'{cell_type}: read {len(pval_df)} genes from {len(gene_pval_files)} files')
 
     pvals = pval_df['gene_level_pval']
     if gene_level_correction == 'bonferroni':
