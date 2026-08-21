@@ -44,7 +44,8 @@ Output: one TSV per gene, mirroring the STR meta-analysis layout.
     {output-dir}/meta_results/{cell_type}/{chrom}/{gene}_{cis_window}bp_meta_results.tsv
 
 analysis-runner --dataset "tenk10k" --description "SV eQTL meta-analysis" --access-level "test" \
-    --output-dir "tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/10pc/v1" \
+    --output-dir "tenk10k-sv/sv/meta_analysis/sensitivity_analysis/bioheart_n968_and_tob_n935/10pc/v1" \
+    --image 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:189f33cce2381aa8623acd2f39006455deae2a6f-hail-0928b141d1dd3ca4de530d50943d2673305ea7bb' \
     python3 meta_runner_sv.py \
     --results-dir-1=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/sensitivity_analysis/bioheart_n968/10pc/results/v1 \
     --results-dir-2=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/sensitivity_analysis/tob_n935/10pc/results/v1 \
@@ -268,7 +269,6 @@ def run_meta_for_chrom(
                 'tob_vid': pair.tob_vids,
                 'tob_pos': pair.tob_pos,
                 'tob_svtype': pair.tob_svtype,
-                'pos_delta': int(pair.tob_pos) - int(pair.bioheart_pos),
                 'n_samples_tested_1': r1['n_samples_tested'],
                 'n_samples_tested_2': r2['n_samples_tested'],
                 'coeff_1': r1['coeff'],
@@ -279,7 +279,6 @@ def run_meta_for_chrom(
                 'alleles_1': r1['alleles'],
                 'allele_frequency_1': r1['allele_frequency'],
                 'alt_af_1': r1['alt_af'],
-                'mean_dosage_1': r1['mean_dosage'],
                 'coeff_2': r2['coeff'],
                 'se_2': r2['se'],
                 'pval_2': r2['pval'],
@@ -288,7 +287,6 @@ def run_meta_for_chrom(
                 'alleles_2': r2['alleles'],
                 'allele_frequency_2': r2['allele_frequency'],
                 'alt_af_2': r2['alt_af'],
-                'mean_dosage_2': r2['mean_dosage'],
             }
             row.update(metagen_pair(r1['coeff'], r1['se'], r2['coeff'], r2['se']))
             row['direction_concordant'] = (r1['coeff'] > 0) == (r2['coeff'] > 0)
