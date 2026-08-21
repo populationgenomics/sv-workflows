@@ -44,10 +44,10 @@ Output: one TSV per gene, mirroring the STR meta-analysis layout.
     {output-dir}/meta_results/{cell_type}/{chrom}/{gene}_{cis_window}bp_meta_results.tsv
 
 analysis-runner --dataset "tenk10k" --description "SV eQTL meta-analysis" --access-level "test" \
-    --output-dir "tenk10k-sv/sv/meta_analysis/sensitivity_analysis/bioheart_n968_and_tob_n935/10pc/v1" \
+    --output-dir "tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/10pc/v1" \
     --image 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:189f33cce2381aa8623acd2f39006455deae2a6f-hail-0928b141d1dd3ca4de530d50943d2673305ea7bb' \
     python3 meta_runner_sv.py \
-    --results-dir-1=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/sensitivity_analysis/bioheart_n968/10pc/results/v1 \
+    --results-dir-1=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/sensitivity_analysis/bioheart_n968/9pc/results/v1 \
     --results-dir-2=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/sensitivity_analysis/tob_n935/10pc/results/v1 \
     --meta-set=gs://cpg-tenk10k-test/sv/input_files/meta_analysis_set.csv \
     --cell-types=CD8_TEM \
@@ -235,6 +235,9 @@ def run_meta_for_chrom(
     print(f'  {len(genes):,} genes tested in both cohorts ({len(genes_1):,} / {len(genes_2):,} per cohort)')
 
     n_written = n_skipped = 0
+    # genes that yield no output file, tracked so written + skipped + these == len(genes)
+    unreadable = []  # a cohort TSV was missing, empty, or had no testable loci left
+    no_pairs = []  # both cohorts had loci, but no federated pair had both sides poolable
     for gene in genes:
         out_path = output_path(
             f'meta_results/{cell_type}/{chromosome}/{gene}_{cis_window}bp_meta_results.tsv',
@@ -247,11 +250,13 @@ def run_meta_for_chrom(
         d1 = _read_summary_stats(f'{results_dir_1}/{cell_type}/{chromosome}/{gene}{suffix}')
         d2 = _read_summary_stats(f'{results_dir_2}/{cell_type}/{chromosome}/{gene}{suffix}')
         if d1 is None or d2 is None:
+            unreadable.append(gene)
             continue
 
         # join each cohort's summary stats onto the federated pairing table by upper-cased VARID
         merged = pairs[pairs['bh_key'].isin(d1.index) & pairs['tob_key'].isin(d2.index)]
         if merged.empty:
+            no_pairs.append(gene)
             continue
 
         rows = []
@@ -301,6 +306,15 @@ def run_meta_for_chrom(
         n_written += 1
 
     print(f'  wrote {n_written:,} gene result files ({n_skipped:,} already present, skipped)')
+    if no_pairs:
+        shown = ', '.join(no_pairs[:10]) + (' ...' if len(no_pairs) > 10 else '')
+        print(f'  {len(no_pairs):,} gene(s) had no federated pair in the cis window: {shown}')
+    if unreadable:
+        shown = ', '.join(unreadable[:10]) + (' ...' if len(unreadable) > 10 else '')
+        print(f'  {len(unreadable):,} gene(s) had an empty/unreadable cohort TSV: {shown}')
+    accounted = n_written + n_skipped + len(no_pairs) + len(unreadable)
+    if accounted != len(genes):
+        print(f'  !! accounting gap: {len(genes):,} genes seen but {accounted:,} accounted for')
 
 
 @click.command()
