@@ -71,7 +71,7 @@ _VARID_RE = re.compile(r'-END:\d+-(.+)$')
 _POOLABLE_PREFIX = 'concordant_'
 _POOLABLE_EXTRA = 'dup_cnv'
 
-# metagen object field -> output column name. Field names match meta_runner.py's m.gen$... accessors
+# metagen object field -> output column name. Field names match meta_r∂ner.py's m.gen$... accessors
 # so the pooled columns line up with the STR meta-analysis outputs. `meta` >= 5 renamed the
 # fixed-effect fields from *.fixed to *.common and kept the old names as aliases; both are tried.
 _METAGEN_FIELDS = (
