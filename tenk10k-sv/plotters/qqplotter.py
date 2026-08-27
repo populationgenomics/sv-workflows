@@ -4,6 +4,7 @@ This script plots a QQ plot of observed vs expected -log10(p-values) for each ce
 
 analysis-runner --dataset "tenk10k" --description "plot qq plot" --access-level "test" \
     --output-dir "tenk10k-sv/sv/bioheart_n968/7pc/v1" --memory=32G \
+    --image 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:3c1041139794b7e91da004589cbbf2f592556faf-hail-95632ec3cb35a1e088b1604657e3eac8da853613' \
     qqplotter.py \
     --input-dir=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/bioheart_n968/7pc/v1/raw_pval_extractor \
     --cell-types=CD4_TCM,CD4_TCM_permuted \
@@ -65,7 +66,7 @@ def main(input_dir, cell_types, title, ylim):
 
     for cell_type in cell_type_list:
         df = pd.read_csv(
-            f'{input_dir}/{cell_type}_gene_tests_raw_pvals.txt',
+            f'{input_dir}/{cell_type}_gene_tests_raw_pvals.tsv',
             header=None,
             names=['chrom', 'pos', 'pval'],
             sep='\t',
