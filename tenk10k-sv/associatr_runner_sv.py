@@ -10,10 +10,39 @@ Difference vs. str/associatr/associatr_runner.py:
   whose POS falls inside the window. This is done per gene with a bcftools
   pre-filter before associaTR is invoked:
       bcftools view -r {chrom}:1-{cis_end} -i 'INFO/END>={cis_start}' ...
-  associaTR is then given --region {chrom}:1-{chrom_len} so it walks every
-  record left in the pre-filtered VCF.
+  associaTR then walks every record left in the pre-filtered VCF.
 - Assumes the cis window bed files were produced with a 1 Mb window
   (see tenk10k-sv/get_cis_numpy_files_sv.toml).
+
+ZERO-VARIANCE PRE-FILTER
+------------------------
+associaTR standardises the summed genotype as (x - mean(x)) / std(x). A locus with zero dosage
+variance among the samples actually used in the regression makes std 0, every value NaN, and
+OLS(missing='drop') then discards every row, so statsmodels raises
+
+    ValueError: zero-size array to reduction operation maximum which has no identity
+
+at trtools/associaTR/associaTR.py:280 -- killing the whole gene rather than just that locus.
+
+associaTR's own filters cannot catch it because they work on allele LENGTH frequencies:
+sv_vcf_for_associatr.py encodes a multiallelic CNV as GT "CN/0", so a locus where every used
+sample has the same copy number still presents as two alleles at ~50% each. It clears the
+non-major-allele cutoff and reaches the regression with a constant dosage.
+
+This bites SVs specifically, and rare cell types hardest, because sv_vcf_for_associatr.py drops
+monomorphic sites using ALL cohort samples -- a variant that varies across the full cohort but is
+constant within one cell type's subset survives into the VCF.
+
+So PREFILTER_SCRIPT below runs inside the associaTR job (the trtools image already has cyvcf2 and
+numpy, and the filtered VCF is small) and drops exactly those loci. It imports trtools' own sample
+selection, genotype loading and locus filters rather than reimplementing them, and keeps any locus
+associaTR would have filtered on its own, so the output TSV is unchanged apart from the omitted
+crashers.
+
+Because the pre-filter rewrites the VCF uncompressed and unindexed, --region is no longer passed.
+That is equivalent here: bcftools has already restricted the file to the cis window, and the only
+thing --region does beyond an index seek is skip records with POS < region_start, which with the
+':1-' start never fired.
 
  analysis-runner --dataset tenk10k --config associatr_runner_sv.toml \
     --description "run associatr on SVs" \
@@ -27,12 +56,11 @@ import json
 
 import pandas as pd
 
-import hail as hl
 import hailtop.batch as hb
 
 from cpg_utils import to_path
 from cpg_utils.config import get_config
-from cpg_utils.hail_batch import get_batch, init_batch, output_path
+from cpg_utils.hail_batch import get_batch, output_path
 
 
 def gene_cis_window_file_reader(file_path):
@@ -41,9 +69,95 @@ def gene_cis_window_file_reader(file_path):
     return cis_window['chrom'][0], int(cis_window['start'][0]), int(cis_window['end'][0])
 
 
+# Written into the associaTR job and run against the bcftools-filtered VCF before associaTR itself.
+# See the "ZERO-VARIANCE PRE-FILTER" note in the module docstring for why this is needed.
+PREFILTER_SCRIPT = r'''
+"""Drop the loci that would crash associaTR; pass everything else through untouched.
+
+associaTR standardises the summed genotype as (x - mean(x)) / std(x). If a locus has zero dosage
+variance among the samples actually used in the regression, std is 0, every value becomes NaN,
+OLS(missing='drop') discards every row, and statsmodels raises
+
+    ValueError: zero-size array to reduction operation maximum which has no identity
+
+which kills the whole gene, not just that locus.
+
+associaTR's own locus filters cannot catch this because they operate on allele LENGTH frequencies.
+sv_vcf_for_associatr.py encodes a multiallelic CNV as GT "CN/0", so even when every used sample has
+the same copy number the locus presents as two alleles at ~50% each and sails through the
+non-major-allele cutoff -- while the summed dosage it hands the regression is constant.
+
+Sample selection, genotype loading and the locus filters are all imported from trtools rather than
+reimplemented, so this cannot drift from what associaTR itself does. A locus associaTR would have
+filtered anyway is KEPT, so the output TSV still carries its filtered row and is unchanged apart
+from the omitted crashers.
+"""
+import sys
+
+import cyvcf2
+import numpy as np
+
+from trtools.associaTR.associaTR import _merge_arrays
+from trtools.associaTR.load_and_filter_genotypes import clean_len_alleles
+from trtools.utils import tr_harmonizer as trh
+
+vcf_in, npy_path, vcf_out = sys.argv[1], sys.argv[2], sys.argv[3]
+non_major_cutoff = float(sys.argv[4])
+
+vcf = cyvcf2.VCF(vcf_in)
+all_samples = vcf.samples
+
+# exactly associaTR.py's covariate merge and sample filter (no --sample-list is passed)
+covars = np.load(npy_path)
+covars = _merge_arrays(np.array(all_samples, dtype=float).reshape(-1, 1), covars)
+sample_filter = ~np.any(np.isnan(covars), axis=1)
+n_covars = covars.shape[1]
+
+vcftype = trh.InferVCFType(vcf, 'eh')
+writer = cyvcf2.Writer(vcf_out, vcf)
+
+n_kept = 0
+n_dropped = 0
+for record in vcf:
+    trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
+    curr_samples = sample_filter & trrecord.GetCalledSamples()
+    n_samples = int(np.sum(curr_samples))
+
+    # would associaTR filter this locus before it ever reaches the regression?
+    allele_frequency = clean_len_alleles(trrecord.GetAlleleFreqs(curr_samples))
+    if len(allele_frequency) <= 1:
+        already_filtered = True
+    else:
+        af = list(allele_frequency.values())
+        af.pop(int(np.argmax(af)))
+        already_filtered = bool(np.sum(af) * n_samples * 2 < non_major_cutoff)
+    already_filtered = already_filtered or n_covars >= n_samples
+
+    if not already_filtered:
+        summed_gts = np.sum(trrecord.GetLengthGenotypes()[curr_samples, :-1], axis=1)
+        if np.std(summed_gts) == 0:
+            print(
+                'DROP zero-variance locus {}:{} {} (dosage {} in all {} used samples)'.format(
+                    record.CHROM, record.POS, record.ID, summed_gts[0], n_samples,
+                ),
+            )
+            n_dropped += 1
+            continue
+
+    writer.write_record(record)
+    n_kept += 1
+
+writer.close()
+print(
+    'prefilter: kept {}, dropped {} zero-variance loci ({} VCF samples, {} usable)'.format(
+        n_kept, n_dropped, len(all_samples), int(np.sum(sample_filter)),
+    ),
+)
+'''
+
+
 def main():
     b = get_batch(name='Run associatr on SVs')
-    init_batch()
 
     _dependent_jobs: list[hb.batch.job.Job] = []
 
@@ -54,8 +168,6 @@ def main():
 
     for celltype in get_config()['associatr']['celltypes'].split(','):
         for chromosome in get_config()['associatr']['chromosomes'].split(','):
-            chrom_len = hl.get_reference('GRCh38').lengths[chromosome]
-
             input_dir = get_config()['associatr']['vcf_file_dir']
             vcf_file_path = f'{input_dir}/hail_filtered_{chromosome}.vcf.bgz'
             variant_vcf = b.read_input_group(
@@ -112,8 +224,14 @@ def main():
                     f"tabix -f -p vcf {filter_job.filtered_vcf['vcf.bgz']}",
                 )
 
-                # Job 2: associaTR on the per-gene filtered VCF. --region spans
-                # the full chromosome so associaTR walks every surviving record.
+                # Job 2: associaTR on the per-gene filtered VCF, preceded by the
+                # zero-variance pre-filter (see PREFILTER_SCRIPT). The pre-filter
+                # rewrites the VCF uncompressed and unindexed, so --region is
+                # dropped: it is equivalent here anyway, because bcftools has
+                # already restricted the file to the cis window and the only thing
+                # --region does beyond an index seek is skip records starting
+                # before region_start -- which with ':1-' never fired.
+                non_major_cutoff = get_config()['associatr'].get('non_major_cutoff', 20)
                 associatr_job = b.new_job(name=f'Run associatr on {gene} [{celltype};{chromosome}] SV')
                 if get_config()['associatr']['always_run']:
                     associatr_job.always_run()
@@ -124,10 +242,20 @@ def main():
                     association_results={'tsv': '{root}.tsv'},
                 )
                 associatr_job.command(
+                    f'cat > $BATCH_TMPDIR/prefilter.py <<\'PREFILTER_EOF\'\n'
+                    f'{PREFILTER_SCRIPT}\n'
+                    f'PREFILTER_EOF',
+                )
+                associatr_job.command(
+                    f'python3 $BATCH_TMPDIR/prefilter.py '
+                    f"{filter_job.filtered_vcf['vcf.bgz']} {gene_pheno_cov} "
+                    f'$BATCH_TMPDIR/prefiltered.vcf {non_major_cutoff}',
+                )
+                associatr_job.command(
                     f"associaTR {associatr_job.association_results['tsv']} "
-                    f"{filter_job.filtered_vcf['vcf.bgz']} "
+                    f'$BATCH_TMPDIR/prefiltered.vcf '
                     f"{celltype}_{chromosome}_{gene} {gene_pheno_cov} "
-                    f"--region={cis_chrom}:1-{chrom_len} --vcftype=eh",
+                    f'--non-major-cutoff {non_major_cutoff} --vcftype=eh',
                 )
                 b.write_output(
                     associatr_job.association_results,
