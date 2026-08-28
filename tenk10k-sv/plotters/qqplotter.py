@@ -55,6 +55,46 @@ color_mapping = {
     'HSPC': '#BDBDBDFF',
 }
 
+def read_raw_pvals(input_dir, cell_type):
+    """Read one cell type's raw p-values from raw_pval_extractor_sv.py output, as floats.
+
+    The file is a headed 7-column TSV (chrom, pos, end, svtype, varid, gene, pval), so it is read
+    with its header and the p-value is located by NAME -- the same convention as the other SV
+    scripts. Reading it positionally instead (header=None + names=[...]) puts the literal string
+    'pval' into the column, which makes it object/str dtype and makes -np.log10 raise
+    'TypeError: loop of ufunc does not support argument 0 of type str'.
+    """
+    path = f'{input_dir}/{cell_type}_gene_tests_raw_pvals.tsv'
+    with to_path(path).open() as handle:
+        df = pd.read_csv(handle, sep='\t')
+
+    if 'pval' not in df.columns:
+        raise ValueError(f'{path} has no "pval" column; found {list(df.columns)}')
+
+    # coerce rather than astype(float): this reports how many values were unusable
+    # instead of raising on the first one
+    pvals = pd.to_numeric(df['pval'], errors='coerce')
+
+    n_bad = int(pvals.isna().sum())
+    if n_bad:
+        print(f'{cell_type}: dropping {n_bad:,} non-numeric/missing p-values')
+    # subset to the p-value column only -- a frame-wide dropna() would also discard rows whose
+    # svtype/end/varid are 'NA' (motif that did not parse), even though their p-value is fine
+    pvals = pvals.dropna()
+
+    # -log10(0) is inf and silently stretches the y-axis; associaTR can underflow to exactly 0
+    n_zero = int((pvals == 0).sum())
+    if n_zero:
+        print(f'{cell_type}: {n_zero:,} p-values underflowed to 0, clamping to the smallest float')
+        pvals = pvals.clip(lower=np.nextafter(0, 1))
+
+    if pvals.dtype.kind != 'f':
+        raise TypeError(f'{path}: pval read as {pvals.dtype}, not float')
+
+    print(f'{cell_type}: {len(pvals):,} p-values from {path}')
+    return pvals
+
+
 @click.option('--title', help='Title of the QQ plot')
 @click.option('--ylim', help='Y-axis limit for the QQ plot', default=335)
 @click.option('--input-dir', help='GCS path directory to the input gene-level p-value files')
@@ -65,15 +105,9 @@ def main(input_dir, cell_types, title, ylim):
     cell_type_list = cell_types.split(',')
 
     for cell_type in cell_type_list:
-        df = pd.read_csv(
-            f'{input_dir}/{cell_type}_gene_tests_raw_pvals.tsv',
-            header=None,
-            names=['chrom', 'pos', 'pval'],
-            sep='\t',
-        )
-        df = df.dropna()
+        pvals = read_raw_pvals(input_dir, cell_type)
 
-        globals()[f'observed_log_pvals_{cell_type}'] = -np.log10(df['pval'])
+        globals()[f'observed_log_pvals_{cell_type}'] = -np.log10(pvals)
         globals()[f'n_{cell_type}'] = len(globals()[f'observed_log_pvals_{cell_type}'])
         globals()[f'expected_log_pvals_{cell_type}'] = -np.log10(
             np.arange(1, globals()[f'n_{cell_type}'] + 1) / globals()[f'n_{cell_type}'],
