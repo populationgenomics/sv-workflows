@@ -3,12 +3,12 @@
 This script plots a QQ plot of observed vs expected -log10(p-values) for each cell type.
 
 analysis-runner --dataset "tenk10k" --description "plot qq plot" --access-level "test" \
-    --output-dir "tenk10k-sv/sv/bioheart_n968/7pc/v1" --memory=32G \
+    --output-dir "tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/7pc/v1" --memory=32G \
     --image 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:3c1041139794b7e91da004589cbbf2f592556faf-hail-95632ec3cb35a1e088b1604657e3eac8da853613' \
     qqplotter.py \
-    --input-dir=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/bioheart_n968/7pc/v1/raw_pval_extractor \
-    --cell-types=CD4_TCM,CD4_TCM_permuted \
-    --ylim=200
+    --input-dir=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/7pc/v1/raw_pval_extractor \
+    --cell-types=CD4_TCM,CD4_TCM_permuted,B_intermediate,B_naive,B_memory,cDC2,dnT,gdT,pDC,CD14_Mono,CD16_Mono,CD4_CTL,CD4_Naive,CD4_Proliferating,CD4_TEM,CD8_Naive,CD8_TCM,HSPC,MAIT,NK,NK_CD56bright,NK_Proliferating,Plasmablast,Treg,cDC1,ASDC,CD8_TEM,CD8_Proliferating,ILC \
+    --ylim=320
 
 
 """
@@ -206,7 +206,7 @@ def main(input_dir, cell_types, title, ylim):
     plt.yticks(fontsize=15)
     ax.set_ylim(0, ylim)
 
-    ax.plot([0, 7], [0, 7], color='grey', linestyle='--')  # Add a reference line
+    ax.plot([0, 5.5], [0, 5.5], color='grey', linestyle='--')  # Add a reference line
 
     gcs_output_path = output_path('summary_plots/publish/v1/qq_plot.png', 'analysis')
     fig.tight_layout()
