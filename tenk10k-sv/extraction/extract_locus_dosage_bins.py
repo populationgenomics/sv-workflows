@@ -216,7 +216,7 @@ def main(requests_path, vcf_dir, pheno_cov_dir, cohort, min_donors, job_storage,
     # rather than re-declaring it per gene
     vcfs = {
         chrom: b.read_input_group(
-            **{'vcf.bgz': f'{vcf_dir}/{chrom}.vcf.bgz', 'vcf.bgz.tbi': f'{vcf_dir}/{chrom}.vcf.bgz.tbi'},
+            **{'vcf.bgz': f'{vcf_dir}/hail_filtered_{chrom}.vcf.bgz', 'vcf.bgz.tbi': f'{vcf_dir}/hail_filtered_{chrom}.vcf.bgz.tbi'},
         )
         for chrom in sorted(req['chr'].unique())
     }
