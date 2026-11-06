@@ -41,6 +41,7 @@ import click
 import pandas as pd
 
 from cpg_utils import to_path
+from cpg_utils.config import get_config
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SV_BASE = 'gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/7pc/v1_F_filtered'
@@ -48,7 +49,6 @@ SV_INPUTS = 'gs://cpg-tenk10k-test/sv/input_files'
 COHORTS = {'bioheart': ('bioheart_n968', '1'), 'tob': ('tob_n935', '2')}
 SNP_VCF = 'gs://cpg-bioheart-test/tenk10k/str/associatr/common_variant_snps/hail_filtered_{chrom}.vcf.bgz'
 TR_VCF = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/tr_vcf/v1-chr-specific/hail_filtered_{chrom}.vcf.bgz'
-TRTOOLS_IMAGE = 'australia-southeast1-docker.pkg.dev/cpg-common/images/trtools:6.0.1'
 
 # Runs inside each job (trtools image). Reads manifest.json, writes the two gzipped TSVs.
 JOB_SCRIPT = r'''
@@ -170,7 +170,7 @@ def main(qval_dir, genes_per_job, chromosomes, max_genes, max_parallel_jobs, sto
                 continue
             batch_genes = genes[start:start + genes_per_job]
             j = b.new_job(name=f'snp_tr_1mb_{chrom}_{chunk:03d}')
-            j.image(TRTOOLS_IMAGE)
+            j.image(get_config()['images']['trtools'])
             j.storage(storage)
             j.memory(memory)
             manifest = {'snp_vcf': str(snp.base), 'tr_vcf': str(tr.base), 'genes': []}
