@@ -52,13 +52,14 @@ TR_VCF = 'gs://cpg-bioheart-test/tenk10k/str/associatr/final-freeze/input_files/
 
 # Runs inside each job (trtools image). Reads manifest.json, writes the two gzipped TSVs.
 JOB_SCRIPT = r'''
-import gzip, json, sys
+import gzip, json, os, sys
 import numpy as np
 import pandas as pd
 import fast_associatr as fa
 from meta_np import metagen_dl
 
-man = json.load(open(sys.argv[1]))
+# input paths are written as ${BATCH_TMPDIR}/... inside a quoted heredoc, so expand them here
+man = json.loads(os.path.expandvars(open(sys.argv[1]).read()))
 meta_out, coh_out = gzip.open(sys.argv[2], 'wt'), gzip.open(sys.argv[3], 'wt')
 meta_header = coh_header = True
 COLS = ['chrom', 'pos', 'alleles', 'n_samples_tested', 'locus_filtered', 'p', 'coeff', 'se', 'r2',
