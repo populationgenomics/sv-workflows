@@ -32,6 +32,14 @@ analysis-runner --dataset tenk10k --access-level test --description "SNP+TR 1Mb 
     python3 snp_tr_cis_runner.py --genes-per-job=50
 
 Add --chromosomes=chr22 --max-genes=20 for a pilot.
+
+After a new SV meta-analysis (e.g. v2_F_filtered), test only the pairs that became significant, into a new folder:
+
+analysis-runner --dataset tenk10k --access-level test --description "SNP+TR 1Mb cis re-test, v2 new pairs" \
+    --output-dir tenk10k-sv/sv/snp_tr_1mb/bioheart_n968_and_tob_n935/7pc/v2_additions \
+    python3 snp_tr_cis_runner.py --genes-per-job=50 \
+    --qval-dir=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/7pc/v2_F_filtered/fdr_qvals/using_acat \
+    --skip-pairs-from=gs://cpg-tenk10k-test-analysis/tenk10k-sv/sv/meta_analysis/bioheart_n968_and_tob_n935/7pc/v1_F_filtered/fdr_qvals/using_acat
 """
 import json
 import os
@@ -113,7 +121,8 @@ def gene_chrom(pairs):
     """Chromosome per gene from the SV pheno_cov layout (the q-value files may not carry it)."""
     if 'chr' in pairs or 'chrom' in pairs:
         col = 'chr' if 'chr' in pairs else 'chrom'
-        return pairs.groupby('gene_name')[col].first().to_dict()
+        # genes with several lead SVs store a comma-separated list (e.g. 'chr17,chr17,chr17'); all share one chrom
+        return pairs.groupby('gene_name')[col].first().str.split(',').str[0].to_dict()
     out = {}
     for ct in sorted(pairs.cell_type.unique()):
         root = f'{SV_INPUTS}/bioheart_n968/7pc/pheno_cov_numpy/v1/{ct}'
@@ -143,10 +152,28 @@ def cis_region(ct, chrom, gene):
 @click.option('--max-parallel-jobs', default=200, type=int)
 @click.option('--storage', default='12G', help='job disk: chr1 TR VCF is 3.3 GB, SNP VCF 0.75 GB')
 @click.option('--memory', default='standard')
-def main(qval_dir, genes_per_job, chromosomes, max_genes, max_parallel_jobs, storage, memory):
+@click.option('--skip-pairs-from', default=None,
+              help='q-value dir of an earlier run (e.g. v1_F_filtered/fdr_qvals/using_acat): pairs significant there are '
+                   'skipped, so only new eGene x cell type pairs are tested. SNP/TR results for a pair depend only on '
+                   'the gene window, samples and covariates, so earlier results stay valid.')
+def main(qval_dir, genes_per_job, chromosomes, max_genes, max_parallel_jobs, storage, memory, skip_pairs_from):
     from cpg_utils.hail_batch import get_batch, output_path
 
     pairs = egene_pairs(qval_dir)
+    if skip_pairs_from:
+        done = egene_pairs(skip_pairs_from)
+        # The first run read a gene's chromosome from its first q-value row; genes with several lead SVs store a
+        # comma-separated list there ('chr17,chr17,chr17'), so they matched no chromosome and were never tested.
+        # Do not skip those: they still need running.
+        first_chr = done.groupby('gene_name')['chr'].first().astype(str)
+        missed = set(first_chr[first_chr.str.contains(',')].index)
+        if missed:
+            print(f'not skipping {len(missed)} gene(s) the first run missed (list-valued chr): {sorted(missed)}')
+        done = done[~done.gene_name.isin(missed)]
+        done_keys = set(zip(done.gene_name, done.cell_type))
+        n_all = len(pairs)
+        pairs = pairs[[k not in done_keys for k in zip(pairs.gene_name, pairs.cell_type)]].copy()
+        print(f'skipping {n_all - len(pairs):,} pairs already significant in {skip_pairs_from}')
     print(f'{len(pairs):,} eGene x cell type pairs, {pairs.gene_name.nunique():,} genes')
     chrom_of = gene_chrom(pairs)
     pairs['chrom'] = pairs.gene_name.map(chrom_of)
