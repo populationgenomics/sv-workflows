@@ -92,7 +92,9 @@ V2_META_SET = 'gs://cpg-tenk10k-test/sv/input_files/meta_analysis_set_v2_fixed_F
 @click.option('--spot/--no-spot', default=True, help='--no-spot: non-preemptible VMs (dearer, never preempted)')
 @click.option('--chromosomes', default=','.join(f'chr{i}' for i in range(1, 23)))
 @click.option('--max-genes', default=0, type=int, help='pilot: cap genes per chromosome (0 = all)')
-@click.option('--max-parallel-jobs', default=300, type=int)
+@click.option('--max-parallel-jobs', default=300, type=int,
+              help='job i waits for job i-N (prep and susie jobs both count); 0 = no throttle. A failed job cancels '
+                   'the job N places later, and so on down the chain')
 @click.option('--num-causal', default=10, type=int, help='SuSiE L')
 @click.option('--max-iter', default=100, type=int)
 @click.option('--mode', default='both', type=click.Choice(['per_cohort', 'pooled', 'both']),
@@ -163,7 +165,7 @@ def main(qval_dir, cohorts, genes_per_job, split, spot, chromosomes, max_genes, 
     def throttle(j):
         if hasattr(j, 'spot'):
             j.spot(spot)
-        if len(jobs) >= max_parallel_jobs:
+        if max_parallel_jobs and len(jobs) >= max_parallel_jobs:
             j.depends_on(jobs[-max_parallel_jobs])
         jobs.append(j)
 
