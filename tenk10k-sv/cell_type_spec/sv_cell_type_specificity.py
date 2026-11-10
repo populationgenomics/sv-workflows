@@ -40,7 +40,8 @@ Outputs in --out-dir:
     sv_pair_ld.tsv                  SV-SV r and r2 used (per cohort and combined)
     rescue_tests.tsv                every scenario-2 meta-analysis: beta/se in A and B, tau2, p_meta, rescued yes/no
 
-python3 sv_cell_type_specificity.py --sumstats full_sumstats.parquet --out-dir out/
+python3 sv_cell_type_specificity.py --sumstats full_sumstats.parquet --out-dir out/          (local; reads GCS with gcloud)
+On Hail Batch: cell_type_spec_runner.py (gather job + this script in the trtools image on local inputs).
 """
 import io
 import json
@@ -49,7 +50,6 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-import click
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -103,6 +103,10 @@ def rma_reml(y, v, max_iter=100, tol=1e-10):
 
 
 def load_qvals(qval_dir):
+    """Gene-level q-values: a gs:// fdr_qvals dir (read with gcloud), or a local TSV(.gz) with gene_name, qval,
+    cell_type (as written by cell_type_spec_runner.py's gather job)."""
+    if not qval_dir.startswith('gs://'):
+        return pd.read_csv(qval_dir, sep='\t')
     files = [f for f in sh(f"gcloud storage ls '{qval_dir}/'").decode().split() if f.endswith('_qval.tsv')]
 
     def read(f):
@@ -113,8 +117,14 @@ def load_qvals(qval_dir):
         return pd.concat(ex.map(read, files), ignore_index=True)
 
 
-def load_expressed():
-    """(gene, cell type) expressed in either cohort: the per-cell-type gene lists the eQTL scans were built from."""
+def load_expressed(path=None):
+    """(gene, cell type) expressed in either cohort: the per-cell-type gene lists the eQTL scans were built from.
+    path: a local TSV(.gz) with gene_name, cell_type (cell_type_spec_runner.py's gather job); default: read the lists
+    from GCS with gcloud."""
+    if path:
+        d = pd.read_csv(path, sep='\t')
+        return set(zip(d.gene_name, d.cell_type))
+
     def read(args):
         coh, ct = args
         raw = sh(f"gcloud storage cat '{GENE_LISTS.format(cohort=COHORT_DIRS[coh], ct=ct)}/*_gene_list.json'").decode()
@@ -171,24 +181,22 @@ class SVLD:
         return rs[0], rs[1], float(np.nansum(r * w) / w.sum()), float(np.nansum(r ** 2 * w) / w.sum())
 
 
-@click.command()
-@click.option('--sumstats', required=True, help='v2 full_sumstats.parquet (local path or gs://, read with pyarrow)')
-@click.option('--qval-dir', default=f'{V2}/fdr_qvals/using_acat')
-@click.option('--out-dir', required=True)
-@click.option('--rescue-effect', default='abs', type=click.Choice(['abs', 'signed']),
-              help='pool |beta| (default; rescues to 4 or 5) or signed beta (sensitivity) in the scenario-2 meta-analysis')
-@click.option('--vcf-cache', default=None, help='where to keep the per-chromosome SV VCFs (default: out-dir/sv_vcfs)')
-def main(sumstats, qval_dir, out_dir, rescue_effect, vcf_cache):
+SS_COLS = ['gene_name', 'cell_type', 'chr', 'federate_id', 'pair_class', 'bioheart_vid', 'bioheart_pos', 'tob_vid',
+           'coeff_meta_fixed', 'se_meta_fixed']
+
+
+def main(sumstats, qval_dir, out_dir, rescue_effect='abs', vcf_cache=None, expressed_path=None):
     os.makedirs(out_dir, exist_ok=True)
     q = load_qvals(qval_dir)
     q = q[q.cell_type.isin(CELL_TYPES)]
     egene = set(zip(q.gene_name[q.qval < 0.05], q.cell_type[q.qval < 0.05]))
-    expressed = load_expressed()
+    expressed = load_expressed(expressed_path)
     print(f'{len(egene):,} eGene x cell type pairs; {len(expressed):,} expressed gene x cell type pairs')
 
-    cols = ['gene_name', 'cell_type', 'chr', 'federate_id', 'pair_class', 'bioheart_vid', 'bioheart_pos', 'tob_vid',
-            'coeff_meta_fixed', 'se_meta_fixed']
-    ss = pd.read_parquet(sumstats, columns=cols)
+    if sumstats.endswith('.parquet'):
+        ss = pd.read_parquet(sumstats, columns=SS_COLS)
+    else:   # TSV from the gather job: every test of every eGene's gene, all cell types
+        ss = pd.read_csv(sumstats, sep='\t', usecols=SS_COLS, dtype={'chr': str})
     for k in ss.select_dtypes('category').columns:
         ss[k] = ss[k].astype(str)
     ss = ss[ss.cell_type.isin(CELL_TYPES)].copy()
@@ -291,4 +299,18 @@ def main(sumstats, qval_dir, out_dir, rescue_effect, vcf_cache):
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    import argparse  # noqa: PLC0415  (argparse, not click: the trtools image may not ship click)
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--sumstats', required=True,
+                    help='v2 full_sumstats.parquet, or the gather job TSV of every test of every eGene')
+    ap.add_argument('--qvals', default=f'{V2}/fdr_qvals/using_acat',
+                    help='gs:// fdr_qvals dir (read with gcloud) or a local TSV with gene_name, qval, cell_type')
+    ap.add_argument('--expressed', default=None,
+                    help='local TSV with gene_name, cell_type (default: read the gene lists from GCS with gcloud)')
+    ap.add_argument('--out-dir', required=True)
+    ap.add_argument('--rescue-effect', default='abs', choices=['abs', 'signed'],
+                    help='pool |beta| (default; rescues to 4 or 5) or signed beta (sensitivity)')
+    ap.add_argument('--vcf-cache', default=None,
+                    help='dir with {bioheart,tob}_{chrom}.vcf.bgz; missing files are copied from GCS with gcloud')
+    a = ap.parse_args()
+    main(a.sumstats, a.qvals, a.out_dir, a.rescue_effect, a.vcf_cache, a.expressed)
