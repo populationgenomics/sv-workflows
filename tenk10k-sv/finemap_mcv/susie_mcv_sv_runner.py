@@ -47,6 +47,13 @@ Full run (resubmit the same command to fill in failed chunks):
 analysis-runner --dataset tenk10k --access-level test --description "SuSiE MCV SNP+TR+SV per cohort and pooled (v2)" \
     --output-dir tenk10k-sv/sv/finemap_mcv/bioheart_n968_and_tob_n935/7pc/v2 \
     python3 susie_mcv_sv_runner.py
+
+Long or preempted chunks: resubmit with --split=5 (keep --genes-per-job=25) to rerun each unfinished chunk as 5-gene
+sub-jobs; add --no-spot to stop preemption. Cancel the old batch first, or a chunk could finish in both.
+
+Jobs killed with exit 137 ran out of memory (1 CPU 'standard' is ~3.75 GiB). Resubmit the same command with more
+memory: only chunks without a cs/ output are rebuilt, e.g. --susie-memory=highmem --prep-memory=highmem (~6.5 GiB at
+1 CPU), or add --susie-cpu=2 / --prep-cpu=2 to double that again.
 """
 import json
 import os
@@ -78,7 +85,11 @@ V2_META_SET = 'gs://cpg-tenk10k-test/sv/input_files/meta_analysis_set_v2_fixed_F
 @click.command()
 @click.option('--qval-dir', default=f'{V2_META}/fdr_qvals/using_acat')
 @click.option('--cohorts', default='bioheart,tob', help='comma-separated; each is fine-mapped on its own')
-@click.option('--genes-per-job', default=25, type=int)
+@click.option('--genes-per-job', default=25, type=int,
+              help='genes per chunk; defines the output tags, so keep it fixed when resubmitting (use --split)')
+@click.option('--split', default=0, type=int,
+              help='run each unfinished chunk as sub-jobs of at most this many genes (0 = whole chunk)')
+@click.option('--spot/--no-spot', default=True, help='--no-spot: non-preemptible VMs (dearer, never preempted)')
 @click.option('--chromosomes', default=','.join(f'chr{i}' for i in range(1, 23)))
 @click.option('--max-genes', default=0, type=int, help='pilot: cap genes per chromosome (0 = all)')
 @click.option('--max-parallel-jobs', default=300, type=int)
@@ -90,11 +101,13 @@ V2_META_SET = 'gs://cpg-tenk10k-test/sv/input_files/meta_analysis_set_v2_fixed_F
               help='pairing table the meta-analysis in --qval-dir actually pooled (see V2_META_SET)')
 @click.option('--r-image', default=None, help=f'image with Rscript + susieR (default: config images.susie, else {R_IMAGE})')
 @click.option('--prep-storage', default='15G')
+@click.option('--prep-memory', default='standard', help="Batch memory for prep jobs ('standard', 'highmem' or e.g. '8Gi')")
+@click.option('--prep-cpu', default=1, type=int)
 @click.option('--susie-memory', default='standard')
 @click.option('--susie-cpu', default=1, type=int, help='susieR is single-threaded')
-def main(qval_dir, cohorts, genes_per_job, chromosomes, max_genes, max_parallel_jobs, num_causal, max_iter, mode,
+def main(qval_dir, cohorts, genes_per_job, split, spot, chromosomes, max_genes, max_parallel_jobs, num_causal, max_iter, mode,
          meta_set, r_image,
-         prep_storage, susie_memory, susie_cpu):
+         prep_storage, prep_memory, prep_cpu, susie_memory, susie_cpu):
     from cpg_utils.hail_batch import get_batch, output_path
 
     cohorts = cohorts.split(',')
@@ -117,7 +130,39 @@ def main(qval_dir, cohorts, genes_per_job, chromosomes, max_genes, max_parallel_
     meta_set_file = b.read_input(meta_set) if mode != 'per_cohort' else None
     jobs, n_pairs = [], 0
 
+    done_tags = {f.name.removesuffix('.tsv.gz') for f in to_path(output_path('cs', 'analysis')).glob('*.tsv.gz')}
+
+    def work_units(chrom, genes):
+        """(tag, genes) still to run. A chunk is genes[k*genes_per_job : (k+1)*genes_per_job], tagged {chrom}_{k:03d}.
+        With --split, an unfinished chunk runs as sub-jobs tagged {chrom}_{k:03d}_g{a:02d}-{b:02d} (gene offsets a..b
+        within the chunk, inclusive). Offsets covered by existing sub-job outputs are skipped, so --split can be changed
+        between resubmissions without duplicating or missing genes."""
+        for chunk, start in enumerate(range(0, len(genes), genes_per_job)):
+            tag = f'{chrom}_{chunk:03d}'
+            block = genes[start:start + genes_per_job]
+            if tag in done_tags:
+                continue
+            covered = set()
+            for t in done_tags:
+                if t.startswith(f'{tag}_g'):
+                    a, b = map(int, t.removeprefix(f'{tag}_g').split('-'))
+                    covered.update(range(a, b + 1))
+            if not split and not covered:
+                yield tag, block
+                continue
+            todo = [i for i in range(len(block)) if i not in covered]
+            runs = []   # contiguous runs of offsets, each cut into pieces of <= split genes
+            for i in todo:
+                if runs and i == runs[-1][-1] + 1 and len(runs[-1]) < (split or len(block)):
+                    runs[-1].append(i)
+                else:
+                    runs.append([i])
+            for r in runs:
+                yield f'{tag}_g{r[0]:02d}-{r[-1]:02d}', [block[i] for i in r]
+
     def throttle(j):
+        if hasattr(j, 'spot'):
+            j.spot(spot)
         if len(jobs) >= max_parallel_jobs:
             j.depends_on(jobs[-max_parallel_jobs])
         jobs.append(j)
@@ -132,15 +177,12 @@ def main(qval_dir, cohorts, genes_per_job, chromosomes, max_genes, max_parallel_
         tr = b.read_input_group(base=TR_VCF.format(chrom=chrom), tbi=TR_VCF.format(chrom=chrom) + '.tbi')
         # read end to end by finemap_prep.py, so no index is needed (the TOB SV .tbi files have been stale before)
         svs = {c: b.read_input(SV_VCF.format(cohort=c, chrom=chrom)) for c in cohorts}
-        for chunk, start in enumerate(range(0, len(genes), genes_per_job)):
-            tag = f'{chrom}_{chunk:03d}'
-            if to_path(output_path(f'cs/{tag}.tsv.gz', 'analysis')).exists():
-                continue
+        for tag, chunk_genes in work_units(chrom, genes):
             manifest = {'snp_vcf': str(snp.base), 'tr_vcf': str(tr.base),
                         'sv_vcf': {c: str(svs[c]) for c in cohorts}, 'genes': []}
             if meta_set_file is not None:
                 manifest['meta_set'] = str(meta_set_file)
-            for gene in genes[start:start + genes_per_job]:
+            for gene in chunk_genes:
                 cts = sorted(pairs.loc[pairs.gene_name == gene, 'cell_type'])
                 n_pairs += len(cts)
                 manifest['genes'].append({
@@ -152,7 +194,8 @@ def main(qval_dir, cohorts, genes_per_job, chromosomes, max_genes, max_parallel_
             prep = b.new_job(name=f'finemap prep {tag}')
             prep.image(get_config()['images']['trtools'])
             prep.storage(prep_storage)
-            prep.memory('standard')
+            prep.cpu(prep_cpu)
+            prep.memory(prep_memory)
             prep.command(
                 'set -euo pipefail\nmkdir -p work && cd work\n'
                 f"cat > fast_associatr.py <<'__FAST_EOF__'\n{srcs['fast_associatr.py']}\n__FAST_EOF__\n"
